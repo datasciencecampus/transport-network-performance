@@ -297,7 +297,8 @@ vignettes/*.pdf
 .Renviron
 
 # pkgdown site
-docs/
+docs/*
+!docs/README.md
 
 # translation temp files
 po/*~
