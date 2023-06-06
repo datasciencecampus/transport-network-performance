@@ -1,6 +1,12 @@
+<!--- Badges start --->
+<img src="https://img.shields.io/badge/repo%20status-in%20development%20(caution)-red" alt="Repository status is still in development (caution required)"/>
+<!--- Badges end --->
+
 <img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
 
-# Repository name
+# transport-network-performance
+
+> :warning: This repository is still in the development phase. Caution should be taken before using or referencing this work in any way - use it at your own risk.
 
 # Introduction
 ## About
