@@ -1,8 +1,8 @@
-<img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
-
 <!--- Badges start --->
 <img src="https://img.shields.io/badge/repo%20status-in%20development%20(caution)-red" alt="Repository status is still in development (caution required)"/>
 <!--- Badges end --->
+
+<img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
 
 # transport-network-performance
 
