@@ -1,0 +1,5 @@
+[pydocstyle]
+# Rule definitions: http://www.pydocstyle.org/en/2.1.1/error_codes.html
+# D107: Missing docstring in __init__
+convention = numpy
+ignore = D107

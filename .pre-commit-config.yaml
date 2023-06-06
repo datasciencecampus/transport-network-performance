@@ -60,3 +60,10 @@ repos:
       name: nbqa-black - consistent Python code formatting (notebooks; auto-fixes)
       args: [ --nbqa-mutate ]
       additional_dependencies: [ black==22.3.0 ]
+
+# ----- pydocstyle - ensure consistency of docstrings
+- repo: https://github.com/pycqa/pydocstyle
+  rev: 6.1.1
+  hooks:
+    - id: pydocstyle
+      args: [--ignore=D107, D204]
