@@ -12,6 +12,9 @@
 ## About
 *Describe what this repo contains and what the project is.*
 
+## Developers
+We welcome contributions from others. Please check out our [code of conduct](CODE_OF_CONDUCT.md) and [contributing guidance](CONTRIBUTING.md###Set-up).
+
 ## Installation
 *Describe technical set-up. Such as the required dependencies.*
 
