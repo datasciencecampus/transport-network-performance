@@ -1,20 +1,23 @@
-"""
-This script was used to generate a small subset of all uk bus gtfs taken from dft BODS.
-The subset is based in newport and has a few purposes: for use in integration tests
-and validating deterministic outputs of r5py. Also in running test script to ensure
-development environment is setup as expected for r5py functionality.
-GTFS fixture is also filtered by date to 20230613
-
-fixtures: Newport PBF file created with osmium extract from geofabrik download:
-osmium extract --strategy complete_ways --bbox -3.077081,51.52222,-2.925075,51.593596 
-"""
 import os
 import gtfs_kit as gk
 import geopandas as gpd
 from shapely.geometry import box
 
+"""Script used to generate a subset of all uk bus gtfs taken from dft BODS.
+
+The subset is based in newport and has a few purposes: for use in integration
+tests and validating deterministic outputs of r5py. Also in running test script
+to ensure development environment is setup as expected for r5py functionality.
+GTFS fixture is also filtered by date to 20230613
+
+fixtures: Newport PBF file created with osmium extract from geofabrik download:
+osmium extract --strategy complete_ways --bbox
+-3.077081,51.52222,-2.925075,51.593596
+"""
 fix_dat = os.path.join("tests", "data")
-gtfs_zip = [os.path.join(fix_dat, x) for x in os.listdir(fix_dat) if x.endswith(".zip")][0]
+gtfs_zip = [
+    os.path.join(fix_dat, x) for x in os.listdir(fix_dat) if x.endswith(".zip")
+][0]
 # create box polygon around newport coords
 box_poly = box(-3.077081, 51.52222, -2.925075, 51.593596)
 # gtfs_kit expects gdf

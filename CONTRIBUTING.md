@@ -16,15 +16,15 @@ Please read [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) before contributing.
 
 ### Set-up
 
-Expects:  
-Env manager: conda  
-Os: Mac  
-Package manager: pip  
-pre-commit  
+Expects:
+Env manager: conda
+Os: Mac
+Package manager: pip
+pre-commit
 
 1. Setup a new conda env: `conda create -n r5py python=3.9.13`
 2. Activate the environment: `conda activate r5py`
-3. Launch terminal and change directory to wherever you keep your GitHub repos: `cd ~/Documents` 
+3. Launch terminal and change directory to wherever you keep your GitHub repos: `cd ~/Documents`
 4. Clone this repo, eg with https: `git clone https://github.com/datasciencecampus/transport-network-performance.git`
 5. Change directory to the repo: `cd transport-network-performance`
 6. Install pre-commit hooks: `pre-commit install`
@@ -46,9 +46,9 @@ This will add sdkman env variables to: `~/.bash_profile` and possibly `~/.zshrc`
 14. Get some pdf data from geofabrik download server, eg: [Geofabrik Wales latest](https://download.geofabrik.de/europe/great-britain/wales.html).
 15. Get some GTFS data, eg from [DfT BODS](https://data.bus-data.dft.gov.uk/), **account required**.
 16. Store in `data/external`. These files should be gitignored but please check.
-17. Now you should be able to run the check setup script, from terminal: `python3 src/utils/check-setup.py` 
+17. Now you should be able to run the check setup script, from terminal: `python3 src/utils/check-setup.py`
 18. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for the message: `r5py has created the expected database files.`
-19. If you've made it this far, you've earned yourself a coffee. 
+19. If you've made it this far, you've earned yourself a coffee.
 
 
 ### Pre-commit
