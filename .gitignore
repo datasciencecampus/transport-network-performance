@@ -1,3 +1,13 @@
+# transport modelling data formats
+**/*.pbf
+**/*.mapdb
+**/*.mapdb.p
+# moved zip blanket rule above specific exception for test fixture below
+*.zip
+# except test fixtures
+!tests/data/newport-2023-06-13.osm.pbf
+!tests/data/newport-20230613_gtfs.zip
+
 ### Project structure ###
 data/*
 !data/README.md
@@ -25,7 +35,6 @@ outputs/*
 
 *.html
 *.pdf
-*.zip
 *.csv
 *.pkl
 *.rds
