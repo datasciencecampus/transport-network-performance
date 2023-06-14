@@ -31,4 +31,4 @@ if not os.path.exists(mapdb_f):
 elif not os.path.exists(mapdb_p_f):
     raise FileNotFoundError(f"r5py did not create the expected file at:/ {mapdb_p_f}")
 else:
-    print("r5py has created the expected database files.")
+    print("SUCCESS: r5py has created the expected database files.")
