@@ -27,6 +27,8 @@ feed = gk.read_feed(gtfs_zip, dist_units="km")
 newport_feed = gk.miscellany.restrict_to_area(feed=feed, area=gdf)
 # newport_feed.describe()
 date_today = "20230613"
-newport_today = gk.miscellany.restrict_to_dates(feed=newport_feed, dates=[date_today])
+newport_today = gk.miscellany.restrict_to_dates(
+    feed=newport_feed, dates=[date_today]
+)
 # newport_today.describe()
 newport_today.write(os.path.join(fix_dat, f"newport-{date_today}_gtfs.zip"))
