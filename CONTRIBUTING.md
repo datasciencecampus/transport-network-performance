@@ -16,11 +16,11 @@ Please read [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) before contributing.
 
 ### Set-up
 
-Expects:
-Env manager: conda
-Os: Mac
-Package manager: pip
-pre-commit
+| Set-up expectations | |
+| --- | --- |
+| Env manager: | conda |
+| Os: | macOS |
+| Package manager: | pip |
 
 1. Setup a new conda env: `conda create -n r5py python=3.9.13`
 2. Activate the environment: `conda activate r5py`
