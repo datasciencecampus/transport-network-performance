@@ -41,6 +41,8 @@ This will add sdkman env variables to: `~/.bash_profile` and possibly `~/.zshrc`
 12. Install the required version using the `identifier` column, eg: `sdk install java 11.0.19-amzn`
 13. Check this is the currenty used java version: `sdk current java`
 
+> Note: for macOS on ARM architectures (M1/M2 machines), sdkman does not currently provide a suitable openjdk11 version. Instead you can follow this [blog post, which introduces Java version mangaement using `jEnv`](https://blog.bigoodyssey.com/how-to-manage-multiple-java-version-in-macos-e5421345f6d0), and install AdoptOpenJDK-11. You can then continue with the remainder of the steps below.
+
 **Data**
 
 14. Get some pdf data from geofabrik download server, eg: [Geofabrik Wales latest](https://download.geofabrik.de/europe/great-britain/wales.html).
