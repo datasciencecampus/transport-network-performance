@@ -43,14 +43,11 @@ This will add sdkman env variables to: `~/.bash_profile` and possibly `~/.zshrc`
 
 > Note: for macOS on ARM architectures (M1/M2 machines), sdkman does not currently provide a suitable openjdk11 version. Instead you can follow this [blog post, which introduces Java version mangaement using `jEnv`](https://blog.bigoodyssey.com/how-to-manage-multiple-java-version-in-macos-e5421345f6d0), and install AdoptOpenJDK-11. You can then continue with the remainder of the steps below.
 
-**Data**
+**Set-up check**
 
-14. Get some pdf data from geofabrik download server, eg: [Geofabrik Wales latest](https://download.geofabrik.de/europe/great-britain/wales.html).
-15. Get some GTFS data, eg from [DfT BODS](https://data.bus-data.dft.gov.uk/), **account required**.
-16. Store in `data/external`. These files should be gitignored but please check.
-17. Now you should be able to run the check setup script, from terminal: `python3 src/utils/check-setup.py`
-18. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for the message: `r5py has created the expected database files.`
-19. If you've made it this far, you've earned yourself a coffee.
+14. Now you should be able to run the check setup script, from terminal: `python3 src/utils/check-setup.py`
+15. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for the message: `r5py has created the expected database files.`
+16. If you've made it this far, you've earned yourself a coffee.
 
 
 ### Pre-commit
