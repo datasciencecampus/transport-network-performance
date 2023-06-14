@@ -1,8 +1,3 @@
-import os
-import gtfs_kit as gk
-import geopandas as gpd
-from shapely.geometry import box
-
 """Script used to generate a subset of all uk bus gtfs taken from dft BODS.
 
 The subset is based in newport and has a few purposes: for use in integration
@@ -14,6 +9,11 @@ fixtures: Newport PBF file created with osmium extract from geofabrik download:
 osmium extract --strategy complete_ways --bbox
 -3.077081,51.52222,-2.925075,51.593596
 """
+import os
+import gtfs_kit as gk
+import geopandas as gpd
+from shapely.geometry import box
+
 fix_dat = os.path.join("tests", "data")
 gtfs_zip = [
     os.path.join(fix_dat, x) for x in os.listdir(fix_dat) if x.endswith(".zip")

@@ -1,11 +1,7 @@
-# Allow 8 GB of memory
-import sys
+"""Check development environment will cope with r5py requirements."""
 import os
 from r5py import TransportNetwork
 
-sys.argv.append(["--max-memory", "8G"])
-
-"""Check development environment will cope with r5py requirements."""
 # search the ext dir for pbf & gtfs
 search_pth = os.path.join("tests", "data")
 foundf = os.listdir(search_pth)
