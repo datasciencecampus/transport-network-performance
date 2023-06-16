@@ -16,6 +16,7 @@ class TestSetup:
         1. check `heimdall_transport` is installed.
     """
 
+    @pytest.mark.setup
     def test_heimdall_transport_install(self) -> None:
         """Check `heimdall_transport is installed.
 
