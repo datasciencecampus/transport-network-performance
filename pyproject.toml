@@ -1,3 +1,31 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.0.0", "wheel"]
+
+[project]
+name = "heimdall_transport"
+authors = [
+    {name = "Data Science Campus", email = "datasciencecampus@ons.gov.uk"}
+]
+description = "Measuring the performance of transport networks around urban centres"
+readme = "README.md"
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+requires-python = ">=3.9, <3.10"
+version = "0.0.1"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.urls]
+Repository = "https://github.com/datasciencecampus/transport-network-performance"
+"Bug tracker" = "https://github.com/datasciencecampus/transport-network-performance/issues"
+
 # `coverage` configurations
 [tool.coverage.run]
 source = [
