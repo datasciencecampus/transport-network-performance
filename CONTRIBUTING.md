@@ -47,7 +47,8 @@ This will add sdkman env variables to: `~/.bash_profile` and possibly `~/.zshrc`
 
 14. Now you should be able to run the check setup script, from terminal: `python3 src/utils/check-setup.py`
 15. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for the message: `r5py has created the expected database files.`
-16. If you've made it this far, you've earned yourself a coffee.
+16. Run set-up pytests: `pytest --runsetup`.
+17. If you've made it this far, you've earned yourself a coffee.
 
 
 ### Pre-commit
