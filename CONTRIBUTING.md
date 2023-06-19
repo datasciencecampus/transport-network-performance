@@ -30,26 +30,25 @@ Please read [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) before contributing.
 6. Install pre-commit hooks: `pre-commit install`
 7. Update pip: `pip install --upgrade pip`
 8. Install r5py & other reqs: `pip install -r requirements.txt`
-9. Install heimdall-transport in editable mode: `pip install -e .`
 
 **Java Development Kit**
 Openjdk 11 is recommended by r5py docs. [sdkman](https://sdkman.io/) is used here.
 
-10. Get sdkman: `curl -s "https://get.sdkman.io" | bash`
-11. Follow instructions in terminal, you’ll be asked to: `source “<SOME_PATH>.sdkman/bin/sdkman-init.sh"`
+9. Get sdkman: `curl -s "https://get.sdkman.io" | bash`
+10. Follow instructions in terminal, you’ll be asked to: `source “<SOME_PATH>.sdkman/bin/sdkman-init.sh"`
 This will add sdkman env variables to: `~/.bash_profile` and possibly `~/.zshrc` too.
-12. To see versions available on your os: `sdk list java`
-13. Install the required version using the `identifier` column, eg: `sdk install java 11.0.19-amzn`
-14. Check this is the currenty used java version: `sdk current java`
+11. To see versions available on your os: `sdk list java`
+12. Install the required version using the `identifier` column, eg: `sdk install java 11.0.19-amzn`
+13. Check this is the currenty used java version: `sdk current java`
 
 > Note: for macOS on ARM architectures (M1/M2 machines), sdkman does not currently provide a suitable openjdk11 version. Instead you can follow this [blog post, which introduces Java version mangaement using `jEnv`](https://blog.bigoodyssey.com/how-to-manage-multiple-java-version-in-macos-e5421345f6d0), and install AdoptOpenJDK-11. You can then continue with the remainder of the steps below.
 
 **Set-up check**
 
-15. Now you should be able to run the check setup script, from terminal: `python3 src/utils/check-setup.py`
-16. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for the message: `r5py has created the expected database files.`
-17. Run set-up pytests: `pytest --runsetup`.
-18. If you've made it this far, you've earned yourself a coffee.
+14. Now you should be able to run the check setup script, from terminal: `python3 src/utils/check-setup.py`
+15. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for the message: `r5py has created the expected database files.`
+16. Run set-up pytests: `pytest --runsetup`.
+17. If you've made it this far, you've earned yourself a coffee.
 
 
 ### Pre-commit
