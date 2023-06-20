@@ -34,7 +34,8 @@ jobs:
         distribution: 'adopt'
         java-version: '11'
     - name: Check Java Install
-      run: java HelloWorldApp.java
+      run: |
+        java --version
     - name: pre-commit
       run: |
         pre-commit install
