@@ -51,7 +51,7 @@ repos:
 
 # ----- isort - imports sorting
 - repo: https://github.com/pycqa/isort
-  rev: 5.8.0
+  rev: 5.12.0
   hooks:
     - id: isort
       name: isort - Sort Python imports (auto-fixes)
@@ -65,7 +65,7 @@ repos:
     - id: nbqa-isort
       name: nbqa-isort - Sort Python imports (notebooks; auto-fixes)
       args: [ --nbqa-mutate ]
-      additional_dependencies: [ isort==5.8.0 ]
+      additional_dependencies: [ isort==5.12.0 ]
     - id: nbqa-black
       name: nbqa-black - consistent Python code formatting (notebooks; auto-fixes)
       args: [ --nbqa-mutate ]
