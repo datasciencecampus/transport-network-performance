@@ -43,7 +43,7 @@ repos:
       language_version: python # Should be a command that runs python3.6+
 
 # ----- flake8 - python linting
-- repo: https://gitlab.com/pycqa/flake8
+- repo: https://github.com/pycqa/flake8
   rev: 3.9.2
   hooks:
     - id: flake8
