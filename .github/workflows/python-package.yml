@@ -32,10 +32,17 @@ jobs:
       run: |
         pre-commit install
         pre-commit run --all-files
-    - name: Test with pytest
+    # - name: Test with pytest
+    #   run: |
+    #     pytest --runsetup
+    - name: Generate Report
       run: |
-        pytest --runsetup
+        coverage run -m pytest
+        coverage xml
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        verbose: true
+        token: ${{secrets.CODECOV_TOKEN}}
