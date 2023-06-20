@@ -1,5 +1,6 @@
 <!--- Badges start --->
-<img src="https://img.shields.io/badge/repo%20status-in%20development%20(caution)-red" alt="Repository status is still in development (caution required)"/>
+<img src="https://img.shields.io/badge/repo%20status-in%20development%20(caution)-red" alt="Repository status is still in development (caution required)"/> <img src="https://github.com/datasciencecampus/transport-network-performance/actions/workflows/python-package.yml/badge.svg" alt="Build status badge"/>
+
 <!--- Badges end --->
 
 <img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
