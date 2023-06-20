@@ -29,7 +29,9 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: pre-commit
-      uses: pre-commit/action@v3.0.0
+      run: |
+        pre-commit install
+        pre-commit run --all-files
     - name: Test with pytest
       run: |
         pytest --runsetup
