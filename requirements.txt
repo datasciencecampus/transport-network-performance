@@ -4,4 +4,5 @@ gtfs_kit==5.2.7
 pytest
 coverage
 rasterio
+pyprojroot
 -e .
