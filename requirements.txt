@@ -3,4 +3,5 @@ r5py>=0.0.4
 gtfs_kit==5.2.7
 pytest
 coverage
+ipykernel==6.23.1
 -e .
