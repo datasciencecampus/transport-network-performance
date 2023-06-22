@@ -5,4 +5,9 @@ pytest
 coverage
 rasterio
 pyprojroot
+matplotlib
+plotly
+nbformat>=4.2.0
+scikit-image
+cartopy
 -e .
