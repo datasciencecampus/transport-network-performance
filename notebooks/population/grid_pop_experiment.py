@@ -294,15 +294,20 @@ with rio.open(
     dst.write(resampled_rst, 1)
 
 # %%
+# get bounds of resampled data
+with rio.open(RESAMPLED_DIR) as res:
+    resampled_bounds = res.bounds
+
+# %%
 # change crs
 trans_affine, trans_width, trans_height = calculate_default_transform(
     src_crs.to_string(),
     width=windowed_loc.width,
     height=windowed_loc.height,
-    left=window[0],
-    bottom=window[1],
-    right=window[2],
-    top=window[3],
+    left=resampled_bounds.left,
+    bottom=resampled_bounds.bottom,
+    right=resampled_bounds.right,
+    top=resampled_bounds.top,
     dst_crs="EPSG:4326",
 )
 
