@@ -8,7 +8,6 @@ TODO: make this run 'on request' only.
 
 import pytest
 import os
-from r5py import TransportNetwork
 
 
 class TestSetup:
@@ -35,6 +34,10 @@ class TestSetup:
     @pytest.mark.setup
     def test_r5py_setup(self) -> None:
         """Check development environment will cope with r5py requirements."""
+        # this import is only here to prevent java messages being printed to
+        # the CLI when set-up pytests are not run
+        from r5py import TransportNetwork
+
         # search the ext dir for pbf & gtfs
         search_pth = os.path.join("tests", "data")
         foundf = os.listdir(search_pth)
