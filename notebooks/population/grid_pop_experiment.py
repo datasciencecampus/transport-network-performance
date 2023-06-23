@@ -28,18 +28,15 @@ import os
 import sys
 import logging
 import numpy as np
-import plotly.express as px
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
 from datetime import datetime
 from shapely.geometry import box
-from rasterio.windows import from_bounds
 from rasterio.mask import raster_geometry_mask
 from pyproj import Transformer
 from pyprojroot import here
-from skimage.measure import block_reduce
 from matplotlib import colormaps
 from rasterio.warp import reproject, Resampling
 
@@ -152,10 +149,6 @@ with rio.open(SRC_DIR) as src:
     )
 
 # %%
-# reporoject bounding box to raster CRS
-window = reproj_bbox(BBOX, "EPSG:4326", src.crs)
-
-# %%
 # read in whole raster
 with rio.open(SRC_DIR) as src:
 
@@ -175,20 +168,8 @@ cmap.set_under(alpha=0)
 plt.imshow(whole_raster, cmap=cmap, vmin=0)
 
 # %%
-# read in crop of raster
-with rio.open(SRC_DIR) as src:
-
-    # get window meta data
-    window_meta = from_bounds(
-        left=window[0],
-        bottom=window[1],
-        right=window[2],
-        top=window[3],
-        transform=src.transform,
-    )
-
-    # read in crop
-    window_raster = src.read(1, window=window_meta)
+# reporoject bounding box to raster CRS
+window = reproj_bbox(BBOX, "EPSG:4326", src.crs)
 
 # %%
 with rio.open(SRC_DIR) as src:
@@ -267,111 +248,5 @@ ax.text(
 # show plot
 plt.tight_layout()
 plt.show()
-
-# %%
-# read in windowed raster, fill in no data with 0 for plottint
-# use plotly for intereactivity
-fiiled_window_raster = np.copy(window_raster)
-fiiled_window_raster[fiiled_window_raster <= 0] = 0
-px.imshow(fiiled_window_raster)
-
-# %%
-# calculate affine transform for windowed region by adjusting the offet of the
-# whole datasets affine transform
-
-# asset the row and column adjustments are integers
-assert (window_meta.row_off).is_integer()
-assert (window_meta.col_off).is_integer()
-
-# get row and column adjustments relative to whole raster
-row_adjust = int(window_meta.row_off)
-col_adjust = int(window_meta.col_off)
-
-# create affine transform for window_raster by adjusting the offset
-window_transform = rio.Affine(
-    whole_transform.a,
-    whole_transform.b,
-    whole_transform.c + (whole_transform.a * col_adjust),
-    whole_transform.d,
-    whole_transform.e,
-    whole_transform.f + (whole_transform.e * row_adjust),
-)
-
-# %%
-# show xy coords of bbox top left - these should be the same
-whole_transformer = rio.transform.AffineTransformer(whole_transform)
-window_transformer = rio.transform.AffineTransformer(window_transform)
-logger.info(
-    f"{whole_transformer.xy(row_adjust, col_adjust)}, "
-    f"{window_transformer.xy(0, 0)}"
-)
-
-# %%
-# check popoulation and positions are the same between widow and whole
-row_test = 100
-col_test = 150
-
-# xy centroid - should be the same
-whole_xy = whole_transformer.xy(row_adjust + row_test, col_adjust + col_test)
-window_xy = window_transformer.xy(row_test, col_test)
-logger.info(f"{whole_xy}, {window_xy}")
-
-# population value - should be the same
-whole_pop = whole_raster[row_adjust + row_test][col_adjust + col_test]
-window_pop = window_raster[row_test][col_test]
-logger.info(f"{whole_pop}, {window_pop}")
-
-# %%
-# resample data into 200x200m grid by summing pop values within larger grid
-# TODO: use mask here instead of setting to 0
-zero_window_raster = np.copy(window_raster)
-zero_window_raster[zero_window_raster <= 0] = 0
-resampled_raster = block_reduce(window_raster, block_size=(2, 2), func=np.sum)
-resampled_raster.shape
-
-# %%
-# plot resampled raster layer
-px.imshow(resampled_raster)
-
-# %%
-# create affine transform for window_raster by scaling a and e coeffs
-resampled_transform = rio.Affine(
-    whole_transform.a * 2,
-    whole_transform.b,
-    whole_transform.c + (whole_transform.a * col_adjust),
-    whole_transform.d,
-    whole_transform.e * 2,
-    whole_transform.f + (whole_transform.e * row_adjust),
-)
-
-# %%
-# display shapes of rastered layers
-logger.info(f"{window_raster.shape}, {resampled_raster.shape}")
-
-# %%
-# check resampling of population is correct
-start_row = 40  # 45
-start_col = 10  # 83
-
-# sum population of neighbouring 100x100m grids
-total_window_pop = (
-    window_raster[(start_row * 2)][(start_col * 2)]
-    + window_raster[(start_row * 2) + 1][(start_col * 2)]
-    + window_raster[(start_row * 2)][(start_col * 2) + 1]
-    + window_raster[(start_row * 2) + 1][(start_col * 2) + 1]
-)
-
-# corresponding resampled population
-resampled_pop = resampled_raster[start_row][start_col]
-logger.info(f" {total_window_pop}, {resampled_pop}")
-
-# %%
-# check affine transform - top left of cell since centroids are different
-start_row = 60
-start_col = 21
-
-window_loc = window_transform * (start_row * 2, start_col * 2)
-resampled_loc = resampled_transform * (start_row, start_col)
-logger.info(f"{window_loc}, {resampled_loc}")
 
 # %%
