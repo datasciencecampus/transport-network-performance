@@ -309,6 +309,8 @@ trans_affine, trans_width, trans_height = calculate_default_transform(
     right=resampled_bounds.right,
     top=resampled_bounds.top,
     dst_crs="EPSG:4326",
+    dst_width=resampled_rst.shape[1],
+    dst_height=resampled_rst.shape[0],
 )
 
 # %%
