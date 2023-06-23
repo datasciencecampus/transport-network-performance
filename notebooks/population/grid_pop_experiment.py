@@ -168,32 +168,38 @@ cmap.set_under(alpha=0)
 plt.imshow(whole_raster, cmap=cmap, vmin=0)
 
 # %%
-# reporoject bounding box to raster CRS
-window = reproj_bbox(BBOX, "EPSG:4326", src.crs)
-
-# %%
 with rio.open(SRC_DIR) as src:
-    CRS = src.crs
-    masked, affine, win = raster_geometry_mask(src, [box(*window)], crop=True)
+    # get src metadata
+    src_crs = src.crs
+    src_nodata = src.nodata
 
-    win_raster = src.read(1, window=win)
+    # reporoject bounding box to raster CRS
+    window = reproj_bbox(BBOX, "EPSG:4326", src_crs.to_string())
+
+    # get mask, affine transform and window of cropped area
+    src_mask, src_affine, src_win = raster_geometry_mask(
+        src, [box(*window)], crop=True
+    )
+
+    # read in raster cropped to window
+    windowed_rst = src.read(1, window=src_win)
 
 # %%
 # create a destination ndarray to hold reprojected data
-destination = np.zeros(tuple(int(size / 2) for size in win_raster.shape))
+destination = np.zeros(tuple(int(size / 2) for size in windowed_rst.shape))
 
 # resample scaling by 2
 # TODO: remove hard coding of scale and nodata
-resampled, resampled_affine = reproject(
-    win_raster,
+resampled_rst, resampled_affine = reproject(
+    windowed_rst,
     destination,
-    src_transform=affine,
-    src_crs=CRS,
-    dst_transform=affine * affine.scale(2),
-    dst_crs=CRS,
+    src_transform=src_affine,
+    src_crs=src_crs,
+    dst_transform=src_affine * src_affine.scale(2),
+    dst_crs=src_crs,
     resampling=Resampling.sum,
-    src_nodata=-200,
-    dst_nodata=-200,
+    src_nodata=src_nodata,
+    dst_nodata=src_nodata,
 )
 
 # %%
@@ -207,7 +213,7 @@ data_crs = ccrs.Mollweide()
 ax.add_image(map_tile, 11)
 
 # built a mesh grid of data - x, y are cell centroids in raster crs
-height, width = resampled.shape
+height, width = resampled_rst.shape
 columns, rows = np.meshgrid(np.arange(width), np.arange(height))
 x, y = rio.transform.xy(resampled_affine, rows, columns)
 
@@ -217,7 +223,7 @@ cmap.set_under(alpha=0)
 ctf = ax.pcolormesh(
     x,
     y,
-    resampled,
+    resampled_rst,
     cmap=cmap,
     vmin=1e-10,
     transform=data_crs,
