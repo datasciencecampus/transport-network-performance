@@ -35,6 +35,7 @@ import cartopy.io.img_tiles as cimgt
 from datetime import datetime
 from shapely.geometry import box
 from rasterio.mask import raster_geometry_mask
+from rasterio.warp import calculate_default_transform
 from pyproj import Transformer
 from pyprojroot import here
 from matplotlib import colormaps
@@ -178,12 +179,12 @@ with rio.open(SRC_DIR) as src:
     window = reproj_bbox(BBOX, "EPSG:4326", src_crs.to_string())
 
     # get mask, affine transform and window of cropped area
-    windowed_mask, windowed_affine, window_loc = raster_geometry_mask(
+    windowed_mask, windowed_affine, windowed_loc = raster_geometry_mask(
         src, [box(*window)], crop=True
     )
 
     # read in raster cropped to window
-    windowed_rst = src.read(1, window=window_loc)
+    windowed_rst = src.read(1, window=windowed_loc)
 
 # %%
 # create a destination ndarray to hold reprojected data
@@ -224,10 +225,12 @@ x, y = rio.transform.xy(resampled_affine, rows, columns)
 # build a colormap and add pcolormesh plot
 cmap = colormaps.get_cmap("hot")
 cmap.set_under(alpha=0)
+plt_resampled_rst = np.copy(resampled_rst)
+plt_resampled_rst[plt_resampled_rst <= 0] = 0
 ctf = ax.pcolormesh(
     x,
     y,
-    resampled_rst,
+    plt_resampled_rst,
     cmap=cmap,
     vmin=1e-10,
     transform=data_crs,
@@ -258,5 +261,35 @@ ax.text(
 # show plot
 plt.tight_layout()
 plt.show()
+
+# %%
+# change crs
+trans_affine, trans_width, trans_height = calculate_default_transform(
+    src_crs.to_string(),
+    width=windowed_loc.width,
+    height=windowed_loc.height,
+    left=window[0],
+    bottom=window[1],
+    right=window[2],
+    top=window[3],
+    dst_crs="EPSG:4326",
+)
+
+# %%
+# create a destination ndarray to hold reprojected data
+trans_dst = np.zeros((trans_height, trans_width))
+
+# resample scaling by a factor
+trans_rst, _ = reproject(
+    resampled_rst,
+    trans_dst,
+    src_transform=resampled_affine,
+    src_crs=src_crs,
+    dst_transform=trans_affine,
+    dst_crs="EPSG:4326",
+    resampling=Resampling.nearest,
+    src_nodata=src_nodata,
+    dst_nodata=src_nodata,
+)
 
 # %%
