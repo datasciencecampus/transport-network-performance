@@ -133,8 +133,8 @@ logger = setup_logger(LOGGER_NAME, level=LOGGER_LEVEL)
 # bounding box around area of interest in EPGS:4326
 BBOX = (-3.205023, 51.503789, -2.725744, 51.680820)
 
-# no data values (to be set to zero)
-NO_DATA_VALS = [-200]
+# resammpling scaling factor
+RESAMPLING_SCALE_FACTOR = 2
 
 # attributions - used during plotting
 POPULATION_ATTR = "GHSL 2020 (R2023)"
@@ -168,6 +168,7 @@ cmap.set_under(alpha=0)
 plt.imshow(whole_raster, cmap=cmap, vmin=0)
 
 # %%
+# read in a cropped window of raster
 with rio.open(SRC_DIR) as src:
     # get src metadata
     src_crs = src.crs
@@ -177,25 +178,28 @@ with rio.open(SRC_DIR) as src:
     window = reproj_bbox(BBOX, "EPSG:4326", src_crs.to_string())
 
     # get mask, affine transform and window of cropped area
-    src_mask, src_affine, src_win = raster_geometry_mask(
+    windowed_mask, windowed_affine, window_loc = raster_geometry_mask(
         src, [box(*window)], crop=True
     )
 
     # read in raster cropped to window
-    windowed_rst = src.read(1, window=src_win)
+    windowed_rst = src.read(1, window=window_loc)
 
 # %%
 # create a destination ndarray to hold reprojected data
-destination = np.zeros(tuple(int(size / 2) for size in windowed_rst.shape))
+destination = np.zeros(
+    tuple(int(size / RESAMPLING_SCALE_FACTOR) for size in windowed_rst.shape)
+)
 
-# resample scaling by 2
-# TODO: remove hard coding of scale and nodata
+# resample scaling by a factor
 resampled_rst, resampled_affine = reproject(
     windowed_rst,
     destination,
-    src_transform=src_affine,
+    src_transform=windowed_affine,
     src_crs=src_crs,
-    dst_transform=src_affine * src_affine.scale(2),
+    dst_transform=(
+        windowed_affine * windowed_affine.scale(RESAMPLING_SCALE_FACTOR)
+    ),
     dst_crs=src_crs,
     resampling=Resampling.sum,
     src_nodata=src_nodata,
