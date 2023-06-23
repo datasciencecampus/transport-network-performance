@@ -31,6 +31,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
+import folium
 
 from datetime import datetime
 from shapely.geometry import box
@@ -40,6 +41,7 @@ from pyproj import Transformer
 from pyprojroot import here
 from matplotlib import colormaps
 from rasterio.warp import reproject, Resampling
+from folium.raster_layers import ImageOverlay
 
 
 # %%
@@ -118,7 +120,7 @@ def reproj_bbox(bbox: tuple, crs_from: str, crs_to: str) -> tuple:
     # return a single tuple in left, bottom, right, top order
     window = window_bl + window_tr
 
-    return tuple(round(x / 100) * 100 for x in window)
+    return window
 
 
 # %%
@@ -263,6 +265,35 @@ plt.tight_layout()
 plt.show()
 
 # %%
+# get the interim population directory
+INTERIM_DIR = os.path.dirname(SRC_DIR).replace("external", "interim")
+
+# make one if it does not exist
+if not os.path.exists(INTERIM_DIR):
+    os.mkdir(INTERIM_DIR)
+
+# create full filepath for cropped and resampeld tif file
+RESAMPLED_DIR = os.path.join(
+    INTERIM_DIR,
+    os.path.basename(SRC_DIR).replace(".tif", "_cropped_resampled.tif"),
+)
+
+# write to file
+with rio.open(
+    RESAMPLED_DIR,
+    "w",
+    driver="GTiff",
+    height=resampled_rst.shape[0],
+    width=resampled_rst.shape[1],
+    count=1,
+    dtype=resampled_rst.dtype,
+    crs=src_crs,
+    transform=resampled_affine,
+    nodata=src_nodata,
+) as dst:
+    dst.write(resampled_rst, 1)
+
+# %%
 # change crs
 trans_affine, trans_width, trans_height = calculate_default_transform(
     src_crs.to_string(),
@@ -292,4 +323,70 @@ trans_rst, _ = reproject(
     dst_nodata=src_nodata,
 )
 
+# %%
+# write to file
+REPROJ_DIR = os.path.join(
+    INTERIM_DIR,
+    os.path.basename(SRC_DIR).replace(".tif", "_cropped_resampled_reproj.tif"),
+)
+with rio.open(
+    REPROJ_DIR,
+    "w",
+    driver="GTiff",
+    height=trans_rst.shape[0],
+    width=trans_rst.shape[1],
+    count=1,
+    dtype=trans_rst.dtype,
+    crs="EPSG:4326",
+    transform=trans_affine,
+    nodata=src_nodata,
+) as dst:
+    dst.write(trans_rst, 1)
+
+# %%
+# read reprojected data back in
+with rio.open(REPROJ_DIR) as reproj:
+    reproj_bounds = reproj.bounds
+    reproj_rst = reproj.read(1)
+
+    # filter out those less than 10
+    reproj_rst[reproj_rst < 10] = reproj.nodata
+
+# %%
+# build a folium basemap
+m = folium.Map(
+    tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attr=(
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMa'
+        'p</a> contributors &copy; <a href="https://carto.com/attributions">CA'
+        "RTO</a>"
+    ),
+    control_scale=True,
+    zoom_control=True,
+)
+
+# create a colormap, setting everthing less than a value to be transparent
+cmap = colormaps.get_cmap("viridis")
+cmap.set_under(alpha=0)
+
+# add the image overlay
+m.add_child(
+    ImageOverlay(
+        # scale relative to max for cmap
+        reproj_rst / reproj_rst.max(),
+        bounds=[
+            [reproj_bounds.bottom, reproj_bounds.left],
+            [reproj_bounds.top, reproj_bounds.right],
+        ],
+        colormap=cmap,
+        opacity=0.7,
+        vmin=0,
+    )
+)
+
+# fit the map to the bounds of the image
+m.fit_bounds(m.get_bounds())
+
+# visualise the map
+m
 # %%
