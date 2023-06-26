@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import folium
+import rioxarray
 
 from datetime import datetime
 from shapely.geometry import box
@@ -42,6 +43,7 @@ from pyprojroot import here
 from matplotlib import colormaps
 from rasterio.warp import reproject, Resampling
 from folium.raster_layers import ImageOverlay
+from geocube.vector import vectorize
 
 
 # %%
@@ -292,6 +294,92 @@ with rio.open(
     nodata=src_nodata,
 ) as dst:
     dst.write(resampled_rst, 1)
+
+# %%
+# build a geometry representing the area of interest
+geometries = [
+    {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [window[0], window[1]],
+                [window[2], window[1]],
+                [window[2], window[3]],
+                [window[0], window[3]],
+            ]
+        ],
+    }
+]
+
+# open data and clip to the above geometry, using from disk (more performant)
+xds = rioxarray.open_rasterio(SRC_DIR, masked=True).rio.clip(
+    geometries, from_disk=True, all_touched=True
+)
+
+# set the variable name of the data to be population
+xds.name = "population"
+
+# plot data and show resolution
+xds.plot()
+print(xds.rio.resolution())
+
+# %%
+# show a histogram
+xds.plot.hist(bins=10)
+
+# %%
+# calculate new width and height
+# new_width = int(xds.rio.width / RESAMPLING_SCALE_FACTOR)
+# new_height = int(xds.rio.height / RESAMPLING_SCALE_FACTOR)
+# new_transform = (
+#     xds.rio.transform() * xds.rio.transform().scale(RESAMPLING_SCALE_FACTOR)
+# )
+
+# resample based on scaling factor and using sum resampling
+xds_resampled = xds.rio.reproject(
+    xds.rio.crs,
+    resolution=tuple(
+        res * RESAMPLING_SCALE_FACTOR for res in xds.rio.resolution()
+    ),
+    # shape=(new_height, new_width),
+    resampling=Resampling.sum,
+    # transform=new_transform,
+)
+
+print(xds_resampled.rio.nodata)
+xds_resampled.rio.transform()
+
+# %%
+# use geocube to conver raster to geopandas df
+gdf = vectorize(xds_resampled.squeeze().astype(np.float32))
+
+# %%
+# visualise the results
+gdf[gdf["population"]].explore(
+    "population",
+    tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attr=(
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMa'
+        'p</a> contributors &copy; <a href="https://carto.com/attributions">CA'
+        "RTO</a>"
+    ),
+    control_scale=True,
+    zoom_control=True,
+)
+
+# %%
+# extract numpy array and reshape to 2D
+xds_numpy = xds_resampled.to_numpy().reshape(
+    (xds_resampled.shape[0] * xds_resampled.shape[1]), xds_resampled.shape[2]
+)
+print(xds_numpy.shape)
+
+# reset nan values back to original value
+xds_numpy = np.nan_to_num(xds_numpy, nan=src_nodata)
+
+# %%
+# check if equal
+np.array_equal(xds_numpy[:, :-1], resampled_rst)
 
 # %%
 # get bounds of resampled data
