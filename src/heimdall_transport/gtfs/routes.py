@@ -58,7 +58,6 @@ def scrape_route_type_lookup(
     # strip out rubbish
     cds = [cd for cd in cds if len(cd) > 0]
     txts = [t.strip(" - ") for t in txts if t.startswith(" - ")]
-    route_lookup = pd.DataFrame(zip(cds, txts), columns=["route_type", "desc"])
     # if interested in the extended schema, get that too. Perhaps not
     # relevant to all territories
     if extended_schema:
@@ -69,8 +68,6 @@ def scrape_route_type_lookup(
             if i.get("class")[0] == "nice-table":
                 target = i
 
-        cds = list()
-        descs = list()
         for row in target.tbody.findAll("tr"):
             # Get the table headers
             found = row.findAll("th")
@@ -81,13 +78,8 @@ def scrape_route_type_lookup(
                 dat = [i.text for i in row.findAll("td")]
                 # subset to the required column
                 cds.append(dat[cols.index("Code")])
-                descs.append(dat[cols.index("Description")])
+                txts.append(dat[cols.index("Description")])
 
-        added_spec = pd.DataFrame(
-            zip(cds, descs), columns=["route_type", "desc"]
-        )
-        route_lookup = pd.concat([route_lookup, added_spec]).reset_index(
-            drop=True
-        )
+    route_lookup = pd.DataFrame(zip(cds, txts), columns=["route_type", "desc"])
 
     return route_lookup
