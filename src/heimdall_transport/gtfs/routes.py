@@ -69,17 +69,19 @@ def scrape_route_type_lookup(
             if i.get("class")[0] == "nice-table":
                 target = i
 
-        cols = list()
         cds = list()
         descs = list()
-        for ind, row in enumerate(target.tbody.findAll("tr")):
+        for row in target.tbody.findAll("tr"):
+            # Get the table headers
             found = row.findAll("th")
             if found:
-                cols.append([f.text for f in found])
+                cols = [f.text for f in found]
             else:
+                # otherwise get the table data
                 dat = [i.text for i in row.findAll("td")]
-                cds.append(dat[0])
-                descs.append(dat[1])
+                # subset to the required column
+                cds.append(dat[cols.index("Code")])
+                descs.append(dat[cols.index("Description")])
 
         added_spec = pd.DataFrame(
             zip(cds, descs), columns=["route_type", "desc"]
