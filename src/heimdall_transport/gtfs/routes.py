@@ -4,6 +4,66 @@ from bs4 import BeautifulSoup
 import requests
 
 
+def _url_defence(url):
+    """Defence checking. Not exported."""
+    if not isinstance(url, str):
+        raise TypeError(f"url {url} expected string, instead got {type(url)}")
+    elif not url.startswith((r"http://", r"https://")):
+        raise ValueError(f"url string expected protocol, instead found {url}")
+
+    return None
+
+
+def _bool_defence(some_bool):
+    """Defence checking. Not exported."""
+    if not isinstance(some_bool, bool):
+        raise TypeError(
+            f"`extended_schema` expected boolean. Got {type(some_bool)}"
+        )
+
+    return None
+
+
+def _construct_extended_schema_table(some_soup, cd_list, desc_list):
+    """Create the extended table from a soup object. Not exported.
+
+    Parameters
+    ----------
+    some_soup : bs4.BeautifulSoup
+        A bs4 soup representation of `ext_spec_url`.
+    cd_list : list
+        A list of schema codes scraped so far. Will append addiitonal codes to
+        this list.
+    desc_list : list
+        A list of schema descriptions found so far. Will append additional
+        descriptions to this list.
+
+    Returns
+    -------
+        tuple[0]: Proposed extension to route_type codes
+        tuple[1]: Proposed extension to route_type descriptions
+
+    """
+    for i in some_soup.findAll("table"):
+        # target table has 'nice_table' class
+        if i.get("class")[0] == "nice-table":
+            target = i
+
+    for row in target.tbody.findAll("tr"):
+        # Get the table headers
+        found = row.findAll("th")
+        if found:
+            cols = [f.text for f in found]
+        else:
+            # otherwise get the table data
+            dat = [i.text for i in row.findAll("td")]
+            # subset to the required column
+            cd_list.append(dat[cols.index("Code")])
+            desc_list.append(dat[cols.index("Description")])
+
+    return (cd_list, desc_list)
+
+
 def scrape_route_type_lookup(
     gtfs_url="https://gtfs.org/schedule/reference/",
     ext_spec_url=(
@@ -24,7 +84,7 @@ def scrape_route_type_lookup(
     gtfs_url : str
         The url containing the GTFS accepted route_type codes. Defaults to
         "https://gtfs.org/schedule/reference/".
-    ext_spec_url : tuple
+    ext_spec_url : str
         The url containing the table of the proposed extension to the GTFS
         schema for route_type codes. Defaults to
         ( "https://developers.google.com/transit/gtfs/reference/"
@@ -38,6 +98,11 @@ def scrape_route_type_lookup(
         pd.core.frame.DataFrame: A lookup of route_type codes to descriptions.
 
     """
+    # a little defence
+    for url in [gtfs_url, ext_spec_url]:
+        _url_defence(url)
+
+    _bool_defence(extended_schema)
     # Get the basic scheme lookup
     resp = requests.get(gtfs_url).text
     soup = BeautifulSoup(resp, "html.parser")
@@ -63,22 +128,7 @@ def scrape_route_type_lookup(
     if extended_schema:
         resp = requests.get(ext_spec_url).text
         soup = BeautifulSoup(resp, "html.parser")
-        for i in soup.findAll("table"):
-            # target table has 'nice_table' class
-            if i.get("class")[0] == "nice-table":
-                target = i
-
-        for row in target.tbody.findAll("tr"):
-            # Get the table headers
-            found = row.findAll("th")
-            if found:
-                cols = [f.text for f in found]
-            else:
-                # otherwise get the table data
-                dat = [i.text for i in row.findAll("td")]
-                # subset to the required column
-                cds.append(dat[cols.index("Code")])
-                txts.append(dat[cols.index("Description")])
+        cds, txts = _construct_extended_schema_table(soup, cds, txts)
 
     route_lookup = pd.DataFrame(zip(cds, txts), columns=["route_type", "desc"])
 
