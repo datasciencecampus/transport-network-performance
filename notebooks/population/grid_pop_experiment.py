@@ -385,21 +385,19 @@ np.array_equal(xds_numpy[:, :-1], resampled_rst)
 
 # %%
 # get OpenStreetMap tile layer
-map_tile = cimgt.OSM()
+map_tile = cimgt.OSM(desired_tile_form="L")
 
 # build plot axis and add map tile
 ax = plt.axes(projection=map_tile.crs)
 ax.figure.set_size_inches(8, 10)
 data_crs = ccrs.Mollweide()
-ax.add_image(map_tile, 11)
+ax.add_image(map_tile, 11, cmap="gray")
 
 # build a colormap and add pcolormesh plot
-cmap = colormaps.get_cmap("hot")
+cmap = colormaps.get_cmap("viridis")
 cmap.set_under(alpha=0)
 
 # build a colormap and add pcolormesh plot
-cmap = colormaps.get_cmap("hot")
-cmap.set_under(alpha=0)
 plt_resampled_rst = np.copy(xds_resampled.squeeze())
 plt_resampled_rst[plt_resampled_rst < MIN_PLOT_THRESH] = 0
 ctf = ax.pcolormesh(
