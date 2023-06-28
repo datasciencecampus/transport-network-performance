@@ -31,18 +31,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
-import folium
 import rioxarray
 
 from datetime import datetime
-from shapely.geometry import box
-from rasterio.mask import raster_geometry_mask
-from rasterio.warp import calculate_default_transform
 from pyproj import Transformer
 from pyprojroot import here
 from matplotlib import colormaps
-from rasterio.warp import reproject, Resampling
-from folium.raster_layers import ImageOverlay
+from rasterio.warp import Resampling
 from geocube.vector import vectorize
 
 
@@ -149,162 +144,9 @@ POPULATION_ATTR = "GHSL 2020 (R2023)"
 BASE_MAP_ATTR = "(C) OpenSteetMap contributors"
 
 # %%
-# open raster file and extract meta-data
-with rio.open(SRC_DIR) as src:
-    logger.info(
-        f"Metadata:\n\tCRS: {src.crs}\n\tNo. bands: {src.count}\n\tBounds: "
-        f"{src.bounds}"
-    )
-
-# %%
-# read in whole raster
-with rio.open(SRC_DIR) as src:
-
-    # get metadata
-    whole_transform = src.transform
-    whole_width = src.width
-    whole_height = src.height
-    whole_bounds = src.bounds
-
-    # read in whole raster
-    whole_raster = src.read(1)
-
-# %%
-# visualise whole raster - use matplotlib since lots of data
-cmap = colormaps.get_cmap("viridis")
-cmap.set_under(alpha=0)
-plt.imshow(whole_raster, cmap=cmap, vmin=0)
-
-# %%
-# read in a cropped window of raster
-with rio.open(SRC_DIR) as src:
-    # get src metadata
-    src_crs = src.crs
-    src_nodata = src.nodata
-
-    # reporoject bounding box to raster CRS
-    window = reproj_bbox(BBOX, "EPSG:4326", src_crs.to_string())
-
-    # get mask, affine transform and window of cropped area
-    windowed_mask, windowed_affine, windowed_loc = raster_geometry_mask(
-        src, [box(*window)], crop=True
-    )
-
-    # read in raster cropped to window
-    windowed_rst = src.read(1, window=windowed_loc)
-
-# %%
-# create a destination ndarray to hold reprojected data
-destination = np.zeros(
-    tuple(int(size / RESAMPLING_SCALE_FACTOR) for size in windowed_rst.shape)
-)
-
-# resample scaling by a factor
-resampled_rst, resampled_affine = reproject(
-    windowed_rst,
-    destination,
-    src_transform=windowed_affine,
-    src_crs=src_crs,
-    dst_transform=(
-        windowed_affine * windowed_affine.scale(RESAMPLING_SCALE_FACTOR)
-    ),
-    dst_crs=src_crs,
-    resampling=Resampling.sum,
-    src_nodata=src_nodata,
-    dst_nodata=src_nodata,
-)
-
-# %%
-# get OpenStreetMap tile layer
-map_tile = cimgt.OSM()
-
-# build plot axis and add map tile
-ax = plt.axes(projection=map_tile.crs)
-ax.figure.set_size_inches(8, 10)
-data_crs = ccrs.Mollweide()
-ax.add_image(map_tile, 11)
-
-# built a mesh grid of data - x, y are cell centroids in raster crs
-height, width = resampled_rst.shape
-columns, rows = np.meshgrid(np.arange(width), np.arange(height))
-x, y = rio.transform.xy(resampled_affine, rows, columns)
-
-# build a colormap and add pcolormesh plot
-cmap = colormaps.get_cmap("hot")
-cmap.set_under(alpha=0)
-plt_resampled_rst = np.copy(resampled_rst)
-plt_resampled_rst[plt_resampled_rst <= 0] = 0
-ctf = ax.pcolormesh(
-    x,
-    y,
-    plt_resampled_rst,
-    cmap=cmap,
-    vmin=1e-10,
-    transform=data_crs,
-)
-
-# add a colorbar - set 1 at base to notify not displaying 0 population
-cbar = plt.colorbar(ctf, ax=ax, fraction=0.034, pad=0.04)
-cbar.ax.set_ylabel("Population count per cell", rotation=270, labelpad=20)
-cbar.set_ticks(np.concatenate([np.array([1]), cbar.get_ticks()[1:-1]]))
-
-# create an attribution string and add it to the axis
-attribution = f"""
-Generated on: {datetime.strftime(datetime.now(), "%Y-%m-%d")}
-Population data: {POPULATION_ATTR}
-Base map: {BASE_MAP_ATTR}"""
-ax.text(
-    0.01,
-    0.01,
-    attribution,
-    transform=ax.transAxes,
-    size=8,
-    wrap=True,
-    fontdict={"name": "Arial", "color": "#5A5A5A"},
-    va="bottom",
-    ha="left",
-)
-
-# show plot
-plt.tight_layout()
-plt.show()
-
-# %%
-# get the interim population directory
-INTERIM_DIR = os.path.dirname(SRC_DIR).replace("external", "interim")
-
-# make one if it does not exist
-if not os.path.exists(INTERIM_DIR):
-    os.mkdir(INTERIM_DIR)
-
-# create full filepath for cropped and resampeld tif file
-RESAMPLED_DIR = os.path.join(
-    INTERIM_DIR,
-    os.path.basename(SRC_DIR).replace(".tif", "_cropped_resampled.tif"),
-)
-
-# write to file
-with rio.open(
-    RESAMPLED_DIR,
-    "w",
-    driver="GTiff",
-    height=resampled_rst.shape[0],
-    width=resampled_rst.shape[1],
-    count=1,
-    dtype=resampled_rst.dtype,
-    crs=src_crs,
-    transform=resampled_affine,
-    nodata=src_nodata,
-) as dst:
-    dst.write(resampled_rst, 1)
-
-# %%
 # read in source crs to convert bounds of window
 with rio.open(SRC_DIR) as src:
-    src_crs = src.crs
-
-    # reporoject bounding box to raster CRS
-    window = reproj_bbox(BBOX, "EPSG:4326", src_crs.to_string())
+    window = reproj_bbox(BBOX, "EPSG:4326", src.crs.to_string())
 
 # %%
 # build a geometry representing the area of interest
@@ -368,20 +210,6 @@ gdf[gdf["population"] >= MIN_PLOT_THRESH].explore(
     control_scale=True,
     zoom_control=True,
 )
-
-# %%
-# extract numpy array and reshape to 2D
-xds_numpy = xds_resampled.to_numpy().reshape(
-    (xds_resampled.shape[0] * xds_resampled.shape[1]), xds_resampled.shape[2]
-)
-print(xds_numpy.shape)
-
-# reset nan values back to original value
-xds_numpy = np.nan_to_num(xds_numpy, nan=src_nodata)
-
-# %%
-# check if equal
-np.array_equal(xds_numpy[:, :-1], resampled_rst)
 
 # %%
 # get OpenStreetMap tile layer
@@ -467,107 +295,4 @@ xds_res.name = "population"
 # plot data and show resolution
 xds_res.plot()
 
-# %%
-# get bounds of resampled data
-with rio.open(RESAMPLED_DIR) as res:
-    resampled_bounds = res.bounds
-
-# %%
-# change crs
-trans_affine, trans_width, trans_height = calculate_default_transform(
-    src_crs.to_string(),
-    width=windowed_loc.width,
-    height=windowed_loc.height,
-    left=resampled_bounds.left,
-    bottom=resampled_bounds.bottom,
-    right=resampled_bounds.right,
-    top=resampled_bounds.top,
-    dst_crs="EPSG:4326",
-    dst_width=resampled_rst.shape[1],
-    dst_height=resampled_rst.shape[0],
-)
-
-# %%
-# create a destination ndarray to hold reprojected data
-trans_dst = np.zeros((trans_height, trans_width))
-
-# resample scaling by a factor
-trans_rst, _ = reproject(
-    resampled_rst,
-    trans_dst,
-    src_transform=resampled_affine,
-    src_crs=src_crs,
-    dst_transform=trans_affine,
-    dst_crs="EPSG:4326",
-    resampling=Resampling.nearest,
-    src_nodata=src_nodata,
-    dst_nodata=src_nodata,
-)
-
-# %%
-# write to file
-REPROJ_DIR = os.path.join(
-    INTERIM_DIR,
-    os.path.basename(SRC_DIR).replace(".tif", "_cropped_resampled_reproj.tif"),
-)
-with rio.open(
-    REPROJ_DIR,
-    "w",
-    driver="GTiff",
-    height=trans_rst.shape[0],
-    width=trans_rst.shape[1],
-    count=1,
-    dtype=trans_rst.dtype,
-    crs="EPSG:4326",
-    transform=trans_affine,
-    nodata=src_nodata,
-) as dst:
-    dst.write(trans_rst, 1)
-
-# %%
-# read reprojected data back in
-with rio.open(REPROJ_DIR) as reproj:
-    reproj_bounds = reproj.bounds
-    reproj_rst = reproj.read(1)
-
-    # filter out those less than 10
-    reproj_rst[reproj_rst < 10] = reproj.nodata
-
-# %%
-# build a folium basemap
-m = folium.Map(
-    tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    attr=(
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMa'
-        'p</a> contributors &copy; <a href="https://carto.com/attributions">CA'
-        "RTO</a>"
-    ),
-    control_scale=True,
-    zoom_control=True,
-)
-
-# create a colormap, setting everthing less than a value to be transparent
-cmap = colormaps.get_cmap("viridis")
-cmap.set_under(alpha=0)
-
-# add the image overlay
-m.add_child(
-    ImageOverlay(
-        # scale relative to max for cmap
-        reproj_rst / reproj_rst.max(),
-        bounds=[
-            [reproj_bounds.bottom, reproj_bounds.left],
-            [reproj_bounds.top, reproj_bounds.right],
-        ],
-        colormap=cmap,
-        opacity=0.7,
-        vmin=0,
-    )
-)
-
-# fit the map to the bounds of the image
-m.fit_bounds(m.get_bounds())
-
-# visualise the map
-m
 # %%
