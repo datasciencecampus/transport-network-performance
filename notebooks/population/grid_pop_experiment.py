@@ -440,6 +440,34 @@ plt.tight_layout()
 plt.show()
 
 # %%
+# get the interim population directory
+INTERIM_DIR = os.path.dirname(SRC_DIR).replace("external", "interim")
+
+# make one if it does not exist
+if not os.path.exists(INTERIM_DIR):
+    os.mkdir(INTERIM_DIR)
+
+# create full filepath for cropped and resampeld tif file
+RESAMPLED_DIR = os.path.join(
+    INTERIM_DIR,
+    os.path.basename(SRC_DIR).replace(".tif", "_xarray_cropped_resampled.tif"),
+)
+
+# write to GeoTIFF raster file
+# note: nodata arg will be reset to original value by rioxarry when writing
+xds_resampled.rio.to_raster(RESAMPLED_DIR)
+
+# %%
+# re-open save file (as a check)
+xds_res = rioxarray.open_rasterio(RESAMPLED_DIR, masked=True)
+
+# set the variable name of the data to be population
+xds_res.name = "population"
+
+# plot data and show resolution
+xds_res.plot()
+
+# %%
 # get bounds of resampled data
 with rio.open(RESAMPLED_DIR) as res:
     resampled_bounds = res.bounds
