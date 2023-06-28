@@ -9,6 +9,10 @@ region of interest (Newport) and then resampled to 200x200m grids.
 It requires the dataset [2] to be unzipped, with the .tif file sorted within
 the data/external/population/ directory, named GHSL_2020_UK.tif.
 
+Additionally, an experiment is performed by merging together multiple GHSL-POP
+rasters to cover UK and France [2-5]. These should be stored in the same
+directory as above, but without any filename changes.
+
 References
 ----------
 - [1] Schiavina M., Freire S., Carioli A., MacManus K. (2023):
@@ -19,6 +23,15 @@ PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.290
 - [2] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
 A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2020_GLOBE_R2023A_54
 009_100_V1_0_R3_C18.zip
+- [3] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
+A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2020_GLOBE_R2023A_54
+009_100_V1_0_R3_C19.zip
+- [4] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
+A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2020_GLOBE_R2023A_54
+009_100_V1_0_R4_C18.zip
+- [5] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
+A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2020_GLOBE_R2023A_54
+009_100_V1_0_R4_C19.zip
 
 """
 
@@ -37,8 +50,10 @@ from datetime import datetime
 from pyproj import Transformer
 from pyprojroot import here
 from matplotlib import colormaps
+from matplotlib.colors import LogNorm
 from rasterio.warp import Resampling
 from geocube.vector import vectorize
+from rioxarray.merge import merge_arrays
 
 
 # %%
@@ -142,6 +157,14 @@ MIN_PLOT_THRESH = 10
 # attributions - used during plotting
 POPULATION_ATTR = "GHSL 2020 (R2023)"
 BASE_MAP_ATTR = "(C) OpenSteetMap contributors"
+
+# merge file list - in data/external/population/
+MERGE_FILE_LIST = [
+    "GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0_R3_C18.tif",
+    "GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0_R3_C19.tif",
+    "GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0_R4_C18.tif",
+    "GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0_R4_C19.tif",
+]
 
 # %%
 # read in source crs to convert bounds of window
@@ -294,5 +317,45 @@ xds_res.name = "population"
 
 # plot data and show resolution
 xds_res.plot()
+
+# %%
+# build merge file directories
+merge_dirs = [
+    os.path.join(here(), "data", "external", "population", name)
+    for name in MERGE_FILE_LIST
+]
+
+# %%
+# build mere dataset list
+arrays = []
+for merge_dir in merge_dirs:
+    arrays.append(rioxarray.open_rasterio(merge_dir, masked=True))
+
+# display bounds for checking
+for array in arrays:
+    logger.info(array.rio.bounds())
+
+# %%
+# merge the datasets together
+xds_merged = merge_arrays(arrays)
+logger.info(xds_merged.rio.bounds())
+
+# %%
+# plot merged data - note: this cell takes around 3.5mins to run
+xds_merged.plot(vmin=MIN_PLOT_THRESH, norm=LogNorm())
+
+# %%
+# get the interim population directory
+INTERIM_POP_DIR = os.path.join(here(), "data", "interim", "population")
+
+# make dir if it does not exist
+if not os.path.exists(INTERIM_POP_DIR):
+    os.mkdir(INTERIM_POP_DIR)
+
+# create full filepath for cropped and resampeld tif file
+MERGED_DIR = os.path.join(INTERIM_POP_DIR, "GHSL_2020_merged.tif")
+
+# write to GeoTIFF raster file
+xds_merged.rio.to_raster(MERGED_DIR)
 
 # %%
