@@ -141,6 +141,9 @@ BBOX = (-3.205023, 51.503789, -2.725744, 51.680820)
 # resammpling scaling factor
 RESAMPLING_SCALE_FACTOR = 2
 
+# minimum population threshold for plotting
+MIN_PLOT_THRESH = 10
+
 # attributions - used during plotting
 POPULATION_ATTR = "GHSL 2020 (R2023)"
 BASE_MAP_ATTR = "(C) OpenSteetMap contributors"
@@ -296,6 +299,14 @@ with rio.open(
     dst.write(resampled_rst, 1)
 
 # %%
+# read in source crs to convert bounds of window
+with rio.open(SRC_DIR) as src:
+    src_crs = src.crs
+
+    # reporoject bounding box to raster CRS
+    window = reproj_bbox(BBOX, "EPSG:4326", src_crs.to_string())
+
+# %%
 # build a geometry representing the area of interest
 geometries = [
     {
@@ -328,22 +339,13 @@ print(xds.rio.resolution())
 xds.plot.hist(bins=10)
 
 # %%
-# calculate new width and height
-# new_width = int(xds.rio.width / RESAMPLING_SCALE_FACTOR)
-# new_height = int(xds.rio.height / RESAMPLING_SCALE_FACTOR)
-# new_transform = (
-#     xds.rio.transform() * xds.rio.transform().scale(RESAMPLING_SCALE_FACTOR)
-# )
-
 # resample based on scaling factor and using sum resampling
 xds_resampled = xds.rio.reproject(
     xds.rio.crs,
     resolution=tuple(
         res * RESAMPLING_SCALE_FACTOR for res in xds.rio.resolution()
     ),
-    # shape=(new_height, new_width),
     resampling=Resampling.sum,
-    # transform=new_transform,
 )
 
 print(xds_resampled.rio.nodata)
@@ -355,7 +357,7 @@ gdf = vectorize(xds_resampled.squeeze().astype(np.float32))
 
 # %%
 # visualise the results
-gdf[gdf["population"] >= 10].explore(
+gdf[gdf["population"] >= MIN_PLOT_THRESH].explore(
     "population",
     tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     attr=(
@@ -380,6 +382,62 @@ xds_numpy = np.nan_to_num(xds_numpy, nan=src_nodata)
 # %%
 # check if equal
 np.array_equal(xds_numpy[:, :-1], resampled_rst)
+
+# %%
+# get OpenStreetMap tile layer
+map_tile = cimgt.OSM()
+
+# build plot axis and add map tile
+ax = plt.axes(projection=map_tile.crs)
+ax.figure.set_size_inches(8, 10)
+data_crs = ccrs.Mollweide()
+ax.add_image(map_tile, 11)
+
+# build a colormap and add pcolormesh plot
+cmap = colormaps.get_cmap("hot")
+cmap.set_under(alpha=0)
+
+# build a colormap and add pcolormesh plot
+cmap = colormaps.get_cmap("hot")
+cmap.set_under(alpha=0)
+plt_resampled_rst = np.copy(xds_resampled.squeeze())
+plt_resampled_rst[plt_resampled_rst < MIN_PLOT_THRESH] = 0
+ctf = ax.pcolormesh(
+    xds_resampled.squeeze().x.to_numpy(),
+    xds_resampled.squeeze().y.to_numpy(),
+    plt_resampled_rst,
+    cmap=cmap,
+    vmin=MIN_PLOT_THRESH,
+    transform=data_crs,
+)
+
+# add a colorbar - set base to notify not displaying 0 population
+cbar = plt.colorbar(ctf, ax=ax, fraction=0.034, pad=0.04)
+cbar.ax.set_ylabel("Population count per cell", rotation=270, labelpad=20)
+cbar.set_ticks(
+    np.concatenate([np.array([MIN_PLOT_THRESH]), cbar.get_ticks()[1:-1]])
+)
+
+# create an attribution string and add it to the axis
+attribution = f"""
+Generated on: {datetime.strftime(datetime.now(), "%Y-%m-%d")}
+Population data: {POPULATION_ATTR}
+Base map: {BASE_MAP_ATTR}"""
+ax.text(
+    0.01,
+    0.01,
+    attribution,
+    transform=ax.transAxes,
+    size=8,
+    wrap=True,
+    fontdict={"name": "Arial", "color": "#5A5A5A"},
+    va="bottom",
+    ha="left",
+)
+
+# show plot
+plt.tight_layout()
+plt.show()
 
 # %%
 # get bounds of resampled data
