@@ -146,8 +146,24 @@ LOGGER_LEVEL = logging.INFO
 logger = setup_logger(LOGGER_NAME, level=LOGGER_LEVEL)
 
 # bounding box around area of interest in EPGS:4326
+# TODO: tidy up this section
 # BBOX = (-3.205023, 51.503789, -2.725744, 51.680820)  # orig BBOX
-BBOX = (-3.206023, 51.503789, -2.726744, 51.680820)  # orig shifted by 100m
+# BBOX = (-3.206023, 51.503789, -2.726744, 51.680820)  # orig shifted by 100m
+# BBOX = (-2.210408, 53.450903, -0.861837, 54.093681)  # leeds
+# BBOX = (-1.054688, 51.134555, 0.873413, 51.835778)  # london
+# BBOX = (3.319416, 42.673743, 7.873249, 44.671964)  # marseille
+
+# area of interest
+AREA_OF_INTEREST = "newport"
+
+# get bbox of interest
+BBOX_DICT = {
+    "newport": (-3.206023, 51.503789, -2.726744, 51.680820),
+    "leeds": (-2.212408, 53.450803, -0.862837, 54.095581),
+    "london": (-1.054688, 51.134555, 0.873413, 51.835778),
+    "marseille": (3.319416, 42.673743, 7.873249, 44.671964),
+}
+BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
 # resammpling scaling factor
 RESAMPLING_SCALE_FACTOR = 2
@@ -381,6 +397,7 @@ MERGED_RESAMPLED_DIR = os.path.join(
 xds_merged_resampled.rio.to_raster(MERGED_RESAMPLED_DIR)
 
 # %%
+# use merged dataset herein
 # open data and clip to the above geometry, using from disk (more performant)
 xds_clip = rioxarray.open_rasterio(MERGED_RESAMPLED_DIR, masked=True).rio.clip(
     geometries, from_disk=True, all_touched=True
@@ -393,15 +410,101 @@ xds_clip.name = "population"
 xds_clip.plot()
 
 # %%
+# use geocube to conver raster to geopandas df
+gdf = vectorize(xds_clip.squeeze().astype(np.float32))
+
+# %%
+# TODO: need to functionise
+# visualise the results
+m = gdf[gdf["population"] >= MIN_PLOT_THRESH].explore(
+    "population",
+    tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attr=(
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMa'
+        'p</a> contributors &copy; <a href="https://carto.com/attributions">CA'
+        "RTO</a>"
+    ),
+    control_scale=True,
+    zoom_control=True,
+)
+
+# define and outputs directory
+POP_OUTPUTS_DIR = os.path.join(here(), "outputs", "population")
+
+# make one if it does not exist
+if not os.path.exists(POP_OUTPUTS_DIR):
+    os.mkdir(POP_OUTPUTS_DIR)
+
+# save to file
+m.save(os.path.join(POP_OUTPUTS_DIR, f"{AREA_OF_INTEREST}.html"))
+
+# %%
+# TODO: need to functionise
+# get OpenStreetMap tile layer
+map_tile = cimgt.OSM(desired_tile_form="L")
+
+# build plot axis and add map tile
+ax = plt.axes(projection=map_tile.crs)
+ax.figure.set_size_inches(8, 10)
+data_crs = ccrs.Mollweide()
+ax.add_image(map_tile, 12, cmap="gray")
+
+# build a colormap and add pcolormesh plot
+cmap = colormaps.get_cmap("viridis")
+cmap.set_under(alpha=0)
+
+# build a colormap and add pcolormesh plot
+plt_resampled_rst = np.copy(xds_clip.squeeze())
+plt_resampled_rst[plt_resampled_rst < MIN_PLOT_THRESH] = 0
+ctf = ax.pcolormesh(
+    xds_clip.squeeze().x.to_numpy(),
+    xds_clip.squeeze().y.to_numpy(),
+    plt_resampled_rst,
+    cmap=cmap,
+    vmin=MIN_PLOT_THRESH,
+    transform=data_crs,
+)
+
+# add a colorbar - set base to notify not displaying 0 population
+cbar = plt.colorbar(ctf, ax=ax, fraction=0.034, pad=0.04)
+cbar.ax.set_ylabel("Population count per cell", rotation=270, labelpad=20)
+cbar.set_ticks(
+    np.concatenate([np.array([MIN_PLOT_THRESH]), cbar.get_ticks()[1:-1]])
+)
+
+# create an attribution string and add it to the axis
+grid_res = xds_clip.rio.resolution()
+attribution = f"""
+Generated on: {datetime.strftime(datetime.now(), "%Y-%m-%d")}
+Population data: {POPULATION_ATTR}
+Grid Size: {abs(grid_res[0])}m x {abs(grid_res[1])}m
+Base map: {BASE_MAP_ATTR}"""
+ax.text(
+    0.01,
+    0.01,
+    attribution,
+    transform=ax.transAxes,
+    size=8,
+    wrap=True,
+    fontdict={"name": "Arial", "color": "#000000"},
+    va="bottom",
+    ha="left",
+)
+
+# show plot
+plt.tight_layout()
+plt.show()
+
+# %%
 # check equivalence of orignal method
-# note ignoring last col since BBOX isn't divisible by 200m, and when
-# reading in 100x100m grid to resample it effectively undersums that col
+# note ignoring last row/col since BBOX isn't always divisible by 200m when
+# reading in 100x100m grid to resample it effectively (undersums that row/col)
 assert xds_clip.rio.transform() == xds_resampled.rio.transform()
 assert xds_clip.rio.bounds() == xds_resampled.rio.bounds()
 assert xds_clip.shape == xds_resampled.shape
 assert np.array_equal(
-    xds_resampled[:, :, :-1].to_numpy(),
-    xds_clip[:, :, :-1].to_numpy(),
+    xds_resampled[:, :-1, :-1].to_numpy(),
+    xds_clip[:, :-1, :-1].to_numpy(),
     equal_nan=True,
 )
 
