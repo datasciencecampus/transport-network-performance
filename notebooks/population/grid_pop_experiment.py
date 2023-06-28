@@ -146,7 +146,8 @@ LOGGER_LEVEL = logging.INFO
 logger = setup_logger(LOGGER_NAME, level=LOGGER_LEVEL)
 
 # bounding box around area of interest in EPGS:4326
-BBOX = (-3.205023, 51.503789, -2.725744, 51.680820)
+# BBOX = (-3.205023, 51.503789, -2.725744, 51.680820)  # orig BBOX
+BBOX = (-3.206023, 51.503789, -2.726744, 51.680820)  # orig shifted by 100m
 
 # resammpling scaling factor
 RESAMPLING_SCALE_FACTOR = 2
@@ -187,6 +188,7 @@ geometries = [
     }
 ]
 
+# %%
 # open data and clip to the above geometry, using from disk (more performant)
 xds = rioxarray.open_rasterio(SRC_DIR, masked=True).rio.clip(
     geometries, from_disk=True, all_touched=True
@@ -352,10 +354,55 @@ INTERIM_POP_DIR = os.path.join(here(), "data", "interim", "population")
 if not os.path.exists(INTERIM_POP_DIR):
     os.mkdir(INTERIM_POP_DIR)
 
-# create full filepath for cropped and resampeld tif file
+# create full filepath for merged tif file
 MERGED_DIR = os.path.join(INTERIM_POP_DIR, "GHSL_2020_merged.tif")
 
 # write to GeoTIFF raster file
 xds_merged.rio.to_raster(MERGED_DIR)
+
+# %%
+# resample merged data based on scaling factor and using sum resampling
+# note: this cell takes around 1.75 minutes
+xds_merged_resampled = xds_merged.rio.reproject(
+    xds_merged.rio.crs,
+    resolution=tuple(
+        res * RESAMPLING_SCALE_FACTOR for res in xds_merged.rio.resolution()
+    ),
+    resampling=Resampling.sum,
+)
+
+# %%
+# create full filepath for merged and resampeld tif file
+MERGED_RESAMPLED_DIR = os.path.join(
+    INTERIM_POP_DIR, "GHSL_2020_merged_200.tif"
+)
+
+# write to GeoTIFF raster file
+xds_merged_resampled.rio.to_raster(MERGED_RESAMPLED_DIR)
+
+# %%
+# open data and clip to the above geometry, using from disk (more performant)
+xds_clip = rioxarray.open_rasterio(MERGED_RESAMPLED_DIR, masked=True).rio.clip(
+    geometries, from_disk=True, all_touched=True
+)
+
+# set the variable name of the data to be population
+xds_clip.name = "population"
+
+# plot data and show resolution
+xds_clip.plot()
+
+# %%
+# check equivalence of orignal method
+# note ignoring last col since BBOX isn't divisible by 200m, and when
+# reading in 100x100m grid to resample it effectively undersums that col
+assert xds_clip.rio.transform() == xds_resampled.rio.transform()
+assert xds_clip.rio.bounds() == xds_resampled.rio.bounds()
+assert xds_clip.shape == xds_resampled.shape
+assert np.array_equal(
+    xds_resampled[:, :, :-1].to_numpy(),
+    xds_clip[:, :, :-1].to_numpy(),
+    equal_nan=True,
+)
 
 # %%
