@@ -417,9 +417,11 @@ cbar.set_ticks(
 )
 
 # create an attribution string and add it to the axis
+grid_res = xds_resampled.rio.resolution()
 attribution = f"""
 Generated on: {datetime.strftime(datetime.now(), "%Y-%m-%d")}
 Population data: {POPULATION_ATTR}
+Grid Size: {abs(grid_res[0])}m x {abs(grid_res[1])}m
 Base map: {BASE_MAP_ATTR}"""
 ax.text(
     0.01,
@@ -428,7 +430,7 @@ ax.text(
     transform=ax.transAxes,
     size=8,
     wrap=True,
-    fontdict={"name": "Arial", "color": "#5A5A5A"},
+    fontdict={"name": "Arial", "color": "#000000"},
     va="bottom",
     ha="left",
 )
