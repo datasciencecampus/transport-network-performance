@@ -355,7 +355,7 @@ gdf = vectorize(xds_resampled.squeeze().astype(np.float32))
 
 # %%
 # visualise the results
-gdf[gdf["population"]].explore(
+gdf[gdf["population"] >= 10].explore(
     "population",
     tiles="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     attr=(
