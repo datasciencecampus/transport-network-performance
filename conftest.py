@@ -27,6 +27,9 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     """Add ini value line."""
     config.addinivalue_line("markers", "setup: mark test to run during setup")
+    config.addinivalue_line(
+        "markers", "runinteg: mark test to run for integration tests"
+    )
 
 
 def pytest_collection_modifyitems(config, items):
