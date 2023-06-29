@@ -76,3 +76,22 @@ class TestScrapeRouteTypeLookup(object):
             result,
             pd.DataFrame({"route_type": "0", "desc": "Tram."}, index=[0]),
         )
+
+    def test_table_with_extended_schema(self, mocker):
+        """Check return table when extended schema = True."""
+        mocker.patch(
+            "heimdall_transport.gtfs.routes._get_response_text",
+            side_effect=mocked__get_response_text,
+        )
+        result = scrape_route_type_lookup()
+        assert isinstance(result, pd.core.frame.DataFrame)
+        pd.testing.assert_frame_equal(
+            result,
+            pd.DataFrame(
+                {
+                    "route_type": ["0", "100"],
+                    "desc": ["Tram.", "Railway Service"],
+                },
+                index=[0, 1],
+            ),
+        )
