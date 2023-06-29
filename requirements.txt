@@ -7,4 +7,5 @@ ipykernel==6.23.1
 pandas
 beautifulsoup4
 requests
+pytest-mock
 -e .
