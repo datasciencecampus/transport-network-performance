@@ -64,6 +64,13 @@ def _construct_extended_schema_table(some_soup, cd_list, desc_list):
     return (cd_list, desc_list)
 
 
+def _get_response_text(url):
+    """Return the response & extract the text. Not exported."""
+    r = requests.get(url)
+    t = r.text
+    return t
+
+
 def scrape_route_type_lookup(
     gtfs_url="https://gtfs.org/schedule/reference/",
     ext_spec_url=(
@@ -104,8 +111,8 @@ def scrape_route_type_lookup(
 
     _bool_defence(extended_schema)
     # Get the basic scheme lookup
-    resp = requests.get(gtfs_url).text
-    soup = BeautifulSoup(resp, "html.parser")
+    resp_txt = _get_response_text(gtfs_url)
+    soup = BeautifulSoup(resp_txt, "html.parser")
     for dat in soup.findAll("td"):
         # Look for a pattern to target, going with Tram, could go more specific
         # with regex if table format unstable.
@@ -126,8 +133,8 @@ def scrape_route_type_lookup(
     # if interested in the extended schema, get that too. Perhaps not
     # relevant to all territories
     if extended_schema:
-        resp = requests.get(ext_spec_url).text
-        soup = BeautifulSoup(resp, "html.parser")
+        resp_txt = _get_response_text(ext_spec_url)
+        soup = BeautifulSoup(resp_txt, "html.parser")
         cds, txts = _construct_extended_schema_table(soup, cds, txts)
 
     route_lookup = pd.DataFrame(zip(cds, txts), columns=["route_type", "desc"])
