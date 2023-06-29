@@ -1,9 +1,9 @@
 """test_setup.py.
 
 Unit tests for testing initial setup. The intention is these tests won't be
-part of the main test suite, and will only by run as needed.
+part of the main test suite, and will only be run as needed.
 
-This test module can be run with the pytest flagg --runsetup.
+This test module can be run with the pytest flag --runsetup.
 """
 
 import pytest
