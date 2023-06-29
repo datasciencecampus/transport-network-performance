@@ -130,6 +130,8 @@ def scrape_route_type_lookup(
     # strip out rubbish
     cds = [cd for cd in cds if len(cd) > 0]
     txts = [t.strip(" - ") for t in txts if t.startswith(" - ")]
+    # catch the final description which is not succeeded by a break
+    txts.append(target_node.text.split(" - ")[-1])
     # if interested in the extended schema, get that too. Perhaps not
     # relevant to all territories
     if extended_schema:
