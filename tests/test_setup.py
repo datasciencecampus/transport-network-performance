@@ -3,7 +3,7 @@
 Unit tests for testing initial setup. The intention is these tests won't be
 part of the main test suite, and will only by run as needed.
 
-TODO: make this run 'on request' only.
+This test module can be run with the pytest flagg --runsetup.
 """
 
 import pytest
