@@ -16,6 +16,12 @@ def pytest_addoption(parser):
         default=False,
         help="run set-up tests",
     )
+    parser.addoption(
+        "--runinteg",
+        action="store_true",
+        default=False,
+        help="run integration tests",
+    )
 
 
 def pytest_configure(config):
@@ -32,3 +38,10 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "setup" in item.keywords:
             item.add_marker(skip_setup)
+
+    if config.getoption("--runinteg"):
+        return
+    skip_runinteg = pytest.mark.skip(reason="need --runinteg option to run")
+    for item in items:
+        if "runinteg" in item.keywords:
+            item.add_marker(skip_runinteg)
