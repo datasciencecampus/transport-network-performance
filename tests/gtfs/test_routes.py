@@ -13,9 +13,28 @@ def mocked__get_response_text(*args, **kwargs):
         str: Minimal text representation of url tables.
 
     """
-    key1 = "https://gtfs.org/schedule/reference/"
-    val1 = "<td> <br><code>0</code> - Tram.<br><code>1</code>"
-    return_vals = {key1: val1}
+    k1 = "https://gtfs.org/schedule/reference/"
+    v1 = "<td> <br><code>0</code> - Tram."
+    k2 = (
+        "https://developers.google.com/transit/gtfs/reference/"
+        "extended-route-types"
+    )
+    v2 = """<table class="nice-table">
+    <tbody>
+      <tr>
+        <th>Code</th>
+        <th>Description</th>
+        <th>Supported</th>
+        <th>Examples</th>
+      </tr>
+      <tr>
+        <td><strong>100</strong></td>
+        <td><strong>Railway Service</strong></td>
+        <td>Yes</td>
+        <td>Not applicable (N/A)</td>
+      </tr>"""
+
+    return_vals = {k1: v1, k2: v2}
     return return_vals[args[0]]
 
 
