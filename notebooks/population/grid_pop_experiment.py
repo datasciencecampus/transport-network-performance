@@ -41,19 +41,28 @@ import os
 import sys
 import logging
 import numpy as np
+import pandas as pd
+import geopandas as gpd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import rioxarray
+import requests
 
 from datetime import datetime
 from pyproj import Transformer
 from pyprojroot import here
 from matplotlib import colormaps
 from matplotlib.colors import LogNorm
+from matplotlib.ticker import AutoMinorLocator
 from rasterio.warp import Resampling
 from geocube.vector import vectorize
 from rioxarray.merge import merge_arrays
+from rioxarray.exceptions import NoDataInBounds
+from requests.exceptions import HTTPError
+from shapely.geometry.polygon import Polygon
+from xarray import DataArray
 
 
 # %%
@@ -165,6 +174,26 @@ BBOX_DICT = {
 }
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
+# nomis urls for mye populations
+NOMIS_URLS = {
+    "newport": (
+        "https://www.nomisweb.co.uk/api/v01/dataset/NM_2010_1.data.json?geogra"
+        "phy=1254276446...1254276882,1254277923...1254277960&date=latest&gende"
+        "r=0&c_age=200&measures=20100"
+    ),
+    "leeds": (
+        "https://www.nomisweb.co.uk/api/v01/dataset/NM_2010_1.data.json?geogra"
+        "phy=1254151943...1254154269,1254258198...1254258221,1254261711...1254"
+        "261745,1254261853...1254261870,1254261894...1254261918,1254262125...1"
+        "254262142,1254262341...1254262353,1254262394...1254262398,1254262498."
+        "..1254262532,1254262620...1254262658,1254262922...1254262925&date=lat"
+        "est&gender=0&c_age=200&measures=20100"
+    ),
+    "london": None,
+    "marseille": None,
+}
+NOMIS_URL = NOMIS_URLS[AREA_OF_INTEREST]
+
 # resammpling scaling factor
 RESAMPLING_SCALE_FACTOR = 2
 
@@ -172,8 +201,9 @@ RESAMPLING_SCALE_FACTOR = 2
 MIN_PLOT_THRESH = 10
 
 # attributions - used during plotting
-POPULATION_ATTR = "GHSL 2020 (R2023)"
+POPULATION_ATTR = "GHS-POP 2020 (R2023) "
 BASE_MAP_ATTR = "(C) OpenSteetMap contributors"
+ONS_MYE_ATTR = "ONS, 2020 (via nomisweb)"
 
 # merge file list - in data/external/population/
 MERGE_FILE_LIST = [
@@ -508,4 +538,420 @@ assert np.array_equal(
     equal_nan=True,
 )
 
+# %%
+# sense check values against mid-year estimates
+# following cells can be run independently after loading in the window for the
+# area of interest
+
+# %%
+# open data and clip to the above geometry, using from disk (more performant)
+xds_sc = rioxarray.open_rasterio(SRC_DIR, masked=True).rio.clip(
+    geometries, from_disk=True, all_touched=True
+)
+
+# set the variable name of the data to be population
+xds_sc.name = "population"
+
+# plot data and show resolution
+xds_sc.plot()
+
+# %%
+# read in nomis population data for area of interest
+try:
+    response = requests.get(NOMIS_URL)
+    response.raise_for_status()
+except HTTPError as he:
+    logger.error(f"A HTTP error occured: {he}")
+except Exception as e:
+    logger.error(f"An error occured when reading nomis data {e}")
+
+pops = []
+for obs in response.json()["obs"]:
+    pops.append([obs["geography"]["geogcode"], obs["obs_value"]["value"]])
+
+pop_df = pd.DataFrame(pops, columns=["OA11CD", "mye"])
+
+# %%
+# read in ONS geoportal boundaries
+active_response = True
+result_offset = 0
+oa_bounds = []
+
+# repeat calls untill all the boundaries are retrieved - 2000 per batch
+while active_response:
+    try:
+        response = requests.get(
+            "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/service"
+            "s/Output_Areas_Dec_2011_Boundaries_EW_BFC_2022/FeatureServer/0/qu"
+            "ery?where=1%3D1&outFields=OA11CD&geometry="
+            f"{BBOX[0]}%2C{BBOX[1]}%2C{BBOX[2]}%2C{BBOX[3]}&geometryType=esriG"
+            "eometryEnvelope&inSR=4326&spatialRel=esriSpatialRelContains&outSR"
+            f"=4326&f=geojson&resultOffset={result_offset}"
+        )
+        response.raise_for_status()
+    except HTTPError as he:
+        logger.error(f"A HTTP error occured: {he}")
+    except Exception as e:
+        logger.error(f"An error occured when reading nomis data {e}")
+
+    if response.json()["features"] != []:
+        oa_bounds.append(
+            gpd.GeoDataFrame.from_features(response.json(), crs="EPSG:4326")
+        )
+        result_offset += 2000
+    else:
+        active_response = False
+
+# %%
+# connvert response to geodataframe
+oa_bounds_gdf = pd.concat(oa_bounds)
+
+# match the crs with the raster data
+oa_bounds_gdf = oa_bounds_gdf.to_crs(src.crs.to_string())
+oa_bounds_gdf.plot()
+
+# %%
+# merege on population data and filter to OAs only in pop data
+oa_gdf = oa_bounds_gdf.merge(pop_df, on="OA11CD", how="right")
+assert len(pop_df) == len(oa_gdf)
+
+oa_gdf.plot("mye", legend=True)
+
+# %%
+
+
+def clip_sum(geometry: Polygon, rst: DataArray) -> float:
+    """Clip rastered data to geometry and estimate population.
+
+    Parameters
+    ----------
+    geometry : Polygon
+        Polygon representing the bounds to clip to. Must be in the same CRS are
+        the raster data.
+    rst : DataArray
+        Raster data array
+
+    Returns
+    -------
+    float
+        Sum values within clip, excluding nan values.
+
+    """
+    try:
+        rst_clipped = rst.rio.clip([geometry]).to_numpy()
+    except NoDataInBounds:
+        return 0
+    return np.nansum(rst_clipped)
+
+
+def clip_sum_overlap(geometry: Polygon, rst: DataArray) -> float:
+    """Clip raster data to geometry and estimate population.
+
+    Method includes all cells that touch the provided geometry. Then scales
+    the cell value based on the fraction of overlap between the cell and the
+    geometry. The total is then then combined sum of these fractional cell
+    values.
+
+    Parameters
+    ----------
+    geometry : Polygon
+        Polygon representing the bounds to clip to. Must be in the same CRS are
+        the raster data.
+    rst : DataArray
+        Raster data array
+
+    Returns
+    -------
+    float
+        Sum values within clip, excluding nan values, and adjusting for
+        fractional overlap of cells/geometry.
+
+    """
+    # clip to geometry and include all cells that touch
+    try:
+        rst_clipped = rst.rio.clip([geometry], all_touched=True)
+    except NoDataInBounds:
+        return 0
+
+    # vectorise and drop masked/null cells (nodata regions)
+    try:
+        clipped_gdf = vectorize(rst_clipped.squeeze().astype(np.float32))
+    except ValueError:
+        # TODO: use this approach, should work for all conditions
+        clipped_gdf = vectorize(rst_clipped.squeeze(axis=0).astype(np.float32))
+    clipped_gdf.dropna(subset=["population"], inplace=True)
+
+    # calculate the fractional overlap within the OA
+    clipped_gdf["overlap"] = (
+        clipped_gdf.intersection(geometry).area / clipped_gdf.area
+    )
+
+    # calculate the OA estimate by scaling the cell population by the
+    # fractional overlap
+    oa_estimate = (clipped_gdf["overlap"] * clipped_gdf["population"]).sum()
+
+    return oa_estimate
+
+
+# %%
+# apply the clip_sum_overlap func to all OAs and calculate the difference
+oa_gdf["ghs"] = oa_gdf.geometry.apply(clip_sum_overlap, args=[xds_sc])
+oa_gdf["pop_diff"] = oa_gdf["mye"] - oa_gdf["ghs"]
+
+# %%
+# repeat above, but exclude cells below a threshold
+threshs = [1, 3, 5, 7, 10]
+for thresh in threshs:
+    logger.info(f"Calculating GHS-POP estimate using {thresh}...")
+    xds_thresh = xds_sc.copy()
+    xds_thresh = xds_thresh.where(xds_thresh > thresh)
+    oa_gdf[f"ghs_thresh_{thresh}"] = oa_gdf.geometry.apply(
+        clip_sum_overlap, args=[xds_thresh]
+    )
+    oa_gdf[f"pop_diff_thresh_{thresh}"] = (
+        oa_gdf["mye"] - oa_gdf[f"ghs_thresh_{thresh}"]
+    )
+
+# %%
+# build an interactive folium map displaying OA pop estimate difference
+m = oa_gdf.explore(
+    "pop_diff",
+    legend=True,
+    cmap="RdBu",
+    vmin=-600,
+    vmax=600,
+    tiles="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    attr=(
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMa'
+        'p</a> contributors &copy; <a href="https://carto.com/attributions">CA'
+        "RTO</a>"
+    ),
+    legend_kwds={"backgroundcolor": "white"},
+)
+
+m.save(os.path.join(here(), "outputs", "mye", f"{AREA_OF_INTEREST}.html"))
+del m
+
+# %%
+# build a beeswarn to display distribution of OA differences
+fig, ax = plt.subplots(figsize=(16, 9))
+
+# for visualisation purposes, do not display extreme outlies
+plot_lim = 1000
+plot_col = "pop_diff"
+plot_df = oa_gdf[
+    (oa_gdf[plot_col] < plot_lim) & ((oa_gdf[plot_col] > -plot_lim))
+]
+
+# add a colored region to show 10-90 percentile range
+perc_low, perc_high = np.percentile(oa_gdf[plot_col], [5, 95])
+p_range = perc_high - perc_low
+ax.axvspan(
+    perc_low,
+    perc_high,
+    color="gold",
+    alpha=0.5,
+    label=(
+        f"Percentile Range (10-90):\n{p_range:.0f} [{perc_low:.0f} to "
+        f"{perc_high:.0f}]"
+    ),
+)
+
+# add a colored region to show IQR
+iqr_low, iqr_high = np.percentile(oa_gdf[plot_col], [25, 75])
+iqr = iqr_high - iqr_low
+ax.axvspan(
+    iqr_low,
+    iqr_high,
+    color="darkorange",
+    alpha=0.5,
+    label=f"IQR: {iqr:.0f} [{iqr_low:.0f} to {iqr_high:.0f}]",
+)
+
+# add a line to show the median difference
+median = oa_gdf[plot_col].median()
+ax.axvline(median, color="red", linestyle="--", label=f"Median: {median:.0f}")
+
+# add beswarm plot - note it can take 10/20s to plot
+# TODO: automatically asign size
+sns.swarmplot(plot_df, x=plot_col, size=3, ax=ax, label="OA Pop. Difference")
+
+# fix the scales to the nearest 1000
+limit = np.abs(ax.get_xlim()).max()
+limit = round(limit / 1e3) * 1e3
+ax.set_xticks(np.arange(-limit, limit + 200, 200))
+
+# add minor grids and adjust formatting of y axis
+ax.xaxis.grid()
+minor_locator = AutoMinorLocator(2)
+ax.xaxis.set_minor_locator(minor_locator)
+ax.xaxis.grid(which="minor", linestyle="--", alpha=0.5)
+ax.set_yticks([])
+
+# add an indicator to show the 'side' of the greater estimate
+indicator = ax.text(
+    0,
+    -0.45,
+    "Greater  Estimate\nGHS-POP ◀---       ---▶ ONS-MYE",
+    va="center",
+    ha="center",
+)
+indicator.set_bbox(dict(facecolor="white", edgecolor="black", alpha=0.9))
+
+# create an attribution string and add it to the axis
+grid_res = xds_sc.rio.resolution()
+attribution = f"""
+Generated on: {datetime.strftime(datetime.now(), "%Y-%m-%d")}
+Gridded pop. estimates: {POPULATION_ATTR}
+Grid Size: {abs(grid_res[0])}m x {abs(grid_res[1])}m
+Mid year pop. estimates: {ONS_MYE_ATTR}"""
+ax.text(
+    0.01,
+    0.01,
+    attribution,
+    transform=ax.transAxes,
+    size=8,
+    wrap=True,
+    fontdict={"name": "Arial", "color": "#000000"},
+    va="bottom",
+    ha="left",
+)
+
+# rename x axis
+ax.set_xlabel(
+    "Difference between ONS MYE and GHS-POP Output Area Population Estimate"
+)
+
+# reorder legend
+handles, labels = ax.get_legend_handles_labels()
+ax.legend(handles[::-1], labels[::-1])
+
+# if extereme outlier exist (positive) add text to show values
+if oa_gdf[oa_gdf[plot_col] >= plot_lim][plot_col].any():
+    pos_fliers = oa_gdf[oa_gdf[plot_col] >= plot_lim][plot_col].to_list()
+    pos_fliers = [f"{x:.0f}" for x in sorted(pos_fliers)]
+    pos_fliers_text = ", ".join(pos_fliers)
+    pos_indicator = ax.text(
+        0.98,
+        0.55,
+        f"Not displayed ---▶\n{pos_fliers_text}",
+        va="center",
+        ha="right",
+        transform=ax.transAxes,
+    )
+    pos_indicator.set_bbox(
+        dict(facecolor="white", edgecolor="white", alpha=0.5)
+    )
+
+# if extereme outlier exist (negative) add text to show values
+if oa_gdf[oa_gdf[plot_col] <= -plot_lim][plot_col].any():
+    neg_fliers = oa_gdf[oa_gdf[plot_col] <= -plot_lim][plot_col].to_list()
+    neg_fliers = [f"{x:.0f}" for x in sorted(neg_fliers)]
+    neg_fliers_text = ", ".join(neg_fliers)
+    neg_indicator = ax.text(
+        0.02,
+        0.55,
+        f"◀--- Not displayed\n{neg_fliers_text}",
+        va="center",
+        ha="left",
+        transform=ax.transAxes,
+    )
+    neg_indicator.set_bbox(
+        dict(facecolor="white", edgecolor="white", alpha=0.5)
+    )
+
+plt.show()
+
+# %%
+# build boxplots for displaying effect of pop threshold - melt data first
+pop_diff_cols = [col for col in oa_gdf.columns if col.startswith("pop_diff")]
+plot_df = oa_gdf[["OA11CD"] + pop_diff_cols].melt(
+    id_vars="OA11CD",
+    value_vars=pop_diff_cols,
+    var_name="Method",
+    value_name="Difference",
+)
+
+fig, ax = plt.subplots(figsize=(16, 9))
+sns.boxplot(plot_df, x="Difference", y="Method", ax=ax, orient="h")
+
+ax.set_xlabel(
+    "Difference between ONS MYE and GHS-POP Output Area Population Estimate"
+)
+plt.show()
+
+# %%
+# build choropleth maps for MYE and GHS estimates
+fig, axes = plt.subplots(1, 2, figsize=(16, 9))
+
+# get consitent min and max to ensure consistent colorscales
+vmin = min(oa_gdf["mye"].min(), oa_gdf["ghs"].min())
+vmax = max(oa_gdf["mye"].max(), oa_gdf["ghs"].max())
+
+# plot both estimates
+for ax, col in zip(axes.flat, ["mye", "ghs"]):
+    oa_gdf.to_crs("EPSG:4326").plot(
+        col,
+        ax=ax,
+        vmin=vmin,
+        vmax=vmax,
+    )
+    ax.axis("off")
+    ax.set_title(col.upper())
+
+# make a common colorbar at the bottom of the figure
+fig = ax.get_figure()
+cax = fig.add_axes([0.2, 0.2, 0.6, 0.03])
+sm = plt.cm.ScalarMappable(
+    cmap="viridis", norm=plt.Normalize(vmin=vmin, vmax=vmax)
+)
+cbar = fig.colorbar(sm, cax=cax, orientation="horizontal")
+cbar.ax.set_xlabel("OA Population")
+
+plt.show()
+
+# %%
+# build a choropleth map to display the difference
+fig, ax = plt.subplots(figsize=(16, 9))
+
+cbar = oa_gdf.to_crs("EPSG:4326").plot(
+    "pop_diff",
+    ax=ax,
+    cmap="RdBu",
+    vmin=-600,
+    vmax=600,
+    legend=True,
+    legend_kwds={
+        "label": "Difference (MYE-GHS)",
+    },
+)
+
+# set the background to grey since the mid point of the colorscale is white
+ax.set_facecolor("grey")
+
+# hide all the tick marks and labels
+ax.xaxis.set_tick_params(labelbottom=False)
+ax.yaxis.set_tick_params(labelleft=False)
+ax.set_xticks([])
+ax.set_yticks([])
+
+# add a note to show the colorscale is saturated
+note = (
+    "Note: Color scale is saturated to +/- 600 to improve interpretability"
+    "in OAs where the difference is small. Differences may lie outside these"
+    "limits"
+)
+ax.text(
+    0.01,
+    0.01,
+    note,
+    transform=ax.transAxes,
+    size=8,
+    wrap=True,
+    fontdict={"name": "Arial", "color": "#000000"},
+    va="bottom",
+    ha="left",
+)
+
+plt.show()
 # %%
