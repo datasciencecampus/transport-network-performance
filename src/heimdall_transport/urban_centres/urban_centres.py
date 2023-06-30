@@ -1,18 +1,17 @@
-# %%
+"""Functions to calculate urban centres following Eurostat definition."""
 import rasterio
 import geopandas as gpd
 import numpy as np
 from scipy.ndimage import label, generic_filter
 from rasterio.mask import raster_geometry_mask
 import numpy.ma as ma
-from scipy.stats import mode
+from collections import Counter
 
 
-# %%
-def filter_cells(file: str, bbox: gpd.GeoDataFrame,
-                 band_n: int = 1) -> ma.core.MaskedArray:
-    """
-    Opens file, loads band and applies mask
+def filter_cells(
+    file: str, bbox: gpd.GeoDataFrame, band_n: int = 1
+) -> ma.core.MaskedArray:
+    """Open file, loads band and applies mask.
 
     Parameters
     ----------
@@ -31,29 +30,26 @@ def filter_cells(file: str, bbox: gpd.GeoDataFrame,
     -------
         ma.core.MaskedArray: raster, clipped to the extent of the bbox
         and masked if extent does not match the boundaries provided.
-    """
 
+    """
     with rasterio.open(file) as src:
         masked, affine, win = raster_geometry_mask(
-            src,
-            bbox.geometry.values,
-            crop=True,
-            all_touched=True
+            src, bbox.geometry.values, crop=True, all_touched=True
         )
 
         # band is clipped to extent of bbox
         rst = src.read(band_n, window=win)
-        # pixels that are not within and do not touch 
+        # pixels that are not within and do not touch
         # bbox boundaries are masked
         rst_masked = ma.masked_array(rst, masked)
 
         return rst_masked
 
 
-def flag_cells(masked_rst: ma.core.MaskedArray,
-               cell_pop_thres: int = 1500) -> ma.core.MaskedArray:
-    """
-    Flags cells that are over the threshold.
+def flag_cells(
+    masked_rst: ma.core.MaskedArray, cell_pop_thres: int = 1500
+) -> ma.core.MaskedArray:
+    """Flag cells that are over the threshold.
 
     Parameters
     ----------
@@ -67,15 +63,14 @@ def flag_cells(masked_rst: ma.core.MaskedArray,
     -------
         ma.core.MaskedArray: boolean array where cells over
         the threshold are flagged as True.
+
     """
     flag_array = masked_rst >= cell_pop_thres
     return flag_array
 
 
-def cluster_cells(flag_array: np.array,
-                  diag: bool = False) -> tuple:
-    """
-    Clusters cells based on adjacency.
+def cluster_cells(flag_array: np.array, diag: bool = False) -> tuple:
+    """Cluster cells based on adjacency.
 
     Parameters
     ----------
@@ -88,8 +83,8 @@ def cluster_cells(flag_array: np.array,
     -------
         tuple[0]: array including all clusters, each with an unique label.
         tuple[1]: number of clusters identified.
-    """
 
+    """
     if diag is False:
         s = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
     elif diag is True:
@@ -100,11 +95,14 @@ def cluster_cells(flag_array: np.array,
     return (labelled_array, num_clusters)
 
 
-def check_cluster_pop(band: np.array,
-                      labelled_array: np.array,
-                      num_clusters: int,
-                      pop_threshold: int = 50000):
-    """
+def check_cluster_pop(
+    band: np.array,
+    labelled_array: np.array,
+    num_clusters: int,
+    pop_threshold: int = 50000,
+):
+    """Filter clusters based on total population.
+
     Checks whether clusters have more than the threshold population
     and changes label for those that don't to 0.
 
@@ -123,8 +121,9 @@ def check_cluster_pop(band: np.array,
 
     Returns
     -------
-        np.array: array including only clusters with 
+        np.array: array including only clusters with
         population over the threshold.
+
     """
     urban_centres = labelled_array.copy()
     for n in range(1, num_clusters + 1):
@@ -137,22 +136,40 @@ def check_cluster_pop(band: np.array,
     return urban_centres
 
 
-def custom_filter(win, threshold):
-    """
-    Auxiliary function to apply in generic_filter. Counts non-zero
-    values within window and if higher than threshold and cell is zero
+def custom_filter(win: np.array, threshold: int) -> int:
+    """Check gap filling criteria.
+
+    Counts non-zero values within window and if
+    higher than threshold and cell is zero
     returns mode, else returns value of origin cell.
+
+    Parameters
+    ----------
+    win : np.array
+        1-D flattened array of a 3x3 grid, where the
+        centre is win[len(win) // 2]. Note that cells
+        outside of the edges are filled with 0.
+    threshold: int
+        Number of cells that need to be filled to change
+        the value of the central cell.
+
+    Returns
+    -------
+        int: value to impute to the central cell.
+
     """
-    if ((np.count_nonzero(win) >= threshold)
-            & (win[len(win) // 2] == 0)):
-        r = max(mode(win, axis=None, keepdims=True).mode)
+    counter = Counter(win)
+    mode_count = counter.most_common(1)[0]
+    if (mode_count[1] >= threshold) & (win[len(win) // 2] == 0):
+        r = mode_count[0]
     else:
         r = win[len(win) // 2]
     return r
 
 
 def fill_gaps(urban_centres: np.array, threshold: int = 5) -> np.array:
-    """
+    """Fill gaps in urban clusters.
+
     For empty cells, checks if at least 5 adjacent cells belong to cluster,
     and if so fills with cluster value.
 
@@ -168,20 +185,22 @@ def fill_gaps(urban_centres: np.array, threshold: int = 5) -> np.array:
 
     Returns
     -------
-        np.array: array including urban centres with gaps filled
+        np.array: array including urban centres with gaps filled.
 
-    TODO: need to account for cases where a cell is surrounded by multiple
-    clusters.
     """
     gf = urban_centres.copy()
     n = 0
     while True:
         n += 1
         check = gf.copy()
-        gf = generic_filter(gf, function=custom_filter, size=3,
-                            mode='constant',
-                            extra_keywords={'threshold': threshold})
+        gf = generic_filter(
+            gf,
+            function=custom_filter,
+            size=3,
+            mode="constant",
+            extra_keywords={"threshold": threshold},
+        )
         if np.array_equal(gf, check):
-            print('iter', n)
+            print("iter", n)
             break
     return gf
