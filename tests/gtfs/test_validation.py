@@ -1,6 +1,7 @@
 """Tests for validation module."""
 import pytest
 from pyprojroot import here
+import gtfs_kit as gk
 
 from heimdall_transport.gtfs.validation import Gtfs_Instance
 
@@ -8,9 +9,7 @@ from heimdall_transport.gtfs.validation import Gtfs_Instance
 class TestGtfsInstance(object):
     """Tests related to the Gtfs_Instance class."""
 
-    def test_init_defensive_behaviours(
-        self, fix_gtfs_pth=here("tests/data/newport-20230613_gtfs.zip")
-    ):
+    def test_init_defensive_behaviours(self):
         """Testing parameter validation on class initialisation."""
         with pytest.raises(
             TypeError,
@@ -29,12 +28,22 @@ class TestGtfsInstance(object):
             Gtfs_Instance(
                 gtfs_pth=here("tests/data/newport-2023-06-13.osm.pbf")
             )
+        # handling units
         with pytest.raises(
             TypeError, match=r"`units` expected a string. Found <class 'bool'>"
         ):
-            Gtfs_Instance(gtfs_pth=fix_gtfs_pth, units=False)
+            Gtfs_Instance(units=False)
         # non metric units
         with pytest.raises(
             ValueError, match=r"`units` accepts metric only. Found: miles"
         ):
-            Gtfs_Instance(gtfs_pth=fix_gtfs_pth, units="Miles")
+            Gtfs_Instance(units="Miles")  # imperial units not implemented
+
+    def test_init_on_pass(self):
+        """Assertions about the feed attribute."""
+        gtfs = Gtfs_Instance()
+        assert isinstance(gtfs.feed, gk.feed.Feed)
+        assert gtfs.feed.dist_units == "m"
+        # can coerce to correct distance unit?
+        gtfs1 = Gtfs_Instance(units="kilometers")
+        assert gtfs1.feed.dist_units == "km"
