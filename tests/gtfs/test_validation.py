@@ -2,6 +2,7 @@
 import pytest
 from pyprojroot import here
 import gtfs_kit as gk
+import pandas as pd
 
 from heimdall_transport.gtfs.validation import Gtfs_Instance
 
@@ -49,3 +50,12 @@ class TestGtfsInstance(object):
         assert gtfs1.feed.dist_units == "km"
         gtfs2 = Gtfs_Instance(units="metres")
         assert gtfs2.feed.dist_units == "m"
+
+    def test_is_valid(self):
+        """Assertions about validity_df table."""
+        gtfs = Gtfs_Instance()
+        gtfs.is_valid()
+        assert isinstance(gtfs.validity_df, pd.core.frame.DataFrame)
+        assert gtfs.validity_df.shape == (7, 4)
+        exp_cols = pd.Index(["type", "message", "table", "rows"])
+        assert (gtfs.validity_df.columns == exp_cols).all()
