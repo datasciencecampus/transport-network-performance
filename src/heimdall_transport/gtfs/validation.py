@@ -73,11 +73,20 @@ class Gtfs_Instance:
         None
 
         """
+        try:
+            isinstance(self.validity_df, None)
+        except AttributeError:
+            raise AttributeError(
+                "`self.validity_df` is None, did you forget to use "
+                "`self.is_valid()`?"
+            )
+
         msgs = (
             self.validity_df.set_index("type")
             .sort_index()
             .loc[alert_type]["message"]
         )
+
         # multiple errors
         if isinstance(msgs, pd.core.series.Series):
             for m in msgs:
