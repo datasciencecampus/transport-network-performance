@@ -47,3 +47,5 @@ class TestGtfsInstance(object):
         # can coerce to correct distance unit?
         gtfs1 = Gtfs_Instance(units="kilometers")
         assert gtfs1.feed.dist_units == "km"
+        gtfs2 = Gtfs_Instance(units="metres")
+        assert gtfs2.feed.dist_units == "m"
