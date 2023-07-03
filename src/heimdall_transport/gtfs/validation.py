@@ -110,7 +110,7 @@ class Gtfs_Instance:
                     f"Units Only. Units Found are in {units}."
                 )
 
-            title_pre = '<h3 align="center" style="font-size:16px"><b>'
+            title_pre = "<h3 align='center' style='font-size:16px'><b>"
             title_html = f"{title_pre}{txt}</b></h3>"
 
             gtfs_centroid = self.feed.compute_centroid()
