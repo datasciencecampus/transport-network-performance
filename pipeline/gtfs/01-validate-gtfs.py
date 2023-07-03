@@ -26,15 +26,19 @@ HULL_MAP_PATH = CONFIG["MAPS"]["STOP_HULL_PTH"]
 
 feed = Gtfs_Instance(gtfs_pth=GTFS_PTH, units=UNITS)
 print(feed.is_valid())
+print(feed.validity_df["type"].value_counts())
 feed.print_alerts()
 feed.print_alerts(alert_type="warning")
 feed.clean_feed()
 print(feed.is_valid())
+print(feed.validity_df["type"].value_counts())
 feed.print_alerts()
 feed.print_alerts(alert_type="warning")
 # visualise gtfs
 feed.viz_stops(out_pth=POINT_MAP_PTH)
+print(f"Map written to {POINT_MAP_PTH}")
 feed.viz_stops(out_pth=HULL_MAP_PATH, geoms="hull", geom_crs=GEOM_CRS)
+print(f"Map written to {HULL_MAP_PATH}")
 print(feed.get_route_modes())
 with warnings.catch_warnings():  # slow & triggers warnings, gtfs_kit issue
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
