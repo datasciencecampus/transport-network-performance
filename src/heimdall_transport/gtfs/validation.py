@@ -73,9 +73,7 @@ class Gtfs_Instance:
         None
 
         """
-        try:
-            isinstance(self.validity_df, None)
-        except AttributeError:
+        if not hasattr(self, "validity_df"):
             raise AttributeError(
                 "`self.validity_df` is None, did you forget to use "
                 "`self.is_valid()`?"
