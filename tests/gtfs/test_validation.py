@@ -70,7 +70,7 @@ class TestGtfsInstance(object):
             gtfs = Gtfs_Instance()
             gtfs.print_alerts()
 
-    @patch("builtins.print")
+    @patch("builtins.print")  # testing print statements
     def test_print_alerts_single_case(self, mocked_print):
         """Check alerts print as expected without truncation."""
         gtfs = Gtfs_Instance()
@@ -79,4 +79,20 @@ class TestGtfsInstance(object):
         # fixture contains single error
         assert mocked_print.mock_calls == [
             call("Invalid route_type; maybe has extra space characters")
+        ]
+
+    @patch("builtins.print")
+    def test_print_alerts_multi_case(self, mocked_print):
+        """Check multiple alerts are printed as expected."""
+        gtfs = Gtfs_Instance()
+        gtfs.is_valid()
+        # fixture contains several warnings
+        gtfs.print_alerts(alert_type="warning")
+        assert mocked_print.mock_calls == [
+            call("Unrecognized column agency_noc"),
+            call("Repeated pair (route_short_name, route_long_name)"),
+            call("Unrecognized column stop_direction_name"),
+            call("Unrecognized column platform_code"),
+            call("Unrecognized column trip_direction_name"),
+            call("Unrecognized column vehicle_journey_code"),
         ]
