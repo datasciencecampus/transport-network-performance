@@ -3,6 +3,7 @@ import pytest
 from pyprojroot import here
 import gtfs_kit as gk
 import pandas as pd
+from unittest.mock import patch, call
 
 from heimdall_transport.gtfs.validation import Gtfs_Instance
 
@@ -68,3 +69,14 @@ class TestGtfsInstance(object):
         ):
             gtfs = Gtfs_Instance()
             gtfs.print_alerts()
+
+    @patch("builtins.print")
+    def test_print_alerts_single_case(self, mocked_print):
+        """Check alerts print as expected without truncation."""
+        gtfs = Gtfs_Instance()
+        gtfs.is_valid()
+        gtfs.print_alerts()
+        # fixture contains single error
+        assert mocked_print.mock_calls == [
+            call("Invalid route_type; maybe has extra space characters")
+        ]
