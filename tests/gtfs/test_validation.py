@@ -59,3 +59,12 @@ class TestGtfsInstance(object):
         assert gtfs.validity_df.shape == (7, 4)
         exp_cols = pd.Index(["type", "message", "table", "rows"])
         assert (gtfs.validity_df.columns == exp_cols).all()
+
+    def test_print_alerts_defence(self):
+        """Check defensive behaviour of print_alerts()."""
+        with pytest.raises(
+            AttributeError,
+            match=r"is None, did you forget to use `self.is_valid()`?",
+        ):
+            gtfs = Gtfs_Instance()
+            gtfs.print_alerts()
