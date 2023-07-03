@@ -6,6 +6,8 @@ import geopandas as gpd
 import folium
 from datetime import datetime
 import numpy as np
+import os
+import pathlib
 
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 
@@ -16,6 +18,33 @@ class Gtfs_Instance:
     def __init__(
         self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
     ):
+        if not isinstance(gtfs_pth, (pathlib.PosixPath, str)):
+            raise TypeError(
+                f"`gtfs_pth` expected a path-like, found {type(gtfs_pth)}"
+            )
+        elif not os.path.exists(gtfs_pth):
+            raise FileExistsError(f"{gtfs_pth} not found on file.")
+
+        ext = os.path.splitext(gtfs_pth)[-1]
+        if ext != ".zip":
+            raise ValueError(
+                f"`gtfs_pth` expected a zip file extension. Found {ext}"
+            )
+
+        # validate units param
+        if not isinstance(units, str):
+            raise TypeError(f"`units` expected a string. Found {type(units)}")
+
+        units = units.lower().strip()
+        if units in ["metres", "meters"]:
+            units = "m"
+        elif units in ["kilometers", "kilometres"]:
+            units = "km"
+        accepted_units = ["m", "km"]
+
+        if units not in accepted_units:
+            raise ValueError(f"`units` accepts metric only. Found: {units}")
+
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
 
     def is_valid(self):
