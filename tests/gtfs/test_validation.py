@@ -8,6 +8,13 @@ from unittest.mock import patch, call
 from heimdall_transport.gtfs.validation import Gtfs_Instance
 
 
+@pytest.fixture(scope="function")  # some funcs expect cleaned feed others dont
+def gtfs_fixture():
+    """Fixture for test funcs expecting a valid feed object."""
+    gtfs = Gtfs_Instance()
+    return gtfs
+
+
 class TestGtfsInstance(object):
     """Tests related to the Gtfs_Instance class."""
 
@@ -52,42 +59,38 @@ class TestGtfsInstance(object):
         gtfs2 = Gtfs_Instance(units="metres")
         assert gtfs2.feed.dist_units == "m"
 
-    def test_is_valid(self):
+    def test_is_valid(self, gtfs_fixture):
         """Assertions about validity_df table."""
-        gtfs = Gtfs_Instance()
-        gtfs.is_valid()
-        assert isinstance(gtfs.validity_df, pd.core.frame.DataFrame)
-        assert gtfs.validity_df.shape == (7, 4)
+        gtfs_fixture.is_valid()
+        assert isinstance(gtfs_fixture.validity_df, pd.core.frame.DataFrame)
+        assert gtfs_fixture.validity_df.shape == (7, 4)
         exp_cols = pd.Index(["type", "message", "table", "rows"])
-        assert (gtfs.validity_df.columns == exp_cols).all()
+        assert (gtfs_fixture.validity_df.columns == exp_cols).all()
 
-    def test_print_alerts_defence(self):
+    def test_print_alerts_defence(self, gtfs_fixture):
         """Check defensive behaviour of print_alerts()."""
         with pytest.raises(
             AttributeError,
             match=r"is None, did you forget to use `self.is_valid()`?",
         ):
-            gtfs = Gtfs_Instance()
-            gtfs.print_alerts()
+            gtfs_fixture.print_alerts()
 
     @patch("builtins.print")  # testing print statements
-    def test_print_alerts_single_case(self, mocked_print):
+    def test_print_alerts_single_case(self, mocked_print, gtfs_fixture):
         """Check alerts print as expected without truncation."""
-        gtfs = Gtfs_Instance()
-        gtfs.is_valid()
-        gtfs.print_alerts()
+        gtfs_fixture.is_valid()
+        gtfs_fixture.print_alerts()
         # fixture contains single error
         assert mocked_print.mock_calls == [
             call("Invalid route_type; maybe has extra space characters")
         ]
 
     @patch("builtins.print")
-    def test_print_alerts_multi_case(self, mocked_print):
+    def test_print_alerts_multi_case(self, mocked_print, gtfs_fixture):
         """Check multiple alerts are printed as expected."""
-        gtfs = Gtfs_Instance()
-        gtfs.is_valid()
+        gtfs_fixture.is_valid()
         # fixture contains several warnings
-        gtfs.print_alerts(alert_type="warning")
+        gtfs_fixture.print_alerts(alert_type="warning")
         assert mocked_print.mock_calls == [
             call("Unrecognized column agency_noc"),
             call("Repeated pair (route_short_name, route_long_name)"),
