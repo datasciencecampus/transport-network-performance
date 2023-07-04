@@ -2,6 +2,13 @@
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
+import warnings
+
+warnings.filterwarnings(
+    action="ignore", category=DeprecationWarning, module=".*pkg_resources"
+)
+# see https://github.com/datasciencecampus/transport-network-performance/
+# issues/19
 
 
 def _url_defence(url):
