@@ -205,3 +205,27 @@ class TestGtfsInstance(object):
             match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
         ):
             gtfs_fixture.summarise_weekday(summ_ops=38)
+
+    @pytest.mark.runexpensive
+    def test_summarise_weekday_on_pass(self, gtfs_fixture):
+        """Assertions about the table returned by summarise_weekday."""
+        gtfs_fixture.summarise_weekday()
+        assert isinstance(gtfs_fixture.weekday_stats, pd.core.frame.DataFrame)
+        exp_cols = pd.Index(
+            [
+                "num_stops",
+                "num_routes",
+                "num_trips",
+                "num_trip_starts",
+                "num_trip_ends",
+                "service_distance",
+                "service_duration",
+                "service_speed",
+                "peak_num_trips",
+                "peak_start_time",
+                "peak_end_time",
+                "date",
+                "is_weekend",
+            ]
+        )
+        assert (gtfs_fixture.weekday_stats.columns == exp_cols).all()

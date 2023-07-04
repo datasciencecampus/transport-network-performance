@@ -22,6 +22,12 @@ def pytest_addoption(parser):
         default=False,
         help="run integration tests",
     )
+    parser.addoption(
+        "--runexpensive",
+        action="store_true",
+        default=False,
+        help="run expensive tests",
+    )
 
 
 def pytest_configure(config):
@@ -30,9 +36,12 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "runinteg: mark test to run for integration tests"
     )
+    config.addinivalue_line(
+        "markers", "runexpensive: mark test to run expensive tests"
+    )
 
 
-def pytest_collection_modifyitems(config, items):
+def pytest_collection_modifyitems(config, items):  # noqa C901
     """Handle switching based on cli args."""
     if config.getoption("--runsetup"):
         # --runsetup given in cli: do not skip slow tests
@@ -48,3 +57,12 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "runinteg" in item.keywords:
             item.add_marker(skip_runinteg)
+
+    if config.getoption("--runexpensive"):
+        return
+    skip_runexpensive = pytest.mark.skip(
+        reason="need --runexpensive option to run"
+    )
+    for item in items:
+        if "runexpensive" in item.keywords:
+            item.add_marker(skip_runexpensive)
