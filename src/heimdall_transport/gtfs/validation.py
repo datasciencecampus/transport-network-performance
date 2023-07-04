@@ -204,7 +204,6 @@ class Gtfs_Instance:
         if geoms == "point":
             # viz stop locations
             m = self.feed.map_stops(self.feed.stops["stop_id"])
-            m.save(out_pth)
         elif geoms == "hull":
             # visualise feed, output to file with area est, based on stop locs
             gtfs_hull = self.feed.compute_convex_hull()
@@ -228,7 +227,7 @@ class Gtfs_Instance:
             )
             geo_j.add_to(m)
             m.get_root().html.add_child(folium.Element(title_html))
-            m.save(out_pth)
+        m.save(out_pth)
 
     def summarise_weekday(self, summ_ops=[np.min, np.max, np.mean, np.median]):
         """Produce a table of summary stats by weekday / weekend.
