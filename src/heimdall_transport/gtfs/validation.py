@@ -8,6 +8,7 @@ from datetime import datetime
 import numpy as np
 import os
 import pathlib
+import inspect
 
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 
@@ -67,6 +68,26 @@ def _create_map_title_text(gdf, units, geom_crs):
             f"Units Only. Units Found are in {units}."
         )
     return txt
+
+
+def _check_namespace_export(pkg=np, func=np.min):
+    """Check that a function is exported from the specified namespace.
+
+    Parameters
+    ----------
+    pkg : module
+        The package to check. If imported as alias, must use alias. Defaults to
+        np.
+
+    func : function
+        The function to check is exported from pkg. Defaults to np.mean.
+
+    Returns
+    -------
+    bool: True if func is exported from pkg namespace.
+
+    """
+    return hasattr(pkg, func.__name__)
 
 
 class Gtfs_Instance:
@@ -246,6 +267,26 @@ class Gtfs_Instance:
         trips, service distance & service duration.
 
         """
+        # summ_ops defence
+
+        if isinstance(summ_ops, list):
+            for i in summ_ops:
+                if not _check_namespace_export(pkg=np, func=i):
+                    raise TypeError(
+                        "Each item in `summ_ops` must be a numpy function."
+                        f" Found {type(i)} : {i}"
+                    )
+        elif inspect.isfunction(summ_ops):
+            if not _check_namespace_export(pkg=np, func=summ_ops):
+                raise NotImplementedError(
+                    "`summ_ops` expects numpy functions only."
+                )
+        else:
+            raise TypeError(
+                "`summ_ops` expects a numpy function or list of numpy"
+                f" functions. Found {type(summ_ops)}"
+            )
+
         available_dates = self.feed.get_dates()
         trip_stats = gk.trips.compute_trip_stats(self.feed)
         # next step is costly and comes with some pd warnings
