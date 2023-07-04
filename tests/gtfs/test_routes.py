@@ -1,6 +1,7 @@
 """Testing routes module."""
 import pytest
 import pandas as pd
+from pyprojroot import here
 
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 
@@ -95,3 +96,11 @@ class TestScrapeRouteTypeLookup(object):
                 index=[0, 1],
             ),
         )
+
+    @pytest.mark.runinteg
+    def test_lookup_is_stable(self):
+        """Check if the tables at the urls have changed content."""
+        # import the expected fixtures
+        lookup_fix = pd.read_pickle(here("tests/data/gtfs/route_lookup.pkl"))
+        lookup = scrape_route_type_lookup()
+        pd.testing.assert_frame_equal(lookup, lookup_fix)
