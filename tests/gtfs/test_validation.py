@@ -5,8 +5,12 @@ import gtfs_kit as gk
 import pandas as pd
 from unittest.mock import patch, call
 import os
+from geopandas import GeoDataFrame
 
-from heimdall_transport.gtfs.validation import Gtfs_Instance
+from heimdall_transport.gtfs.validation import (
+    Gtfs_Instance,
+    _create_map_title_text,
+)
 
 
 @pytest.fixture(scope="function")  # some funcs expect cleaned feed others dont
@@ -149,3 +153,12 @@ class TestGtfsInstance(object):
         tmp = os.path.join(tmpdir, "hull.html")
         gtfs_fixture.viz_stops(out_pth=tmp, geoms="hull")
         assert os.path.exists(tmp)
+
+    def test__create_map_title_text(self):
+        """Check helper can cope with non-metric cases."""
+        gdf = GeoDataFrame()
+        txt = _create_map_title_text(gdf=gdf, units="miles", geom_crs=27700)
+        assert txt == (
+            "GTFS Stops Convex Hull. Area Calculation for Metric Units Only. "
+            "Units Found are in miles."
+        )
