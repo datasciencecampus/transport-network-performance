@@ -63,7 +63,7 @@ def _create_map_title_text(gdf, units, geom_crs):
         txt = f"{pre}{int(round(hull_km2[0], 0)):,}{post}"
     else:
         txt = (
-            "GTFS Stops Convex Hull. Area Calculation for Metric"
+            "GTFS Stops Convex Hull. Area Calculation for Metric "
             f"Units Only. Units Found are in {units}."
         )
     return txt
