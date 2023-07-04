@@ -22,7 +22,7 @@ class TestGtfsInstance(object):
         """Testing parameter validation on class initialisation."""
         with pytest.raises(
             TypeError,
-            match=r"`gtfs_pth` expected a path-like, found <class 'int'>",
+            match=r"`gtfs_pth` expected path-like, found <class 'int'>.",
         ):
             Gtfs_Instance(gtfs_pth=1)
         with pytest.raises(
@@ -104,7 +104,7 @@ class TestGtfsInstance(object):
         """Check defensive behaviours of viz_stops()."""
         with pytest.raises(
             TypeError,
-            match="`out_pth` expected path-like, instead found <class 'bool'>",
+            match="`out_pth` expected path-like, found <class 'bool'>",
         ):
             gtfs_fixture.viz_stops(out_pth=True)
         with pytest.raises(
