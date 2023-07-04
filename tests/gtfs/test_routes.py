@@ -5,7 +5,7 @@ import pandas as pd
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 
 
-def mocked__get_response_text(*args, **kwargs):
+def mocked__get_response_text(*args):
     """Mock _get_response_text.
 
     Returns
