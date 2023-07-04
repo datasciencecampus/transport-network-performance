@@ -6,6 +6,7 @@ import pandas as pd
 from unittest.mock import patch, call
 import os
 from geopandas import GeoDataFrame
+import numpy as np
 
 from heimdall_transport.gtfs.validation import (
     Gtfs_Instance,
@@ -171,3 +172,36 @@ class TestGtfsInstance(object):
         )
         exp_cols = pd.Index(["route_type", "desc", "n_routes", "prop_routes"])
         assert (gtfs_fixture.route_mode_summary_df.columns == exp_cols).all()
+
+    def test_summarise_weekday_defence(self, gtfs_fixture):
+        """Defensive checks for summarise_weekday()."""
+        with pytest.raises(
+            TypeError,
+            match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
+        ):
+            gtfs_fixture.summarise_weekday(summ_ops=[np.mean, "np.mean"])
+        # case where is function but not exported from numpy
+
+        def dummy_func():
+            """Test case func."""
+            return None
+
+        with pytest.raises(
+            TypeError,
+            match=(
+                "Each item in `summ_ops` must be a numpy function. Found"
+                " <class 'function'> : dummy_func"
+            ),
+        ):
+            gtfs_fixture.summarise_weekday(summ_ops=[np.min, dummy_func])
+        # case where a single non-numpy func is being passed
+        with pytest.raises(
+            NotImplementedError,
+            match="`summ_ops` expects numpy functions only.",
+        ):
+            gtfs_fixture.summarise_weekday(summ_ops=dummy_func)
+        with pytest.raises(
+            TypeError,
+            match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
+        ):
+            gtfs_fixture.summarise_weekday(summ_ops=38)
