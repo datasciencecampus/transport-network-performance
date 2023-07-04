@@ -12,17 +12,71 @@ import pathlib
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 
 
+def _path_like_defence(pth, param_nm):
+    """Handle path-like parameter values.
+
+    Parameters
+    ----------
+    pth : (str, pathlib.PosixPath)
+        The path to check.
+
+    param_nm : str
+        The name of the parameter being tested.
+
+    Raises
+    ------
+    TypeError: `pth` is not either of string or pathlib.PosixPath.
+
+    Returns
+    -------
+    None
+
+    """
+    if not isinstance(pth, (str, pathlib.PosixPath)):
+        raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
+
+
+def _create_map_title_text(gdf, units, geom_crs):
+    """Generate the map title text when plotting convex hull.
+
+    Parameters
+    ----------
+    gdf :  gpd.GeoDataFrame
+        GeoDataFrame containing the spatial features.
+    units :  str
+        Distance units of the GTFS feed from which `gdf` originated.
+    geom_crs : (str, int):
+        The geometric crs to use in reprojecting the data in order to
+        calculate the area of the hull polygon.
+
+    Returns
+    -------
+    str : The formatted text string for presentation in the map title.
+
+    """
+    if units in ["m", "km"]:
+        hull_km2 = gdf.to_crs(geom_crs).area
+        if units == "m":
+            hull_km2 = hull_km2 / 1000000
+        pre = "GTFS Stops Convex Hull Area: "
+        post = " nearest km<sup>2</sup>."
+        txt = f"{pre}{int(round(hull_km2[0], 0)):,}{post}"
+    else:
+        txt = (
+            "GTFS Stops Convex Hull. Area Calculation for Metric"
+            f"Units Only. Units Found are in {units}."
+        )
+    return txt
+
+
 class Gtfs_Instance:
     """Create a feed instance for validation, cleaning & visualisation."""
 
     def __init__(
         self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
     ):
-        if not isinstance(gtfs_pth, (pathlib.PosixPath, str)):
-            raise TypeError(
-                f"`gtfs_pth` expected a path-like, found {type(gtfs_pth)}"
-            )
-        elif not os.path.exists(gtfs_pth):
+        _path_like_defence(pth=gtfs_pth, param_nm="gtfs_pth")
+        if not os.path.exists(gtfs_pth):
             raise FileExistsError(f"{gtfs_pth} not found on file.")
 
         ext = os.path.splitext(gtfs_pth)[-1]
@@ -103,7 +157,8 @@ class Gtfs_Instance:
         Parameters
         ----------
         out_pth : str
-            Path to write the map file html document to.
+            Path to write the map file html document to, including the file
+            name. Must end with '.html' file extension.
 
         geoms : str
             Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`
@@ -119,6 +174,33 @@ class Gtfs_Instance:
         None
 
         """
+        # out_pth defence
+        _path_like_defence(out_pth, param_nm="out_pth")
+
+        pre, ext = os.path.splitext(out_pth)
+        if ext != ".html":
+            print(f"{ext} format not implemented. Writing to .html")
+            out_pth = os.path.normpath(pre + ".html")
+
+        parent_dir = os.path.dirname(out_pth)
+        if not os.path.exists(parent_dir):
+            # create parent directory
+            os.mkdir(parent_dir)
+
+        # geoms defence
+        if not isinstance(geoms, str):
+            raise TypeError(f"`geoms` expects a string. Found {type(geoms)}")
+        geoms = geoms.lower().strip()
+        accept_vals = ["point", "hull"]
+        if geoms not in accept_vals:
+            raise ValueError("`geoms` must be either 'point' or 'hull.'")
+
+        # geom_crs defence
+        if not isinstance(geom_crs, (str, int)):
+            raise TypeError(
+                f"`geom_crs` expects string or integer. Found {type(geom_crs)}"
+            )
+
         if geoms == "point":
             # viz stop locations
             m = self.feed.map_stops(self.feed.stops["stop_id"])
@@ -131,20 +213,7 @@ class Gtfs_Instance:
             )
             units = self.feed.dist_units
             # prepare the map title
-            hull_km2 = 0.0
-            if units in ["m", "km"]:
-                hull_km2 = gdf.to_crs(geom_crs).area
-                if units == "m":
-                    hull_km2 = hull_km2 / 1000000
-
-                pre = "GTFS Stops Convex Hull Area: "
-                post = " nearest km<sup>2</sup>."
-                txt = f"{pre}{int(round(hull_km2[0], 0)):,}{post}"
-            else:
-                txt = (
-                    "GTFS Stops Convex Hull. Area Calculation for Metric"
-                    f"Units Only. Units Found are in {units}."
-                )
+            txt = _create_map_title_text(gdf, units, geom_crs)
 
             title_pre = "<h3 align='center' style='font-size:16px'><b>"
             title_html = f"{title_pre}{txt}</b></h3>"
