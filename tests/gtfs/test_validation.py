@@ -99,3 +99,21 @@ class TestGtfsInstance(object):
             call("Unrecognized column trip_direction_name"),
             call("Unrecognized column vehicle_journey_code"),
         ]
+
+    def test_viz_stops_defence(self, gtfs_fixture):
+        """Check defensive behaviours of viz_stops()."""
+        with pytest.raises(
+            TypeError,
+            match="`out_pth` expected path-like, instead found <class 'bool'>",
+        ):
+            gtfs_fixture.viz_stops(out_pth=True)
+        with pytest.raises(
+            TypeError, match="`geoms` expects a string. Found <class 'int'>"
+        ):
+            gtfs_fixture.viz_stops(out_pth="outputs/somefile.html", geoms=38)
+        with pytest.raises(
+            ValueError, match="`geoms` must be either 'point' or 'hull."
+        ):
+            gtfs_fixture.viz_stops(
+                out_pth="outputs/somefile.html", geoms="foobar"
+            )
