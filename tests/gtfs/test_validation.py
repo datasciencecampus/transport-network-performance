@@ -143,3 +143,9 @@ class TestGtfsInstance(object):
             call(".svg format not implemented. Writing to .html")
         ]
         assert os.path.exists(os.path.join(tmpdir, "points2.html"))
+
+    def test_viz_stops_hull(self, tmpdir, gtfs_fixture):
+        """Check viz_stops behaviour when plotting hull geom."""
+        tmp = os.path.join(tmpdir, "hull.html")
+        gtfs_fixture.viz_stops(out_pth=tmp, geoms="hull")
+        assert os.path.exists(tmp)
