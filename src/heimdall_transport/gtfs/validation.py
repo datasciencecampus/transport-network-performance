@@ -271,10 +271,18 @@ class Gtfs_Instance:
 
         if isinstance(summ_ops, list):
             for i in summ_ops:
-                if not _check_namespace_export(pkg=np, func=i):
+                if inspect.isfunction(i):
+                    if not _check_namespace_export(pkg=np, func=i):
+                        raise TypeError(
+                            "Each item in `summ_ops` must be a numpy function."
+                            f" Found {type(i)} : {i.__name__}"
+                        )
+                else:
                     raise TypeError(
-                        "Each item in `summ_ops` must be a numpy function."
-                        f" Found {type(i)} : {i}"
+                        (
+                            "Each item in `summ_ops` must be a function."
+                            f" Found {type(i)} : {i}"
+                        )
                     )
         elif inspect.isfunction(summ_ops):
             if not _check_namespace_export(pkg=np, func=summ_ops):
