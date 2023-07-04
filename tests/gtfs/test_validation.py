@@ -4,6 +4,7 @@ from pyprojroot import here
 import gtfs_kit as gk
 import pandas as pd
 from unittest.mock import patch, call
+import os
 
 from heimdall_transport.gtfs.validation import Gtfs_Instance
 
@@ -117,3 +118,28 @@ class TestGtfsInstance(object):
             gtfs_fixture.viz_stops(
                 out_pth="outputs/somefile.html", geoms="foobar"
             )
+        with pytest.raises(
+            TypeError,
+            match="`geom_crs`.*string or integer. Found <class 'float'>",
+        ):
+            gtfs_fixture.viz_stops(
+                out_pth="outputs/somefile.html", geom_crs=1.1
+            )
+
+    @patch("builtins.print")
+    def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
+        """Check behaviour of viz_stops when plotting point geom."""
+        tmp = os.path.join(tmpdir, "points.html")
+        gtfs_fixture.viz_stops(out_pth=tmp)
+        assert os.path.exists(tmp)
+        # check behaviour when parent directory doesn't exist
+        no_parent_pth = os.path.join(tmpdir, "notfound", "points1.html")
+        gtfs_fixture.viz_stops(out_pth=no_parent_pth)
+        assert os.path.exists(no_parent_pth)
+        # check behaviour when not implemented fileext used
+        tmp1 = os.path.join(tmpdir, "points2.svg")
+        gtfs_fixture.viz_stops(out_pth=tmp1)
+        assert mock_print.mock_calls == [
+            call(".svg format not implemented. Writing to .html")
+        ]
+        assert os.path.exists(os.path.join(tmpdir, "points2.html"))
