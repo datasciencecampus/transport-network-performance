@@ -162,3 +162,12 @@ class TestGtfsInstance(object):
             "GTFS Stops Convex Hull. Area Calculation for Metric Units Only. "
             "Units Found are in miles."
         )
+
+    def test_get_route_modes(self, gtfs_fixture):
+        """Assertions about the table returned by get_route_modes()."""
+        gtfs_fixture.get_route_modes()
+        assert isinstance(
+            gtfs_fixture.route_mode_summary_df, pd.core.frame.DataFrame
+        )
+        exp_cols = pd.Index(["route_type", "desc", "n_routes", "prop_routes"])
+        assert (gtfs_fixture.route_mode_summary_df.columns == exp_cols).all()
