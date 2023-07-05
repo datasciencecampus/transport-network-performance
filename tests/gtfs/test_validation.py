@@ -164,9 +164,19 @@ class TestGtfsInstance(object):
             "Units Found are in miles."
         )
 
-    def test_get_route_modes(self, gtfs_fixture):
+    def test_get_route_modes(self, gtfs_fixture, mocker):
         """Assertions about the table returned by get_route_modes()."""
+        patch_scrape_lookup = mocker.patch(
+            "heimdall_transport.gtfs.validation.scrape_route_type_lookup",
+            # be sure to patch the func wherever it's being called
+            return_value=pd.DataFrame(
+                {"route_type": ["3"], "desc": ["Mocked bus"]}
+            ),
+        )
         gtfs_fixture.get_route_modes()
+        # check mocker was called
+        assert patch_scrape_lookup.called
+        assert gtfs_fixture.route_mode_summary_df["desc"][0] == "Mocked bus"
         assert isinstance(
             gtfs_fixture.route_mode_summary_df, pd.core.frame.DataFrame
         )
