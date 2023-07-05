@@ -2,6 +2,7 @@
 import pytest
 import pandas as pd
 from pyprojroot import here
+from unittest.mock import call
 
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 
@@ -67,11 +68,15 @@ class TestScrapeRouteTypeLookup(object):
 
     def test_table_without_extended_schema(self, mocker):
         """Check the return object when extended_schema = False."""
-        mocker.patch(
+        patch_resp_txt = mocker.patch(
             "heimdall_transport.gtfs.routes._get_response_text",
             side_effect=mocked__get_response_text,
         )
         result = scrape_route_type_lookup(extended_schema=False)
+        # did the mocker get used
+        assert patch_resp_txt.call_args_list == [
+            call("https://gtfs.org/schedule/reference/")
+        ]
         assert isinstance(result, pd.core.frame.DataFrame)
         pd.testing.assert_frame_equal(
             result,
@@ -80,11 +85,21 @@ class TestScrapeRouteTypeLookup(object):
 
     def test_table_with_extended_schema(self, mocker):
         """Check return table when extended schema = True."""
-        mocker.patch(
+        patch_resp_txt = mocker.patch(
             "heimdall_transport.gtfs.routes._get_response_text",
             side_effect=mocked__get_response_text,
         )
         result = scrape_route_type_lookup()
+        assert patch_resp_txt.call_args_list == [
+            call("https://gtfs.org/schedule/reference/"),
+            call(
+                (
+                    "https://developers.google.com/transit/gtfs/reference/"
+                    "extended-route-types"
+                )
+            ),
+        ]
+
         assert isinstance(result, pd.core.frame.DataFrame)
         pd.testing.assert_frame_equal(
             result,
