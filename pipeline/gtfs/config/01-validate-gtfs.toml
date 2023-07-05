@@ -8,3 +8,6 @@ GEOMETRIC_CRS = 27700 # used for area calculations only
 [MAPS]
 STOP_COORD_PTH = "outputs/gtfs/validation/gtfs-stops-locations.html"
 STOP_HULL_PTH = "outputs/gtfs/validation/gtfs-stops-convex_hull.html"
+
+[UTILS]
+PROFILING = false
