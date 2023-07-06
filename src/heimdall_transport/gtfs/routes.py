@@ -4,31 +4,13 @@ from bs4 import BeautifulSoup
 import requests
 import warnings
 
+from heimdall_transport.utils.defence import _url_defence, _bool_defence
+
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"
 )
 # see https://github.com/datasciencecampus/transport-network-performance/
 # issues/19
-
-
-def _url_defence(url):
-    """Defence checking. Not exported."""
-    if not isinstance(url, str):
-        raise TypeError(f"url {url} expected string, instead got {type(url)}")
-    elif not url.startswith((r"http://", r"https://")):
-        raise ValueError(f"url string expected protocol, instead found {url}")
-
-    return None
-
-
-def _bool_defence(some_bool):
-    """Defence checking. Not exported."""
-    if not isinstance(some_bool, bool):
-        raise TypeError(
-            f"`extended_schema` expected boolean. Got {type(some_bool)}"
-        )
-
-    return None
 
 
 def _construct_extended_schema_table(some_soup, cd_list, desc_list):

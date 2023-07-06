@@ -12,6 +12,7 @@ import inspect
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 from heimdall_transport.utils.defence import (
     _is_path_like,
+    _is_gtfs_pth,
     _check_namespace_export,
 )
 
@@ -55,15 +56,7 @@ class Gtfs_Instance:
     def __init__(
         self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
     ):
-        _is_path_like(pth=gtfs_pth, param_nm="gtfs_pth")
-        if not os.path.exists(gtfs_pth):
-            raise FileExistsError(f"{gtfs_pth} not found on file.")
-
-        ext = os.path.splitext(gtfs_pth)[-1]
-        if ext != ".zip":
-            raise ValueError(
-                f"`gtfs_pth` expected a zip file extension. Found {ext}"
-            )
+        _is_gtfs_pth(pth=gtfs_pth, param_nm="gtfs_pth")
 
         # validate units param
         if not isinstance(units, str):
