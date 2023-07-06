@@ -7,34 +7,13 @@ import folium
 from datetime import datetime
 import numpy as np
 import os
-import pathlib
 import inspect
 
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
-
-
-def _path_like_defence(pth, param_nm):
-    """Handle path-like parameter values.
-
-    Parameters
-    ----------
-    pth : (str, pathlib.PosixPath)
-        The path to check.
-
-    param_nm : str
-        The name of the parameter being tested.
-
-    Raises
-    ------
-    TypeError: `pth` is not either of string or pathlib.PosixPath.
-
-    Returns
-    -------
-    None
-
-    """
-    if not isinstance(pth, (str, pathlib.PosixPath)):
-        raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
+from heimdall_transport.utils.defence import (
+    _is_path_like,
+    _check_namespace_export,
+)
 
 
 def _create_map_title_text(gdf, units, geom_crs):
@@ -70,33 +49,13 @@ def _create_map_title_text(gdf, units, geom_crs):
     return txt
 
 
-def _check_namespace_export(pkg=np, func=np.min):
-    """Check that a function is exported from the specified namespace.
-
-    Parameters
-    ----------
-    pkg : module
-        The package to check. If imported as alias, must use alias. Defaults to
-        np.
-
-    func : function
-        The function to check is exported from pkg. Defaults to np.mean.
-
-    Returns
-    -------
-    bool: True if func is exported from pkg namespace.
-
-    """
-    return hasattr(pkg, func.__name__)
-
-
 class Gtfs_Instance:
     """Create a feed instance for validation, cleaning & visualisation."""
 
     def __init__(
         self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
     ):
-        _path_like_defence(pth=gtfs_pth, param_nm="gtfs_pth")
+        _is_path_like(pth=gtfs_pth, param_nm="gtfs_pth")
         if not os.path.exists(gtfs_pth):
             raise FileExistsError(f"{gtfs_pth} not found on file.")
 
@@ -196,7 +155,7 @@ class Gtfs_Instance:
 
         """
         # out_pth defence
-        _path_like_defence(out_pth, param_nm="out_pth")
+        _is_path_like(out_pth, param_nm="out_pth")
 
         pre, ext = os.path.splitext(out_pth)
         if ext != ".html":
