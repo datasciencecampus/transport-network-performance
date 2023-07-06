@@ -95,7 +95,5 @@ with warnings.catch_warnings():  # slow & triggers warnings, gtfs_kit issue
     print(feed.summarise_weekday())
 post_summ_weekday = time.perf_counter()
 if PROFILING:
-    print(
-        f"route_modes in {post_summ_weekday - pre_summ_weekday:0.4f} seconds"
-    )
+    print(f"summ_weekday in {post_summ_weekday - pre_summ_weekday:0.4f} secs")
     print(f"Pipeline execution in {post_summ_weekday - pre_init:0.4f}")

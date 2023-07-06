@@ -1,7 +1,7 @@
 title = "Config for GTFS Validation Pipeline"
 
 [GTFS]
-PATH = "tests/data/newport-20230613_gtfs.zip"
+PATH = "data/external/croppednewport-bus-07-07-2022_gtfs.zip"
 UNITS = "m"
 GEOMETRIC_CRS = 27700 # used for area calculations only
 
@@ -10,4 +10,4 @@ STOP_COORD_PTH = "outputs/gtfs/validation/gtfs-stops-locations.html"
 STOP_HULL_PTH = "outputs/gtfs/validation/gtfs-stops-convex_hull.html"
 
 [UTILS]
-PROFILING = false
+PROFILING = true
