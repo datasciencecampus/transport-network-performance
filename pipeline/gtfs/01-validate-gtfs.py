@@ -18,6 +18,7 @@ import time
 import subprocess
 
 from heimdall_transport.gtfs.validation import Gtfs_Instance
+from heimdall_transport.utils.defence import _is_gtfs_pth
 
 CONFIG = toml.load(here("pipeline/gtfs/config/01-validate-gtfs.toml"))
 GTFS_PTH = here(CONFIG["GTFS"]["PATH"])
@@ -26,6 +27,8 @@ GEOM_CRS = CONFIG["GTFS"]["GEOMETRIC_CRS"]
 POINT_MAP_PTH = CONFIG["MAPS"]["STOP_COORD_PTH"]
 HULL_MAP_PATH = CONFIG["MAPS"]["STOP_HULL_PTH"]
 PROFILING = CONFIG["UTILS"]["PROFILING"]
+# check GTFS Path exists
+_is_gtfs_pth(pth=GTFS_PTH, param_nm="GTFS_PTH", check_existing=True)
 # Get the disk usage of the GTFS file.
 gtfs_du = (
     subprocess.check_output(["du", "-sh", GTFS_PTH]).split()[0].decode("utf-8")
@@ -39,10 +42,18 @@ post_init = time.perf_counter()
 if PROFILING:
     print(f"Init in {post_init - pre_init:0.4f} seconds")
 
+feed.get_calendar_dates()
+post_dates = time.perf_counter()
+if PROFILING:
+    print(f"get_calendar_dates in {post_dates - post_init:0.4f} seconds")
+s = feed.available_dates[0]
+f = feed.available_dates[-1]
+print(f"{len(feed.available_dates)} dates available between {s} & {f}.")
+
 print(feed.is_valid())
 post_isvalid = time.perf_counter()
 if PROFILING:
-    print(f"is_valid in {post_isvalid - post_init:0.4f} seconds")
+    print(f"is_valid in {post_isvalid - post_dates:0.4f} seconds")
 
 print(feed.validity_df["type"].value_counts())
 feed.print_alerts()
