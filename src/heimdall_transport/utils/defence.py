@@ -102,3 +102,44 @@ def _bool_defence(some_bool):
         )
 
     return None
+
+
+def _check_list(ls, param_nm, check_elements=True, exp_type=str):
+    """Check a list and its elements for type.
+
+    Parameters
+    ----------
+    ls : list
+        List to check.
+    param_nm : str
+        Name of the parameter being checked.
+    check_elements : (bool, optional)
+        Whether to check the list element types. Defaults to True.
+    exp_type : (_type_, optional):
+        The expected type of the elements. Defaults to str.
+
+    Raises
+    ------
+        TypeError: `ls` is not a list.
+        TypeError: Elements of `ls` are not of the expected type.
+
+    Returns
+    -------
+    None
+
+    """
+    if not isinstance(ls, list):
+        raise TypeError(
+            f"`{param_nm}` should be a list. Instead found {type(ls)}"
+        )
+    if check_elements:
+        for i in ls:
+            if not isinstance(i, exp_type):
+                raise TypeError(
+                    (
+                        f"`{param_nm}` must contain {str(exp_type)} only."
+                        f" Found {type(i)} : {i}"
+                    )
+                )
+
+    return None
