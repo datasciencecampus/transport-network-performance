@@ -74,6 +74,17 @@ class Gtfs_Instance:
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
 
+    def get_calendar_dates(self):
+        """Return the available dates from the GTFS calendar.
+
+        Returns
+        -------
+        list: Available datestrings within the GTFS calendar.
+
+        """
+        self.available_dates = self.feed.get_dates()
+        return self.available_dates
+
     def is_valid(self):
         """Check a feed is valid with `gtfs_kit`.
 
