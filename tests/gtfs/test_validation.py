@@ -293,24 +293,27 @@ class TestGtfsInstance(object):
         assert isinstance(
             gtfs_fixture.weekday_stats, pd.core.frame.DataFrame
         ), f"Expected DF, found {type(gtfs_fixture.weekday_stats)}"
-        exp_cols = pd.Index(
+        found = gtfs_fixture.weekday_stats.columns
+        exp_cols = pd.MultiIndex.from_tuples(
             [
-                "num_stops",
-                "num_routes",
-                "num_trips",
-                "num_trip_starts",
-                "num_trip_ends",
-                "service_distance",
-                "service_duration",
-                "service_speed",
-                "peak_num_trips",
-                "peak_start_time",
-                "peak_end_time",
-                "date",
-                "is_weekend",
+                ("num_routes", "amin"),
+                ("num_routes", "amax"),
+                ("num_routes", "mean"),
+                ("num_routes", "median"),
+                ("num_trips", "amin"),
+                ("num_trips", "amax"),
+                ("num_trips", "mean"),
+                ("num_trips", "median"),
+                ("service_distance", "amin"),
+                ("service_distance", "amax"),
+                ("service_distance", "mean"),
+                ("service_distance", "median"),
+                ("service_duration", "amin"),
+                ("service_duration", "amax"),
+                ("service_duration", "mean"),
+                ("service_duration", "median"),
             ]
         )
-        found = gtfs_fixture.weekday_stats.columns
         assert (
             found == exp_cols
         ).all(), f"Columns were not as expected. Found {found}"
