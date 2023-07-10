@@ -9,4 +9,5 @@ beautifulsoup4
 requests
 pytest-mock
 toml
+pyprojroot
 -e .
