@@ -7,6 +7,7 @@ from unittest.mock import patch, call
 import os
 from geopandas import GeoDataFrame
 import numpy as np
+import re
 
 from heimdall_transport.gtfs.validation import (
     Gtfs_Instance,
@@ -139,14 +140,19 @@ class TestGtfsInstance(object):
         assert os.path.exists(tmp)
         # check behaviour when parent directory doesn't exist
         no_parent_pth = os.path.join(tmpdir, "notfound", "points1.html")
-        gtfs_fixture.viz_stops(out_pth=no_parent_pth)
+        gtfs_fixture.viz_stops(out_pth=no_parent_pth, create_out_parent=True)
         assert os.path.exists(no_parent_pth)
         # check behaviour when not implemented fileext used
         tmp1 = os.path.join(tmpdir, "points2.svg")
         gtfs_fixture.viz_stops(out_pth=tmp1)
-        assert mock_print.mock_calls == [
-            call(".svg format not implemented. Writing to .html")
-        ]
+        # need to use regex for the first print statement, as tmpdir will
+        # change.
+        start_pat = re.compile(r"Creating parent directory:.*")
+        assert bool(start_pat.search(mock_print.mock_calls[0].__str__()))
+        assert mock_print.mock_calls[-1] == call(
+            ".svg format not implemented. Writing to .html"
+        )
+
         assert os.path.exists(os.path.join(tmpdir, "points2.html"))
 
     def test_viz_stops_hull(self, tmpdir, gtfs_fixture):
