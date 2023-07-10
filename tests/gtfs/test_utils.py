@@ -2,6 +2,7 @@
 
 from pyprojroot import here
 import os
+import pytest
 
 from heimdall_transport.gtfs.utils import bbox_filter_gtfs
 from heimdall_transport.gtfs.validation import Gtfs_Instance
@@ -9,6 +10,13 @@ from heimdall_transport.gtfs.validation import Gtfs_Instance
 
 class TestBboxFilterGtfs(object):
     """Test bbox_filter_gtfs."""
+
+    def test_bbox_filter_gtfs_defence(self):
+        """Check defensive behaviour for bbox_filter_gtfs."""
+        with pytest.raises(
+            TypeError, match="Expected string. Found <class 'bool'> : False"
+        ):
+            bbox_filter_gtfs(units=False)
 
     def test_bbox_filter_gtfs_writes_as_expected(self, tmpdir):
         """Test bbox_filter_gtfs writes out a filtered GTFS archive."""
