@@ -58,21 +58,38 @@ class TestGtfsInstance(object):
     def test_init_on_pass(self):
         """Assertions about the feed attribute."""
         gtfs = Gtfs_Instance()
-        assert isinstance(gtfs.feed, gk.feed.Feed)
-        assert gtfs.feed.dist_units == "m"
+        assert isinstance(
+            gtfs.feed, gk.feed.Feed
+        ), f"GExpected gtfs_kit feed attribute. Found: {type(gtfs.feed)}"
+        assert (
+            gtfs.feed.dist_units == "m"
+        ), f"Expected 'm', found: {gtfs.feed.dist_units}"
         # can coerce to correct distance unit?
         gtfs1 = Gtfs_Instance(units="kilometers")
-        assert gtfs1.feed.dist_units == "km"
+        assert (
+            gtfs1.feed.dist_units == "km"
+        ), f"Expected 'km', found: {gtfs1.feed.dist_units}"
         gtfs2 = Gtfs_Instance(units="metres")
-        assert gtfs2.feed.dist_units == "m"
+        assert (
+            gtfs2.feed.dist_units == "m"
+        ), f"Expected 'm', found: {gtfs2.feed.dist_units}"
 
     def test_is_valid(self, gtfs_fixture):
         """Assertions about validity_df table."""
         gtfs_fixture.is_valid()
-        assert isinstance(gtfs_fixture.validity_df, pd.core.frame.DataFrame)
-        assert gtfs_fixture.validity_df.shape == (7, 4)
+        assert isinstance(
+            gtfs_fixture.validity_df, pd.core.frame.DataFrame
+        ), f"Expected DataFrame. Found: {type(gtfs_fixture.validity_df)}"
+        shp = gtfs_fixture.validity_df.shape
+        assert shp == (
+            7,
+            4,
+        ), f"Attribute `validity_df` expected a shape of (7,4). Found: {shp}"
         exp_cols = pd.Index(["type", "message", "table", "rows"])
-        assert (gtfs_fixture.validity_df.columns == exp_cols).all()
+        found_cols = gtfs_fixture.validity_df.columns
+        assert (
+            found_cols == exp_cols
+        ).all(), f"Expected columns {exp_cols}. Found: {found_cols}"
 
     @patch("builtins.print")
     def test_print_alerts_defence(self, mocked_print, gtfs_fixture):
@@ -85,9 +102,10 @@ class TestGtfsInstance(object):
 
         gtfs_fixture.is_valid()
         gtfs_fixture.print_alerts(alert_type="doesnt_exist")
-        assert mocked_print.mock_calls == [
+        fun_out = mocked_print.mock_calls
+        assert fun_out == [
             call("No alerts of type doesnt_exist were found.")
-        ]
+        ], f"Expected a print about alert_type but found: {fun_out}"
 
     @patch("builtins.print")  # testing print statements
     def test_print_alerts_single_case(self, mocked_print, gtfs_fixture):
@@ -95,9 +113,10 @@ class TestGtfsInstance(object):
         gtfs_fixture.is_valid()
         gtfs_fixture.print_alerts()
         # fixture contains single error
-        assert mocked_print.mock_calls == [
+        fun_out = mocked_print.mock_calls
+        assert fun_out == [
             call("Invalid route_type; maybe has extra space characters")
-        ]
+        ], f"Expected a print about invalid route type. Found {fun_out}"
 
     @patch("builtins.print")
     def test_print_alerts_multi_case(self, mocked_print, gtfs_fixture):
@@ -105,14 +124,15 @@ class TestGtfsInstance(object):
         gtfs_fixture.is_valid()
         # fixture contains several warnings
         gtfs_fixture.print_alerts(alert_type="warning")
-        assert mocked_print.mock_calls == [
+        fun_out = mocked_print.mock_calls
+        assert fun_out == [
             call("Unrecognized column agency_noc"),
             call("Repeated pair (route_short_name, route_long_name)"),
             call("Unrecognized column stop_direction_name"),
             call("Unrecognized column platform_code"),
             call("Unrecognized column trip_direction_name"),
             call("Unrecognized column vehicle_journey_code"),
-        ]
+        ], f"Expected print statements about GTFS warnings. Found: {fun_out}"
 
     @patch("builtins.print")
     def test_viz_stops_defence(self, mocked_print, gtfs_fixture):
@@ -142,38 +162,51 @@ class TestGtfsInstance(object):
         # check missing stop_id results in print instead of exception
         gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
         gtfs_fixture.viz_stops(out_pth="outputs/out.html")
-        assert mocked_print.mock_calls == [
+        fun_out = mocked_print.mock_calls
+        assert fun_out == [
             call("Key Error. Map was not written.")
-        ]
+        ], f"Expected confirmation that map was not written. Found: {fun_out}"
 
     @patch("builtins.print")
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
         """Check behaviour of viz_stops when plotting point geom."""
         tmp = os.path.join(tmpdir, "points.html")
         gtfs_fixture.viz_stops(out_pth=tmp)
-        assert os.path.exists(tmp)
+        assert os.path.exists(
+            tmp
+        ), f"{tmp} was expected to exist but it was not found."
         # check behaviour when parent directory doesn't exist
         no_parent_pth = os.path.join(tmpdir, "notfound", "points1.html")
         gtfs_fixture.viz_stops(out_pth=no_parent_pth, create_out_parent=True)
-        assert os.path.exists(no_parent_pth)
+        assert os.path.exists(
+            no_parent_pth
+        ), f"{no_parent_pth} was expected to exist but it was not found."
         # check behaviour when not implemented fileext used
         tmp1 = os.path.join(tmpdir, "points2.svg")
         gtfs_fixture.viz_stops(out_pth=tmp1)
         # need to use regex for the first print statement, as tmpdir will
         # change.
         start_pat = re.compile(r"Creating parent directory:.*")
-        assert bool(start_pat.search(mock_print.mock_calls[0].__str__()))
-        assert mock_print.mock_calls[-1] == call(
+        out = mock_print.mock_calls[0].__str__()
+        assert bool(
+            start_pat.search(out)
+        ), f"Print statement about directory creation expected. Found: {out}"
+        out_last = mock_print.mock_calls[-1]
+        assert out_last == call(
             ".svg format not implemented. Writing to .html"
-        )
-
-        assert os.path.exists(os.path.join(tmpdir, "points2.html"))
+        ), f"Expected print statement about .svg. Found: {out_last}"
+        write_pth = os.path.join(tmpdir, "points2.html")
+        assert os.path.exists(
+            write_pth
+        ), f"Map should have been written to {write_pth} but was not found."
 
     def test_viz_stops_hull(self, tmpdir, gtfs_fixture):
         """Check viz_stops behaviour when plotting hull geom."""
         tmp = os.path.join(tmpdir, "hull.html")
         gtfs_fixture.viz_stops(out_pth=tmp, geoms="hull")
-        assert os.path.exists(tmp)
+        assert os.path.exists(
+            tmp
+        ), f"Map should have been written to {tmp} but was not found."
 
     def test__create_map_title_text(self):
         """Check helper can cope with non-metric cases."""
@@ -182,7 +215,7 @@ class TestGtfsInstance(object):
         assert txt == (
             "GTFS Stops Convex Hull. Area Calculation for Metric Units Only. "
             "Units Found are in miles."
-        )
+        ), f"Unexpected text output: {txt}"
 
     def test_get_route_modes(self, gtfs_fixture, mocker):
         """Assertions about the table returned by get_route_modes()."""
@@ -195,13 +228,19 @@ class TestGtfsInstance(object):
         )
         gtfs_fixture.get_route_modes()
         # check mocker was called
-        assert patch_scrape_lookup.called
-        assert gtfs_fixture.route_mode_summary_df["desc"][0] == "Mocked bus"
+        assert (
+            patch_scrape_lookup.called
+        ), "mocker.patch `patch_scrape_lookup` was not called."
+        found = gtfs_fixture.route_mode_summary_df["desc"][0]
+        assert found == "Mocked bus", f"Expected 'Mocked bus', found: {found}"
         assert isinstance(
             gtfs_fixture.route_mode_summary_df, pd.core.frame.DataFrame
-        )
+        ), f"Expected pd df. Found: {type(gtfs_fixture.route_mode_summary_df)}"
         exp_cols = pd.Index(["route_type", "desc", "n_routes", "prop_routes"])
-        assert (gtfs_fixture.route_mode_summary_df.columns == exp_cols).all()
+        found_cols = gtfs_fixture.route_mode_summary_df.columns
+        assert (
+            found_cols == exp_cols
+        ).all(), f"Expected columns are different. Found: {found_cols}"
 
     def test_summarise_weekday_defence(self, gtfs_fixture):
         """Defensive checks for summarise_weekday()."""
@@ -242,15 +281,18 @@ class TestGtfsInstance(object):
         # Simulate condition where shapes.txt has no shape_id
         gtfs_fixture.feed.shapes.drop("shape_id", axis=1, inplace=True)
         gtfs_fixture.clean_feed()
-        assert mock_print.mock_calls == [
+        fun_out = mock_print.mock_calls
+        assert fun_out == [
             call("KeyError. Feed was not cleaned.")
-        ]
+        ], f"Expected print statement about KeyError. Found: {fun_out}."
 
     @pytest.mark.runexpensive
     def test_summarise_weekday_on_pass(self, gtfs_fixture):
         """Assertions about the table returned by summarise_weekday."""
         gtfs_fixture.summarise_weekday()
-        assert isinstance(gtfs_fixture.weekday_stats, pd.core.frame.DataFrame)
+        assert isinstance(
+            gtfs_fixture.weekday_stats, pd.core.frame.DataFrame
+        ), f"Expected DF, found {type(gtfs_fixture.weekday_stats)}"
         exp_cols = pd.Index(
             [
                 "num_stops",
@@ -268,4 +310,7 @@ class TestGtfsInstance(object):
                 "is_weekend",
             ]
         )
-        assert (gtfs_fixture.weekday_stats.columns == exp_cols).all()
+        found = gtfs_fixture.weekday_stats.columns
+        assert (
+            found == exp_cols
+        ).all(), f"Columns were not as expected. Found {found}"
