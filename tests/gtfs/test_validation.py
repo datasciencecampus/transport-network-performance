@@ -114,7 +114,8 @@ class TestGtfsInstance(object):
             call("Unrecognized column vehicle_journey_code"),
         ]
 
-    def test_viz_stops_defence(self, gtfs_fixture):
+    @patch("builtins.print")
+    def test_viz_stops_defence(self, mocked_print, gtfs_fixture):
         """Check defensive behaviours of viz_stops()."""
         with pytest.raises(
             TypeError,
@@ -138,6 +139,12 @@ class TestGtfsInstance(object):
             gtfs_fixture.viz_stops(
                 out_pth="outputs/somefile.html", geom_crs=1.1
             )
+        # check missing stop_id results in print instead of exception
+        gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
+        gtfs_fixture.viz_stops(out_pth="outputs/out.html")
+        assert mocked_print.mock_calls == [
+            call("Key Error. Map was not written.")
+        ]
 
     @patch("builtins.print")
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
