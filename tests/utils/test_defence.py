@@ -1,7 +1,10 @@
 """Tests for defence.py. These internals may be covered elsewhere."""
 import pytest
 
-from heimdall_transport.utils.defence import _check_list
+from heimdall_transport.utils.defence import (
+    _check_list,
+    _check_parent_dir_exists,
+)
 
 
 class Test_CheckList(object):
@@ -43,3 +46,17 @@ class Test_CheckList(object):
             )
             is None
         )
+
+
+class Test_CheckParentDirExists(object):
+    """Assertions for check_parent_dir_exists."""
+
+    def test_check_parent_dir_exists_defence(self):
+        """Check defence for _check_parent_dir_exists()."""
+        with pytest.raises(
+            FileNotFoundError,
+            match="Parent directory missing not found on disk.",
+        ):
+            _check_parent_dir_exists(
+                pth="missing/file.someext", param_nm="not_found", create=False
+            )
