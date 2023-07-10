@@ -27,7 +27,10 @@ class TestSetup:
         try:
             import heimdall_transport as ht
 
-            assert ht.__name__ == "heimdall_transport"
+            nm = ht.__name__
+            assert (
+                nm == "heimdall_transport"
+            ), f"Expected module import name 'heimdall_transport'. Found {nm}"
         except ImportError:
             pytest.fail("Unable to find `heimdall_transport`.")
 
