@@ -31,7 +31,11 @@ class TestBboxFilterGtfs(object):
                 51.5907034241,
             ],  # tiny bounding box over newport train station
         )
-        assert os.path.exists(tmp_out)
+        assert os.path.exists(
+            tmp_out
+        ), f"Expected {tmp_out} to exist but it did not."
         # check the output gtfs can be read
         feed = Gtfs_Instance(gtfs_pth=tmp_out)
-        assert isinstance(feed, Gtfs_Instance)
+        assert isinstance(
+            feed, Gtfs_Instance
+        ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
