@@ -74,10 +74,13 @@ class TestScrapeRouteTypeLookup(object):
         )
         result = scrape_route_type_lookup(extended_schema=False)
         # did the mocker get used
-        assert patch_resp_txt.call_args_list == [
+        found = patch_resp_txt.call_args_list
+        assert found == [
             call("https://gtfs.org/schedule/reference/")
-        ]
-        assert isinstance(result, pd.core.frame.DataFrame)
+        ], f"Expected mocker was called with specific url but found: {found}"
+        assert isinstance(
+            result, pd.core.frame.DataFrame
+        ), f"Expected DF but found: {type(result)}"
         pd.testing.assert_frame_equal(
             result,
             pd.DataFrame({"route_type": "0", "desc": "Tram."}, index=[0]),
@@ -90,7 +93,8 @@ class TestScrapeRouteTypeLookup(object):
             side_effect=mocked__get_response_text,
         )
         result = scrape_route_type_lookup()
-        assert patch_resp_txt.call_args_list == [
+        found = patch_resp_txt.call_args_list
+        assert found == [
             call("https://gtfs.org/schedule/reference/"),
             call(
                 (
@@ -98,9 +102,11 @@ class TestScrapeRouteTypeLookup(object):
                     "extended-route-types"
                 )
             ),
-        ]
+        ], f"Expected mocker to be called with specific urls. Found: {found}"
 
-        assert isinstance(result, pd.core.frame.DataFrame)
+        assert isinstance(
+            result, pd.core.frame.DataFrame
+        ), f"Expected DF. Found: {type(result)}"
         pd.testing.assert_frame_equal(
             result,
             pd.DataFrame(
