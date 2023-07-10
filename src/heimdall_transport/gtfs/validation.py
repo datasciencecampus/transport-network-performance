@@ -11,9 +11,9 @@ import inspect
 
 from heimdall_transport.gtfs.routes import scrape_route_type_lookup
 from heimdall_transport.utils.defence import (
-    _is_path_like,
     _is_gtfs_pth,
     _check_namespace_export,
+    _check_parent_dir_exists,
 )
 
 
@@ -117,25 +117,38 @@ class Gtfs_Instance:
                 "`self.is_valid()`?"
             )
 
-        msgs = (
-            self.validity_df.set_index("type")
-            .sort_index()
-            .loc[alert_type]["message"]
-        )
+        try:
+            # In cases where no alerts of alert_type are found, KeyError raised
+            msgs = (
+                self.validity_df.set_index("type")
+                .sort_index()
+                .loc[alert_type]["message"]
+            )
+            # multiple errors
+            if isinstance(msgs, pd.core.series.Series):
+                for m in msgs:
+                    print(m)
+            # case where single error
+            elif isinstance(msgs, str):
+                print(msgs)
+        except KeyError:
+            print(f"No alerts of type {alert_type} were found.")
 
-        # multiple errors
-        if isinstance(msgs, pd.core.series.Series):
-            for m in msgs:
-                print(m)
-        # case where single error
-        elif isinstance(msgs, str):
-            print(msgs)
+        return None
 
     def clean_feed(self):
         """Attempt to clean feed using `gtfs_kit`."""
-        self.feed = self.feed.clean()
+        try:
+            # In cases where shape_id is missing, keyerror is raised.
+            # https://developers.google.com/transit/gtfs/reference#shapestxt
+            # shows that shapes.txt is optional file.
+            self.feed = self.feed.clean()
+        except KeyError:
+            print("KeyError. Feed was not cleaned.")
 
-    def viz_stops(self, out_pth, geoms="point", geom_crs=27700):
+    def viz_stops(
+        self, out_pth, geoms="point", geom_crs=27700, create_out_parent=False
+    ):
         """Visualise the stops on a map as points or convex hull. Writes file.
 
         Parameters
@@ -153,23 +166,23 @@ class Gtfs_Instance:
             Geometric CRS to use for the calculation of the convex hull area
             only. Defaults to "27700" (OSGB36, British National Grid).
 
+        create_out_parent : bool
+            Should the parent directory of `out_pth` be created if not found.
+
         Returns
         -------
         None
 
         """
         # out_pth defence
-        _is_path_like(out_pth, param_nm="out_pth")
+        _check_parent_dir_exists(
+            pth=out_pth, param_nm="out_pth", create=create_out_parent
+        )
 
         pre, ext = os.path.splitext(out_pth)
         if ext != ".html":
             print(f"{ext} format not implemented. Writing to .html")
             out_pth = os.path.normpath(pre + ".html")
-
-        parent_dir = os.path.dirname(out_pth)
-        if not os.path.exists(parent_dir):
-            # create parent directory
-            os.mkdir(parent_dir)
 
         # geoms defence
         if not isinstance(geoms, str):
@@ -185,33 +198,39 @@ class Gtfs_Instance:
                 f"`geom_crs` expects string or integer. Found {type(geom_crs)}"
             )
 
-        if geoms == "point":
-            # viz stop locations
-            m = self.feed.map_stops(self.feed.stops["stop_id"])
-        elif geoms == "hull":
-            # visualise feed, output to file with area est, based on stop locs
-            gtfs_hull = self.feed.compute_convex_hull()
-            gdf = gpd.GeoDataFrame(
-                {"geometry": gtfs_hull}, index=[0], crs="epsg:4326"
-            )
-            units = self.feed.dist_units
-            # prepare the map title
-            txt = _create_map_title_text(gdf, units, geom_crs)
+        try:
+            # map_stops will fail if stop_code not present. According to :
+            # https://developers.google.com/transit/gtfs/reference#stopstxt
+            # This should be an optional column
+            if geoms == "point":
+                # viz stop locations
+                m = self.feed.map_stops(self.feed.stops["stop_id"])
+            elif geoms == "hull":
+                # visualise feed, output to file with area est, based on stops
+                gtfs_hull = self.feed.compute_convex_hull()
+                gdf = gpd.GeoDataFrame(
+                    {"geometry": gtfs_hull}, index=[0], crs="epsg:4326"
+                )
+                units = self.feed.dist_units
+                # prepare the map title
+                txt = _create_map_title_text(gdf, units, geom_crs)
 
-            title_pre = "<h3 align='center' style='font-size:16px'><b>"
-            title_html = f"{title_pre}{txt}</b></h3>"
+                title_pre = "<h3 align='center' style='font-size:16px'><b>"
+                title_html = f"{title_pre}{txt}</b></h3>"
 
-            gtfs_centroid = self.feed.compute_centroid()
-            m = folium.Map(
-                location=[gtfs_centroid.y, gtfs_centroid.x], zoom_start=5
-            )
-            geo_j = gdf.to_json()
-            geo_j = folium.GeoJson(
-                data=geo_j, style_function=lambda x: {"fillColor": "red"}
-            )
-            geo_j.add_to(m)
-            m.get_root().html.add_child(folium.Element(title_html))
-        m.save(out_pth)
+                gtfs_centroid = self.feed.compute_centroid()
+                m = folium.Map(
+                    location=[gtfs_centroid.y, gtfs_centroid.x], zoom_start=5
+                )
+                geo_j = gdf.to_json()
+                geo_j = folium.GeoJson(
+                    data=geo_j, style_function=lambda x: {"fillColor": "red"}
+                )
+                geo_j.add_to(m)
+                m.get_root().html.add_child(folium.Element(title_html))
+            m.save(out_pth)
+        except KeyError:
+            print("Key Error. Map was not written.")
 
     def summarise_weekday(self, summ_ops=[np.min, np.max, np.mean, np.median]):
         """Produce a table of summary stats by weekday / weekend.
@@ -277,8 +296,8 @@ class Gtfs_Instance:
             "service_distance",
             "service_duration",
         ]
-        feed_stats.groupby("is_weekend")[keep_cols].agg(summ_ops)
-        self.weekday_stats = feed_stats
+        weekday_df = feed_stats.groupby("is_weekend")[keep_cols].agg(summ_ops)
+        self.weekday_stats = weekday_df
         return self.weekday_stats
 
     def get_route_modes(self):

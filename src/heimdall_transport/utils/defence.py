@@ -28,6 +28,21 @@ def _is_path_like(pth, param_nm):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
 
+def _check_parent_dir_exists(pth, param_nm, create=False):
+    _is_path_like(pth, param_nm)
+    parent = os.path.dirname(pth)
+    if not os.path.exists(parent):
+        if create:
+            os.mkdir(parent)
+            print(f"Creating parent directory: {parent}")
+        else:
+            raise FileNotFoundError(
+                f"Parent directory {parent} not found on disk."
+            )
+
+    return None
+
+
 def _is_gtfs_pth(pth, param_nm, check_existing=True):
     """Handle file paths that should be existing GTFS feeds.
 
