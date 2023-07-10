@@ -229,6 +229,16 @@ class TestGtfsInstance(object):
         ):
             gtfs_fixture.summarise_weekday(summ_ops=38)
 
+    @patch("builtins.print")
+    def test_clean_feed_defence(self, mock_print, gtfs_fixture):
+        """Check defensive behaviours of clean_feed()."""
+        # Simulate condition where shapes.txt has no shape_id
+        gtfs_fixture.feed.shapes.drop("shape_id", axis=1, inplace=True)
+        gtfs_fixture.clean_feed()
+        assert mock_print.mock_calls == [
+            call("KeyError. Feed was not cleaned.")
+        ]
+
     @pytest.mark.runexpensive
     def test_summarise_weekday_on_pass(self, gtfs_fixture):
         """Assertions about the table returned by summarise_weekday."""
