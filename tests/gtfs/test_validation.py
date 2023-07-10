@@ -74,13 +74,20 @@ class TestGtfsInstance(object):
         exp_cols = pd.Index(["type", "message", "table", "rows"])
         assert (gtfs_fixture.validity_df.columns == exp_cols).all()
 
-    def test_print_alerts_defence(self, gtfs_fixture):
+    @patch("builtins.print")
+    def test_print_alerts_defence(self, mocked_print, gtfs_fixture):
         """Check defensive behaviour of print_alerts()."""
         with pytest.raises(
             AttributeError,
             match=r"is None, did you forget to use `self.is_valid()`?",
         ):
             gtfs_fixture.print_alerts()
+
+        gtfs_fixture.is_valid()
+        gtfs_fixture.print_alerts(alert_type="doesnt_exist")
+        assert mocked_print.mock_calls == [
+            call("No alerts of type doesnt_exist were found.")
+        ]
 
     @patch("builtins.print")  # testing print statements
     def test_print_alerts_single_case(self, mocked_print, gtfs_fixture):
