@@ -50,35 +50,40 @@ s = feed.available_dates[0]
 f = feed.available_dates[-1]
 print(f"{len(feed.available_dates)} dates available between {s} & {f}.")
 
-print(feed.is_valid())
-post_isvalid = time.perf_counter()
-if PROFILING:
-    print(f"is_valid in {post_isvalid - post_dates:0.4f} seconds")
+try:
+    # If agency_id is missing, an AttributeError is raised. GTFS spec states
+    # This is conditionally required, dependent if more than one agency is
+    # operating within the feed. https://gtfs.org/schedule/reference/#agencytxt
+    # Cleaning the feed doesn't resolve. Raise issue to investigate.
+    print(feed.is_valid())
+    post_isvalid = time.perf_counter()
+    if PROFILING:
+        print(f"is_valid in {post_isvalid - post_dates:0.4f} seconds")
+    print(feed.validity_df["type"].value_counts())
+    feed.print_alerts()
+    post_errors = time.perf_counter()
+    feed.print_alerts(alert_type="warning")
+    post_warn = time.perf_counter()
+    if PROFILING:
+        print(f"print_alerts errors: {post_errors - post_isvalid:0.4f} secs")
+        print(f"print_alerts warn: {post_warn - post_errors:0.4f} secs")
+except AttributeError:
+    print("AttributeError. Unable to validate feed.")
 
-print(feed.validity_df["type"].value_counts())
-feed.print_alerts()
-post_print_errors = time.perf_counter()
-if PROFILING:
-    print(
-        f"print_alerts errors in {post_print_errors - post_isvalid:0.4f} secs"
-    )
-
-feed.print_alerts(alert_type="warning")
-post_print_warn = time.perf_counter()
-if PROFILING:
-    print(
-        f"print_alerts warn in {post_print_warn - post_print_errors:0.4f} secs"
-    )
-
+pre_clean = time.perf_counter()
 feed.clean_feed()
 post_clean = time.perf_counter()
 if PROFILING:
-    print(f"clean_feed in {post_clean - post_print_warn:0.4f} seconds")
+    print(f"clean_feed in {post_clean - pre_clean:0.4f} seconds")
 
-print(feed.is_valid())
-print(feed.validity_df["type"].value_counts())
-feed.print_alerts()
-feed.print_alerts(alert_type="warning")
+try:
+    print(feed.is_valid())
+    print(feed.validity_df["type"].value_counts())
+    feed.print_alerts()
+    feed.print_alerts(alert_type="warning")
+except AttributeError:
+    print("AttributeError. Unable to validate feed.")
+
 # visualise gtfs
 pre_viz_points = time.perf_counter()
 feed.viz_stops(out_pth=POINT_MAP_PTH)
