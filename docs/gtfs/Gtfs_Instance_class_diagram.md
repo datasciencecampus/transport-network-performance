@@ -1,12 +1,14 @@
 # GtfsInstance
 
-<style>
-div.mermaid {
-  text-align: center;
-}
-</style>
+<header>
+    <style>
+    div.mermaid {
+      text-align: center;
+    }
+    </style>
+</header>
 
-```{mermaid}
+```mermaid
 
 classDiagram
     class GtfsInstance {
