@@ -3,4 +3,12 @@ r5py>=0.0.4
 gtfs_kit==5.2.7
 pytest
 coverage
+ipykernel==6.23.1
+pandas
+beautifulsoup4
+requests
+pytest-mock
+toml
+pyprojroot
+numpy==1.24.3
 -e .

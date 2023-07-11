@@ -42,7 +42,7 @@ jobs:
         pre-commit run --all-files
     - name: Test with pytest
       run: |
-        pytest --runsetup
+        pytest
     - name: Generate Report
       run: |
         coverage run -m pytest

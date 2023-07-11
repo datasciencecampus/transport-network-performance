@@ -1,9 +1,9 @@
 """test_setup.py.
 
 Unit tests for testing initial setup. The intention is these tests won't be
-part of the main test suite, and will only by run as needed.
+part of the main test suite, and will only be run as needed.
 
-TODO: make this run 'on request' only.
+This test module can be run with the pytest flag --runsetup.
 """
 
 import pytest
@@ -27,7 +27,10 @@ class TestSetup:
         try:
             import heimdall_transport as ht
 
-            assert ht.__name__ == "heimdall_transport"
+            nm = ht.__name__
+            assert (
+                nm == "heimdall_transport"
+            ), f"Expected module import name 'heimdall_transport'. Found {nm}"
         except ImportError:
             pytest.fail("Unable to find `heimdall_transport`.")
 
