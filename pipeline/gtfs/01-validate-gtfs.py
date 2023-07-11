@@ -17,7 +17,7 @@ import pandas as pd
 import time
 import subprocess
 
-from heimdall_transport.gtfs.validation import Gtfs_Instance
+from heimdall_transport.gtfs.validation import GtfsInstance
 from heimdall_transport.utils.defence import _is_gtfs_pth
 
 CONFIG = toml.load(here("pipeline/gtfs/config/01-validate-gtfs.toml"))
@@ -37,7 +37,7 @@ if PROFILING:
     print(f"GTFS at {GTFS_PTH} disk usage: {gtfs_du}")
 
 pre_init = time.perf_counter()
-feed = Gtfs_Instance(gtfs_pth=GTFS_PTH, units=UNITS)
+feed = GtfsInstance(gtfs_pth=GTFS_PTH, units=UNITS)
 post_init = time.perf_counter()
 if PROFILING:
     print(f"Init in {post_init - pre_init:0.4f} seconds")

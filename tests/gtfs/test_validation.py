@@ -10,7 +10,7 @@ import numpy as np
 import re
 
 from heimdall_transport.gtfs.validation import (
-    Gtfs_Instance,
+    GtfsInstance,
     _create_map_title_text,
 )
 
@@ -18,12 +18,12 @@ from heimdall_transport.gtfs.validation import (
 @pytest.fixture(scope="function")  # some funcs expect cleaned feed others dont
 def gtfs_fixture():
     """Fixture for test funcs expecting a valid feed object."""
-    gtfs = Gtfs_Instance()
+    gtfs = GtfsInstance()
     return gtfs
 
 
 class TestGtfsInstance(object):
-    """Tests related to the Gtfs_Instance class."""
+    """Tests related to the GtfsInstance class."""
 
     def test_init_defensive_behaviours(self):
         """Testing parameter validation on class initialisation."""
@@ -31,33 +31,33 @@ class TestGtfsInstance(object):
             TypeError,
             match=r"`gtfs_pth` expected path-like, found <class 'int'>.",
         ):
-            Gtfs_Instance(gtfs_pth=1)
+            GtfsInstance(gtfs_pth=1)
         with pytest.raises(
             FileExistsError, match=r"doesnt/exist not found on file."
         ):
-            Gtfs_Instance(gtfs_pth="doesnt/exist")
+            GtfsInstance(gtfs_pth="doesnt/exist")
         #  a case where file is found but not a zip directory
         with pytest.raises(
             ValueError,
             match=r"`gtfs_pth` expected a zip file extension. Found .pbf",
         ):
-            Gtfs_Instance(
+            GtfsInstance(
                 gtfs_pth=here("tests/data/newport-2023-06-13.osm.pbf")
             )
         # handling units
         with pytest.raises(
             TypeError, match=r"`units` expected a string. Found <class 'bool'>"
         ):
-            Gtfs_Instance(units=False)
+            GtfsInstance(units=False)
         # non metric units
         with pytest.raises(
             ValueError, match=r"`units` accepts metric only. Found: miles"
         ):
-            Gtfs_Instance(units="Miles")  # imperial units not implemented
+            GtfsInstance(units="Miles")  # imperial units not implemented
 
     def test_init_on_pass(self):
         """Assertions about the feed attribute."""
-        gtfs = Gtfs_Instance()
+        gtfs = GtfsInstance()
         assert isinstance(
             gtfs.feed, gk.feed.Feed
         ), f"GExpected gtfs_kit feed attribute. Found: {type(gtfs.feed)}"
@@ -65,11 +65,11 @@ class TestGtfsInstance(object):
             gtfs.feed.dist_units == "m"
         ), f"Expected 'm', found: {gtfs.feed.dist_units}"
         # can coerce to correct distance unit?
-        gtfs1 = Gtfs_Instance(units="kilometers")
+        gtfs1 = GtfsInstance(units="kilometers")
         assert (
             gtfs1.feed.dist_units == "km"
         ), f"Expected 'km', found: {gtfs1.feed.dist_units}"
-        gtfs2 = Gtfs_Instance(units="metres")
+        gtfs2 = GtfsInstance(units="metres")
         assert (
             gtfs2.feed.dist_units == "m"
         ), f"Expected 'm', found: {gtfs2.feed.dist_units}"

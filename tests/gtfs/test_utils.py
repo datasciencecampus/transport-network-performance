@@ -5,7 +5,7 @@ import os
 import pytest
 
 from heimdall_transport.gtfs.utils import bbox_filter_gtfs
-from heimdall_transport.gtfs.validation import Gtfs_Instance
+from heimdall_transport.gtfs.validation import GtfsInstance
 
 
 class TestBboxFilterGtfs(object):
@@ -35,7 +35,7 @@ class TestBboxFilterGtfs(object):
             tmp_out
         ), f"Expected {tmp_out} to exist but it did not."
         # check the output gtfs can be read
-        feed = Gtfs_Instance(gtfs_pth=tmp_out)
+        feed = GtfsInstance(gtfs_pth=tmp_out)
         assert isinstance(
-            feed, Gtfs_Instance
+            feed, GtfsInstance
         ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"

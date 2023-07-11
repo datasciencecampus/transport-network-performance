@@ -50,7 +50,7 @@ def _create_map_title_text(gdf, units, geom_crs):
     return txt
 
 
-class Gtfs_Instance:
+class GtfsInstance:
     """Create a feed instance for validation, cleaning & visualisation."""
 
     def __init__(
