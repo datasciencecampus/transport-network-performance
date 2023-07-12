@@ -6,12 +6,13 @@ from scipy.ndimage import label, generic_filter
 from rasterio.mask import raster_geometry_mask
 import numpy.ma as ma
 from collections import Counter
+from geocube.vector import vectorize
+import xarray as xr
+import affine
 
 
-def filter_cells(
-    file: str, bbox: gpd.GeoDataFrame, band_n: int = 1
-) -> ma.core.MaskedArray:
-    """Open file, loads band and applies mask.
+def filter_cells(file: str, bbox: gpd.GeoDataFrame, band_n: int = 1) -> tuple:
+    """Open file, load band and apply mask.
 
     Parameters
     ----------
@@ -28,11 +29,29 @@ def filter_cells(
 
     Returns
     -------
-        ma.core.MaskedArray: raster, clipped to the extent of the bbox
-        and masked if extent does not match the boundaries provided.
+        tuple[0]: ma.core.MaskedArray: raster, clipped to the extent of the
+        bbox and masked if extent does not match the boundaries provided.
+        tuple[1]: Affine: transform matrix for the loaded raster.
+        tuple[2]: crs string from the raster.
 
     """
+    if not isinstance(file, str):
+        raise TypeError(
+            "`file` expected string, " f"got {type(file).__name__}."
+        )
+    if not isinstance(bbox, gpd.GeoDataFrame):
+        raise TypeError(
+            "`bbox` expected GeoDataFrame, " f"got {type(bbox).__name__}."
+        )
+    if not isinstance(band_n, int):
+        raise TypeError(
+            "`band_n` expected integer, " f"got {type(band_n).__name__}"
+        )
+
     with rasterio.open(file) as src:
+        if src.crs != bbox.crs:
+            raise ValueError("Raster and bounding box crs do not match")
+
         masked, affine, win = raster_geometry_mask(
             src, bbox.geometry.values, crop=True, all_touched=True
         )
@@ -43,18 +62,18 @@ def filter_cells(
         # bbox boundaries are masked
         rst_masked = ma.masked_array(rst, masked)
 
-        return rst_masked
+        return (rst_masked, affine, src.crs)
 
 
 def flag_cells(
-    masked_rst: ma.core.MaskedArray, cell_pop_thres: int = 1500
-) -> ma.core.MaskedArray:
+    masked_rst: np.ndarray, cell_pop_thres: int = 1500
+) -> np.ndarray:
     """Flag cells that are over the threshold.
 
     Parameters
     ----------
-    masked_rst : ma.core.MaskedArray
-        Masked array.
+    masked_rst : np.ndarray
+        Clipped (and potentially masked) array.
     cell_pop_thres: int
         A cell is flagged if its value is equal or
         higher than the threshold.
@@ -65,11 +84,22 @@ def flag_cells(
         the threshold are flagged as True.
 
     """
+    if not isinstance(masked_rst, np.ndarray):
+        raise TypeError(
+            "`masked_rst` expected numpy array, "
+            f"got {type(masked_rst).__name__}."
+        )
+    if not isinstance(cell_pop_thres, int):
+        raise TypeError(
+            "`cell_pop_threshold` expected integer, "
+            f"got {type(cell_pop_thres).__name__}."
+        )
+
     flag_array = masked_rst >= cell_pop_thres
     return flag_array
 
 
-def cluster_cells(flag_array: np.array, diag: bool = False) -> tuple:
+def cluster_cells(flag_array: np.ndarray, diag: bool = False) -> tuple:
     """Cluster cells based on adjacency.
 
     Parameters
@@ -85,6 +115,14 @@ def cluster_cells(flag_array: np.array, diag: bool = False) -> tuple:
         tuple[1]: number of clusters identified.
 
     """
+    if not isinstance(flag_array, np.ndarray):
+        raise TypeError(
+            "`masked_rst` expected numpy array, "
+            f"got {type(flag_array).__name__}."
+        )
+    if not isinstance(diag, bool):
+        raise TypeError("`diag` must be a boolean.")
+
     if diag is False:
         s = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
     elif diag is True:
@@ -96,8 +134,8 @@ def cluster_cells(flag_array: np.array, diag: bool = False) -> tuple:
 
 
 def check_cluster_pop(
-    band: np.array,
-    labelled_array: np.array,
+    band: np.ndarray,
+    labelled_array: np.ndarray,
     num_clusters: int,
     pop_threshold: int = 50000,
 ):
@@ -108,9 +146,9 @@ def check_cluster_pop(
 
     Parameters
     ----------
-    band : np.array or ma.core.MaskedArray
+    band : np.ndarray or ma.core.MaskedArray
         Original clipped raster with population values.
-    labelled_array: np.array
+    labelled_array: np.ndarray
         Array with clusters, each with unique labels.
     num_clusters: int
         Number of unique clusters in the labelled array.
@@ -121,10 +159,30 @@ def check_cluster_pop(
 
     Returns
     -------
-        np.array: array including only clusters with
+        np.ndarray: array including only clusters with
         population over the threshold.
 
     """
+    if not isinstance(band, np.ndarray):
+        raise TypeError(
+            "`masked_rst` expected numpy array, " f"got {type(band).__name__}."
+        )
+    if not isinstance(labelled_array, np.ndarray):
+        raise TypeError(
+            "`labelled_array` expected numpy array, "
+            f"got {type(labelled_array).__name__}."
+        )
+    if not isinstance(num_clusters, int):
+        raise TypeError(
+            "`num_clusters` expected integer, "
+            f"got {type(num_clusters).__name__}"
+        )
+    if not isinstance(pop_threshold, int):
+        raise TypeError(
+            "`pop_threshold` expected integer, "
+            f"got {type(pop_threshold).__name__}"
+        )
+
     urban_centres = labelled_array.copy()
     for n in range(1, num_clusters + 1):
         total_pop = ma.sum(ma.masked_where(urban_centres != n, band))
@@ -136,7 +194,7 @@ def check_cluster_pop(
     return urban_centres
 
 
-def custom_filter(win: np.array, threshold: int) -> int:
+def custom_filter(win: np.ndarray, threshold: int) -> int:
     """Check gap filling criteria.
 
     Counts non-zero values within window and if
@@ -145,7 +203,7 @@ def custom_filter(win: np.array, threshold: int) -> int:
 
     Parameters
     ----------
-    win : np.array
+    win : np.ndarray
         1-D flattened array of a 3x3 grid, where the
         centre is win[len(win) // 2]. Note that cells
         outside of the edges are filled with 0.
@@ -158,6 +216,15 @@ def custom_filter(win: np.array, threshold: int) -> int:
         int: value to impute to the central cell.
 
     """
+    if not isinstance(win, np.ndarray):
+        raise TypeError(
+            "`win` expected numpy array, " f"got {type(win).__name__}."
+        )
+    if not isinstance(threshold, int):
+        raise TypeError(
+            "`threshold` expected integer, " f"got {type(threshold).__name__}"
+        )
+
     counter = Counter(win)
     mode_count = counter.most_common(1)[0]
     if (mode_count[1] >= threshold) & (win[len(win) // 2] == 0):
@@ -167,7 +234,7 @@ def custom_filter(win: np.array, threshold: int) -> int:
     return r
 
 
-def fill_gaps(urban_centres: np.array, threshold: int = 5) -> np.array:
+def fill_gaps(urban_centres: np.ndarray, threshold: int = 5) -> np.ndarray:
     """Fill gaps in urban clusters.
 
     For empty cells, checks if at least 5 adjacent cells belong to cluster,
@@ -175,7 +242,7 @@ def fill_gaps(urban_centres: np.array, threshold: int = 5) -> np.array:
 
     Parameters
     ----------
-    urban_centres : np.array
+    urban_centres : np.ndarray
         Array including urban centres, i.e. clusters over the population
         threshold.
     threshold: int
@@ -185,22 +252,131 @@ def fill_gaps(urban_centres: np.array, threshold: int = 5) -> np.array:
 
     Returns
     -------
-        np.array: array including urban centres with gaps filled.
+        np.ndarray: array including urban centres with gaps filled.
 
     """
-    gf = urban_centres.copy()
+    if not isinstance(urban_centres, np.ndarray):
+        raise TypeError(
+            "`urban_centres` expected numpy array, "
+            f"got {type(urban_centres).__name__}."
+        )
+    if not isinstance(threshold, int):
+        raise TypeError(
+            "`threshold` expected integer, " f"got {type(threshold).__name__}"
+        )
+
+    filled = urban_centres.copy()
     n = 0
     while True:
         n += 1
-        check = gf.copy()
-        gf = generic_filter(
-            gf,
+        check = filled.copy()
+        filled = generic_filter(
+            filled,
             function=custom_filter,
             size=3,
             mode="constant",
             extra_keywords={"threshold": threshold},
         )
-        if np.array_equal(gf, check):
+        if np.array_equal(filled, check):
             print("iter", n)
             break
-    return gf
+    return filled
+
+
+def vectorize_uc(
+    uc_array: np.ndarray,
+    cluster_num: int,
+    aff: affine.Affine,
+    crs: rasterio.crs.CRS,
+    nodata: int = -200,
+    type: str = "int32",
+) -> gpd.GeoDataFrame:
+    """Vectorize raster with urban centre polygon.
+
+    Parameters
+    ----------
+    uc_array : np.ndarray
+        Array including filled urban centres.
+    cluster_num: int
+        Label of the urban centre to keep.
+    aff: affine.Affine
+        Affine transform of the masked raster.
+    crs: rasterio.crs.CRS
+        crs string of the masked raster.
+    nodata: int
+        Value to fill empty cells.
+    type: str
+        Type for the xarray values.
+
+    Returns
+    -------
+        gpd.GeoDataFrame: GeoDataFrame with polygon boundaries.
+
+    """
+    if not isinstance(uc_array, np.ndarray):
+        raise TypeError(
+            "`uc_array` expected numpy array, "
+            f"got {type(uc_array).__name__}."
+        )
+    if not isinstance(cluster_num, int):
+        raise TypeError(
+            "`cluster_num` expected integer, "
+            f"got {type(cluster_num).__name__}"
+        )
+    if not isinstance(aff, affine.Affine):
+        raise TypeError("`aff` must be a valid Affine object")
+    if not isinstance(crs, rasterio.crs.CRS):
+        raise TypeError("`crs` must be a valid rasterio.crs.CRS object")
+    if not isinstance(nodata, int):
+        raise TypeError(
+            "`nodata` expected integer, " f"got {type(nodata).__name__}"
+        )
+    if not isinstance(type, str):
+        raise TypeError(
+            "`type` expected string, " f"got {type(type).__name__}"
+        )
+
+    filt_array = uc_array == cluster_num
+
+    x_array = (
+        xr.DataArray(filt_array)
+        .astype(type)
+        .rio.write_nodata(nodata)
+        .rio.write_transform(aff)
+        .rio.set_crs(crs, inplace=True)
+    )
+
+    gdf = vectorize(x_array)
+    gdf.columns = ["label", "geometry"]
+    gdf = gdf[gdf["label"] == 1]
+
+    return gdf
+
+
+def add_buffer(gdf: gpd.GeoDataFrame, size: int = 10000) -> gpd.GeoDataFrame:
+    """Add buffer around urban centre polygon.
+
+    Parameters
+    ----------
+    gdf : gpd.GeoDataFrame
+        GeoDataFrame including boundaries of urban centre.
+    size: int
+        Size of the buffer, in metres.
+
+    Returns
+    -------
+        gpd.GeoDataFrame: GeoDataFrame with buffer boundaries.
+
+    """
+    if not isinstance(gdf, gpd.GeoDataFrame):
+        raise TypeError(
+            "`gdf` expected GeoPandas GeoDataFrame, "
+            f"got {type(gdf).__name__}."
+        )
+    if not isinstance(size, int):
+        raise TypeError(
+            "`size` expected integer, " f"got {type(size).__name__}"
+        )
+
+    b = gdf.buffer(size)
+    return b

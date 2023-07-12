@@ -35,11 +35,16 @@ PID: http://data.europa.eu/89h/a0df7a6f-49de-46ea-9bde-563437a6e2ba
 
 """
 # %%
-import rasterio
+import rasterio as rio
 import geopandas as gpd
 import matplotlib.pyplot as plt
+import xarray as xr
 
-# import numpy as np
+# import rioxarray as rxr
+# from affine import Affine
+
+import numpy as np
+
 # from scipy.ndimage import label, generic_filter, binary_dilation
 # from rasterio.mask import raster_geometry_mask
 import numpy.ma as ma
@@ -47,12 +52,20 @@ import numpy.ma as ma
 import heimdall_transport.urban_centres.urban_centres as uc
 import shapely.geometry
 
-# %%
-file_pop = "../../data/raw/GHS_POP_E2020_GLOBE_R2023A_54009_1000_V1_0_R3_C18/GHS_POP_E2020_GLOBE_R2023A_54009_1000_V1_0_R3_C18.tif"  # noqa
-file_smod = "../../data/raw/GHS_SMOD_E2020_GLOBE_R2023A_54009_1000_V1_0_R3_C18/GHS_SMOD_E2020_GLOBE_R2023A_54009_1000_V1_0_R3_C18.tif"  # noqa
+import cartopy.io.img_tiles as cimgt
+import cartopy.crs as ccrs
+
+# from rasterio.mask import raster_geometry_mask
+from geocube.vector import vectorize
+import rioxarray
+import folium
 
 # %%
-bbox = gpd.read_file("../../data/raw/bbox_leeds.geojson")
+file_pop = "../../data/raw/GHS_POP_E2020_GLOBE_R2023A_54009_1000_V1_0_R3_C18.tif"  # noqa
+file_smod = "../../data/raw/GHS_SMOD_E2020_GLOBE_R2023A_54009_1000_V1_0_R3_C18.tif"  # noqa
+
+# %%
+bbox = gpd.read_file("../../data/raw/bbox.geojson")
 bbox_rep = bbox.to_crs("esri:54009")
 xmin, ymin, xmax, ymax = bbox_rep.total_bounds
 
@@ -66,7 +79,7 @@ xmin, ymin, xmax, ymax = bbox_rep.total_bounds
 
 # %%
 # pop only criteria
-masked_rst = uc.filter_cells(file_pop, bbox_rep)
+masked_rst, aff, rst_src = uc.filter_cells(file_pop, bbox_rep)
 flag_array = uc.flag_cells(masked_rst)
 clusters, n_features = uc.cluster_cells(flag_array)
 urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
@@ -74,26 +87,129 @@ urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
 uc_filled = uc.fill_gaps(urban_centres)
 plt.imshow(uc_filled)
 
+newport = uc_filled == 16
+
 # %%
+# try to convert yo xarray for geocube
+# coords = [list(range(d)) for d in newport.shape]
+"""
+h = [aff[0] * d + (aff[2] - aff[0] / 2)
+     for d in range(1, newport.shape[0] + 1)]
+v = [aff[4] * d + (aff[5] - aff[4] / 2)
+     for d in range(1, newport.shape[1] + 1)]
+coords = [h, v]
+dims = ['x', 'y']
+
+xcs = (
+    xr.DataArray(newport, coords=coords, dims=dims)
+    .astype('int32')
+    .rio.write_nodata(-1)
+    .rio.set_crs(src.crs)
+    .rio.write_transform(aff)
+)
+"""
+with rio.open(file_pop) as src:
+    crs_pop = src.crs
+
+npt = (
+    xr.DataArray(newport)
+    .astype("int32")
+    .rio.write_nodata(-1)
+    .rio.write_transform(aff)
+    .rio.set_crs(src.crs, inplace=True)
+)
+
+gdf = vectorize(npt)
+gdf.columns = ["label", "geometry"]
+gdf = gdf[gdf["label"] == 1]
+
+fig = plt.figure
+
+m = gdf.explore(color="red")
+m = gdf.buffer(10000).explore(m=m)
+folium.LayerControl().add_to(m)
+m
+
+# %%
+# urban centre over map
+fig = plt.figure(figsize=(20, 20))
+img = cimgt.OSM()
+ax = plt.axes(projection=ccrs.Mollweide())
+data_crs = ccrs.Mollweide()
+
+height, width = newport.shape
+cols, rows = np.meshgrid(np.arange(width), np.arange(height))
+xs, ys = rio.transform.xy(aff, rows, cols)
+
+ax.add_image(img, 10)
+
+m = ax.pcolormesh(
+    xs, ys, newport, transform=data_crs, alpha=0.3, cmap="viridis"
+)
+
+plt.show()
+
+# %%
+# save Newport urban centre to tif
+with rio.open(file_pop) as src:
+    crs_pop = src.crs
+
+metadata = {
+    "driver": "GTiff",
+    "dtype": "float32",
+    "nodata": -200,
+    "width": newport.shape[1],
+    "height": newport.shape[0],
+    "count": 1,
+    "crs": crs_pop,
+    "transform": aff,
+    "compress": "lzw",
+}
+
+with rio.open("../../data/processed/newport_uc.tif", "w", **metadata) as dst:
+    dst.write(newport, 1)
+
+# %%
+# vectorize urban centre
+newport_rst = rioxarray.open_rasterio("../../data/processed/newport_uc.tif")
+
+gdf = vectorize(newport_rst)
+gdf.columns = ["label", "geometry"]
+gdf = gdf[gdf["label"] == 1]
+
+fig = plt.figure
+
+m = gdf.explore(color="red")
+m = gdf.buffer(10000).explore(m=m)
+folium.LayerControl().add_to(m)
+m
+
+#################################
+# %%
+# Below, comparison between GHS-SMOD and pop only urban centres
 # SMOD dataset
-masked_rst_smod = uc.filter_cells(file_smod, bbox_rep)
+masked_rst_smod, affine, src_masked_crs = uc.filter_cells(file_smod, bbox_rep)
 plt.imshow(masked_rst_smod >= 30)
 
 # %%
 # pop of simple urban centre
-print(ma.sum(ma.masked_where(uc_filled < 1, masked_rst)))
+print("total_population", ma.sum(ma.masked_where(uc_filled < 1, masked_rst)))
 plt.imshow(ma.masked_where(uc_filled < 1, masked_rst))
+plt.show()
 
 # %%
 # pop of smod
-print(ma.sum(ma.masked_where(masked_rst_smod < 30, masked_rst)))
+print(
+    "total_population",
+    ma.sum(ma.masked_where(masked_rst_smod < 30, masked_rst)),
+)
 plt.imshow(ma.masked_where(masked_rst_smod < 30, masked_rst))
+plt.show()
 
 
 # %%
 # check whole raster for benchmark
-
-with rasterio.open(file_pop) as src:
+with rio.open(file_pop) as src:
     bbox_all = src.bounds
 
 polygon = shapely.geometry.box(*bbox_all, ccw=True)
@@ -102,26 +218,21 @@ bbox_gdf = gpd.GeoDataFrame(
 )
 
 # %%
-masked_rst = uc.filter_cells(file_pop, bbox_gdf)
-# %%
-flag_array = uc.flag_cells(masked_rst)
-
-# %%
-clusters, n_features = uc.cluster_cells(flag_array)
-# %%
-urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)  # 20 s
-
-# %%
-uc_filled = uc.fill_gaps(urban_centres)  # 70 s
+# urban centres in whole raster file
+masked_rst_all, affine, src__all_crs = uc.filter_cells(file_pop, bbox_gdf)
+flag_array_all = uc.flag_cells(masked_rst_all)
+clusters_all, n_features_all = uc.cluster_cells(flag_array_all)
+urban_centres_all = uc.check_cluster_pop(
+    masked_rst_all, clusters_all, n_features_all
+)  # 20 s
+uc_filled_all = uc.fill_gaps(urban_centres_all)  # 70 s
 fig = plt.figure(figsize=(20, 20))
-plt.imshow(uc_filled)
+plt.imshow(uc_filled_all > 0)
 
 # %%
-masked_rst_smod = uc.filter_cells(file_smod, bbox_gdf)
+# whole GHS-SMOD raster file
+smod_rst_smod, affine, smod_src = uc.filter_cells(file_smod, bbox_gdf)
 fig = plt.figure(figsize=(20, 20))
-plt.imshow(masked_rst_smod == 30)
+plt.imshow(smod_rst_smod == 30)
 
 # %%
-# use binary_dilation for buffer!
-# bd = binary_dilation(uc)
-# mf = ma.array(uc, mask=np.invert(bd))
