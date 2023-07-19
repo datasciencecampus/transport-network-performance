@@ -4,8 +4,8 @@ from pyprojroot import here
 import os
 import pytest
 
-from heimdall_transport.gtfs.utils import bbox_filter_gtfs
-from heimdall_transport.gtfs.validation import GtfsInstance
+from transport_performance.gtfs.utils import bbox_filter_gtfs
+from transport_performance.gtfs.validation import GtfsInstance
 
 
 class TestBboxFilterGtfs(object):

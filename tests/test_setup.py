@@ -14,25 +14,23 @@ class TestSetup:
     """A class of tests to check correct set-up.
 
     A set of tests to:
-        1. check `heimdall_transport` is installed.
+        1. check `transport_performance` is installed.
+        2. check `r5py` is installed and java interface is functional
     """
 
     @pytest.mark.setup
-    def test_heimdall_transport_install(self) -> None:
-        """Check `heimdall_transport is installed.
+    def test_transport_performance_install(self) -> None:
+        """Check `transport_performance is installed.
 
         This is a simple test to check the package has been installed and is
         available for use.
         """
         try:
-            import heimdall_transport as ht
+            import transport_performance as tp
 
-            nm = ht.__name__
-            assert (
-                nm == "heimdall_transport"
-            ), f"Expected module import name 'heimdall_transport'. Found {nm}"
+            assert tp.__name__ == "transport_performance"
         except ImportError:
-            pytest.fail("Unable to find `heimdall_transport`.")
+            pytest.fail("Unable to find `transport_performance`.")
 
     @pytest.mark.setup
     def test_r5py_setup(self) -> None:

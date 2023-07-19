@@ -9,7 +9,7 @@ from geopandas import GeoDataFrame
 import numpy as np
 import re
 
-from heimdall_transport.gtfs.validation import (
+from transport_performance.gtfs.validation import (
     GtfsInstance,
     _create_map_title_text,
 )
@@ -220,7 +220,7 @@ class TestGtfsInstance(object):
     def test_get_route_modes(self, gtfs_fixture, mocker):
         """Assertions about the table returned by get_route_modes()."""
         patch_scrape_lookup = mocker.patch(
-            "heimdall_transport.gtfs.validation.scrape_route_type_lookup",
+            "transport_performance.gtfs.validation.scrape_route_type_lookup",
             # be sure to patch the func wherever it's being called
             return_value=pd.DataFrame(
                 {"route_type": ["3"], "desc": ["Mocked bus"]}

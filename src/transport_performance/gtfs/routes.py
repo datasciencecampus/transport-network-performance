@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 import warnings
 
-from heimdall_transport.utils.defence import _url_defence, _bool_defence
+from transport_performance.utils.defence import _url_defence, _bool_defence
 
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"

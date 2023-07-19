@@ -4,7 +4,7 @@ import geopandas as gpd
 from shapely.geometry import box
 from pyprojroot import here
 
-from heimdall_transport.utils.defence import _is_gtfs_pth, _check_list
+from transport_performance.utils.defence import _is_gtfs_pth, _check_list
 
 
 def bbox_filter_gtfs(

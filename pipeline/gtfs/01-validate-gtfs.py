@@ -17,8 +17,8 @@ import pandas as pd
 import time
 import subprocess
 
-from heimdall_transport.gtfs.validation import GtfsInstance
-from heimdall_transport.utils.defence import _is_gtfs_pth
+from transport_performance.gtfs.validation import GtfsInstance
+from transport_performance.utils.defence import _is_gtfs_pth
 
 CONFIG = toml.load(here("pipeline/gtfs/config/01-validate-gtfs.toml"))
 GTFS_PTH = here(CONFIG["GTFS"]["PATH"])

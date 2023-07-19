@@ -9,8 +9,8 @@ import numpy as np
 import os
 import inspect
 
-from heimdall_transport.gtfs.routes import scrape_route_type_lookup
-from heimdall_transport.utils.defence import (
+from transport_performance.gtfs.routes import scrape_route_type_lookup
+from transport_performance.utils.defence import (
     _is_gtfs_pth,
     _check_namespace_export,
     _check_parent_dir_exists,

@@ -1,7 +1,7 @@
 """Tests for defence.py. These internals may be covered elsewhere."""
 import pytest
 
-from heimdall_transport.utils.defence import (
+from transport_performance.utils.defence import (
     _check_list,
     _check_parent_dir_exists,
 )
