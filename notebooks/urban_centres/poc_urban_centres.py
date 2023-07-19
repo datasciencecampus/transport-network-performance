@@ -89,7 +89,7 @@ bbox_npt = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_npt = bbox_npt.to_crs("esri:54009")
 
 # pop only criteria
-masked_rst, aff, rst_src = uc.filter_cells(MERGED_DIR, bbox_npt)
+masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_npt)
 flag_array = uc.flag_cells(masked_rst)
 clusters, n_features = uc.cluster_cells(flag_array)
 urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
@@ -98,7 +98,7 @@ npt = uc.fill_gaps(urban_centres)
 print(np.unique(npt))
 plt.imshow(npt == 8)
 
-gdf_npt = uc.vectorize_uc(npt, 8, aff, rst_src)
+gdf_npt = uc.vectorize_uc(npt, 8, aff, rst_crs)
 npt_buffer = uc.add_buffer(gdf_npt)
 
 fig = plt.figure
@@ -118,7 +118,7 @@ bbox_lds = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_lds = bbox_lds.to_crs("esri:54009")
 
 # pop only criteria
-masked_rst, aff, rst_src = uc.filter_cells(MERGED_DIR, bbox_lds)
+masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_lds)
 flag_array = uc.flag_cells(masked_rst)
 clusters, n_features = uc.cluster_cells(flag_array)
 urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
@@ -127,7 +127,7 @@ lds = uc.fill_gaps(urban_centres)
 print(np.unique(lds))
 plt.imshow(lds == 29)
 
-gdf_lds = uc.vectorize_uc(lds, 29, aff, rst_src)
+gdf_lds = uc.vectorize_uc(lds, 29, aff, rst_crs)
 lds_buffer = uc.add_buffer(gdf_lds)
 
 fig = plt.figure
@@ -146,7 +146,7 @@ bbox_lnd = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_lnd = bbox_lnd.to_crs("esri:54009")
 
 # pop only criteria
-masked_rst, aff, rst_src = uc.filter_cells(MERGED_DIR, bbox_lnd)
+masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_lnd)
 flag_array = uc.flag_cells(masked_rst)
 clusters, n_features = uc.cluster_cells(flag_array)
 urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
@@ -155,7 +155,7 @@ lnd = uc.fill_gaps(urban_centres)
 print(np.unique(lnd))
 plt.imshow(lnd == 22)
 
-gdf_lnd = uc.vectorize_uc(lnd, 22, aff, rst_src)
+gdf_lnd = uc.vectorize_uc(lnd, 22, aff, rst_crs)
 lnd_buffer = uc.add_buffer(gdf_lnd)
 
 fig = plt.figure
@@ -174,7 +174,7 @@ bbox_mrs = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_mrs = bbox_mrs.to_crs("esri:54009")
 
 # pop only criteria
-masked_rst, aff, rst_src = uc.filter_cells(MERGED_DIR, bbox_mrs)
+masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_mrs)
 flag_array = uc.flag_cells(masked_rst)
 clusters, n_features = uc.cluster_cells(flag_array)
 urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
@@ -183,7 +183,7 @@ mrs = uc.fill_gaps(urban_centres)
 print(np.unique(mrs))
 plt.imshow(mrs == 246)
 
-gdf_mrs = uc.vectorize_uc(mrs, 246, aff, rst_src)
+gdf_mrs = uc.vectorize_uc(mrs, 246, aff, rst_crs)
 mrs_buffer = uc.add_buffer(gdf_mrs)
 
 fig = plt.figure
@@ -204,3 +204,40 @@ m = lds_buffer.explore(m=m)
 folium.LayerControl().add_to(m)
 m
 # %%
+# %%
+# try filtering by city centre coords
+AREA_OF_INTEREST = "newport"
+BBOX = BBOX_DICT[AREA_OF_INTEREST]
+
+bbox_npt = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
+bbox_npt = bbox_npt.to_crs("esri:54009")
+
+coords = (51.58594, -2.99277)
+
+# pop only criteria
+masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_npt)
+
+# converts coords to Mollweide
+"""
+transformer = Transformer.from_crs("EPSG:4326", rst_crs)
+x, y = transformer.transform(*coords)
+rows, cols = rowcol(aff, x, y)
+
+flag_array = uc.flag_cells(masked_rst)
+clusters, n_features = uc.cluster_cells(flag_array)
+urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
+
+npt = uc.fill_gaps(urban_centres)
+print(np.unique(npt))
+plt.imshow(npt == npt[rows, cols])
+"""
+
+# %%
+gdf_npt = uc.vectorize_uc(npt, 8, aff, rst_crs)
+npt_buffer = uc.add_buffer(gdf_npt)
+
+fig = plt.figure
+m = gdf_npt.explore(color="red")
+m = npt_buffer.explore(m=m)
+folium.LayerControl().add_to(m)
+m

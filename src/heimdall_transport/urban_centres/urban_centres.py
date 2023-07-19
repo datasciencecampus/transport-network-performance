@@ -9,6 +9,8 @@ from collections import Counter
 from geocube.vector import vectorize
 import xarray as xr
 import affine
+from pyproj import Transformer
+from rasterio.transform import rowcol
 
 
 def filter_cells(file: str, bbox: gpd.GeoDataFrame, band_n: int = 1) -> tuple:
@@ -283,11 +285,36 @@ def fill_gaps(urban_centres: np.ndarray, threshold: int = 5) -> np.ndarray:
     return filled
 
 
+def get_x_y(coords: tuple, aff: affine.Affine, crs: rasterio.crs.CRS) -> tuple:
+    """Get array index for given coordinates.
+
+    Parameters
+    ----------
+    coords: tuple
+        Tuple with coordinates to convert.
+        Must be in format (lat, long) and EPSG: 4326.
+    aff: affine.Affine
+        Affine transform.
+    crs: rasterio.crs.CRS
+        valid rasterio crs string.
+
+    Returns
+    -------
+        tuple: (x, y) coordinates in provided crs.
+
+    """
+    transformer = Transformer.from_crs("EPSG:4326", crs)
+    x, y = transformer.transform(*coords)
+    row, col = rowcol(aff, x, y)
+
+    return row, col
+
+
 def vectorize_uc(
     uc_array: np.ndarray,
-    cluster_num: int,
     aff: affine.Affine,
     crs: rasterio.crs.CRS,
+    centre: tuple,
     nodata: int = -200,
     type: str = "int32",
 ) -> gpd.GeoDataFrame:
@@ -297,12 +324,13 @@ def vectorize_uc(
     ----------
     uc_array : np.ndarray
         Array including filled urban centres.
-    cluster_num: int
-        Label of the urban centre to keep.
     aff: affine.Affine
         Affine transform of the masked raster.
     crs: rasterio.crs.CRS
         crs string of the masked raster.
+    centre: tuple
+        Tuple with coordinates for city centre, used to filter cluster.
+        Must be in format (lat, long) and EPSG: 4326.
     nodata: int
         Value to fill empty cells.
     type: str
@@ -318,10 +346,9 @@ def vectorize_uc(
             "`uc_array` expected numpy array, "
             f"got {type(uc_array).__name__}."
         )
-    if not isinstance(cluster_num, int):
+    if not isinstance(centre, tuple):
         raise TypeError(
-            "`cluster_num` expected integer, "
-            f"got {type(cluster_num).__name__}"
+            "`centre` expected tuple, " f"got {type(centre).__name__}"
         )
     if not isinstance(aff, affine.Affine):
         raise TypeError("`aff` must be a valid Affine object")
@@ -334,6 +361,16 @@ def vectorize_uc(
     if not isinstance(type, str):
         raise TypeError(
             "`type` expected string, " f"got {type(type).__name__}"
+        )
+
+    row, col = get_x_y(centre, aff, crs)
+    if row > uc_array.shape[0] or col > uc_array.shape[1]:
+        raise IndexError("Coordinates fall outside of raster window.")
+
+    cluster_num = uc_array[row, col]
+    if cluster_num == 0:
+        raise ValueError(
+            "Coordinates provided are not included " "within any cluster."
         )
 
     filt_array = uc_array == cluster_num

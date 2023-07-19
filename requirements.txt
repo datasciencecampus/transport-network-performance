@@ -5,3 +5,4 @@ rasterio
 matplotlib
 scipy
 pyproj>=3.6.0
+-e .
