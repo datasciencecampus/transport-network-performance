@@ -1,4 +1,4 @@
-"""`heimdall_trasnport`.
+"""`transport_performance`.
 
 See `README.md` for more details.
 """
