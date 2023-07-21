@@ -48,6 +48,7 @@ import seaborn as sns
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import rioxarray
+import xarray as xr
 import requests
 import textwrap
 
@@ -1113,4 +1114,105 @@ plt.setp(plt.getp(cbar.ax.axes, "xticklabels"), color="white")
 
 plt.tight_layout()
 plt.show()
+
+# %%
+# small snippet of code for developing unit tests
+
+
+def np_to_rioxarry(
+    arr: np.ndarray,
+    aff: rio.Affine,
+    as_type: str = "float32",
+    no_data: int = -200,
+    crs: str = "ESRI:54009",
+) -> xr.DataArray:
+    """Convert numpy array to rioxarry.
+
+    This function is only used within pytest, as a convinent way to build
+    fixtures without duplicating code.
+
+    Parameters
+    ----------
+    arr : np.ndarray
+        Input numpy array
+    aff : rio.Affine
+        Affine transform, for input data
+    as_type : str, optional
+        Data type, by default "int16"
+    no_data : int, optional
+        Value to use for no data, by default -200
+    crs : _type_, optional
+        Coordinate Reference system for input data, by default "ESRI:54009"
+
+    Returns
+    -------
+    xr.DataArray
+        Input numpy array as an xarray.DataArray with the correct
+
+    """
+    height = arr.shape[0]
+    width = arr.shape[1]
+    cols = np.arange(width)
+    rows = np.arange(height)
+
+    xs, ys = rio.transform.xy(aff, rows, cols)
+
+    x_array = (
+        xr.DataArray(arr.T, dims=["x", "y"], coords=dict(x=xs, y=ys))
+        .transpose("y", "x")
+        .astype(as_type)
+        .rio.write_nodata(no_data)
+        .rio.write_transform(aff)
+        .rio.set_crs(crs)
+    )
+
+    x_array.name = "var"
+
+    return x_array
+
+
+# %%
+# build a static, top left df
+array_1 = np.array(
+    [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
+)
+transform_1 = rio.Affine(100, 0, -225800, 0, -100, 6036800)
+xarray_1 = np_to_rioxarry(array_1, transform_1)
+gdf1 = vectorize(xarray_1)
+
+# %%
+# build a random, top right df
+array_2 = np.random.randn(4, 4)
+transform_2 = rio.Affine(100, 0, -225400, 0, -100, 6036800)
+xarray_2 = np_to_rioxarry(array_2, transform_2, as_type="float32")
+gdf2 = vectorize(xarray_2)
+
+# %%
+# build a random, bottom left df
+array_3 = np.random.randn(4, 4)
+transform_3 = rio.Affine(100, 0, -225800, 0, -100, 6036400)
+xarray_3 = np_to_rioxarry(array_3, transform_3, as_type="float32")
+gdf3 = vectorize(xarray_3)
+
+# %%
+# build a random, bottom right df
+array_4 = np.random.randn(4, 4)
+transform_4 = rio.Affine(100, 0, -225400, 0, -100, 6036400)
+xarray_4 = np_to_rioxarry(array_4, transform_4, as_type="float32")
+gdf4 = vectorize(xarray_4)
+
+# %%
+# plot all dummy gdfs
+m = gdf1.explore("var", legend=False)
+m = gdf2.explore("var", m=m, legend=False)
+m = gdf3.explore("var", m=m, legend=False)
+m = gdf4.explore("var", m=m, legend=False)
+m.fit_bounds(m.get_bounds())
+m
+
+# %%
+# display bounds
+for xarr in [xarray_1, xarray_2, xarray_3, xarray_4]:
+    print(xarr.rio.bounds())
+
 # %%
