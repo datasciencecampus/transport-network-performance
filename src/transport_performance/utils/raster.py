@@ -81,7 +81,7 @@ def merge_raster_files(
 
     # build a list of input rioxarrays to be merged
     arrays = []
-    for tif_filepath in tif_filepaths:
+    for tif_filepath in sorted(tif_filepaths):
         arrays.append(rioxarray.open_rasterio(tif_filepath, masked=True))
 
     # merge the datasets together
