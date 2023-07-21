@@ -9,8 +9,10 @@ gridded population data pre-processing.
 import os
 import glob
 import re
+import rioxarray
 
 from pyprojroot import here
+from rioxarray.merge import merge_arrays
 
 
 def merge_raster_files(
@@ -18,7 +20,7 @@ def merge_raster_files(
     output_dir: str,
     output_filename: str,
     subset_regex: str = None,
-) -> None:
+) -> dict:
     """Merge raster files together.
 
     Takes an input directory and merges all `.tif` files within it. Writes
@@ -36,6 +38,33 @@ def merge_raster_files(
         Subset any raster files in the input directory using a regex, by
         default None which means no subsetting will occur.
 
+    Returns
+    -------
+    bounds : dict
+        A dictionary summarising the boundaries of all input rasters and the
+        merged output. The "inputs" key is a list of the respective input
+        boundaries. The "output" key is a list containing the bounds of the
+        merged result. Useful to checking consistency of merged output.
+
+    Notes
+    -----
+    1. This function does not provide any consistency checking of inputs and
+    merged outputs (e.g., checking for overlapping inputs and 'gaps' in the
+    merged outputs). This is primarily because merging is nuienced and numerous
+    in the potential ways inputs can be merged. For this reason, it is down to
+    the function's user to ensure the merged output is consistent with the
+    respective inputs. To this end, the bounds dict is returned to allow user
+    consistency testing.
+
+    2. The default rioxarry behaviours are assumed when merging inputs, i.e.,
+    the `CRS`, resolution and `nodata` values will be taken from the first
+    input DataArray. See [1]_ for more details.
+
+    References
+    ----------
+    .. [1] https://corteva.github.io/rioxarray/html/rioxarray.html#rioxarray.m
+    erge.merge_arrays
+
     """
     # defend against case where the provided input dir does not exist
     if not os.path.exists(input_dir):
@@ -49,7 +78,30 @@ def merge_raster_files(
         tif_filepaths = [
             fpath for fpath in tif_filepaths if re.search(subset_regex, fpath)
         ]
-    print(len(tif_filepaths))
+
+    # build a list of input rioxarrays to be merged
+    arrays = []
+    for tif_filepath in tif_filepaths:
+        arrays.append(rioxarray.open_rasterio(tif_filepath, masked=True))
+
+    # merge the datasets together
+    xds_merged = merge_arrays(arrays)
+
+    # make output_dir if it does not exist
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+
+    # create full filepath for merged tif file and write to disk
+    MERGED_DIR = os.path.join(output_dir, output_filename)
+    xds_merged.rio.to_raster(MERGED_DIR)
+
+    # get boundaries of inputs and output raster
+    bounds = {
+        "inputs": [array.rio.bounds() for array in arrays],
+        "output": [xds_merged.rio.bounds()],
+    }
+
+    return bounds
 
 
 def sum_resample_file(
@@ -89,4 +141,11 @@ if __name__ == "__main__":
     # set inputs, checking with E020 in filename
     INPUT_FOLDER = os.path.join(here(), "data", "external", "population")
     subset_regex = r"(.{0,})(E2020)(.{0,})(\.tif)$"
-    merge_raster_files(INPUT_FOLDER, "", "", subset_regex=subset_regex)
+    OUTPUT_FOLDER = os.path.join(here(), "data", "interim", "population")
+    OUTPUT_FILENAME = "utils_merged.tif"
+
+    bounds = merge_raster_files(
+        INPUT_FOLDER, OUTPUT_FOLDER, OUTPUT_FILENAME, subset_regex=subset_regex
+    )
+
+    print(bounds)
