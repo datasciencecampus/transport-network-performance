@@ -15,7 +15,10 @@ import rasterio as rio
 import xarray as xr
 import rioxarray  # noqa: F401 - import required for xarray but not needed here
 
-from transport_performance.utils.raster import merge_raster_files
+from transport_performance.utils.raster import (
+    merge_raster_files,
+    sum_resample_file,
+)
 
 
 def np_to_rioxarry(
@@ -173,6 +176,41 @@ def merge_xarrs_fpath(
     return write_dir
 
 
+@pytest.fixture
+def resample_xarr_fpath(
+    merge_xarr_1: xr.DataArray,
+    tmp_path: str,
+) -> str:
+    """Build temp directory containing dummy GeoTIFF files to test resampling.
+
+    Used to replicate the behaviour of the `merge_raster_files` raster utils
+    function. Writes all the dummy GeoTIFFs to a folder within a temp
+    directory.
+
+    Parameters
+    ----------
+    merge_xarr_1 : xr.DataArray
+        Dummy input data from `merge_xarr_1` pytest fixture
+    tmp_path : str
+        Temporary directory to use for pytest run (a pytest object)
+
+    Returns
+    -------
+    str
+        Filepath to dummy GeoTIFF data
+
+    """
+    # create dir to write dummy data within the temp dir
+    write_dir = os.path.join(tmp_path, "resample_test_file")
+    os.mkdir(write_dir)
+
+    # write dummy data to the dir within the temp dir
+    out_filepath = os.path.join(write_dir, "input.tif")
+    merge_xarr_1.rio.to_raster(out_filepath)
+
+    return out_filepath
+
+
 class TestUtilsRaster:
     """A class to test utils/raster functions."""
 
@@ -219,3 +257,39 @@ class TestUtilsRaster:
         maxx = max([coords[2] for coords in bounds["inputs"]])
         maxy = max([coords[3] for coords in bounds["inputs"]])
         assert bounds["output"][0] == (minx, miny, maxx, maxy)
+
+    def test_sum_resample_file(self, resample_xarr_fpath: str) -> None:
+        """Test `sum_resample_file`.
+
+        Use `merge_xarr_1` to test resampling, which will have a known and
+        expected result.
+
+        Parameters
+        ----------
+        resample_xarr_fpath : str
+            Filepath to dummy data.
+
+        """
+        # print fpath where input data resides in tmp folder
+        # useful when using -rP flag in pytest to see directory
+        print(f"Temp filepath for resampling test: {resample_xarr_fpath}")
+
+        # resample to input and set the output location
+        output_fpath = os.path.join(
+            os.path.dirname(resample_xarr_fpath), "output.tif"
+        )
+        sum_resample_file(resample_xarr_fpath, output_fpath)
+
+        # re-read in resampled output to test
+        xds_out = rioxarray.open_rasterio(output_fpath)
+
+        # assert expected resolution, shape, no data value and crs
+        assert xds_out.rio.transform().a == 200
+        assert xds_out.rio.transform().e == -200
+        assert xds_out.to_numpy().shape == (1, 2, 2)
+        assert xds_out.rio.nodata == -200.0
+        assert xds_out.rio.crs.to_string() == "ESRI:54009"
+
+        # assert correct resampling values (summing consitiuent grids)
+        expected_result = np.array([[[14, 22], [46, 54]]])
+        assert np.array_equal(expected_result, xds_out.to_numpy())
