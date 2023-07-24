@@ -11,8 +11,8 @@ import glob
 import re
 import rioxarray
 
-from pyprojroot import here
 from rioxarray.merge import merge_arrays
+from rasterio.warp import Resampling
 
 
 def merge_raster_files(
@@ -105,10 +105,8 @@ def merge_raster_files(
 
 
 def sum_resample_file(
-    input_dir: str,
-    input_filename: str,
-    output_dir: str,
-    output_filename: str,
+    input_filepath: str,
+    output_filepath: str,
     resample_factor: int = 2,
 ) -> None:
     """Resample raster file (change grid resolution) by summing.
@@ -118,34 +116,38 @@ def sum_resample_file(
 
     Parameters
     ----------
-    input_dir : str
-        Input directory of GeoTIFF file
-    input_filename : str
-        Input filename of GeoTIFF file
-    output_dir : str
-        Output directory of resample GeoTIFF file
-    output_filename : str
-        Output filename of resample GeoTIFF file
+    input_filepath : str
+        Input filpath of GeoTIFF file
+    output_filepath : str
+        Output filepath for resampled GeoTIFF file
     resample_factor : int, optional
         Factor to resample input raster by, by default 2 which means the
         resolution will be decreased by 2 (e.g., input=100x100m then output=200
         x200m)
 
+    Raises
+    ------
+    FileNotFoundError
+        Unable to find `input_filepath`
+
     """
-    pass
+    # defend against case where the provided input dir does not exist
+    if not os.path.exists(input_filepath):
+        raise FileNotFoundError(f"{input_filepath} can not be found")
 
+    xds = rioxarray.open_rasterio(input_filepath, masked=True)
 
-# TODO: remove once development is completed
-if __name__ == "__main__":
-
-    # set inputs, checking with E020 in filename
-    INPUT_FOLDER = os.path.join(here(), "data", "external", "population")
-    subset_regex = r"(.{0,})(E2020)(.{0,})(\.tif)$"
-    OUTPUT_FOLDER = os.path.join(here(), "data", "interim", "population")
-    OUTPUT_FILENAME = "utils_merged.tif"
-
-    bounds = merge_raster_files(
-        INPUT_FOLDER, OUTPUT_FOLDER, OUTPUT_FILENAME, subset_regex=subset_regex
+    # resample based on scaling factor and using sum resampling
+    xds_resampled = xds.rio.reproject(
+        xds.rio.crs,
+        resolution=tuple(
+            res * resample_factor for res in xds.rio.resolution()
+        ),
+        resampling=Resampling.sum,
     )
 
-    print(bounds)
+    # make output_filepath's directory if it does not exist
+    if not os.path.exists(os.path.dirname(output_filepath)):
+        os.mkdir(output_filepath)
+
+    xds_resampled.rio.to_raster(output_filepath)
