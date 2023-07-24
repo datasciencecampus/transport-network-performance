@@ -46,6 +46,12 @@ def merge_raster_files(
         boundaries. The "output" key is a list containing the bounds of the
         merged result. Useful to checking consistency of merged output.
 
+    Raises
+    ------
+    FileNotFoundError
+        In scenarios where `input_dir` does not exist and if there are no .tif
+        detectable within `input_dir`.
+
     Notes
     -----
     1. This function does not provide any consistency checking of inputs and
