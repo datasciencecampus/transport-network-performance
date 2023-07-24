@@ -112,7 +112,7 @@ def merge_xarr_3():
     return xarray_3
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture
 def merge_xarr_4():
     """Create a dummay xarray.DataFrame for merge function testing.
 
