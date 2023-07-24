@@ -23,7 +23,7 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install geos
+    - name: Install geos  # required for cartopy installation
       uses: ConorMacBride/install-package@v1
       with:
         brew: geos
