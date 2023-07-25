@@ -98,7 +98,7 @@ def scrape_route_type_lookup(
     for url in [gtfs_url, ext_spec_url]:
         _url_defence(url)
 
-    _bool_defence(extended_schema)
+    _bool_defence(extended_schema, "extended_schema")
     # Get the basic scheme lookup
     resp_txt = _get_response_text(gtfs_url)
     soup = BeautifulSoup(resp_txt, "html.parser")

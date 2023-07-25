@@ -109,11 +109,11 @@ def _url_defence(url):
     return None
 
 
-def _bool_defence(some_bool):
+def _bool_defence(some_bool, param_nm):
     """Defence checking. Not exported."""
     if not isinstance(some_bool, bool):
         raise TypeError(
-            f"`extended_schema` expected boolean. Got {type(some_bool)}"
+            f"`{param_nm}` expected boolean. Got {type(some_bool)}"
         )
 
     return None
