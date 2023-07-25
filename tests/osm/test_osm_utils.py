@@ -22,6 +22,12 @@ class TestFilterOsm(object):
             # file exists but is not a pbf
             filter_osm(pbf_pth=here("tests/data/newport-20230613_gtfs.zip"))
         with pytest.raises(
+            TypeError,
+            match="`out_pth` expected path-like, found <class 'bool'>.",
+        ):
+            # out_pth is not a path_like
+            filter_osm(out_pth=False)
+        with pytest.raises(
             TypeError, match="`tag_filter` expected boolean. Got <class 'int'>"
         ):
             # check for boolean defense
