@@ -8,7 +8,7 @@ from transport_performance.osm.osm_utils import filter_osm
 class TestFilterOsm(object):
     """Testing filter_osm()."""
 
-    def test_filter_osm_defense(self):
+    def test_filter_osm_defense(self, mocker):
         """Defensive behaviour for filter_osm."""
         with pytest.raises(
             FileExistsError, match="not/a/pbf/.nosiree not found on file."
@@ -56,3 +56,23 @@ class TestFilterOsm(object):
         ):
             # type problems with bbox
             filter_osm(bbox=[0, 1.1, 0.1, 1.2])
+        with pytest.raises(
+            Exception, match="`osmosis` is not found. Please install."
+        ):
+            # imitate missing osmosis and install_osmosis is False
+            mock_missing_osmosis = mocker.patch(
+                "transport_performance.osm.osm_utils.subprocess.run",
+                side_effect=FileNotFoundError("No osmosis here..."),
+            )
+            filter_osm()
+            assert mock_missing_osmosis.called
+
+    # def test_filter_osm_no_osmosis(self, tmpdir, mocker):
+    #     """Assertions when osmosis is missing from the environment."""
+    #     target_pth = os.path.join(tmpdir, "filtered_output")
+    #     # imitate missing osmosis
+    #    mock_missing_osmosis = mocker.patch(
+    #        "transport_performance.osm.osm_utils.subprocess.run",
+    #        side_effect=FileNotFoundError("No osmosis here..."))
+    #     filter_osm()
+    #     assert mock_missing_osmosis.called
