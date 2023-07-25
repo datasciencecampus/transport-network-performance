@@ -18,7 +18,7 @@ import time
 import subprocess
 
 from transport_performance.gtfs.validation import GtfsInstance
-from transport_performance.utils.defence import _is_gtfs_pth
+from transport_performance.utils.defence import _is_expected_filetype
 
 CONFIG = toml.load(here("pipeline/gtfs/config/01-validate-gtfs.toml"))
 GTFS_PTH = here(CONFIG["GTFS"]["PATH"])
@@ -28,7 +28,7 @@ POINT_MAP_PTH = CONFIG["MAPS"]["STOP_COORD_PTH"]
 HULL_MAP_PATH = CONFIG["MAPS"]["STOP_HULL_PTH"]
 PROFILING = CONFIG["UTILS"]["PROFILING"]
 # check GTFS Path exists
-_is_gtfs_pth(pth=GTFS_PTH, param_nm="GTFS_PTH", check_existing=True)
+_is_expected_filetype(pth=GTFS_PTH, param_nm="GTFS_PTH", check_existing=True)
 # Get the disk usage of the GTFS file.
 gtfs_du = (
     subprocess.check_output(["du", "-sh", GTFS_PTH]).split()[0].decode("utf-8")

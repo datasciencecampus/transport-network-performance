@@ -39,7 +39,7 @@ class TestGtfsInstance(object):
         #  a case where file is found but not a zip directory
         with pytest.raises(
             ValueError,
-            match=r"`gtfs_pth` expected a zip file extension. Found .pbf",
+            match=r"`gtfs_pth` expected file extension .zip. Found .pbf",
         ):
             GtfsInstance(
                 gtfs_pth=here("tests/data/newport-2023-06-13.osm.pbf")
