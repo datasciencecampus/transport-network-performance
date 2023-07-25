@@ -93,11 +93,11 @@ def filter_osm(
     try:
         subprocess.run(cmd, check=True)
         print(f"Filter completed. Written to {out_pth}")
-    except subprocess.CalledProcessError as e2:
-        raise Exception(f"Error executing osmosis command: {e2}")
-    except FileNotFoundError as e3:
+    except subprocess.CalledProcessError as e1:
+        raise Exception(f"Error executing osmosis command: {e1}")
+    except FileNotFoundError as e2:
         if install_osmosis:
-            print(f"osmosis command was not recognised: {e3}. Trying install.")
+            print(f"osmosis command was not recognised: {e2}. Trying install.")
             subprocess.run(["brew", "install", "osmosis"])
             print("Installation of `osmosis successful.`")
             subprocess.run(cmd, check=True)
