@@ -32,3 +32,21 @@ class TestFilterOsm(object):
         ):
             # check for boolean defense
             filter_osm(install_osmosis="False")
+        with pytest.raises(
+            ValueError,
+            match="box longitude West 1.1 is not smaller than East 1.0",
+        ):
+            # check for bounding boxes that osmosis won't like - long problem
+            filter_osm(bbox=[1.1, 0.0, 1.0, 0.1])
+        with pytest.raises(
+            ValueError,
+            match="box latitude South 0.1 is not smaller than North 0.0",
+        ):
+            # lat problem
+            filter_osm(bbox=[0.0, 0.1, 0.1, 0.0])
+        with pytest.raises(
+            TypeError,
+            match="ox` must contain <class 'float'> only. Found <class 'int'>",
+        ):
+            # type problems with bbox
+            filter_osm(bbox=[0, 1.1, 0.1, 1.2])
