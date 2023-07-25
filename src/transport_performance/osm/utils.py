@@ -6,6 +6,7 @@ from transport_performance.utils.defence import (
     _bool_defence,
     _check_list,
     _check_parent_dir_exists,
+    _is_expected_filetype,
 )
 
 
@@ -45,6 +46,10 @@ def filter_osm(
 
     """
     # defence
+    _is_expected_filetype(pbf_pth, param_nm="pbf_pth", exp_ext=".pbf")
+    _is_expected_filetype(
+        out_pth, param_nm="out_pth", exp_ext=".pbf", check_existing=False
+    )
     _bool_defence(tag_filter, param_nm="tag_filter")
     _check_list(bbox, param_nm="bbox", check_elements=True, exp_type=float)
     _check_parent_dir_exists(out_pth, param_nm="out_pth", create=True)
