@@ -55,7 +55,7 @@ class Test_CheckParentDirExists(object):
         """Check defence for _check_parent_dir_exists()."""
         with pytest.raises(
             FileNotFoundError,
-            match="Parent directory missing not found on disk.",
+            match="Parent directory .*missing not found on disk.",
         ):
             _check_parent_dir_exists(
                 pth="missing/file.someext", param_nm="not_found", create=False
