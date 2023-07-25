@@ -4,7 +4,7 @@ from pyprojroot import here
 import os
 import pytest
 
-from transport_performance.gtfs.utils import bbox_filter_gtfs
+from transport_performance.gtfs.gtfs_utils import bbox_filter_gtfs
 from transport_performance.gtfs.validation import GtfsInstance
 
 
