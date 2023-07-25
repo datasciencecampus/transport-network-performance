@@ -73,6 +73,6 @@ def filter_osm(
     except subprocess.CalledProcessError as e2:
         raise Exception(f"Error executing osmosis command: {e2}")
     except FileNotFoundError as e3:
-        raise Exception(f"Is osmosis an executable from terminal? {e3}")
+        raise Exception(f"The osmosis command was not recognised: {e3}")
 
     return None
