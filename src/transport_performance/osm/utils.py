@@ -50,7 +50,12 @@ def filter_osm(
     _is_expected_filetype(
         out_pth, param_nm="out_pth", exp_ext=".pbf", check_existing=False
     )
-    _bool_defence(tag_filter, param_nm="tag_filter")
+    for nm, val in {
+        "tag_filter": tag_filter,
+        "install_osmosis": install_osmosis,
+    }.items():
+        _bool_defence(val, param_nm=nm)
+
     _check_list(bbox, param_nm="bbox", check_elements=True, exp_type=float)
     _check_parent_dir_exists(out_pth, param_nm="out_pth", create=True)
     # Compile the osmosis command
@@ -86,6 +91,3 @@ def filter_osm(
             raise Exception("`osmosis` is not found. Please install.")
 
     return None
-
-
-filter_osm(install_osmosis=True)
