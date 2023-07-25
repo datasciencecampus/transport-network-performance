@@ -55,6 +55,21 @@ def filter_osm(
         "install_osmosis": install_osmosis,
     }.items():
         _bool_defence(val, param_nm=nm)
+    # check bbox values makes sense, else osmosis will error
+    if not bbox[0] < bbox[2]:
+        raise ValueError(
+            (
+                f"Bounding box longitude West {bbox[0]}"
+                f" is not smaller than East {bbox[2]}"
+            )
+        )
+    elif not bbox[1] < bbox[3]:
+        raise ValueError(
+            (
+                f"Bounding box latitude South {bbox[1]}"
+                f" is not smaller than North {bbox[3]}"
+            )
+        )
 
     _check_list(bbox, param_nm="bbox", check_elements=True, exp_type=float)
     _check_parent_dir_exists(out_pth, param_nm="out_pth", create=True)
