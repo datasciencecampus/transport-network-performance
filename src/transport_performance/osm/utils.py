@@ -2,7 +2,11 @@
 import subprocess
 from pyprojroot import here
 
-from transport_performance.utils.defence import _bool_defence, _check_list
+from transport_performance.utils.defence import (
+    _bool_defence,
+    _check_list,
+    _check_parent_dir_exists,
+)
 
 
 def filter_osm(
@@ -42,6 +46,7 @@ def filter_osm(
     # defence
     _bool_defence(tag_filter, param_nm="tag_filter")
     _check_list(bbox, param_nm="bbox", check_elements=True, exp_type=float)
+    _check_parent_dir_exists(out_pth, param_nm="out_pth", create=True)
     # check osmosis is installed
     check_cmd = ["brew", "deps", "--tree", "--installed", "osmosis"]
     try:
