@@ -21,3 +21,14 @@ class TestFilterOsm(object):
         ):
             # file exists but is not a pbf
             filter_osm(pbf_pth=here("tests/data/newport-20230613_gtfs.zip"))
+        with pytest.raises(
+            TypeError, match="`tag_filter` expected boolean. Got <class 'int'>"
+        ):
+            # check for boolean defense
+            filter_osm(tag_filter=1)
+        with pytest.raises(
+            TypeError,
+            match="`install_osmosis` expected boolean. Got <class 'str'>",
+        ):
+            # check for boolean defense
+            filter_osm(install_osmosis="False")
