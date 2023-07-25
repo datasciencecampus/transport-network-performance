@@ -9,7 +9,7 @@ def filter_osm(
     bbox=[-3.01, 51.58, -2.99, 51.59],
     tag_filter=True,
 ):
-    """Filter an osm.pbf file to a bounding box.
+    """Filter an osm.pbf file to a bounding box. Relies on homebrew.
 
     Parameters
     ----------
