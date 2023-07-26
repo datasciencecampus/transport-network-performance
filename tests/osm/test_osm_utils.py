@@ -78,4 +78,6 @@ class TestFilterOsm(object):
         target_pth = os.path.join(tmpdir, "test_output.osm.pbf")
         filter_osm(out_pth=target_pth, install_osmosis=True)
         # assert mock_missing_osmosis.called
-        assert os.path.exists(target_pth)
+        assert os.path.exists(
+            target_pth
+        ), f"Filtered pbf file not found: {target_pth}"
