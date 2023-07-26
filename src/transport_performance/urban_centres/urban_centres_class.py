@@ -40,36 +40,36 @@ class UrbanCentre:
         Wrapper for functions to get urban centre, buffer and bbox.
         """
         # window raster based on bbox
-        self._windowed_array, self.aff, self.crs = self._window_raster(
+        self.__windowed_array, self.aff, self.crs = self._window_raster(
             self.file, bbox, band_n
         )
 
         # cells over pop threshold
-        self._pop_filt_array = self._flag_cells(
-            self._windowed_array, cell_pop_threshold
+        self.__pop_filt_array = self._flag_cells(
+            self.__windowed_array, cell_pop_threshold
         )
 
         # clusters
-        self._cluster_array, self._num_clusters = self._cluster_cells(
-            self._pop_filt_array, diag
+        self.__cluster_array, self.__num_clusters = self._cluster_cells(
+            self.__pop_filt_array, diag
         )
 
         # clusters over pop threshold
         self.__urban_centres_array = self._check_cluster_pop(
-            self._windowed_array,
-            self._cluster_array,
-            self._num_clusters,
+            self.__windowed_array,
+            self.__cluster_array,
+            self.__num_clusters,
             pop_threshold,
         )
 
         # smoothed clusters
-        self._filled_array = self._fill_gaps(
+        self.__filled_array = self._fill_gaps(
             self.__urban_centres_array, cell_fill_treshold
         )
 
         # vectorized urban centre
-        self.vectorized_uc = self._vectorize_uc(
-            self._filled_array,
+        self.__vectorized_uc = self._vectorize_uc(
+            self.__filled_array,
             self.aff,
             self.crs,
             centre,
@@ -78,18 +78,19 @@ class UrbanCentre:
         )
 
         # buffer
-        self.buffer = gpd.GeoDataFrame(
-            geometry=self.vectorized_uc.buffer(buffer_size), crs=self.crs
+        self.__buffer = gpd.GeoDataFrame(
+            geometry=self.__vectorized_uc.buffer(buffer_size), crs=self.crs
         )
 
         # bbox
-        self.uc_buffer_bbox = gpd.GeoDataFrame(
-            geometry=self.buffer.envelope, crs=self.crs
+        self.__uc_buffer_bbox = gpd.GeoDataFrame(
+            geometry=self.__buffer.envelope, crs=self.crs
         )
 
         # single GeoDataFrame containing all labelled outputs
         self.output = pd.concat(
-            [self.vectorized_uc, self.buffer, self.uc_buffer_bbox], axis=0
+            [self.__vectorized_uc, self.__buffer, self.__uc_buffer_bbox],
+            axis=0,
         ).reset_index(drop=True)
         self.output["label"] = ["vectorized_uc", "buffer", "bbox"]
 
