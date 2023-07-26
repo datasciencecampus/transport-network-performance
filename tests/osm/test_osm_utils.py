@@ -2,6 +2,7 @@
 import pytest
 from pyprojroot import here
 import os
+from unittest.mock import patch, call
 
 from transport_performance.osm.osm_utils import filter_osm
 
@@ -58,7 +59,8 @@ class TestFilterOsm(object):
             # type problems with bbox
             filter_osm(bbox=[0, 1.1, 0.1, 1.2])
 
-    def test_filter_osm_defense_missing_osmosis(self, mocker):
+    @patch("builtins.print")
+    def test_filter_osm_defense_missing_osmosis(self, mock_print, mocker):
         """Assert func behaves when osmosis is missing and install=False."""
         with pytest.raises(
             Exception, match="`osmosis` is not found. Please install."
@@ -75,7 +77,14 @@ class TestFilterOsm(object):
         # check which call was passed to mocker. Need to extract the string
         # as filepaths in the osmosis command will change on runners.
         subprocess_cmd = mock_missing_osmosis.call_args_list[0].__str__()
-        assert subprocess_cmd.startswith(r"call(['osmosis', '--read-pbf',")
+        assert subprocess_cmd.startswith(
+            r"call(['osmosis', '--read-pbf',"
+        ), f"Expected command got by mocker changed. Got: {subprocess_cmd} "
+        # collect print statements
+        func_out = mock_print.mock_calls
+        assert func_out == [
+            call("Rejecting ways:  waterway, landuse & natural.")
+        ], f"Expected print statement not encountered. Got: {func_out}"
 
     @pytest.mark.runinteg
     def test_filter_osm_with_osmosis(self, tmpdir):
