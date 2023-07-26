@@ -71,6 +71,10 @@ class TestFilterOsm(object):
         assert (
             mock_missing_osmosis.called
         ), "`mock_missing_osmosis` was not called."
+        # check which call was passed to mocker. Need to extract the string
+        # as filepaths in the osmosis command will change on runners.
+        subprocess_cmd = mock_missing_osmosis.call_args_list[0].__str__()
+        assert subprocess_cmd.startswith(r"call(['osmosis', '--read-pbf',")
 
     @pytest.mark.runinteg
     def test_filter_osm_with_osmosis(self, tmpdir):
