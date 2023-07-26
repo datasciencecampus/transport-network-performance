@@ -87,11 +87,19 @@ class TestFilterOsm(object):
         ], f"Expected print statement not encountered. Got: {func_out}"
 
     @pytest.mark.runinteg
-    def test_filter_osm_with_osmosis(self, tmpdir):
+    @patch("builtins.print")
+    def test_filter_osm_with_osmosis(self, mock_print, tmpdir):
         """Assertions when osmosis is present."""
         target_pth = os.path.join(tmpdir, "test_output.osm.pbf")
-        filter_osm(out_pth=target_pth, install_osmosis=True)
+        out = filter_osm(out_pth=target_pth, install_osmosis=True)
         # assert mock_missing_osmosis.called
         assert os.path.exists(
             target_pth
         ), f"Filtered pbf file not found: {target_pth}"
+        func_out = mock_print.mock_calls
+        assert (
+            func_out[-1]
+            .__str__()
+            .startswith("call('Filter completed. Written to ")
+        )
+        assert out is None
