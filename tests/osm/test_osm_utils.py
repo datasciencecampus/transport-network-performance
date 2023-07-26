@@ -1,7 +1,6 @@
 """Test osm_utils module."""
 import pytest
 from pyprojroot import here
-from unittest.mock import patch
 import os
 
 from transport_performance.osm.osm_utils import filter_osm
@@ -10,8 +9,7 @@ from transport_performance.osm.osm_utils import filter_osm
 class TestFilterOsm(object):
     """Testing filter_osm()."""
 
-    @patch("builtins.print")
-    def test_filter_osm_defense(self, mock_print, mocker):
+    def test_filter_osm_defense(self):
         """Defensive behaviour for filter_osm."""
         with pytest.raises(
             FileExistsError, match="not/a/pbf/.nosiree not found on file."
@@ -59,6 +57,9 @@ class TestFilterOsm(object):
         ):
             # type problems with bbox
             filter_osm(bbox=[0, 1.1, 0.1, 1.2])
+
+    def test_filter_osm_defense_missing_osmosis(self, mocker):
+        """Assert func behaves when osmosis is missing and install=False."""
         with pytest.raises(
             Exception, match="`osmosis` is not found. Please install."
         ):
