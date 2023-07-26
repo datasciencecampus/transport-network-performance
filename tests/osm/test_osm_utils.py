@@ -1,6 +1,8 @@
 """Test osm_utils module."""
 import pytest
 from pyprojroot import here
+from unittest.mock import patch
+import os
 
 from transport_performance.osm.osm_utils import filter_osm
 
@@ -8,7 +10,8 @@ from transport_performance.osm.osm_utils import filter_osm
 class TestFilterOsm(object):
     """Testing filter_osm()."""
 
-    def test_filter_osm_defense(self, mocker):
+    @patch("builtins.print")
+    def test_filter_osm_defense(self, mock_print, mocker):
         """Defensive behaviour for filter_osm."""
         with pytest.raises(
             FileExistsError, match="not/a/pbf/.nosiree not found on file."
@@ -65,14 +68,14 @@ class TestFilterOsm(object):
                 side_effect=FileNotFoundError("No osmosis here..."),
             )
             filter_osm()
-            assert mock_missing_osmosis.called
+        assert (
+            mock_missing_osmosis.called
+        ), "`mock_missing_osmosis` was not called."
 
-    # def test_filter_osm_no_osmosis(self, tmpdir, mocker):
-    #     """Assertions when osmosis is missing from the environment."""
-    #     target_pth = os.path.join(tmpdir, "filtered_output")
-    #     # imitate missing osmosis
-    #    mock_missing_osmosis = mocker.patch(
-    #        "transport_performance.osm.osm_utils.subprocess.run",
-    #        side_effect=FileNotFoundError("No osmosis here..."))
-    #     filter_osm()
-    #     assert mock_missing_osmosis.called
+    @pytest.mark.runinteg
+    def test_filter_osm_with_osmosis(self, tmpdir):
+        """Assertions when osmosis is present."""
+        target_pth = os.path.join(tmpdir, "test_output.osm.pbf")
+        filter_osm(out_pth=target_pth, install_osmosis=True)
+        # assert mock_missing_osmosis.called
+        assert os.path.exists(target_pth)
