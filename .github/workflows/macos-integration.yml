@@ -11,12 +11,11 @@ on:
 jobs:
   build:
 
-    runs-on: ${{ matrix.os }}
+    runs-on: "macos-latest"
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        os: ["macos-latest", "ubuntu-latest"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -35,6 +34,10 @@ jobs:
     - name: Check Java Install
       run: |
         java --version
+    - name: Run Integration Tests
+      run: |
+        brew install osmosis
+        pytest -v --runinteg tests/osm/test_osm_utils.py
     - name: pre-commit
       run: |
         pre-commit install
@@ -42,14 +45,3 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
-    - name: Generate Report
-      run: |
-        coverage run -m pytest
-        coverage xml
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        verbose: true
-        token: ${{secrets.CODECOV_TOKEN}}
