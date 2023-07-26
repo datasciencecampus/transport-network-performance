@@ -49,7 +49,7 @@ import numpy as np
 # from rasterio.mask import raster_geometry_mask
 import numpy.ma as ma
 
-import heimdall_transport.urban_centres.urban_centres as uc
+import transport_performance.urban_centres.urban_centres as uc
 import shapely.geometry
 
 import cartopy.io.img_tiles as cimgt

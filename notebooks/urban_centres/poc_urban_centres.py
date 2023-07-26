@@ -36,7 +36,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import folium
 
-import heimdall_transport.urban_centres.urban_centres as uc
+import transport_performance.urban_centres.urban_centres as uc
 
 # %%
 # merge raster tiles into single file
