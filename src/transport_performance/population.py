@@ -2,8 +2,11 @@
 
 import os
 import rasterio as rio
+import xarray
+import rioxarray
 
-from typing import Union
+from typing import Union, Type
+from shapely.geometry.polygon import Polygon
 
 
 class RasterPop:
@@ -41,13 +44,51 @@ class RasterPop:
         with rio.open(filepath) as src:
             self.__crs = src.crs.to_string()
 
-    def get_pop(self) -> None:
-        """Get population data."""
-        pass
+    def get_pop(self, aoi_bounds: Type[Polygon]) -> None:
+        """Get population data.
+
+        Parameters
+        ----------
+        aoi_bounds : Type[Polygon]
+            A shapely polygon defining the boundary of the area of interest.
+
+        """
+        # read and clip population data to area of interest
+        self._xds = self._read_and_clip(aoi_bounds)
 
     def plot(self) -> None:
         """Plot population data."""
         pass
+
+    def _read_and_clip(self, aoi_bounds: Type[Polygon]) -> xarray.DataArray:
+        """Open data and clip to the area of interest boundary.
+
+        Read and clip raster file from disk (more performant). Mask the data
+        (such that no data values are nan) and read in all grids that touch
+        the aoi boundary.
+
+        Parameters
+        ----------
+        aoi_bounds : Type[Polygon]
+            A shapely polygon defining the boundary of the area of interest.
+
+        Returns
+        -------
+        xarray.DataArray
+            Clipped data to area of interest.
+
+        """
+        # defend against case where aoi_bounds is not a shapely polygon
+        if not isinstance(aoi_bounds, Polygon):
+            raise TypeError(
+                f"Expected type {Polygon.__name__} for `aoi_bounds`, "
+                f"got {type(aoi_bounds).__name__}."
+            )
+
+        xds = rioxarray.open_rasterio(self.__filepath, masked=True).rio.clip(
+            [aoi_bounds], from_disk=True, all_touched=True
+        )
+        return xds
 
 
 class VectorPop:
@@ -59,4 +100,5 @@ class VectorPop:
     TODO: add methods and updated documentation.
     """
 
-    pass
+    def __init__(self) -> None:
+        pass
