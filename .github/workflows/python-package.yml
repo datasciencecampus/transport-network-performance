@@ -42,7 +42,7 @@ jobs:
         apt: osmosis
     - name: Run Integration Tests
       run: |
-          pytest -v --runinteg tests/osm/test_osm_utils.py
+          pytest -m runinteg --runinteg # run only those tests marked runinteg
     - name: pre-commit
       run: |
         pre-commit install
