@@ -50,6 +50,7 @@ import numpy as np
 import numpy.ma as ma
 
 import transport_performance.urban_centres.urban_centres as uc
+import transport_performance.urban_centres.urban_centres_class as ucc
 import shapely.geometry
 
 import cartopy.io.img_tiles as cimgt
@@ -234,5 +235,13 @@ plt.imshow(uc_filled_all > 0)
 smod_rst_smod, affine, smod_src = uc.filter_cells(file_smod, bbox_gdf)
 fig = plt.figure(figsize=(20, 20))
 plt.imshow(smod_rst_smod == 30)
+
+# %%
+newport = ucc.UrbanCentre(
+    file=file_pop,
+)
+
+coords = (float(bbox.centroid.y.iloc[0]), float(bbox.centroid.x.iloc[0]))
+uc = newport.get_urban_centre(bbox_rep, coords)
 
 # %%
