@@ -29,6 +29,10 @@ class RasterPop:
         """Get population data."""
         pass
 
+    def plot(self) -> None:
+        """Plot population data."""
+        pass
+
 
 class VectorPop:
     """Prepare vector population inputs for trasport analysis.
