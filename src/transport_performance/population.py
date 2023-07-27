@@ -1,5 +1,10 @@
 """Classes to handle population data."""
 
+import os
+import rasterio as rio
+
+from typing import Union
+
 
 class RasterPop:
     """Prepare raster population inputs for trasport analysis.
@@ -9,7 +14,7 @@ class RasterPop:
 
     Parameters
     ----------
-    filepath : str
+    filepath : Union[str, bytes, os.PathLike]
         file path to population data
 
     Methods
@@ -22,8 +27,19 @@ class RasterPop:
 
     """
 
-    def __init__(self, filepath: str) -> None:
+    def __init__(self, filepath: Union[str, bytes, os.PathLike]) -> None:
+
+        # defend against cases where input is not a file and does not exist
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError(f"{filepath} is not a file.")
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"Unable to find {filepath}.")
+
         self.__filepath = filepath
+
+        # record the crs of the data source
+        with rio.open(filepath) as src:
+            self.__crs = src.crs.to_string()
 
     def get_pop(self) -> None:
         """Get population data."""
