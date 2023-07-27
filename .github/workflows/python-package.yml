@@ -35,6 +35,14 @@ jobs:
     - name: Check Java Install
       run: |
         java --version
+    - name: Install Osmosis
+      uses: ConorMacBride/install-package@v1
+      with:
+        brew: osmosis
+        apt: osmosis
+    - name: Run Integration Tests
+      run: |
+          pytest -v --runinteg tests/osm/test_osm_utils.py
     - name: pre-commit
       run: |
         pre-commit install
