@@ -2,6 +2,7 @@
 
 import geopandas as gpd
 import os
+import numpy as np
 import rasterio as rio
 import xarray
 import rioxarray
@@ -41,11 +42,16 @@ class RasterPop:
 
         self.__filepath = filepath
 
-        # record the crs of the data source
+        # record the crs of the data source without reading in data
         with rio.open(filepath) as src:
             self.__crs = src.crs.to_string()
 
-    def get_pop(self, aoi_bounds: Type[Polygon], aoi_crs: str = None) -> None:
+    def get_pop(
+        self,
+        aoi_bounds: Type[Polygon],
+        round: bool = False,
+        aoi_crs: str = None,
+    ) -> None:
         """Get population data.
 
         Parameters
@@ -54,6 +60,8 @@ class RasterPop:
             A shapely polygon defining the boundary of the area of interest.
             Assumed to be in the same CRS as the rastered population data. If
             it is different, set `aoi_crs` to the CRS of the boundary.
+        round : bool, optional
+            Round population estimates to the nearest whole integer.
         aoi_crs : str, optional
             CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
             which means it is assumed to have the same CRS as `aoi_bounds`.
@@ -61,6 +69,10 @@ class RasterPop:
         """
         # read and clip population data to area of interest
         self._xds = self._read_and_clip(aoi_bounds, aoi_crs)
+
+        # round population estimates, if requested
+        if round:
+            self._round_population()
 
     def plot(self) -> None:
         """Plot population data."""
@@ -106,6 +118,10 @@ class RasterPop:
             [aoi_bounds], from_disk=True, all_touched=True
         )
         return xds
+
+    def _round_population(self) -> None:
+        """Round population data."""
+        self._xds = np.rint(self._xds)
 
 
 class VectorPop:
