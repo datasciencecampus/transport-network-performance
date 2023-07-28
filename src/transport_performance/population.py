@@ -53,6 +53,7 @@ class RasterPop:
         aoi_crs: str = None,
         round: bool = False,
         threshold: int = None,
+        var_name: str = "population",
     ) -> None:
         """Get population data.
 
@@ -71,10 +72,13 @@ class RasterPop:
             Threshold population estimates, where values below the set
             threshold will be set to nan, by default None which means no
             thresholding will occur.
+        var_name : str, optional
+            The variable name corresponding to the data's measurement, by
+            default "population"
 
         """
         # read and clip population data to area of interest
-        self._xds = self._read_and_clip(aoi_bounds, aoi_crs)
+        self._xds = self._read_and_clip(aoi_bounds, aoi_crs, var_name)
 
         # round population estimates, if requested
         if round:
@@ -91,7 +95,10 @@ class RasterPop:
         pass
 
     def _read_and_clip(
-        self, aoi_bounds: Type[Polygon], aoi_crs: str
+        self,
+        aoi_bounds: Type[Polygon],
+        aoi_crs: str = None,
+        var_name: str = "population",
     ) -> xarray.DataArray:
         """Open data and clip to the area of interest boundary.
 
@@ -106,6 +113,9 @@ class RasterPop:
         aoi_crs : str, optional
             CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
             which means it is assumed to have the same CRS as `aoi_bounds`.
+        var_name : str, optional
+            The variable name corresponding to the data's measurement, by
+            default "population"
 
         Returns
         -------
@@ -129,6 +139,11 @@ class RasterPop:
         xds = rioxarray.open_rasterio(self.__filepath, masked=True).rio.clip(
             [aoi_bounds], from_disk=True, all_touched=True
         )
+
+        # set the variable name
+        xds.name = var_name
+        self.__var_name = var_name
+
         return xds
 
     def _round_population(self) -> None:
@@ -149,11 +164,8 @@ class RasterPop:
         # squeeze needed since shape is (1xnxm) (1 band in tiff file)
         self.gdf = vectorize(self._xds.squeeze(axis=0).astype(set_type))
 
-        # rename none column
-        self.gdf.rename(columns={None: "population"}, inplace=True)
-
         # dropna to remove nodata regions and those below threshold (if set)
-        self.gdf = self.gdf.dropna(subset="population")
+        self.gdf = self.gdf.dropna(subset=self.__var_name)
 
 
 class VectorPop:
