@@ -7,6 +7,7 @@ import rasterio as rio
 import xarray
 import rioxarray
 
+from geocube.vector import vectorize
 from typing import Union, Type
 from shapely.geometry.polygon import Polygon
 
@@ -83,6 +84,8 @@ class RasterPop:
         if threshold is not None:
             self._threshold_population(threshold)
 
+        self._to_geopandas(round)
+
     def plot(self) -> None:
         """Plot population data."""
         pass
@@ -135,6 +138,22 @@ class RasterPop:
     def _threshold_population(self, threshold: int) -> None:
         """Threshold population data."""
         self._xds = self._xds.where(self._xds >= threshold)
+
+    def _to_geopandas(self, round) -> None:
+        """Convert to geopandas dataframe."""
+        # vectorise to geopandas dataframe, converting datatype for `vectorize`
+        if round:
+            set_type = np.int32
+        else:
+            set_type = np.float32
+        # squeeze needed since shape is (1xnxm) (1 band in tiff file)
+        self.gdf = vectorize(self._xds.squeeze(axis=0).astype(set_type))
+
+        # rename none column
+        self.gdf.rename(columns={None: "population"}, inplace=True)
+
+        # dropna to remove nodata regions and those below threshold (if set)
+        self.gdf = self.gdf.dropna(subset="population")
 
 
 class VectorPop:
