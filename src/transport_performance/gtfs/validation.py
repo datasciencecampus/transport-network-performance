@@ -4,7 +4,7 @@ from pyprojroot import here
 import pandas as pd
 import geopandas as gpd
 import folium
-from datetime import datetime
+import datetime
 import numpy as np
 import os
 import inspect
@@ -15,6 +15,41 @@ from transport_performance.utils.defence import (
     _check_namespace_export,
     _check_parent_dir_exists,
 )
+
+
+def _get_intermediate_dates(
+    start: pd.Timestamp, end: pd.Timestamp
+) -> list[pd.Timestamp]:
+    """Return a list of daily timestamps between two dates.
+
+    Parameters
+    ----------
+    start : pd.Timestamp
+        The start date of the given time period
+    end : pd.Timestamp
+        The end date of the given time period
+
+    Returns
+    -------
+    list[pd.Timestamp]
+        A list of daily timestamps for each day in the time period
+
+    """
+    # checks for start and end
+    if not isinstance(start, pd.Timestamp):
+        raise TypeError(
+            "'start' expected type pd.Timestamp."
+            f" Recieved type {type(start)}"
+        )
+    if not isinstance(end, pd.Timestamp):
+        raise TypeError(
+            "'end' expected type pd.Timestamp." f" Recieved type {type(end)}"
+        )
+    result = []
+    while start <= end:
+        result.append(start)
+        start = start + datetime.timedelta(days=1)
+    return result
 
 
 def _create_map_title_text(gdf, units, geom_crs):
@@ -232,23 +267,35 @@ class GtfsInstance:
         except KeyError:
             print("Key Error. Map was not written.")
 
-    def summarise_weekday(self, summ_ops=[np.min, np.max, np.mean, np.median]):
-        """Produce a table of summary stats by weekday / weekend.
-
-        This method is expensive & triggers a PerformanceWarning from pandas.
+    def summarise_days(
+        self,
+        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        return_summary: bool = True,
+    ) -> pd.DataFrame:
+        """Produce a summarised table of route statistics by day of week.
 
         Parameters
         ----------
-        summ_ops :  list, optional
-            The numpy summary operations to use. Defaults to
-            [np.min, np.max, np.mean, np.median].
+        summ_ops : list, optional
+            A list of operators used to get a summary of a given day,
+            by default [np.min, np.max, np.mean, np.median]
+        return_summary : bool, optional
+            When True, a summary is returned. When False, route data
+            for each date is returned,
+            by default True
 
         Returns
         -------
-        pd.core.frame.DataFrame: Summary table of the no. of routes, no. of
-        trips, service distance & service duration.
+        pd.DataFrame: A dataframe containing either summarized
+                      results or dated route data.
 
         """
+        # return_summary checks
+        if not isinstance(return_summary, bool):
+            raise TypeError(
+                "'return_summary' must be of type boolean."
+                f" Found {type(return_summary)} : {return_summary}"
+            )
         # summ_ops defence
 
         if isinstance(summ_ops, list):
@@ -277,28 +324,105 @@ class GtfsInstance:
                 f" functions. Found {type(summ_ops)}"
             )
 
-        available_dates = self.feed.get_dates()
-        trip_stats = gk.trips.compute_trip_stats(self.feed)
-        # next step is costly and comes with some pd warnings
-        feed_stats = self.feed.compute_feed_stats(trip_stats, available_dates)
-        # get datetime col
-        feed_stats["date"] = pd.to_datetime(
-            feed_stats["date"], format="%Y%m%d"
+        # create a calendar lookup (one row = one date, rather than date range)
+        calendar = self.feed.calendar.copy()
+        # convert dates to dt and create a list of dates between them
+        calendar["start_date"] = pd.to_datetime(
+            calendar["start_date"], format="%Y%m%d"
         )
-        weekend = ["Saturday", "Sunday"]
-        feed_stats["is_weekend"] = [
-            datetime.strftime(x, "%A") in weekend for x in feed_stats["date"]
+        calendar["end_date"] = pd.to_datetime(
+            calendar["end_date"], format="%Y%m%d"
+        )
+        calendar["period"] = [
+            [start, end]
+            for start, end in zip(calendar["start_date"], calendar["end_date"])
         ]
-        # grouped is_weekend summary table, operation parameter
-        keep_cols = [
-            "num_routes",
-            "num_trips",
-            "service_distance",
-            "service_duration",
-        ]
-        weekday_df = feed_stats.groupby("is_weekend")[keep_cols].agg(summ_ops)
-        self.weekday_stats = weekday_df
-        return self.weekday_stats
+
+        calendar["date"] = calendar["period"].apply(
+            lambda x: _get_intermediate_dates(x[0], x[1])
+        )
+        # explode the dataframe into daily rows for each service
+        #  (between the given time period)
+        full_calendar = calendar.explode("date")
+        calendar.drop(
+            ["start_date", "end_date", "period"], axis=1, inplace=True
+        )
+
+        # obtain the day of a given date
+        full_calendar["day"] = full_calendar["date"].dt.day_name()
+        full_calendar["day"] = full_calendar["day"].apply(
+            lambda day: day.lower()
+        )
+
+        # reformat the data into a long format and only keep dates
+        # where the service is active.
+        # this ensures that dates are only kept when the service
+        # is running (e.g., Friday)
+        melted_calendar = full_calendar.melt(
+            id_vars=["date", "service_id", "day"], var_name="valid_day"
+        )
+        melted_calendar = melted_calendar[melted_calendar["value"] == 1]
+        melted_calendar = melted_calendar[
+            melted_calendar["day"] == melted_calendar["valid_day"]
+        ][["service_id", "day", "date"]]
+
+        # join the dates to the trip information to then join on the
+        # route_type from the route table
+        trips = self.feed.get_trips().copy()
+        routes = self.feed.get_routes().copy()
+        dated_trips = trips.merge(melted_calendar, on="service_id", how="left")
+        dated_trips_routes = dated_trips.merge(
+            routes, on="route_id", how="left"
+        )[["route_id", "day", "date", "route_type"]].drop_duplicates()
+
+        # group data into route counts per day
+        service_count = (
+            dated_trips_routes.groupby(["date", "route_type", "day"])
+            .agg(
+                {
+                    "route_id": "count",
+                }
+            )
+            .reset_index()
+        )
+        service_count.rename(
+            mapper={"route_id": "route_count"}, axis=1, inplace=True
+        )
+        self.dated_route_counts = service_count.copy()
+
+        # aggregate the to the average number of routes
+        # on a given day (e.g., Monday)
+        day_service_count = (
+            service_count.groupby(["day", "route_type"])
+            .agg({"route_count": summ_ops})
+            .reset_index()
+        )
+
+        # order the days (for plotting future purposes)
+        day_order = {
+            "monday": 0,
+            "tuesday": 1,
+            "wednesday": 2,
+            "thursday": 3,
+            "friday": 4,
+            "saturday": 5,
+            "sunday": 6,
+        }
+
+        day_service_count["day_order"] = day_service_count["day"].apply(
+            lambda x: day_order[x]
+        )
+        day_service_count.sort_values(
+            "day_order", ascending=True, inplace=True
+        )
+        day_service_count.sort_index(axis=1, inplace=True)
+        day_service_count.drop("day_order", inplace=True, axis=1)
+        day_service_count = day_service_count.round()
+        self.daily_summary = day_service_count.copy()
+
+        if return_summary:
+            return self.daily_summary
+        return self.dated_route_counts
 
     def get_route_modes(self):
         """Summarise the available routes by their associated `route_type`.
