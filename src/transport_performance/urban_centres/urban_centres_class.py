@@ -120,7 +120,7 @@ class UrbanCentre:
 
         Returns
         -------
-            tuple[0]: ma.core.MaskedArray: raster, clipped to the extent of the
+            tuple[0]: numpy.ndarray: raster, clipped to the extent of the
             bbox and masked if extent does not match the boundaries provided.
             tuple[1]: Affine: transform matrix for the loaded raster.
             tuple[2]: crs string from the raster.
@@ -167,7 +167,7 @@ class UrbanCentre:
 
         Returns
         -------
-            ma.core.MaskedArray: boolean array where cells over
+            np.ndarray: boolean array where cells over
             the threshold are flagged as True.
 
         """
