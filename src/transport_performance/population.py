@@ -50,6 +50,7 @@ class RasterPop:
         self,
         aoi_bounds: Type[Polygon],
         round: bool = False,
+        threshold: int = None,
         aoi_crs: str = None,
     ) -> None:
         """Get population data.
@@ -62,6 +63,10 @@ class RasterPop:
             it is different, set `aoi_crs` to the CRS of the boundary.
         round : bool, optional
             Round population estimates to the nearest whole integer.
+        threshold : int, optional
+            Threshold population estimates, where values below the set
+            threshold will be set to nan, by default None which means no
+            thresholding will occur.
         aoi_crs : str, optional
             CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
             which means it is assumed to have the same CRS as `aoi_bounds`.
@@ -73,6 +78,10 @@ class RasterPop:
         # round population estimates, if requested
         if round:
             self._round_population()
+
+        # threshold the population data, if requested
+        if threshold is not None:
+            self._threshold_population(threshold)
 
     def plot(self) -> None:
         """Plot population data."""
@@ -122,6 +131,10 @@ class RasterPop:
     def _round_population(self) -> None:
         """Round population data."""
         self._xds = np.rint(self._xds)
+
+    def _threshold_population(self, threshold: int) -> None:
+        """Threshold population data."""
+        self._xds = self._xds.where(self._xds >= threshold)
 
 
 class VectorPop:
