@@ -72,6 +72,16 @@ class UrbanCentre:
         )
 
         # buffer
+        if not isinstance(buffer_size, int):
+            raise TypeError(
+                "`buffer_size` expected int, "
+                f"got {type(buffer_size).__name__}."
+            )
+        if buffer_size <= 0:
+            raise ValueError(
+                "`buffer_size` expected positive non-zero integer"
+            )
+
         self.__buffer = gpd.GeoDataFrame(
             geometry=self.__vectorized_uc.buffer(buffer_size), crs=self.crs
         )
