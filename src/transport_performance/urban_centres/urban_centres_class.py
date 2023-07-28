@@ -29,7 +29,7 @@ class UrbanCentre:
         band_n: int = 1,
         cell_pop_threshold: int = 1500,
         diag: bool = False,
-        pop_threshold: int = 50000,
+        cluster_pop_threshold: int = 50000,
         cell_fill_treshold: int = 5,
         vector_nodata: int = -200,
         vector_type: str = "int32",
@@ -59,7 +59,7 @@ class UrbanCentre:
             self.__windowed_array,
             self.__cluster_array,
             self.__num_clusters,
-            pop_threshold,
+            cluster_pop_threshold,
         )
 
         # smoothed clusters
@@ -139,17 +139,14 @@ class UrbanCentre:
             if src.crs != bbox.crs:
                 raise ValueError("Raster and bounding box crs do not match")
 
-            masked, affine, win = raster_geometry_mask(
+            _, affine, win = raster_geometry_mask(
                 src, bbox.geometry.values, crop=True, all_touched=True
             )
 
             # band is clipped to extent of bbox
             rst = src.read(band_n, window=win)
-            # pixels that are not within and do not touch
-            # bbox boundaries are masked
-            rst_masked = ma.masked_array(rst, masked)
 
-            return (rst_masked, affine, src.crs)
+            return (rst, affine, src.crs)
 
     def _flag_cells(
         self, masked_rst: np.ndarray, cell_pop_thres: int = 1500
@@ -182,6 +179,13 @@ class UrbanCentre:
             )
 
         flag_array = masked_rst >= cell_pop_thres
+
+        if np.sum(flag_array) == 0:
+            raise ValueError(
+                "`cell_pop_threshold` value too high, "
+                "no cells over threshold"
+            )
+
         return flag_array
 
     def _cluster_cells(
@@ -224,7 +228,7 @@ class UrbanCentre:
         band: np.ndarray,
         labelled_array: np.ndarray,
         num_clusters: int,
-        pop_threshold: int = 50000,
+        cluster_pop_threshold: int = 50000,
     ):
         """Filter clusters based on total population.
 
@@ -239,7 +243,7 @@ class UrbanCentre:
             Array with clusters, each with unique labels.
         num_clusters: int
             Number of unique clusters in the labelled array.
-        pop_threshold: int
+        cluster_pop_threshold: int
             Threshold to consider inclusion of cluster. If
             total population in cluster is lower than
             threshold, the cluster label is set to 0.
@@ -265,10 +269,10 @@ class UrbanCentre:
                 "`num_clusters` expected integer, "
                 f"got {type(num_clusters).__name__}"
             )
-        if not isinstance(pop_threshold, int):
+        if not isinstance(cluster_pop_threshold, int):
             raise TypeError(
                 "`pop_threshold` expected integer, "
-                f"got {type(pop_threshold).__name__}"
+                f"got {type(cluster_pop_threshold).__name__}"
             )
 
         urban_centres = labelled_array.copy()
@@ -276,8 +280,14 @@ class UrbanCentre:
             total_pop = ma.sum(ma.masked_where(urban_centres != n, band))
             # print(n, total_pop)
 
-            if total_pop < pop_threshold:
+            if total_pop < cluster_pop_threshold:
                 urban_centres[urban_centres == n] = 0
+
+        if len(urban_centres[urban_centres != 0]) == 0:
+            raise ValueError(
+                "`cluster_pop_threshold` value too high, "
+                "no clusters over threshold"
+            )
 
         return urban_centres
 
