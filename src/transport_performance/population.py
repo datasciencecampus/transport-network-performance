@@ -49,9 +49,9 @@ class RasterPop:
     def get_pop(
         self,
         aoi_bounds: Type[Polygon],
+        aoi_crs: str = None,
         round: bool = False,
         threshold: int = None,
-        aoi_crs: str = None,
     ) -> None:
         """Get population data.
 
@@ -61,15 +61,15 @@ class RasterPop:
             A shapely polygon defining the boundary of the area of interest.
             Assumed to be in the same CRS as the rastered population data. If
             it is different, set `aoi_crs` to the CRS of the boundary.
+        aoi_crs : str, optional
+            CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
+            which means it is assumed to have the same CRS as `aoi_bounds`.
         round : bool, optional
             Round population estimates to the nearest whole integer.
         threshold : int, optional
             Threshold population estimates, where values below the set
             threshold will be set to nan, by default None which means no
             thresholding will occur.
-        aoi_crs : str, optional
-            CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
-            which means it is assumed to have the same CRS as `aoi_bounds`.
 
         """
         # read and clip population data to area of interest
