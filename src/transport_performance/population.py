@@ -147,4 +147,4 @@ class VectorPop:
     """
 
     def __init__(self) -> None:
-        pass
+        raise NotImplementedError("This class has not yet been implemented.")
