@@ -1,5 +1,6 @@
 """Classes to handle population data."""
 
+import geopandas as gpd
 import os
 import rasterio as rio
 import xarray
@@ -44,23 +45,30 @@ class RasterPop:
         with rio.open(filepath) as src:
             self.__crs = src.crs.to_string()
 
-    def get_pop(self, aoi_bounds: Type[Polygon]) -> None:
+    def get_pop(self, aoi_bounds: Type[Polygon], aoi_crs: str = None) -> None:
         """Get population data.
 
         Parameters
         ----------
         aoi_bounds : Type[Polygon]
             A shapely polygon defining the boundary of the area of interest.
+            Assumed to be in the same CRS as the rastered population data. If
+            it is different, set `aoi_crs` to the CRS of the boundary.
+        aoi_crs : str, optional
+            CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
+            which means it is assumed to have the same CRS as `aoi_bounds`.
 
         """
         # read and clip population data to area of interest
-        self._xds = self._read_and_clip(aoi_bounds)
+        self._xds = self._read_and_clip(aoi_bounds, aoi_crs)
 
     def plot(self) -> None:
         """Plot population data."""
         pass
 
-    def _read_and_clip(self, aoi_bounds: Type[Polygon]) -> xarray.DataArray:
+    def _read_and_clip(
+        self, aoi_bounds: Type[Polygon], aoi_crs: str
+    ) -> xarray.DataArray:
         """Open data and clip to the area of interest boundary.
 
         Read and clip raster file from disk (more performant). Mask the data
@@ -71,6 +79,9 @@ class RasterPop:
         ----------
         aoi_bounds : Type[Polygon]
             A shapely polygon defining the boundary of the area of interest.
+        aoi_crs : str, optional
+            CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
+            which means it is assumed to have the same CRS as `aoi_bounds`.
 
         Returns
         -------
@@ -84,6 +95,12 @@ class RasterPop:
                 f"Expected type {Polygon.__name__} for `aoi_bounds`, "
                 f"got {type(aoi_bounds).__name__}."
             )
+
+        # convert aoi bounds CRS if needed
+        if aoi_crs is not None:
+            gdf = gpd.GeoDataFrame(geometry=[aoi_bounds], crs=aoi_crs)
+            gdf = gdf.to_crs(self.__crs)
+            aoi_bounds = gdf.loc[0, "geometry"]
 
         xds = rioxarray.open_rasterio(self.__filepath, masked=True).rio.clip(
             [aoi_bounds], from_disk=True, all_touched=True
