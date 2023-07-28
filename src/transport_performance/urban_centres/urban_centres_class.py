@@ -313,16 +313,6 @@ class UrbanCentre:
             int: value to impute to the central cell.
 
         """
-        if not isinstance(win, np.ndarray):
-            raise TypeError(
-                "`win` expected numpy array, " f"got {type(win).__name__}."
-            )
-        if not isinstance(threshold, int):
-            raise TypeError(
-                "`threshold` expected integer, "
-                f"got {type(threshold).__name__}"
-            )
-
         counter = Counter(win)
         mode_count = counter.most_common(1)[0]
         if (mode_count[1] >= threshold) & (win[len(win) // 2] == 0):
@@ -363,6 +353,11 @@ class UrbanCentre:
             raise TypeError(
                 "`threshold` expected integer, "
                 f"got {type(threshold).__name__}"
+            )
+        if not (1 <= threshold <= 9):
+            raise ValueError(
+                "Wrong value for `threshold`, "
+                "please enter value between 1 and 9"
             )
 
         filled = urban_centres.copy()
