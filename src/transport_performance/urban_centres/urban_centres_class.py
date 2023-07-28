@@ -32,7 +32,6 @@ class UrbanCentre:
         cluster_pop_threshold: int = 50000,
         cell_fill_treshold: int = 5,
         vector_nodata: int = -200,
-        vector_type: str = "int32",
         buffer_size: int = 10000,
     ):
         """Get urban centre.
@@ -69,12 +68,7 @@ class UrbanCentre:
 
         # vectorized urban centre
         self.__vectorized_uc = self._vectorize_uc(
-            self.__filled_array,
-            self.aff,
-            self.crs,
-            centre,
-            vector_nodata,
-            vector_type,
+            self.__filled_array, self.aff, self.crs, centre, vector_nodata
         )
 
         # buffer
@@ -410,7 +404,6 @@ class UrbanCentre:
         crs: rasterio.crs.CRS,
         centre: tuple,
         nodata: int = -200,
-        type: str = "int32",
     ) -> gpd.GeoDataFrame:
         """Vectorize raster with urban centre polygon.
 
@@ -427,8 +420,6 @@ class UrbanCentre:
             Must be in format (lat, long) and EPSG: 4326.
         nodata: int
             Value to fill empty cells.
-        type: str
-            Type for the xarray values.
 
         Returns
         -------
@@ -452,10 +443,6 @@ class UrbanCentre:
             raise TypeError(
                 "`nodata` expected integer, " f"got {type(nodata).__name__}"
             )
-        if not isinstance(type, str):
-            raise TypeError(
-                "`type` expected string, " f"got {type(type).__name__}"
-            )
 
         row, col = self._get_x_y(centre, aff, crs)
         if row > uc_array.shape[0] or col > uc_array.shape[1]:
@@ -471,7 +458,7 @@ class UrbanCentre:
 
         x_array = (
             xr.DataArray(filt_array)
-            .astype(type)
+            .astype("int32")
             .rio.write_nodata(nodata)
             .rio.write_transform(aff)
             .rio.set_crs(crs, inplace=True)
