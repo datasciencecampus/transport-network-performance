@@ -271,7 +271,21 @@ class RasterPop:
             self.var_gdf[["id", "within_urban_centre"]], on="id"
         )
 
-    def _plot_folium(self, save: str = None) -> folium.Map:
+    def _plot_folium(
+        self,
+        save: str = None,
+        tiles: str = (
+            "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        ),
+        attr: str = (
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStre'
+            'etMap</a> contributors &copy; <a href="https://carto.com/attribut'
+            'ions">CARTO</a>'
+        ),
+        cmap: str = "viridis",
+        boundary_color: str = "red",
+        boundary_weight: int = 2,
+    ) -> folium.Map:
         """Plot data onto a folium map.
 
         Parameters
@@ -279,6 +293,20 @@ class RasterPop:
         save : str, optional
             Filepath to save location, with ".html" extension, by default None
             meaning the map will not be saved to file
+        tiles : str, optional
+            Tile layer for base map, by default Carto Positron tiles. As per
+            folium, the base map can be generated using a built in key words
+            [1]_ or a custom tileset url [2]_.
+        attr : str, optional
+            Tile layer attribution, by default Carto Positron attribution.
+        cmap : str, optional
+            A colormap string recognised by `matplotlib` [3]_, by default
+            "viridis".
+        boundary_color : str, optional
+            Color of the boundary lines, by default "red". Could also be a
+            hexstring.
+        boundary_weight : float, optional
+            Weight (in pixels) of the boudary lines, by default 2.
 
         Returns
         -------
@@ -287,28 +315,32 @@ class RasterPop:
             None when writing to file (saves time when displaying map
             interactive mode).
 
+        Notes
+        -----
+        1. When using tile layers, check the tile provider's terms and
+        conditions and assign an attribution as needed.
+
+        References
+        ----------
+        .. [1] https://python-visualization.github.io/folium/modules.html
+        .. [2] http://leaflet-extras.github.io/leaflet-providers/preview/
+        .. [3] https://matplotlib.org/stable/tutorials/colors/colormaps.html
+
         """
         # add a base map with no tile - then is it not on a layer control
         m = folium.Map(tiles=None, control_scale=True, zoom_control=True)
 
         # add a tile layer
         folium.TileLayer(
-            tiles=(
-                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}"
-                ".png"
-            ),
-            attr=(
-                '&copy; <a href="https://www.openstreetmap.org/copyright">Open'
-                'StreetMap</a> contributors &copy; <a href="https://carto.com/'
-                'attributions">CARTO</a>'
-            ),
+            tiles=tiles,
+            attr=attr,
             show=False,
             control=False,
         ).add_to(m)
 
         # add the variable data to the map
         self.var_gdf.explore(
-            self.__var_name, name=self.__var_name.capitalize(), m=m
+            self.__var_name, cmap=cmap, name=self.__var_name.capitalize(), m=m
         )
 
         # add the urban centre boundary, if one was provided
@@ -317,7 +349,11 @@ class RasterPop:
                 tooltip=["boundary"],
                 name="Urban Centre Boundary",
                 m=m,
-                style_kwds={"fill": False, "color": "red", "weight": 2},
+                style_kwds={
+                    "fill": False,
+                    "color": boundary_color,
+                    "weight": boundary_weight,
+                },
             )
 
         # add the area of interest boundary
@@ -327,8 +363,8 @@ class RasterPop:
             m=m,
             style_kwds={
                 "fill": False,
-                "color": "red",
-                "weight": 2,
+                "color": boundary_color,
+                "weight": boundary_weight,
                 "dashArray": 7,
             },
         )
