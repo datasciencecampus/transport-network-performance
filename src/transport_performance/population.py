@@ -175,6 +175,10 @@ class RasterPop:
         xds.name = var_name
         self.__var_name = var_name
 
+        # build aoi bounds dataframe for plotting
+        self._aoi_gdf = gpd.GeoDataFrame(geometry=[aoi_bounds], crs=self.__crs)
+        self._aoi_gdf.loc[:, "boundary"] = "AOI Bounds"
+
         return xds
 
     def _round_population(self) -> None:
@@ -292,13 +296,37 @@ class RasterPop:
         if self._uc_gdf is not None:
             self._uc_gdf.explore(
                 tooltip=["boundary"],
-                name="Urban Centre",
+                name="Urban Centre Boundary",
                 m=m,
-                style_kwds={"fill": False, "color": "red", "weight": 3},
+                style_kwds={"fill": False, "color": "red", "weight": 2},
             )
 
+        self._aoi_gdf.explore(
+            tooltip=["boundary"],
+            name="Area of Interest Boundary",
+            m=m,
+            style_kwds={
+                "fill": False,
+                "color": "red",
+                "weight": 2,
+                "dashArray": 7,
+            },
+        )
+
         self.centroid_gdf.explore(
-            name="Centroids", color="black", m=m, show=False
+            "within_urban_centre",
+            name="Centroids",
+            color="black",
+            m=m,
+            show=False,
+            style_kwds={
+                "style_function": lambda x: {
+                    "color": "#BC544B"
+                    if x["properties"]["within_urban_centre"] is False
+                    else "#8B0000"
+                }
+            },
+            legend=False,
         )
 
         m.fit_bounds(m.get_bounds())
