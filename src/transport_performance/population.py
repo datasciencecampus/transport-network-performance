@@ -327,9 +327,10 @@ class RasterPop:
         self._uc_gdf.loc[:, "boundary"] = "Urban Centre"
 
         # spatial join when cell is within urban centre, filling to false
+        # drop index_right and boundary columns as they aren't needed
         self.var_gdf = self.var_gdf.sjoin(
             self._uc_gdf, how="left", predicate="within"
-        ).drop(["index_right"], axis=1)
+        ).drop(["index_right", "boundary"], axis=1)
         self.var_gdf[self.__UC_COL_NAME] = self.var_gdf[
             self.__UC_COL_NAME
         ].fillna(False)
