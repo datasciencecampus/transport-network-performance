@@ -54,6 +54,8 @@ class RasterPop:
         round: bool = False,
         threshold: int = None,
         var_name: str = "population",
+        urban_centre_bounds: Type[Polygon] = None,
+        urban_centre_crs: str = None,
     ) -> None:
         """Get population data.
 
@@ -75,6 +77,14 @@ class RasterPop:
         var_name : str, optional
             The variable name corresponding to the data's measurement, by
             default "population"
+        urban_centre_bounds : Type[Polygon], optional
+            Polygon defining urban centre bounday, by default None meaning
+            information concerning whether the grid resides within the urban
+            centre will not be added.
+        urban_centre_crs : str, optional
+            The urban centre polygon CRS, by default None meaning this is the
+            same CRS as the input raster data. Only used when
+            `urban_centre_bounds` is set.
 
         """
         # read and clip population data to area of interest
@@ -89,7 +99,14 @@ class RasterPop:
         if threshold is not None:
             self._threshold_population(threshold)
 
+        # convert to variable and centroid geopandas dataframes
         self._to_geopandas()
+
+        # add within urban centre details
+        if urban_centre_bounds is not None:
+            self._within_urban_centre(
+                urban_centre_bounds, urban_centre_crs=urban_centre_crs
+            )
 
     def plot(self) -> None:
         """Plot population data."""
@@ -185,6 +202,56 @@ class RasterPop:
         # convert centroids to EPSG:4326 for use in r5py
         if self.__crs != "EPSG:4326":
             self.centroid_gdf = self.centroid_gdf.to_crs("EPSG:4326")
+
+    def _within_urban_centre(
+        self,
+        urban_centre_bounds: Type[Polygon],
+        urban_centre_crs: str = None,
+    ) -> None:
+        """Categorise grid whether within urban centre.
+
+        Parameters
+        ----------
+        urban_centre_bounds : Type[Polygon]
+            Polygon defining urban centre bounday
+        urban_centre_crs : str, optional
+            The urban centre polygon CRS, by default None meaning this is the
+            same CRS as the input raster data.
+
+        Raises
+        ------
+        TypeError
+            When `urban_centre_bounds` is not a shapely Polygon.
+
+        """
+        # defend against case where aoi_bounds is not a shapely polygon
+        if not isinstance(urban_centre_bounds, Polygon):
+            raise TypeError(
+                f"Expected type {Polygon.__name__} for `urban_centre_bounds`, "
+                f"got {type(urban_centre_bounds).__name__}."
+            )
+
+        # match the crs is one isn't provided
+        if urban_centre_crs is None:
+            urban_centre_crs = self.__crs
+
+        # build urban centre dataframe - set to true for sjoin
+        UC_COL_NAME = "within_urban_centre"
+        self._uc_gdf = gpd.GeoDataFrame(
+            geometry=[urban_centre_bounds], crs=urban_centre_crs
+        )
+        self._uc_gdf.loc[:, UC_COL_NAME] = True
+
+        # spatial join when cell is within urban centre, filling to false
+        self.var_gdf = self.var_gdf.sjoin(
+            self._uc_gdf, how="left", predicate="within"
+        ).drop(["index_right"], axis=1)
+        self.var_gdf[UC_COL_NAME] = self.var_gdf[UC_COL_NAME].fillna(False)
+
+        # add within_urban_centre column to centroid data
+        self.centroid_gdf = self.centroid_gdf.merge(
+            self.var_gdf[["id", "within_urban_centre"]], on="id"
+        )
 
 
 class VectorPop:
