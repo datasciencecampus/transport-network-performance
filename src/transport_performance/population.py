@@ -11,6 +11,7 @@ import folium
 from geocube.vector import vectorize
 from typing import Union, Type
 from shapely.geometry.polygon import Polygon
+import matplotlib.pyplot as plt
 
 
 class RasterPop:
@@ -113,8 +114,38 @@ class RasterPop:
                 urban_centre_bounds, urban_centre_crs=urban_centre_crs
             )
 
-    def plot(self, which: str = "folium", save: str = None, **kwargs) -> None:
-        """Plot population data."""
+    def plot(
+        self, which: str = "folium", save: str = None, **kwargs
+    ) -> Union[folium.Map, plt.Axes, None]:
+        """Plot data.
+
+        Parameters
+        ----------
+        which : str, optional
+            Package to use for plotting. Must be one of {"matplotlib",
+            "cartopy", "folium"}, by default "folium".
+        save : str, optional
+            Filepath to save file, with the file extension, by default None
+            meaning a file will not be saved.
+
+        Returns
+        -------
+        Union[folium.Map, plt.Axes, None]
+            A folium map is returned when the `folium` backend is used. A
+            matplotlib axis is returned when the `cartopy` or `matplotlib`
+            backends are used. None is return when `save` is used.
+
+        Raises
+        ------
+        ValueError
+            Unexpected value of `which`.
+        NotImplementedError
+            When plot is called without reading data.
+
+        """
+        # record of valid which values
+        WHICH_VALUES = {"matplotlib", "catropy", "folium"}
+
         # defend against case where `get_pop` hasn't been called
         if self.var_gdf is None:
             raise NotImplementedError(
@@ -124,6 +155,15 @@ class RasterPop:
         if which == "folium":
             m = self._plot_folium(save, **kwargs)
             return m
+        elif which == "cartopy":
+            return None
+        elif which == "matplotlib":
+            return None
+        else:
+            raise ValueError(
+                f"Unrecognised value for `which` {which}. Must be one of "
+                f"{WHICH_VALUES}."
+            )
 
     def _read_and_clip(
         self,
