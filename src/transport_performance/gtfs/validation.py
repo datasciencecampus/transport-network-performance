@@ -25,9 +25,9 @@ def _get_intermediate_dates(
     Parameters
     ----------
     start : pd.Timestamp
-        The start date of the given time period
+        The start date of the given time period in %Y%m%d format.
     end : pd.Timestamp
-        The end date of the given time period
+        The end date of the given time period in %Y%m%d format.
 
     Returns
     -------
