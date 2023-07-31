@@ -81,6 +81,7 @@ class RasterPop:
         self._xds = self._read_and_clip(aoi_bounds, aoi_crs, var_name)
 
         # round population estimates, if requested
+        self.__round = round
         if round:
             self._round_population()
 
@@ -88,7 +89,7 @@ class RasterPop:
         if threshold is not None:
             self._threshold_population(threshold)
 
-        self._to_geopandas(round)
+        self._to_geopandas()
 
     def plot(self) -> None:
         """Plot population data."""
@@ -154,10 +155,10 @@ class RasterPop:
         """Threshold population data."""
         self._xds = self._xds.where(self._xds >= threshold)
 
-    def _to_geopandas(self, round) -> None:
+    def _to_geopandas(self) -> None:
         """Convert to geopandas dataframe."""
         # vectorise to geopandas dataframe, converting datatype for `vectorize`
-        if round:
+        if self.__round:
             set_type = np.int32
         else:
             set_type = np.float32
