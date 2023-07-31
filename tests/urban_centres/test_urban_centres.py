@@ -186,6 +186,8 @@ def test_bbox(dummy_pop_array, window, cluster_centre, expected):
     [
         (lazy_fixture("cluster_centre"), does_not_raise()),
         (lazy_fixture("outside_cluster_centre"), pytest.raises(IndexError)),
+        ((50, 3), pytest.raises(TypeError)),
+        ((50, 3, 3), pytest.raises(ValueError)),
         (50, pytest.raises(TypeError)),
         ("(50, 3)", pytest.raises(TypeError)),
     ],

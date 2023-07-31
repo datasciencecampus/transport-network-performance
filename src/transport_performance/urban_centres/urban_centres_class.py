@@ -401,6 +401,14 @@ class UrbanCentre:
             tuple: (x, y) coordinates in provided crs.
 
         """
+        if len(coords) != 2:
+            raise ValueError("`coords` expected a tuple of lenght 2.")
+
+        if (not isinstance(coords[0], float)) and (
+            not isinstance(coords[1], float)
+        ):
+            raise TypeError("Elements of `coords` need to be float.")
+
         transformer = Transformer.from_crs("EPSG:4326", crs)
         x, y = transformer.transform(*coords)
         row, col = rowcol(aff, x, y)
@@ -456,12 +464,15 @@ class UrbanCentre:
 
         row, col = self._get_x_y(centre, aff, crs)
         if row > uc_array.shape[0] or col > uc_array.shape[1]:
-            raise IndexError("Coordinates fall outside of raster window.")
+            raise IndexError(
+                "Coordinates fall outside of raster window."
+                "Did you use the correct y, x order?"
+            )
 
         cluster_num = uc_array[row, col]
         if cluster_num == 0:
             raise ValueError(
-                "Coordinates provided are not included " "within any cluster."
+                "Coordinates provided are not included within any cluster."
             )
 
         filt_array = uc_array == cluster_num
