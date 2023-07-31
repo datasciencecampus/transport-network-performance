@@ -11,4 +11,6 @@ geocube
 pyproj>=3.6.0
 pytest
 coverage
+pyprojroot
+pytest-lazy-fixture
 -e .
