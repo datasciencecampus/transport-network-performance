@@ -465,7 +465,7 @@ class UrbanCentre:
         row, col = self._get_x_y(centre, aff, crs)
         if row > uc_array.shape[0] or col > uc_array.shape[1]:
             raise IndexError(
-                "Coordinates fall outside of raster window."
+                "Coordinates fall outside of raster window. "
                 "Did you use the correct y, x order?"
             )
 

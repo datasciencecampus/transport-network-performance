@@ -33,10 +33,9 @@ from pyprojroot import here
 import rioxarray as rxr
 from rioxarray.merge import merge_arrays
 import matplotlib.pyplot as plt
-import numpy as np
 import folium
 
-import transport_performance.urban_centres.urban_centres as uc
+import transport_performance.urban_centres.urban_centres_class as ucc
 
 # %%
 # merge raster tiles into single file
@@ -76,7 +75,7 @@ BBOX_DICT = {
     "newport": (-3.206023, 51.503789, -2.726744, 51.680820),
     "leeds": (-2.212408, 53.450803, -0.862837, 54.095581),
     "london": (-1.054688, 51.134555, 0.873413, 51.835778),
-    "marseille": (3.319416, 42.673743, 7.873249, 44.671964),
+    "marseille": (5.107508, 43.096155, 5.623020, 43.499695),
 }
 
 # %%
@@ -86,24 +85,16 @@ AREA_OF_INTEREST = "newport"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
 bbox_npt = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
-bbox_npt = bbox_npt.to_crs("esri:54009")
+bbox_npt_r = bbox_npt.to_crs("esri:54009")
+coords = (float(bbox_npt.centroid.y), float(bbox_npt.centroid.x))
 
 # pop only criteria
-masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_npt)
-flag_array = uc.flag_cells(masked_rst)
-clusters, n_features = uc.cluster_cells(flag_array)
-urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
-
-npt = uc.fill_gaps(urban_centres)
-print(np.unique(npt))
-plt.imshow(npt == 8)
-
-gdf_npt = uc.vectorize_uc(npt, 8, aff, rst_crs)
-npt_buffer = uc.add_buffer(gdf_npt)
+npt = ucc.UrbanCentre(file=(MERGED_DIR))
+npt_uc = npt.get_urban_centre(bbox_npt_r, coords)
 
 fig = plt.figure
-m = gdf_npt.explore(color="red")
-m = npt_buffer.explore(m=m)
+m = npt_uc[npt_uc["label"] == "vectorized_uc"].explore(color="red")
+m = npt_uc[npt_uc["label"] == "buffer"].explore(m=m)
 folium.LayerControl().add_to(m)
 m
 
@@ -115,26 +106,19 @@ AREA_OF_INTEREST = "leeds"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
 bbox_lds = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
-bbox_lds = bbox_lds.to_crs("esri:54009")
+bbox_lds_r = bbox_lds.to_crs("esri:54009")
+coords = (float(bbox_lds.centroid.y), float(bbox_lds.centroid.x))
 
 # pop only criteria
-masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_lds)
-flag_array = uc.flag_cells(masked_rst)
-clusters, n_features = uc.cluster_cells(flag_array)
-urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
-
-lds = uc.fill_gaps(urban_centres)
-print(np.unique(lds))
-plt.imshow(lds == 29)
-
-gdf_lds = uc.vectorize_uc(lds, 29, aff, rst_crs)
-lds_buffer = uc.add_buffer(gdf_lds)
+lds = ucc.UrbanCentre(file=(MERGED_DIR))
+lds_uc = npt.get_urban_centre(bbox_lds_r, coords)
 
 fig = plt.figure
-m = gdf_lds.explore(color="red")
-m = lds_buffer.explore(m=m)
+m = lds_uc[lds_uc["label"] == "vectorized_uc"].explore(color="red")
+m = lds_uc[lds_uc["label"] == "buffer"].explore(m=m)
 folium.LayerControl().add_to(m)
 m
+
 
 # %%
 # London
@@ -143,24 +127,16 @@ AREA_OF_INTEREST = "london"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
 bbox_lnd = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
-bbox_lnd = bbox_lnd.to_crs("esri:54009")
+bbox_lnd_r = bbox_lnd.to_crs("esri:54009")
+coords = (float(bbox_lnd.centroid.y), float(bbox_lnd.centroid.x))
 
 # pop only criteria
-masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_lnd)
-flag_array = uc.flag_cells(masked_rst)
-clusters, n_features = uc.cluster_cells(flag_array)
-urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
-
-lnd = uc.fill_gaps(urban_centres)
-print(np.unique(lnd))
-plt.imshow(lnd == 22)
-
-gdf_lnd = uc.vectorize_uc(lnd, 22, aff, rst_crs)
-lnd_buffer = uc.add_buffer(gdf_lnd)
+lnd = ucc.UrbanCentre(file=(MERGED_DIR))
+lnd_uc = npt.get_urban_centre(bbox_lnd_r, coords)
 
 fig = plt.figure
-m = gdf_lnd.explore(color="red")
-m = lnd_buffer.explore(m=m)
+m = lnd_uc[lnd_uc["label"] == "vectorized_uc"].explore(color="red")
+m = lnd_uc[lnd_uc["label"] == "buffer"].explore(m=m)
 folium.LayerControl().add_to(m)
 m
 
@@ -171,73 +147,28 @@ AREA_OF_INTEREST = "marseille"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
 bbox_mrs = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
-bbox_mrs = bbox_mrs.to_crs("esri:54009")
+bbox_mrs_r = bbox_mrs.to_crs("esri:54009")
+coords = (float(bbox_mrs.centroid.y), float(bbox_mrs.centroid.x))
 
 # pop only criteria
-masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_mrs)
-flag_array = uc.flag_cells(masked_rst)
-clusters, n_features = uc.cluster_cells(flag_array)
-urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
-
-mrs = uc.fill_gaps(urban_centres)
-print(np.unique(mrs))
-plt.imshow(mrs == 246)
-
-gdf_mrs = uc.vectorize_uc(mrs, 246, aff, rst_crs)
-mrs_buffer = uc.add_buffer(gdf_mrs)
+mrs = ucc.UrbanCentre(file=(MERGED_DIR))
+mrs_uc = npt.get_urban_centre(bbox_mrs_r, coords)
 
 fig = plt.figure
-m = gdf_mrs.explore(color="red")
-m = mrs_buffer.explore(m=m)
+m = mrs_uc[mrs_uc["label"] == "vectorized_uc"].explore(color="red")
+m = mrs_uc[mrs_uc["label"] == "buffer"].explore(m=m)
 folium.LayerControl().add_to(m)
 m
+
 # %%
 fig = plt.figure
-m = gdf_mrs.explore(color="red")
-m = mrs_buffer.explore(m=m)
-m = gdf_lnd.explore(color="red", m=m)
-m = lnd_buffer.explore(m=m)
-m = gdf_npt.explore(color="red", m=m)
-m = npt_buffer.explore(m=m)
-m = gdf_lds.explore(color="red", m=m)
-m = lds_buffer.explore(m=m)
-folium.LayerControl().add_to(m)
-m
-# %%
-# %%
-# try filtering by city centre coords
-AREA_OF_INTEREST = "newport"
-BBOX = BBOX_DICT[AREA_OF_INTEREST]
-
-bbox_npt = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
-bbox_npt = bbox_npt.to_crs("esri:54009")
-
-coords = (51.58594, -2.99277)
-
-# pop only criteria
-masked_rst, aff, rst_crs = uc.filter_cells(MERGED_DIR, bbox_npt)
-
-# converts coords to Mollweide
-"""
-transformer = Transformer.from_crs("EPSG:4326", rst_crs)
-x, y = transformer.transform(*coords)
-rows, cols = rowcol(aff, x, y)
-
-flag_array = uc.flag_cells(masked_rst)
-clusters, n_features = uc.cluster_cells(flag_array)
-urban_centres = uc.check_cluster_pop(masked_rst, clusters, n_features)
-
-npt = uc.fill_gaps(urban_centres)
-print(np.unique(npt))
-plt.imshow(npt == npt[rows, cols])
-"""
-
-# %%
-gdf_npt = uc.vectorize_uc(npt, 8, aff, rst_crs)
-npt_buffer = uc.add_buffer(gdf_npt)
-
-fig = plt.figure
-m = gdf_npt.explore(color="red")
-m = npt_buffer.explore(m=m)
+m = npt_uc[npt_uc["label"] == "vectorized_uc"].explore(color="red")
+m = npt_uc[npt_uc["label"] == "buffer"].explore(m=m)
+m = lds_uc[lds_uc["label"] == "vectorized_uc"].explore(color="red", m=m)
+m = lds_uc[lds_uc["label"] == "buffer"].explore(m=m)
+m = lnd_uc[lnd_uc["label"] == "vectorized_uc"].explore(color="red", m=m)
+m = lnd_uc[lnd_uc["label"] == "buffer"].explore(m=m)
+m = mrs_uc[mrs_uc["label"] == "vectorized_uc"].explore(color="red", m=m)
+m = mrs_uc[mrs_uc["label"] == "buffer"].explore(m=m)
 folium.LayerControl().add_to(m)
 m
