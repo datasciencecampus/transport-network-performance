@@ -271,10 +271,27 @@ class RasterPop:
             self.var_gdf[["id", "within_urban_centre"]], on="id"
         )
 
-    def _plot_folium(self, save: str = None):
-        """Plot data onto a folium map."""
+    def _plot_folium(self, save: str = None) -> folium.Map:
+        """Plot data onto a folium map.
+
+        Parameters
+        ----------
+        save : str, optional
+            Filepath to save location, with ".html" extension, by default None
+            meaning the map will not be saved to file
+
+        Returns
+        -------
+        folium.Map
+            Folium map obeject, with data and boundaries in layers. Will be
+            None when writing to file (saves time when displaying map
+            interactive mode).
+
+        """
+        # add a base map with no tile - then is it not on a layer control
         m = folium.Map(tiles=None, control_scale=True, zoom_control=True)
 
+        # add a tile layer
         folium.TileLayer(
             tiles=(
                 "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}"
@@ -289,10 +306,12 @@ class RasterPop:
             control=False,
         ).add_to(m)
 
+        # add the variable data to the map
         self.var_gdf.explore(
             self.__var_name, name=self.__var_name.capitalize(), m=m
         )
 
+        # add the urban centre boundary, if one was provided
         if self._uc_gdf is not None:
             self._uc_gdf.explore(
                 tooltip=["boundary"],
@@ -301,6 +320,7 @@ class RasterPop:
                 style_kwds={"fill": False, "color": "red", "weight": 2},
             )
 
+        # add the area of interest boundary
         self._aoi_gdf.explore(
             tooltip=["boundary"],
             name="Area of Interest Boundary",
@@ -313,10 +333,10 @@ class RasterPop:
             },
         )
 
+        # add the centroids to a separate layer
         self.centroid_gdf.explore(
             "within_urban_centre",
             name="Centroids",
-            color="black",
             m=m,
             show=False,
             style_kwds={
@@ -329,8 +349,8 @@ class RasterPop:
             legend=False,
         )
 
+        # fit bounds to the plot limits and add a layer control button
         m.fit_bounds(m.get_bounds())
-
         m.add_child(folium.LayerControl())
 
         # write to file if filepath is given
