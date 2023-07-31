@@ -7,11 +7,11 @@ import rasterio as rio
 import xarray
 import rioxarray
 import folium
+import matplotlib.pyplot as plt
 
 from geocube.vector import vectorize
 from typing import Union, Type, Tuple
 from shapely.geometry.polygon import Polygon
-import matplotlib.pyplot as plt
 
 
 class RasterPop:
@@ -157,8 +157,8 @@ class RasterPop:
         -------
         Union[folium.Map, plt.Axes, None]
             A folium map is returned when the `folium` backend is used. A
-            matplotlib axis is returned when the `cartopy` or `matplotlib`
-            backends are used. None is return when `save` is used.
+            matplotlib Axes object is returned when `matplotlib` and `cartopy`
+            backends are used. None will be returned when saving to file.
 
         Raises
         ------
@@ -183,7 +183,8 @@ class RasterPop:
         elif which == "cartopy":
             return None
         elif which == "matplotlib":
-            return None
+            ax = self._plot_matplotlib(save)
+            return ax
         else:
             raise ValueError(
                 f"Unrecognised value for `which` {which}. Must be one of "
@@ -359,7 +360,7 @@ class RasterPop:
         ----------
         save : str, optional
             Filepath to save location, with ".html" extension, by default None
-            meaning the map will not be saved to file
+            meaning the map will not be saved to file.
         tiles : str, optional
             Tile layer for base map, by default Carto Positron tiles. As per
             folium, the base map can be generated using a built in key words
@@ -465,6 +466,39 @@ class RasterPop:
             m = None
 
         return m
+
+    def _plot_matplotlib(self, save: str = None) -> Union[plt.Axes, None]:
+        """Plot raster data using matplotlib.
+
+        A shallow wrapper around rioxarray's plot function, to display the
+        population as a raster using the matplotlib backend.
+
+        Parameters
+        ----------
+        save : str, optional
+            Filepath to save location, with ".png" extension, by default None
+            meaning the plot will not be saved to file.
+
+        Returns
+        -------
+        Union[plt.Axes, None]
+            Returns a QuadMesh axis object when not writing to file. When
+            writing to file, None is return.
+
+        """
+        fig, ax = plt.subplots()
+        self._xds.plot(ax=ax)
+        plt.tight_layout()
+
+        # write to file if filepath is given
+        if save is not None:
+            out_df = os.path.dirname(save)
+            if not os.path.exists(out_df):
+                os.mkdir(out_df)
+            fig.savefig(save)
+            ax = None
+
+        return ax
 
 
 class VectorPop:
