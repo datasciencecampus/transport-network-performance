@@ -253,22 +253,24 @@ class RasterPop:
             urban_centre_crs = self.__crs
 
         # build urban centre dataframe - set to true for sjoin
-        UC_COL_NAME = "within_urban_centre"
+        self.__UC_COL_NAME = "within_urban_centre"
         self._uc_gdf = gpd.GeoDataFrame(
             geometry=[urban_centre_bounds], crs=urban_centre_crs
         )
-        self._uc_gdf.loc[:, UC_COL_NAME] = True
+        self._uc_gdf.loc[:, self.__UC_COL_NAME] = True
         self._uc_gdf.loc[:, "boundary"] = "Urban Centre"
 
         # spatial join when cell is within urban centre, filling to false
         self.var_gdf = self.var_gdf.sjoin(
             self._uc_gdf, how="left", predicate="within"
         ).drop(["index_right"], axis=1)
-        self.var_gdf[UC_COL_NAME] = self.var_gdf[UC_COL_NAME].fillna(False)
+        self.var_gdf[self.__UC_COL_NAME] = self.var_gdf[
+            self.__UC_COL_NAME
+        ].fillna(False)
 
         # add within_urban_centre column to centroid data
         self.centroid_gdf = self.centroid_gdf.merge(
-            self.var_gdf[["id", "within_urban_centre"]], on="id"
+            self.var_gdf[["id", self.__UC_COL_NAME]], on="id"
         )
 
     def _plot_folium(
@@ -371,14 +373,14 @@ class RasterPop:
 
         # add the centroids to a separate layer
         self.centroid_gdf.explore(
-            "within_urban_centre",
+            self.__UC_COL_NAME,
             name="Centroids",
             m=m,
             show=False,
             style_kwds={
                 "style_function": lambda x: {
                     "color": "#BC544B"
-                    if x["properties"]["within_urban_centre"] is False
+                    if x["properties"][self.__UC_COL_NAME] is False
                     else "#8B0000"
                 }
             },
