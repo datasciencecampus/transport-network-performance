@@ -167,6 +167,9 @@ class RasterPop:
         # dropna to remove nodata regions and those below threshold (if set)
         self.gdf = self.gdf.dropna(subset=self.__var_name)
 
+        # add an id for each cell
+        self.gdf["id"] = np.arange(0, len(self.gdf.index))
+
 
 class VectorPop:
     """Prepare vector population inputs for trasport analysis.
