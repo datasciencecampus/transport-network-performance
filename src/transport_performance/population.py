@@ -162,13 +162,28 @@ class RasterPop:
         else:
             set_type = np.float32
         # squeeze needed since shape is (1xnxm) (1 band in tiff file)
-        self.gdf = vectorize(self._xds.squeeze(axis=0).astype(set_type))
+        self.var_gdf = vectorize(self._xds.squeeze(axis=0).astype(set_type))
 
         # dropna to remove nodata regions and those below threshold (if set)
-        self.gdf = self.gdf.dropna(subset=self.__var_name)
+        self.var_gdf = self.var_gdf.dropna(subset=self.__var_name).reset_index(
+            drop=True
+        )
 
         # add an id for each cell
-        self.gdf["id"] = np.arange(0, len(self.gdf.index))
+        self.var_gdf["id"] = np.arange(0, len(self.var_gdf.index))
+
+        # re-order columns for consistency
+        self.var_gdf = self.var_gdf[["id", self.__var_name, "geometry"]]
+
+        # create centroid geodataframe using only necessary columns
+        self.centroid_gdf = self.var_gdf[["id", "geometry"]].copy()
+        self.centroid_gdf["centroid"] = self.centroid_gdf.geometry.centroid
+        self.centroid_gdf.set_geometry("centroid", inplace=True)
+        self.centroid_gdf.drop("geometry", axis=1, inplace=True)
+
+        # convert centroids to EPSG:4326 for use in r5py
+        if self.__crs != "EPSG:4326":
+            self.centroid_gdf = self.centroid_gdf.to_crs("EPSG:4326")
 
 
 class VectorPop:
