@@ -333,6 +333,14 @@ class RasterPop:
 
         m.add_child(folium.LayerControl())
 
+        # write to file if filepath is given
+        if save is not None:
+            out_df = os.path.dirname(save)
+            if not os.path.exists(out_df):
+                os.mkdir(out_df)
+            m.save(save)
+            m = None
+
         return m
 
 
