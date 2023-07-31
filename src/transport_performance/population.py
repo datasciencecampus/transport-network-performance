@@ -6,6 +6,7 @@ import numpy as np
 import rasterio as rio
 import xarray
 import rioxarray
+import folium
 
 from geocube.vector import vectorize
 from typing import Union, Type
@@ -46,6 +47,10 @@ class RasterPop:
         # record the crs of the data source without reading in data
         with rio.open(filepath) as src:
             self.__crs = src.crs.to_string()
+
+        # set attributes to None to prevent plotting function calls
+        self.var_gdf = None
+        self._uc_gdf = None
 
     def get_pop(
         self,
@@ -108,9 +113,17 @@ class RasterPop:
                 urban_centre_bounds, urban_centre_crs=urban_centre_crs
             )
 
-    def plot(self) -> None:
+    def plot(self, which: str = "folium", save: str = None, **kwargs) -> None:
         """Plot population data."""
-        pass
+        # defend against case where `get_pop` hasn't been called
+        if self.var_gdf is None:
+            raise NotImplementedError(
+                "Unable to call `plot` without calling `get_pop`."
+            )
+
+        if which == "folium":
+            m = self._plot_folium(save, **kwargs)
+            return m
 
     def _read_and_clip(
         self,
@@ -241,6 +254,7 @@ class RasterPop:
             geometry=[urban_centre_bounds], crs=urban_centre_crs
         )
         self._uc_gdf.loc[:, UC_COL_NAME] = True
+        self._uc_gdf.loc[:, "boundary"] = "Urban Centre"
 
         # spatial join when cell is within urban centre, filling to false
         self.var_gdf = self.var_gdf.sjoin(
@@ -252,6 +266,46 @@ class RasterPop:
         self.centroid_gdf = self.centroid_gdf.merge(
             self.var_gdf[["id", "within_urban_centre"]], on="id"
         )
+
+    def _plot_folium(self, save: str = None):
+        """Plot data onto a folium map."""
+        m = folium.Map(tiles=None, control_scale=True, zoom_control=True)
+
+        folium.TileLayer(
+            tiles=(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}"
+                ".png"
+            ),
+            attr=(
+                '&copy; <a href="https://www.openstreetmap.org/copyright">Open'
+                'StreetMap</a> contributors &copy; <a href="https://carto.com/'
+                'attributions">CARTO</a>'
+            ),
+            show=False,
+            control=False,
+        ).add_to(m)
+
+        self.var_gdf.explore(
+            self.__var_name, name=self.__var_name.capitalize(), m=m
+        )
+
+        if self._uc_gdf is not None:
+            self._uc_gdf.explore(
+                tooltip=["boundary"],
+                name="Urban Centre",
+                m=m,
+                style_kwds={"fill": False, "color": "red", "weight": 3},
+            )
+
+        self.centroid_gdf.explore(
+            name="Centroids", color="black", m=m, show=False
+        )
+
+        m.fit_bounds(m.get_bounds())
+
+        m.add_child(folium.LayerControl())
+
+        return m
 
 
 class VectorPop:
