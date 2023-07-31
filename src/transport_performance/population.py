@@ -152,6 +152,9 @@ class RasterPop:
         save : str, optional
             Filepath to save file, with the file extension, by default None
             meaning a file will not be saved.
+        **kwargs
+            Extra arguments passed to plotting functions to configure the plot
+            styling. See Notes for more support.
 
         Returns
         -------
@@ -166,6 +169,14 @@ class RasterPop:
             Unexpected value of `which`.
         NotImplementedError
             When plot is called without reading data.
+
+        Notes
+        -----
+        Calling `help` as follows will provide more insights on possible kwarg
+        arguments for the valid plotting backends:
+            - Folium backend: `help(RasterPop._plot_folium)
+            - Matplotlib backend: `help(RasterPop._plot_matplotlib)
+            - Cartopy backend: `help(RasterPop._plot_cartopy)
 
         """
         # record of valid which values
@@ -183,7 +194,7 @@ class RasterPop:
         elif which == "cartopy":
             return None
         elif which == "matplotlib":
-            ax = self._plot_matplotlib(save)
+            ax = self._plot_matplotlib(save, **kwargs)
             return ax
         else:
             raise ValueError(
@@ -468,7 +479,9 @@ class RasterPop:
 
         return m
 
-    def _plot_matplotlib(self, save: str = None) -> Union[plt.Axes, None]:
+    def _plot_matplotlib(
+        self, save: str = None, figsize: tuple = (6.4, 4.8)
+    ) -> Union[plt.Axes, None]:
         """Plot raster data using matplotlib.
 
         A shallow wrapper around rioxarray's plot function, to display the
@@ -479,6 +492,9 @@ class RasterPop:
         save : str, optional
             Filepath to save location, with ".png" extension, by default None
             meaning the plot will not be saved to file.
+        figsize : tuple, optional
+            The matplotlib figursize width and height in inches, by default
+            (6.4, 4.8).
 
         Returns
         -------
@@ -487,7 +503,8 @@ class RasterPop:
             writing to file, None is return.
 
         """
-        fig, ax = plt.subplots()
+        # handle matplotlib and rioxarry steps
+        fig, ax = plt.subplots(figsize=figsize)
         self._xds.plot(ax=ax)
         plt.tight_layout()
 
