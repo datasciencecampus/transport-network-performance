@@ -23,7 +23,16 @@ class RasterPop:
     Parameters
     ----------
     filepath : Union[str, bytes, os.PathLike]
-        file path to population data
+        File path to population data
+
+    Attributes
+    ----------
+    var_gdf : gpd.GeoDataFrame
+        A geopandas dataframe of raster data, with the geometry is the grid.
+        This is in the same CRS as the input raster data.
+    centroid_gdf
+        A geopandas dataframe of grid centroids, converted to EPSG:4326 for
+        transport analysis.
 
     Methods
     -------
@@ -32,6 +41,11 @@ class RasterPop:
     plot
         Build static and interactive visualisations of population data. Can
         only use this method once `get_pop` has been called.
+
+    Raises
+    ------
+    FileNotFoundError
+        When `filepath` is not a file or can not be found.
 
     """
 
