@@ -4,5 +4,11 @@ gtfs_kit==5.2.7
 rasterio
 matplotlib
 scipy
+rioxarray
+geopandas
+matplotlib
+geocube
 pyproj>=3.6.0
+pytest
+coverage
 -e .
