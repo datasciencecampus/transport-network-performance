@@ -9,7 +9,7 @@ import rioxarray
 import folium
 
 from geocube.vector import vectorize
-from typing import Union, Type
+from typing import Union, Type, Tuple
 from shapely.geometry.polygon import Polygon
 import matplotlib.pyplot as plt
 
@@ -76,7 +76,7 @@ class RasterPop:
         var_name: str = "population",
         urban_centre_bounds: Type[Polygon] = None,
         urban_centre_crs: str = None,
-    ) -> None:
+    ) -> Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
         """Get population data.
 
         Parameters
@@ -106,6 +106,15 @@ class RasterPop:
             same CRS as the input raster data. Only used when
             `urban_centre_bounds` is set.
 
+        Returns
+        -------
+        var_gdf : gpd.GeoDataFrame
+            A geopandas dataframe of raster data, with the geometry is the
+            grid. This is in the same CRS as the input raster data.
+        centroid_gdf
+            A geopandas dataframe of grid centroids, converted to EPSG:4326 for
+            transport analysis.
+
         """
         # read and clip population data to area of interest
         self._xds = self._read_and_clip(aoi_bounds, aoi_crs, var_name)
@@ -127,6 +136,8 @@ class RasterPop:
             self._within_urban_centre(
                 urban_centre_bounds, urban_centre_crs=urban_centre_crs
             )
+
+        return self.var_gdf, self.centroid_gdf
 
     def plot(
         self, which: str = "folium", save: str = None, **kwargs
