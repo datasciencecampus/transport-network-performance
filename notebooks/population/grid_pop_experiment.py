@@ -13,6 +13,8 @@ Additionally, an experiment is performed by merging together multiple GHSL-POP
 rasters to cover UK and France [2-5]. These should be stored in the same
 directory as above, but without any filename changes.
 
+A similar experiment is performed using 2015 GHSL-POP data [6-9].
+
 References
 ----------
 - [1] Schiavina M., Freire S., Carioli A., MacManus K. (2023):
@@ -31,6 +33,18 @@ A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2020_GLOBE_R2023A_54
 009_100_V1_0_R4_C18.zip
 - [5] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
 A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2020_GLOBE_R2023A_54
+009_100_V1_0_R4_C19.zip
+- [6] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
+A/GHS_POP_E2015_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2015_GLOBE_R2023A_54
+009_100_V1_0_R3_C18.zip
+- [7] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
+A/GHS_POP_E2015_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2015_GLOBE_R2023A_54
+009_100_V1_0_R3_C19.zip
+- [8] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
+A/GHS_POP_E2015_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2015_GLOBE_R2023A_54
+009_100_V1_0_R4_C18.zip
+- [9] https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023
+A/GHS_POP_E2015_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2015_GLOBE_R2023A_54
 009_100_V1_0_R4_C19.zip
 
 """
