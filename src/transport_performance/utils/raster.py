@@ -80,10 +80,18 @@ def merge_raster_files(
     tif_filepaths = glob.glob(f"{input_dir}/*.tif")
     if len(tif_filepaths) == 0:
         raise FileNotFoundError(f"No `*.tif` files found in {input_dir}")
+
+    # apply regex and ensure tif files exist after applying it
+    # raise a unique FileNotFoundError to aid debugging
     if subset_regex is not None:
         tif_filepaths = [
             fpath for fpath in tif_filepaths if re.search(subset_regex, fpath)
         ]
+    if len(tif_filepaths) == 0:
+        raise FileNotFoundError(
+            f"No `*.tif` files found in {input_dir} after applying regex "
+            f"'{subset_regex}'."
+        )
 
     # build a list of input rioxarrays to be merged
     arrays = []
