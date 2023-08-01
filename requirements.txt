@@ -3,4 +3,15 @@ r5py>=0.0.4
 gtfs_kit==5.2.7
 pytest
 coverage
+rasterio
+pyprojroot
+matplotlib
+plotly
+nbformat>=4.2.0
+scikit-image
+cartopy
+folium
+geocube
+mapclassify
+seaborn
 -e .
