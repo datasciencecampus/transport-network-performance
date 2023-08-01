@@ -108,7 +108,7 @@ if PROFILING:
 pre_summ_weekday = time.perf_counter()
 with warnings.catch_warnings():  # slow & triggers warnings, gtfs_kit issue
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
-    print(feed.summarise_weekday())
+    print(feed.summarise_days())
 post_summ_weekday = time.perf_counter()
 if PROFILING:
     print(f"summ_weekday in {post_summ_weekday - pre_summ_weekday:0.4f} secs")

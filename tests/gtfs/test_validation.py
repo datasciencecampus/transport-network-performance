@@ -279,7 +279,7 @@ class TestGtfsInstance(object):
         ).all(), f"Expected columns are different. Found: {found_cols}"
 
     def test_summarise_days_defence(self, gtfs_fixture):
-        """Defensive checks for summarise_weekday()."""
+        """Defensive checks for summarise_days()."""
         with pytest.raises(
             TypeError,
             match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
