@@ -278,7 +278,29 @@ class TestGtfsInstance(object):
             found_cols == exp_cols
         ).all(), f"Expected columns are different. Found: {found_cols}"
 
+    def test__preprocess_trips_and_routes(self, gtfs_fixture):
+        """FILLER DOCSTRING."""
+        # TODO: FILL FUNCTION
+        # THIS INCLUDES CHECKING THE OUTPUTS SCHEMA
+        # AND THE SHAPE USING THE NEWPORT TEST DATA
+        pass
+
+    def test_summarise_trips_defence(self, gtfs_fixture):
+        """FILLER DOCSTRING."""
+        # TODO: FILL FUNCTION SIMILAR TO THE BELOW
+        # TEST_SUMMARISE_DAYS_DEFENCE
+        pass
+
+    def test_summarise_routes_defence(self, gtfs_fixture):
+        """FILLER DOCSTRING."""
+        # TODO: FILL FUNCTION SIMILAR TO THE BELOW
+        # TEST_SUMMARISE_DAYS_DEFENCE
+        pass
+
     def test_summarise_days_defence(self, gtfs_fixture):
+        # TODO: REMOVE THIS FUNCTION ONCE
+        # ITS CONTENTS HAVE BEEN DISTRIBUTED
+        # IN THE ABOVE FUNCTIONS (MOSTLY)
         """Defensive checks for summarise_days()."""
         with pytest.raises(
             TypeError,
@@ -334,6 +356,14 @@ class TestGtfsInstance(object):
         assert fun_out == [
             call("KeyError. Feed was not cleaned.")
         ], f"Expected print statement about KeyError. Found: {fun_out}."
+
+    def test_summarise_trips_on_pass(self, gtfs_fixture):
+        """FILLER DOCSTRING."""
+        pass
+
+    def test_summarise_routes_on_pass(self, gtfs_fixture):
+        """FILLER DOCSTRING."""
+        pass
 
     @pytest.mark.runexpensive
     def test_summarise_days_on_pass(self, gtfs_fixture):

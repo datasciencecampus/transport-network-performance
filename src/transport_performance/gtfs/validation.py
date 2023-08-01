@@ -267,11 +267,43 @@ class GtfsInstance:
         except KeyError:
             print("Key Error. Map was not written.")
 
+    def _preprocess_trips_and_routes(self) -> pd.DataFrame:
+        """FILLER DOCSTRING."""
+        # TODO: Fill function
+        # RETURNS THE PRE-PROCESSED TRIPS AND
+        # ROUTES TABLE WITH DATES INCLUDED
+        pass
+
+    def summarise_routes(
+        self,
+        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        return_summary: bool = True,
+    ) -> pd.DataFrame:
+        """FILLER DOCSTRING."""
+        # TODO: Fill function
+        # SUMMARISES THE COUNTS OF ROUTE_ID
+        # FOR EACH DAY (MONDAY, TUESDAY ETC)
+        # OPTIONAL: KEEP NON-AGGREGATED OUTPUTS
+        pass
+
+    def summarise_trips(
+        self,
+        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        return_summary: bool = True,
+    ) -> pd.DataFrame:
+        """FILLER DOCSTRING."""
+        # TODO: Fill function
+        # SUMMARISES THE COUNTS OF ROUTE_ID
+        # FOR EACH DAY (MONDAY, TUESDAY ETC)
+        # OPTIONAL: KEEP NON-AGGREGATED OUTPUTS
+        pass
+
     def summarise_days(
         self,
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
     ) -> pd.DataFrame:
+        # TODO: REMOVE FUNCTION WHEN ABOVE(3) FUNCTIONS ARE COMPLETE
         """Produce a summarised table of route statistics by day of week.
 
         For route count summaries, func counts route_id only, irrespective of
