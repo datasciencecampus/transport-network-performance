@@ -16,6 +16,7 @@ from geocube.vector import vectorize
 from typing import Union, Type, Tuple
 from shapely.geometry.polygon import Polygon
 from matplotlib import colormaps
+from cartopy.mpl.geoaxes import GeoAxes
 
 
 class RasterPop:
@@ -145,7 +146,7 @@ class RasterPop:
 
     def plot(
         self, which: str = "folium", save: str = None, **kwargs
-    ) -> Union[folium.Map, plt.Axes, None]:
+    ) -> Union[folium.Map, Type[GeoAxes], plt.Axes, None]:
         """Plot data.
 
         Parameters
@@ -162,10 +163,12 @@ class RasterPop:
 
         Returns
         -------
-        Union[folium.Map, plt.Axes, None]
+        Union[folium.Map, Type[GeoAxes], plt.Axes, None]
             A folium map is returned when the `folium` backend is used. A
-            matplotlib Axes object is returned when `matplotlib` and `cartopy`
-            backends are used. None will be returned when saving to file.
+            matplotlib Axes object is returned when `matplotlib` backend is
+            used. A matplotlib/cartopy GeoAxes object is return when the
+            `cartopy` backend is used. None will be returned when saving to
+            file.
 
         Raises
         ------
@@ -485,21 +488,103 @@ class RasterPop:
         return m
 
     def _plot_cartopy(
-        self, save: str = None, figsize: tuple = (10, 8)
-    ) -> Union[plt.Axes, None]:
-        """Plot using cartopy."""
+        self,
+        save: str = None,
+        figsize: tuple = (10, 8),
+        map_tile_zoom: int = 12,
+        cmap: str = "viridis",
+        cbar_fraction: float = 0.034,
+        cbar_pad: float = 0.04,
+        cbar_label: str = "Population count per cell",
+        var_attr: str = "GHS-POP 2020 (R2023)",
+        base_map_attr: str = "(C) OpenSteetMap contributors",
+        attr_font_size: float = 7.5,
+        attr_location: str = "bottom_left",
+    ) -> Union[Type[GeoAxes], None]:
+        """Plot data via cartopy (static plot with an OpenStreetMap base tile).
+
+        Parameters
+        ----------
+        save : str, optional
+            Filepath to save location, with ".png" extension, by default None
+            meaning the map will not be saved to file.
+        figsize : tuple, optional
+            The matplotlib figure size width and height in inches, by default
+            (10, 8).
+        map_tile_zoom : int, optional
+            The zoom level for the OpenSteetMap base tile layer, by default 12
+            which is suitable for towns/cities. See [1]_ for more details on
+            the zoom level.
+        cmap : str, optional
+            A colormap string recognised by `matplotlib` [2]_, by default
+            "viridis".
+        cbar_fraction : float, optional
+            Fractional size of the colour bar. Use this value to change the
+            height of the colour bar, by default 0.034.
+        cbar_pad : float, optional
+            Amount of padding between the plot and the colourbar, by default
+            0.04.
+        cbar_label : str, optional
+            Colour label, by default "Population count per cell".
+        var_attr : str, optional
+            Attribution to assign for variable/data of interest, by default
+            "GHS-POP 2020 (R2023)".
+        base_map_attr : str, optional
+            Base map tile attribution, by default "(C) OpenSteetMap
+            contributors".
+        attr_font_size : float, optional
+            Font size of the attribution text, by default 7.5.
+        attr_location : str, optional
+            Location of the attribution. Must be one of {"bottom_left",
+            "bottom_right", "top_right", "top_left"}, by default "bottom_left".
+
+        Returns
+        -------
+        Union[Type[GeoAxes], None]
+            A matplotlib/cartopy GeoAxes displaying the data ontop of an
+            OpenStreetMap base tile. Returns None when writing to file.
+
+        Raises
+        ------
+        ValueError
+            When `attr_location` is assigned an unexpected value.
+
+        References
+        ----------
+        .. [1] https://wiki.openstreetmap.org/wiki/Zoom_levels
+        .. [2] https://matplotlib.org/stable/tutorials/colors/colormaps.html
+
+        """
+        # make attribution location dictionary
+        ATTR_LOC = {
+            "bottom_left": {
+                "x": 0.01,
+                "y": 0.01,
+                "ha": "left",
+                "va": "bottom",
+            },
+            "bottom_right": {
+                "x": 0.99,
+                "y": 0.01,
+                "ha": "right",
+                "va": "bottom",
+            },
+            "top_right": {"x": 0.99, "y": 0.99, "ha": "right", "va": "top"},
+            "top_left": {"x": 0.01, "y": 0.99, "ha": "left", "va": "top"},
+        }
+
         # get OpenStreetMap tile layer object in greyscale
         map_tile = cimgt.OSM(desired_tile_form="L")
 
-        # build plot axis and add map tile TODO add zoom as variable
+        # build plot axis and add map tile
         ax = plt.axes(projection=map_tile.crs)
         ax.figure.set_size_inches(*figsize)
         data_crs = ccrs.Mollweide()
-        ax.add_image(map_tile, 12, cmap="gray")
+        ax.add_image(map_tile, map_tile_zoom, cmap="gray")
 
         # build a colormap and add pcolormesh plot data, setting vmin and vmax
         # to match the whole colormap range
-        cmap = colormaps.get_cmap("viridis")
+        plot_cmap = colormaps.get_cmap(cmap)
         plot_data = self._xds.squeeze(axis=0).to_numpy()
         vmin_data = np.nanmin(plot_data)
         vmax_data = np.nanmax(plot_data)
@@ -507,7 +592,7 @@ class RasterPop:
             self._xds.squeeze().x.to_numpy(),
             self._xds.squeeze().y.to_numpy(),
             plot_data,
-            cmap=cmap,
+            cmap=plot_cmap,
             vmin=vmin_data,
             vmax=vmax_data,
             transform=data_crs,
@@ -518,13 +603,11 @@ class RasterPop:
         cbar = plt.colorbar(
             ctf,
             ax=ax,
-            fraction=0.034,
-            pad=0.04,
+            fraction=cbar_fraction,
+            pad=cbar_pad,
             format=lambda x, _: f"{x:.0E}" if x <= 1 else f"{x:.0f}",
         )
-        cbar.ax.set_ylabel(
-            "Population count per cell", rotation=270, labelpad=20
-        )
+        cbar.ax.set_ylabel(cbar_label, rotation=270, labelpad=20)
         cbar.set_ticks(
             np.concatenate(
                 [
@@ -535,27 +618,31 @@ class RasterPop:
             )
         )
 
-        # create an attribution string and add it to the axis in bottom left
-        # attributions - used during plotting
-        POPULATION_ATTR = "GHS-POP 2020 (R2023) "
-        BASE_MAP_ATTR = "(C) OpenSteetMap contributors"
+        # defend against case attr_location is invalid
+        if attr_location not in ATTR_LOC.keys():
+            raise ValueError(
+                f"Unrecognised value for `attr_location` {attr_location}."
+                f"Expecting one of {list(ATTR_LOC.keys())}"
+            )
+
+        # create an attribution string and add it to the axis
         grid_res = self._xds.rio.resolution()
         attribution = (
             f"Generated on: {datetime.strftime(datetime.now(), '%Y-%m-%d')}\n"
-            f"Population data: {POPULATION_ATTR}\n"
+            f"Population data: {var_attr}\n"
             f"Grid Size: {abs(grid_res[0])}m x {abs(grid_res[1])}m\n"
-            f"Base map: {BASE_MAP_ATTR}"
+            f"Base map: {base_map_attr}"
         )
         ax.text(
-            0.01,
-            0.01,
+            ATTR_LOC[attr_location]["x"],
+            ATTR_LOC[attr_location]["y"],
             attribution,
             transform=ax.transAxes,
-            size=7.5,
+            size=attr_font_size,
             wrap=True,
             fontdict={"name": "Arial", "color": "#000000"},
-            va="bottom",
-            ha="left",
+            va=ATTR_LOC[attr_location]["va"],
+            ha=ATTR_LOC[attr_location]["ha"],
         )
 
         # use tight layout to maximise axis size of axis
