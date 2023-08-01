@@ -173,7 +173,7 @@ logger = setup_logger(LOGGER_NAME, level=LOGGER_LEVEL)
 # BBOX = (3.319416, 42.673743, 7.873249, 44.671964)  # marseille
 
 # area of interest
-AREA_OF_INTEREST = "london"
+AREA_OF_INTEREST = "newport"
 
 # get bbox of interest
 BBOX_DICT = {
