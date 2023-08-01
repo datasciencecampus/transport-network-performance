@@ -56,7 +56,7 @@ def merge_raster_files(
     -----
     1. This function does not provide any consistency checking of inputs and
     merged outputs (e.g., checking for overlapping inputs and 'gaps' in the
-    merged outputs). This is primarily because merging is nuienced and numerous
+    merged outputs). This is primarily because merging is nuanced and numerous
     in the potential ways inputs can be merged. For this reason, it is down to
     the function's user to ensure the merged output is consistent with the
     respective inputs. To this end, the bounds dict is returned to allow user
