@@ -803,7 +803,12 @@ m = oa_gdf.explore(
     legend_kwds={"backgroundcolor": "white"},
 )
 
-m.save(os.path.join(here(), "outputs", "mye", f"{AREA_OF_INTEREST}.html"))
+# create dir if it doesn't already exist
+plot_out_path = os.path.join(here(), "outputs", "mye")
+if not os.path.exists(plot_out_path):
+    os.mkdir(plot_out_path)
+
+m.save(os.path.join(plot_out_path, f"{AREA_OF_INTEREST}.html"))
 del m
 
 # %%
