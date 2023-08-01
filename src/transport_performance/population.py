@@ -7,11 +7,15 @@ import rasterio as rio
 import xarray
 import rioxarray
 import folium
+import cartopy.crs as ccrs
+import cartopy.io.img_tiles as cimgt
 import matplotlib.pyplot as plt
 
+from datetime import datetime
 from geocube.vector import vectorize
 from typing import Union, Type, Tuple
 from shapely.geometry.polygon import Polygon
+from matplotlib import colormaps
 
 
 class RasterPop:
@@ -192,7 +196,8 @@ class RasterPop:
             m = self._plot_folium(save, **kwargs)
             return m
         elif which == "cartopy":
-            return None
+            ax = self._plot_cartopy(save, **kwargs)
+            return ax
         elif which == "matplotlib":
             ax = self._plot_matplotlib(save, **kwargs)
             return ax
@@ -478,6 +483,82 @@ class RasterPop:
             m = None
 
         return m
+
+    def _plot_cartopy(
+        self, save: str = None, figsize: tuple = (6.4, 4.8)
+    ) -> Union[plt.Axes, None]:
+        """Plot using cartopy."""
+        # get OpenStreetMap tile layer object in greyscale
+        map_tile = cimgt.OSM(desired_tile_form="L")
+
+        # build plot axis and add map tile TODO add zoom as variable
+        ax = plt.axes(projection=map_tile.crs)
+        ax.figure.set_size_inches(8, 10)
+        data_crs = ccrs.Mollweide()
+        ax.add_image(map_tile, 12, cmap="gray")
+
+        # build a colormap and add pcolormesh plot data, setting vmin and vmax
+        # to match the whole colormap range
+        cmap = colormaps.get_cmap("viridis")
+        plot_data = self._xds.squeeze(axis=0).to_numpy()
+        vmin_data = np.nanmin(plot_data)
+        vmax_data = np.nanmax(plot_data)
+        ctf = ax.pcolormesh(
+            self._xds.squeeze().x.to_numpy(),
+            self._xds.squeeze().y.to_numpy(),
+            plot_data,
+            cmap=cmap,
+            vmin=vmin_data,
+            vmax=vmax_data,
+            transform=data_crs,
+        )
+
+        # add a colorbar - converting format of smaller numbers to exponents
+        # modify the y label and reformat the tick axis to show min and max
+        cbar = plt.colorbar(
+            ctf,
+            ax=ax,
+            fraction=0.034,
+            pad=0.04,
+            format=lambda x, _: f"{x:.0E}" if x <= 1 else f"{x:.0f}",
+        )
+        cbar.ax.set_ylabel(
+            "Population count per cell", rotation=270, labelpad=20
+        )
+        cbar.set_ticks(
+            np.concatenate(
+                [
+                    np.array([vmin_data]),
+                    cbar.get_ticks()[1:-1],
+                    np.array([vmax_data]),
+                ]
+            )
+        )
+
+        # create an attribution string and add it to the axis in bottom left
+        # attributions - used during plotting
+        POPULATION_ATTR = "GHS-POP 2020 (R2023) "
+        BASE_MAP_ATTR = "(C) OpenSteetMap contributors"
+        grid_res = self._xds.rio.resolution()
+        attribution = (
+            f"Generated on: {datetime.strftime(datetime.now(), '%Y-%m-%d')}\n"
+            f"Population data: {POPULATION_ATTR}\n"
+            f"Grid Size: {abs(grid_res[0])}m x {abs(grid_res[1])}m\n"
+            f"Base map: {BASE_MAP_ATTR}"
+        )
+        ax.text(
+            0.01,
+            0.01,
+            attribution,
+            transform=ax.transAxes,
+            size=7.5,
+            wrap=True,
+            fontdict={"name": "Arial", "color": "#000000"},
+            va="bottom",
+            ha="left",
+        )
+
+        return ax
 
     def _plot_matplotlib(
         self, save: str = None, figsize: tuple = (6.4, 4.8)
