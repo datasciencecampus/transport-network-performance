@@ -485,7 +485,7 @@ class RasterPop:
         return m
 
     def _plot_cartopy(
-        self, save: str = None, figsize: tuple = (6.4, 4.8)
+        self, save: str = None, figsize: tuple = (10, 8)
     ) -> Union[plt.Axes, None]:
         """Plot using cartopy."""
         # get OpenStreetMap tile layer object in greyscale
@@ -493,7 +493,7 @@ class RasterPop:
 
         # build plot axis and add map tile TODO add zoom as variable
         ax = plt.axes(projection=map_tile.crs)
-        ax.figure.set_size_inches(10, 8)
+        ax.figure.set_size_inches(*figsize)
         data_crs = ccrs.Mollweide()
         ax.add_image(map_tile, 12, cmap="gray")
 
@@ -568,7 +568,7 @@ class RasterPop:
             if not os.path.exists(out_df):
                 os.mkdir(out_df)
             fig = plt.gcf()
-            fig.set_size_inches(10, 8)
+            fig.set_size_inches(*figsize)
             fig.savefig(save)
             ax = None
 
