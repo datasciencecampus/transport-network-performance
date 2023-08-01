@@ -277,7 +277,7 @@ class GtfsInstance:
         For route count summaries, func counts route_id only, irrespective of
         which service_id the routes map to. If the services run on different
         calendar days, they will be counted separately. In cases where more
-        than one service runs the same route on a day, these will not be
+        than one service runs the same route on the same day, these will not be
         counted as distinct routes.
 
         Parameters
