@@ -493,7 +493,7 @@ class RasterPop:
 
         # build plot axis and add map tile TODO add zoom as variable
         ax = plt.axes(projection=map_tile.crs)
-        ax.figure.set_size_inches(8, 10)
+        ax.figure.set_size_inches(10, 8)
         data_crs = ccrs.Mollweide()
         ax.add_image(map_tile, 12, cmap="gray")
 
@@ -557,6 +557,20 @@ class RasterPop:
             va="bottom",
             ha="left",
         )
+
+        # use tight layout to maximise axis size of axis
+        plt.tight_layout()
+
+        # write to file if filepath is given, since there is no figure, need to
+        # get the current figure and resize it to match the axis before saving
+        if save is not None:
+            out_df = os.path.dirname(save)
+            if not os.path.exists(out_df):
+                os.mkdir(out_df)
+            fig = plt.gcf()
+            fig.set_size_inches(10, 8)
+            fig.savefig(save)
+            ax = None
 
         return ax
 
