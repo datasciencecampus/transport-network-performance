@@ -267,101 +267,67 @@ class GtfsInstance:
         except KeyError:
             print("Key Error. Map was not written.")
 
-    def _preprocess_trips_and_routes(self) -> pd.DataFrame:
-        """FILLER DOCSTRING."""
-        # TODO: Fill function
-        # RETURNS THE PRE-PROCESSED TRIPS AND
-        # ROUTES TABLE WITH DATES INCLUDED
-        pass
-
-    def summarise_routes(
-        self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
-        return_summary: bool = True,
+    def _order_dataframe_by_day(
+        self, df: pd.DataFrame, day_column_name: str = "day"
     ) -> pd.DataFrame:
-        """FILLER DOCSTRING."""
-        # TODO: Fill function
-        # SUMMARISES THE COUNTS OF ROUTE_ID
-        # FOR EACH DAY (MONDAY, TUESDAY ETC)
-        # OPTIONAL: KEEP NON-AGGREGATED OUTPUTS
-        pass
-
-    def summarise_trips(
-        self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
-        return_summary: bool = True,
-    ) -> pd.DataFrame:
-        """FILLER DOCSTRING."""
-        # TODO: Fill function
-        # SUMMARISES THE COUNTS OF ROUTE_ID
-        # FOR EACH DAY (MONDAY, TUESDAY ETC)
-        # OPTIONAL: KEEP NON-AGGREGATED OUTPUTS
-        pass
-
-    def summarise_days(
-        self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
-        return_summary: bool = True,
-    ) -> pd.DataFrame:
-        # TODO: REMOVE FUNCTION WHEN ABOVE(3) FUNCTIONS ARE COMPLETE
-        """Produce a summarised table of route statistics by day of week.
-
-        For route count summaries, func counts route_id only, irrespective of
-        which service_id the routes map to. If the services run on different
-        calendar days, they will be counted separately. In cases where more
-        than one service runs the same route on the same day, these will not be
-        counted as distinct routes.
+        """Order a dataframe by days of the week in real-world order.
 
         Parameters
         ----------
-        summ_ops : list, optional
-            A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
-        return_summary : bool, optional
-            When True, a summary is returned. When False, route data
-            for each date is returned,
-            by default True
+        df : pd.DataFrame
+            Input dataframe containing a column with the name
+            of the day of a record
+        day_column_name : str, optional
+            The name of the columns in the pandas dataframe
+            that contains the name of the day of a record,
+            by default "day"
 
         Returns
         -------
-        pd.DataFrame: A dataframe containing either summarized
-                      results or dated route data.
+        pd.DataFrame
+            The inputted dataframe ordered by the day column
+            (by real world order).
 
         """
-        # return_summary checks
-        if not isinstance(return_summary, bool):
+        # defences for parameters
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(f"'df' expected type pd.DataFrame, got {type(df)}")
+        if not isinstance(day_column_name, str):
             raise TypeError(
-                "'return_summary' must be of type boolean."
-                f" Found {type(return_summary)} : {return_summary}"
-            )
-        # summ_ops defence
-
-        if isinstance(summ_ops, list):
-            for i in summ_ops:
-                if inspect.isfunction(i):
-                    if not _check_namespace_export(pkg=np, func=i):
-                        raise TypeError(
-                            "Each item in `summ_ops` must be a numpy function."
-                            f" Found {type(i)} : {i.__name__}"
-                        )
-                else:
-                    raise TypeError(
-                        (
-                            "Each item in `summ_ops` must be a function."
-                            f" Found {type(i)} : {i}"
-                        )
-                    )
-        elif inspect.isfunction(summ_ops):
-            if not _check_namespace_export(pkg=np, func=summ_ops):
-                raise NotImplementedError(
-                    "`summ_ops` expects numpy functions only."
-                )
-        else:
-            raise TypeError(
-                "`summ_ops` expects a numpy function or list of numpy"
-                f" functions. Found {type(summ_ops)}"
+                "'day_column_name' expected type str, "
+                f"got {type(day_column_name)}"
             )
 
+        # hard coded day order
+        day_order = {
+            "monday": 0,
+            "tuesday": 1,
+            "wednesday": 2,
+            "thursday": 3,
+            "friday": 4,
+            "saturday": 5,
+            "sunday": 6,
+        }
+
+        # apply the day order and sort the df
+        df["day_order"] = (
+            df[day_column_name].str.lower().apply(lambda x: day_order[x])
+        )
+        df.sort_values("day_order", ascending=True, inplace=True)
+        df.sort_index(axis=1, inplace=True)
+        df.drop("day_order", inplace=True, axis=1)
+        return df
+
+    def _preprocess_trips_and_routes(self) -> pd.DataFrame:
+        """Create a trips table containing a record for each trip on each date.
+
+        Returns
+        -------
+        pd.DataFrame
+            A dataframe containing a record of every trip on every day
+            from the gtfs feed.
+
+        """
         # create a calendar lookup (one row = one date, rather than date range)
         calendar = self.feed.calendar.copy()
         # convert dates to dt and create a list of dates between them
@@ -411,11 +377,170 @@ class GtfsInstance:
         dated_trips = trips.merge(melted_calendar, on="service_id", how="left")
         dated_trips_routes = dated_trips.merge(
             routes, on="route_id", how="left"
-        )[["route_id", "day", "date", "route_type"]].drop_duplicates()
+        )
+        return dated_trips_routes
 
+    def _get_pre_processed_trips(self):
+        """Obtain pre-processed trip data."""
+        try:
+            return self.pre_processed_trips.copy()
+        except AttributeError:
+            self.pre_processed_trips = self._preprocess_trips_and_routes()
+            return self.pre_processed_trips.copy()
+
+    def _summary_defence(
+        self,
+        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        return_summary: bool = True,
+    ) -> pd.DataFrame:
+        """Check for any invalid parameters in a summarising function.
+
+        Parameters
+        ----------
+        summ_ops : list, optional
+            A list of operators used to get a summary of a given day,
+            by default [np.min, np.max, np.mean, np.median]
+        return_summary : bool, optional
+            When True, a summary is returned. When False, route data
+            for each date is returned,
+            by default True
+
+        Returns
+        -------
+        None
+
+        """
+        if not isinstance(return_summary, bool):
+            raise TypeError(
+                "'return_summary' must be of type boolean."
+                f" Found {type(return_summary)} : {return_summary}"
+            )
+        # summ_ops defence
+
+        if isinstance(summ_ops, list):
+            for i in summ_ops:
+                if inspect.isfunction(i):
+                    if not _check_namespace_export(pkg=np, func=i):
+                        raise TypeError(
+                            "Each item in `summ_ops` must be a numpy function."
+                            f" Found {type(i)} : {i.__name__}"
+                        )
+                else:
+                    raise TypeError(
+                        (
+                            "Each item in `summ_ops` must be a function."
+                            f" Found {type(i)} : {i}"
+                        )
+                    )
+        elif inspect.isfunction(summ_ops):
+            if not _check_namespace_export(pkg=np, func=summ_ops):
+                raise NotImplementedError(
+                    "`summ_ops` expects numpy functions only."
+                )
+        else:
+            raise TypeError(
+                "`summ_ops` expects a numpy function or list of numpy"
+                f" functions. Found {type(summ_ops)}"
+            )
+
+    def summarise_trips(
+        self,
+        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        return_summary: bool = True,
+    ) -> pd.DataFrame:
+        """Produce a summarised table of trip statistics by day of week.
+
+        For trip count summaries, func counts distinct trip_id only. These
+        are then summarised into average/median/min/max (default) number
+        of trips per day. Raw data for each date can also be obtained by
+        setting the 'return_summary' parameter to False (bool).
+
+        Parameters
+        ----------
+        summ_ops : list, optional
+            A list of operators used to get a summary of a given day,
+            by default [np.min, np.max, np.mean, np.median]
+        return_summary : bool, optional
+            When True, a summary is returned. When False, trip data
+            for each date is returned,
+            by default True
+
+        Returns
+        -------
+        pd.DataFrame: A dataframe containing either summarized
+                      results or dated route data.
+
+        """
+        self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)
+        pre_processed_trips = self._get_pre_processed_trips()
+
+        # clean the trips to ensure that there are no duplicates
+        cleaned_trips = pre_processed_trips[
+            ["date", "day", "trip_id", "route_type"]
+        ].drop_duplicates()
+        trip_counts = cleaned_trips.groupby(["date", "route_type"]).agg(
+            {"trip_id": "count", "day": "first"}
+        )
+        trip_counts.reset_index(inplace=True)
+        trip_counts.rename(
+            mapper={"trip_id": "trip_count"}, axis=1, inplace=True
+        )
+        self.dated_trip_counts = trip_counts.copy()
+        if not return_summary:
+            return self.dated_trip_counts
+
+        # aggregate to mean/median/min/max (default) trips on each day
+        # of the week
+        day_trip_counts = trip_counts.groupby(["day", "route_type"]).agg(
+            {"trip_count": summ_ops}
+        )
+        day_trip_counts.reset_index(inplace=True)
+        day_trip_counts = day_trip_counts.round(0)
+
+        # order the days (for plotting future purposes)
+        # order the days (for plotting future purposes)
+        day_trip_counts = self._order_dataframe_by_day(df=day_trip_counts)
+        day_trip_counts.reset_index(drop=True, inplace=True)
+        self.daily_trip_summary = day_trip_counts.copy()
+        return self.daily_trip_summary
+
+    def summarise_routes(
+        self,
+        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        return_summary: bool = True,
+    ) -> pd.DataFrame:
+        """Produce a summarised table of route statistics by day of week.
+
+        For route count summaries, func counts route_id only, irrespective of
+        which service_id the routes map to. If the services run on different
+        calendar days, they will be counted separately. In cases where more
+        than one service runs the same route on the same day, these will not be
+        counted as distinct routes.
+
+        Parameters
+        ----------
+        summ_ops : list, optional
+            A list of operators used to get a summary of a given day,
+            by default [np.min, np.max, np.mean, np.median]
+        return_summary : bool, optional
+            When True, a summary is returned. When False, route data
+            for each date is returned,
+            by default True
+
+        Returns
+        -------
+        pd.DataFrame: A dataframe containing either summarized
+                      results or dated route data.
+
+        """
+        self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)
+        pre_processed_trips = self._get_pre_processed_trips()
+        cleaned_routes = pre_processed_trips[
+            ["route_id", "day", "date", "route_type"]
+        ].drop_duplicates()
         # group data into route counts per day
-        service_count = (
-            dated_trips_routes.groupby(["date", "route_type", "day"])
+        route_count = (
+            cleaned_routes.groupby(["date", "route_type", "day"])
             .agg(
                 {
                     "route_id": "count",
@@ -423,44 +548,29 @@ class GtfsInstance:
             )
             .reset_index()
         )
-        service_count.rename(
+        route_count.rename(
             mapper={"route_id": "route_count"}, axis=1, inplace=True
         )
-        self.dated_route_counts = service_count.copy()
+        self.dated_route_counts = route_count.copy()
+
+        if not return_summary:
+            return self.dated_route_counts
 
         # aggregate the to the average number of routes
         # on a given day (e.g., Monday)
-        day_service_count = (
-            service_count.groupby(["day", "route_type"])
+        day_route_count = (
+            route_count.groupby(["day", "route_type"])
             .agg({"route_count": summ_ops})
             .reset_index()
         )
 
         # order the days (for plotting future purposes)
-        day_order = {
-            "monday": 0,
-            "tuesday": 1,
-            "wednesday": 2,
-            "thursday": 3,
-            "friday": 4,
-            "saturday": 5,
-            "sunday": 6,
-        }
+        day_route_count = self._order_dataframe_by_day(df=day_route_count)
+        day_route_count = day_route_count.round(0)
+        day_route_count.reset_index(drop=True, inplace=True)
+        self.daily_route_summary = day_route_count.copy()
 
-        day_service_count["day_order"] = day_service_count["day"].apply(
-            lambda x: day_order[x]
-        )
-        day_service_count.sort_values(
-            "day_order", ascending=True, inplace=True
-        )
-        day_service_count.sort_index(axis=1, inplace=True)
-        day_service_count.drop("day_order", inplace=True, axis=1)
-        day_service_count = day_service_count.round()
-        self.daily_summary = day_service_count.copy()
-
-        if return_summary:
-            return self.daily_summary
-        return self.dated_route_counts
+        return self.daily_route_summary
 
     def get_route_modes(self):
         """Summarise the available routes by their associated `route_type`.

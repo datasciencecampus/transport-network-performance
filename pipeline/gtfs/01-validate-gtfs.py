@@ -12,8 +12,6 @@
 """
 import toml
 from pyprojroot import here
-import warnings
-import pandas as pd
 import time
 import subprocess
 
@@ -106,9 +104,8 @@ if PROFILING:
     print(f"route_modes in {post_route_modes - pre_route_modes:0.4f} seconds")
 
 pre_summ_weekday = time.perf_counter()
-with warnings.catch_warnings():  # slow & triggers warnings, gtfs_kit issue
-    warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
-    print(feed.summarise_days())
+print(feed.summarise_trips())
+print(feed.summarise_routes())
 post_summ_weekday = time.perf_counter()
 if PROFILING:
     print(f"summ_weekday in {post_summ_weekday - pre_summ_weekday:0.4f} secs")
