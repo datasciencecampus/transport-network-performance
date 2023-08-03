@@ -124,7 +124,6 @@ class RasterPop:
         self._read_and_clip(aoi_bounds, aoi_crs, var_name)
 
         # round population estimates, if requested
-        self.__round = round
         if round:
             self._round_population()
 
@@ -133,7 +132,7 @@ class RasterPop:
             self._threshold_population(threshold)
 
         # convert to variable and centroid geopandas dataframes
-        self._to_geopandas()
+        self._to_geopandas(round)
 
         # add within urban centre details
         if urban_centre_bounds is not None:
@@ -268,20 +267,23 @@ class RasterPop:
         """Threshold population data."""
         self._xds = self._xds.where(self._xds >= threshold)
 
-    def _to_geopandas(self) -> None:
+    def _to_geopandas(self, round: bool = False) -> None:
         """Convert to geopandas dataframe."""
-        # vectorise to geopandas dataframe, converting datatype for `vectorize`
-        if self.__round:
-            set_type = np.int32
-        else:
-            set_type = np.float32
-        # squeeze needed since shape is (1xnxm) (1 band in tiff file)
-        self.pop_gdf = vectorize(self._xds.squeeze(axis=0).astype(set_type))
+        # vectorise to geopandas dataframe, setting data type to np.float32 -
+        # handles nan values squeeze needed since shape is (1xnxm) (1 band in
+        # tiff file)
+        self.pop_gdf = vectorize(self._xds.squeeze(axis=0).astype(np.float32))
 
         # dropna to remove nodata regions and those below threshold (if set)
         self.pop_gdf = self.pop_gdf.dropna(subset=self.__var_name).reset_index(
             drop=True
         )
+
+        # if rounding, cast to int after removing na values
+        if round:
+            self.pop_gdf[self.__var_name] = self.pop_gdf[
+                self.__var_name
+            ].astype("int")
 
         # add an id for each cell
         self.pop_gdf["id"] = np.arange(0, len(self.pop_gdf.index))

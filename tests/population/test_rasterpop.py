@@ -234,3 +234,7 @@ class TestRasterPop:
         assert np.array_equal(
             rp._xds.to_numpy(), xarr_1_aoi[1]["post_clip"], equal_nan=True
         )
+
+        # call and test _to_geopandas and assert to geopandas expectation
+        rp._to_geopandas()
+        print(rp.pop_gdf.head())
