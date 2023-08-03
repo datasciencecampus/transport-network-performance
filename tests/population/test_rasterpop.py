@@ -16,6 +16,8 @@ import rioxarray  # noqa: F401 - import required for xarray but not needed here
 from typing import Type
 from shapely.geometry import Polygon
 
+from transport_performance.population.rasterpop import RasterPop
+
 
 def np_to_rioxarray(
     arr: np.ndarray,
@@ -102,10 +104,14 @@ def xarr_1_aoi() -> Type[Polygon]:
         (-225650, 6036550),
         (-225650, 6036450),
         (-225550, 6036450),
-        (-225550, 6036550),
+        (-225550, 6036500),
+        (-225500, 6036500),
+        (-225500, 6036550),
         (-225450, 6036550),
         (-225450, 6036650),
-        (-225550, 6036650),
+        (-225500, 6036650),
+        (-225500, 6036700),
+        (-225550, 6036700),
         (-225550, 6036750),
         (-225650, 6036750),
     )
@@ -120,11 +126,11 @@ def xarr_1_uc() -> Type[Polygon]:
     This is a square pattern encompassing the 4 central grids of xarr1.
     """
     coords = (
-        (-225700, 6036700),
-        (-225700, 6036500),
+        (-225600, 6036700),
+        (-225600, 6036500),
         (-225500, 6036500),
         (-225500, 6036700),
-        (-225700, 6036700),
+        (-225600, 6036700),
     )
 
     return Polygon(coords)
@@ -161,16 +167,32 @@ def xarr_1_fpath(xarr_1: xr.DataArray, tmp_path: str) -> str:
 class TestRasterPop:
     """A class to test population.RasterPop methods."""
 
-    def test__read_and_clip(self, xarr_1_fpath: str) -> None:
-        """Test _read and clip method.
+    def test__raster_pop_internal_methods(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: Type[Polygon],
+    ) -> None:
+        """Test all the internal methods of the RasterPop call.
+
+        This test is written in this way since the internal methods are
+        dependent on one another, and this permits unit testing of each
+        internal stage.
 
         Parameters
         ----------
         xarr_1_fpath : str
             Filepath to dummy data GeoTIFF file. Output from `xarr_1_fpath`
             fixture.
+        xarr_1_aoi : Type[Polygon]
+            Area of interest polygon for xarr1.
 
         """
         # print fpath where input data resides in tmp folder
         # useful when using -rP flag in pytest to see directory
         print(f"Temp file path for tif input: {xarr_1_fpath}")
+
+        # instantiate RasterPop and read + clip to AOI
+        rp = RasterPop(xarr_1_fpath)
+        rac = rp._read_and_clip(aoi_bounds=xarr_1_aoi)
+
+        print(rac)
