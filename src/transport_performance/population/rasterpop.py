@@ -4,7 +4,6 @@ import geopandas as gpd
 import os
 import numpy as np
 import rasterio as rio
-import xarray
 import rioxarray
 import folium
 import cartopy.crs as ccrs
@@ -122,7 +121,7 @@ class RasterPop:
 
         """
         # read and clip population data to area of interest
-        self._xds = self._read_and_clip(aoi_bounds, aoi_crs, var_name)
+        self._read_and_clip(aoi_bounds, aoi_crs, var_name)
 
         # round population estimates, if requested
         self.__round = round
@@ -215,7 +214,7 @@ class RasterPop:
         aoi_bounds: Type[Polygon],
         aoi_crs: str = None,
         var_name: str = "population",
-    ) -> xarray.DataArray:
+    ) -> None:
         """Open data and clip to the area of interest boundary.
 
         Read and clip raster file from disk (more performant). Mask the data
@@ -233,11 +232,6 @@ class RasterPop:
             The variable name corresponding to the data's measurement, by
             default "population"
 
-        Returns
-        -------
-        xarray.DataArray
-            Clipped data to area of interest.
-
         """
         # defend against case where aoi_bounds is not a shapely polygon
         if not isinstance(aoi_bounds, Polygon):
@@ -252,19 +246,19 @@ class RasterPop:
             gdf = gdf.to_crs(self.__crs)
             aoi_bounds = gdf.loc[0, "geometry"]
 
-        xds = rioxarray.open_rasterio(self.__filepath, masked=True).rio.clip(
-            [aoi_bounds], from_disk=True, all_touched=True
-        )
+        # open and clip raster data - using all_touched method and from_disk
+        # for improved reading speeds.
+        self._xds = rioxarray.open_rasterio(
+            self.__filepath, masked=True
+        ).rio.clip([aoi_bounds], from_disk=True, all_touched=True)
 
         # set the variable name
-        xds.name = var_name
+        self._xds.name = var_name
         self.__var_name = var_name
 
         # build aoi bounds dataframe for plotting
         self._aoi_gdf = gpd.GeoDataFrame(geometry=[aoi_bounds], crs=self.__crs)
         self._aoi_gdf.loc[:, "boundary"] = "AOI Bounds"
-
-        return xds
 
     def _round_population(self) -> None:
         """Round population data."""
