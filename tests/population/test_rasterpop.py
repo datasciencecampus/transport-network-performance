@@ -13,6 +13,9 @@ import rasterio as rio
 import xarray as xr
 import rioxarray  # noqa: F401 - import required for xarray but not needed here
 
+from typing import Type
+from shapely.geometry import Polygon
+
 
 def np_to_rioxarray(
     arr: np.ndarray,
@@ -83,6 +86,48 @@ def xarr_1() -> xr.DataArray:
     xarray_1 = np_to_rioxarray(array_1, transform_1)
 
     return xarray_1
+
+
+@pytest.fixture
+def xarr_1_aoi() -> Type[Polygon]:
+    """Create aoi polygon for xarr1.
+
+    This is a cross shape pattern, that excludes the 4 corners of the xarr1.
+    """
+    coords = (
+        (-225650, 6036750),
+        (-225650, 6036650),
+        (-225750, 6036650),
+        (-225750, 6036550),
+        (-225650, 6036550),
+        (-225650, 6036450),
+        (-225550, 6036450),
+        (-225550, 6036550),
+        (-225450, 6036550),
+        (-225450, 6036650),
+        (-225550, 6036650),
+        (-225550, 6036750),
+        (-225650, 6036750),
+    )
+
+    return Polygon(coords)
+
+
+@pytest.fixture
+def xarr_1_uc() -> Type[Polygon]:
+    """Create urban centre polygon for xarr1.
+
+    This is a square pattern encompassing the 4 central grids of xarr1.
+    """
+    coords = (
+        (-225700, 6036700),
+        (-225700, 6036500),
+        (-225500, 6036500),
+        (-225500, 6036700),
+        (-225700, 6036700),
+    )
+
+    return Polygon(coords)
 
 
 @pytest.fixture
