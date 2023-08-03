@@ -13,7 +13,7 @@ import rasterio as rio
 import xarray as xr
 import rioxarray  # noqa: F401 - import required for xarray but not needed here
 
-from typing import Type
+from typing import Type, Tuple
 from shapely.geometry import Polygon
 
 from transport_performance.population.rasterpop import RasterPop
@@ -91,10 +91,25 @@ def xarr_1() -> xr.DataArray:
 
 
 @pytest.fixture
-def xarr_1_aoi() -> Type[Polygon]:
+def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
     """Create aoi polygon for xarr1.
 
     This is a cross shape pattern, that excludes the 4 corners of the xarr1.
+
+    Parameters
+    ----------
+    xarr_1 : xr.DataArray
+        Input dummy array, output from `xarr_1` fixture.
+
+    Returns
+    -------
+    Type[Polygon]
+        A polygon representing a dummy area of interest for xarr_1
+    dict
+        A dictionary of expected results when applying the area of interest
+        polygon. Keys include:
+        - "post_clip": state of values after reading and clipping xarr_1.
+
     """
     coords = (
         (-225650, 6036750),
@@ -116,7 +131,23 @@ def xarr_1_aoi() -> Type[Polygon]:
         (-225650, 6036750),
     )
 
-    return Polygon(coords)
+    # build a dictionary to store expected results (to use during asserts)
+    expected = {}
+
+    # expected result after reading and clipping the array
+    # set nan values in corners to match post aoi clipping expectations
+    # add extra dimension to match reading of a band in rioxarray
+    exp_post_clip = np.copy(xarr_1.to_numpy())
+    exp_post_clip[0, 0] = np.nan
+    exp_post_clip[0, -1] = np.nan
+    exp_post_clip[-1, 0] = np.nan
+    exp_post_clip[-1, -1] = np.nan
+    exp_post_clip = np.expand_dims(exp_post_clip, axis=0)
+
+    # updated the dictionary for returning
+    expected["post_clip"] = exp_post_clip
+
+    return Polygon(coords), expected
 
 
 @pytest.fixture
@@ -170,21 +201,25 @@ class TestRasterPop:
     def test__raster_pop_internal_methods(
         self,
         xarr_1_fpath: str,
-        xarr_1_aoi: Type[Polygon],
+        xarr_1_aoi: tuple,
     ) -> None:
         """Test all the internal methods of the RasterPop call.
 
-        This test is written in this way since the internal methods are
-        dependent on one another, and this permits unit testing of each
-        internal stage.
+        Test the performance of the base internal methods. This test is written
+        in this way since the internal methods are dependent on one another,
+        and this permits unit testing of each internal stage.
 
         Parameters
         ----------
         xarr_1_fpath : str
             Filepath to dummy data GeoTIFF file. Output from `xarr_1_fpath`
             fixture.
-        xarr_1_aoi : Type[Polygon]
-            Area of interest polygon for xarr1.
+        xarr_1_aoi : tuple
+            A tuple containing the area of interest polygon for xarr_1 (index
+            0) and a dictionary of expected method outputs after applying the
+            area of interest polygon (index 1). For more information on the
+            valid keys of this dictionary see the docstring of the `xarr_1_aoi`
+            fixture.
 
         """
         # print fpath where input data resides in tmp folder
@@ -194,7 +229,8 @@ class TestRasterPop:
         # instantiate RasterPop and read + clip to AOI
         rp = RasterPop(xarr_1_fpath)
 
-        # call and test read and clip method
-        rp._read_and_clip(aoi_bounds=xarr_1_aoi)
-
-        print(rp._xds)
+        # call and test read and clip method asserting post clip expectation
+        rp._read_and_clip(aoi_bounds=xarr_1_aoi[0])
+        assert np.array_equal(
+            rp._xds.to_numpy(), xarr_1_aoi[1]["post_clip"], equal_nan=True
+        )
