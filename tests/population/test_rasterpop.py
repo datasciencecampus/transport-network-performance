@@ -15,6 +15,7 @@ import rioxarray  # noqa: F401 - import required for xarray but not needed here
 
 from typing import Type, Tuple
 from shapely.geometry import Polygon
+from numpy.dtypes import Float64DType
 
 from transport_performance.population.rasterpop import RasterPop
 
@@ -144,8 +145,14 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
     exp_post_clip[-1, -1] = np.nan
     exp_post_clip = np.expand_dims(exp_post_clip, axis=0)
 
+    # expected results after converting to geopandas
+    # flatten to get 1-d array, and remove nans as per _to_geopandas()
+    exp_gpd = exp_post_clip.flatten()
+    exp_gpd = exp_gpd[~np.isnan(exp_gpd)]
+
     # updated the dictionary for returning
     expected["post_clip"] = exp_post_clip
+    expected["geopandas"] = exp_gpd
 
     return Polygon(coords), expected
 
@@ -237,4 +244,7 @@ class TestRasterPop:
 
         # call and test _to_geopandas and assert to geopandas expectation
         rp._to_geopandas()
-        print(rp.pop_gdf.head())
+        assert np.array_equal(
+            rp.pop_gdf.population, xarr_1_aoi[1]["geopandas"]
+        )
+        assert isinstance(rp.pop_gdf.population.dtype, Float64DType)
