@@ -11,6 +11,7 @@ import re
 
 from transport_performance.gtfs.validation import (
     GtfsInstance,
+    _get_intermediate_dates,
     _create_map_title_text,
 )
 
@@ -217,6 +218,58 @@ class TestGtfsInstance(object):
             "Units Found are in miles."
         ), f"Unexpected text output: {txt}"
 
+    def test__get_intermediate_dates(self):
+        """Check function can handle valid and invalid arguments."""
+        # invalid arguments
+        with pytest.raises(
+            TypeError,
+            match="'start' expected type pd.Timestamp."
+            " Recieved type <class 'str'>",
+        ):
+            _get_intermediate_dates(
+                start="2023-05-02", end=pd.Timestamp("2023-05-08")
+            )
+        with pytest.raises(
+            TypeError,
+            match="'end' expected type pd.Timestamp."
+            " Recieved type <class 'str'>",
+        ):
+            _get_intermediate_dates(
+                start=pd.Timestamp("2023-05-02"), end="2023-05-08"
+            )
+
+        # valid arguments
+        dates = _get_intermediate_dates(
+            pd.Timestamp("2023-05-01"), pd.Timestamp("2023-05-08")
+        )
+        assert dates == [
+            pd.Timestamp("2023-05-01"),
+            pd.Timestamp("2023-05-02"),
+            pd.Timestamp("2023-05-03"),
+            pd.Timestamp("2023-05-04"),
+            pd.Timestamp("2023-05-05"),
+            pd.Timestamp("2023-05-06"),
+            pd.Timestamp("2023-05-07"),
+            pd.Timestamp("2023-05-08"),
+        ]
+
+    def test__order_dataframe_by_day_defence(self, gtfs_fixture):
+        """Test __order_dataframe_by_day defences."""
+        with pytest.raises(
+            TypeError,
+            match="'df' expected type pd.DataFrame, got <class 'str'>",
+        ):
+            (gtfs_fixture._order_dataframe_by_day(df="test"))
+        with pytest.raises(
+            TypeError,
+            match="'day_column_name' expected type str, got <class 'int'>",
+        ):
+            (
+                gtfs_fixture._order_dataframe_by_day(
+                    df=pd.DataFrame(), day_column_name=5
+                )
+            )
+
     def test_get_route_modes(self, gtfs_fixture, mocker):
         """Assertions about the table returned by get_route_modes()."""
         patch_scrape_lookup = mocker.patch(
@@ -242,13 +295,49 @@ class TestGtfsInstance(object):
             found_cols == exp_cols
         ).all(), f"Expected columns are different. Found: {found_cols}"
 
-    def test_summarise_weekday_defence(self, gtfs_fixture):
-        """Defensive checks for summarise_weekday()."""
+    def test__preprocess_trips_and_routes(self, gtfs_fixture):
+        """Check the outputs of _pre_process_trips_and_route() (test data)."""
+        returned_df = gtfs_fixture._preprocess_trips_and_routes()
+        assert isinstance(returned_df, pd.core.frame.DataFrame), (
+            "Expected DF for _preprocess_trips_and_routes() return,"
+            f"found {type(returned_df)}"
+        )
+        expected_columns = pd.Index(
+            [
+                "route_id",
+                "service_id",
+                "trip_id",
+                "trip_headsign",
+                "block_id",
+                "shape_id",
+                "wheelchair_accessible",
+                "trip_direction_name",
+                "vehicle_journey_code",
+                "day",
+                "date",
+                "agency_id",
+                "route_short_name",
+                "route_long_name",
+                "route_type",
+            ]
+        )
+        assert (returned_df.columns == expected_columns).all(), (
+            f"Columns not as expected. Expected {expected_columns},",
+            f"Found {returned_df.columns}",
+        )
+        expected_shape = (281627, 15)
+        assert returned_df.shape == expected_shape, (
+            f"Columns not as expected. Expected {expected_shape},",
+            f"Found {returned_df.shape}",
+        )
+
+    def test_summarise_trips_defence(self, gtfs_fixture):
+        """Defensive checks for summarise_trips()."""
         with pytest.raises(
             TypeError,
             match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
         ):
-            gtfs_fixture.summarise_weekday(summ_ops=[np.mean, "np.mean"])
+            gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
         # case where is function but not exported from numpy
 
         def dummy_func():
@@ -262,18 +351,77 @@ class TestGtfsInstance(object):
                 " <class 'function'> : dummy_func"
             ),
         ):
-            gtfs_fixture.summarise_weekday(summ_ops=[np.min, dummy_func])
+            gtfs_fixture.summarise_trips(summ_ops=[np.min, dummy_func])
         # case where a single non-numpy func is being passed
         with pytest.raises(
             NotImplementedError,
             match="`summ_ops` expects numpy functions only.",
         ):
-            gtfs_fixture.summarise_weekday(summ_ops=dummy_func)
+            gtfs_fixture.summarise_trips(summ_ops=dummy_func)
         with pytest.raises(
             TypeError,
             match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
         ):
-            gtfs_fixture.summarise_weekday(summ_ops=38)
+            gtfs_fixture.summarise_trips(summ_ops=38)
+        # cases where return_summary are not of type boolean
+        with pytest.raises(
+            TypeError,
+            match="'return_summary' must be of type boolean."
+            " Found <class 'int'> : 5",
+        ):
+            gtfs_fixture.summarise_trips(return_summary=5)
+        with pytest.raises(
+            TypeError,
+            match="'return_summary' must be of type boolean."
+            " Found <class 'str'> : true",
+        ):
+            gtfs_fixture.summarise_trips(return_summary="true")
+
+    def test_summarise_routes_defence(self, gtfs_fixture):
+        """Defensive checks for summarise_routes()."""
+        with pytest.raises(
+            TypeError,
+            match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
+        ):
+            gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
+        # case where is function but not exported from numpy
+
+        def dummy_func():
+            """Test case func."""
+            return None
+
+        with pytest.raises(
+            TypeError,
+            match=(
+                "Each item in `summ_ops` must be a numpy function. Found"
+                " <class 'function'> : dummy_func"
+            ),
+        ):
+            gtfs_fixture.summarise_routes(summ_ops=[np.min, dummy_func])
+        # case where a single non-numpy func is being passed
+        with pytest.raises(
+            NotImplementedError,
+            match="`summ_ops` expects numpy functions only.",
+        ):
+            gtfs_fixture.summarise_routes(summ_ops=dummy_func)
+        with pytest.raises(
+            TypeError,
+            match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
+        ):
+            gtfs_fixture.summarise_routes(summ_ops=38)
+        # cases where return_summary are not of type boolean
+        with pytest.raises(
+            TypeError,
+            match="'return_summary' must be of type boolean."
+            " Found <class 'int'> : 5",
+        ):
+            gtfs_fixture.summarise_routes(return_summary=5)
+        with pytest.raises(
+            TypeError,
+            match="'return_summary' must be of type boolean."
+            " Found <class 'str'> : true",
+        ):
+            gtfs_fixture.summarise_routes(return_summary="true")
 
     @patch("builtins.print")
     def test_clean_feed_defence(self, mock_print, gtfs_fixture):
@@ -286,34 +434,138 @@ class TestGtfsInstance(object):
             call("KeyError. Feed was not cleaned.")
         ], f"Expected print statement about KeyError. Found: {fun_out}."
 
-    @pytest.mark.runexpensive
-    def test_summarise_weekday_on_pass(self, gtfs_fixture):
-        """Assertions about the table returned by summarise_weekday."""
-        gtfs_fixture.summarise_weekday()
+    def test_summarise_trips_on_pass(self, gtfs_fixture):
+        """Assertions about the outputs from summarise_trips()."""
+        gtfs_fixture.summarise_trips()
+        # tests the daily_routes_summary return schema
         assert isinstance(
-            gtfs_fixture.weekday_stats, pd.core.frame.DataFrame
-        ), f"Expected DF, found {type(gtfs_fixture.weekday_stats)}"
-        found = gtfs_fixture.weekday_stats.columns
-        exp_cols = pd.MultiIndex.from_tuples(
+            gtfs_fixture.daily_trip_summary, pd.core.frame.DataFrame
+        ), (
+            "Expected DF for daily_summary,"
+            f"found {type(gtfs_fixture.daily_trip_summary)}"
+        )
+
+        found_ds = gtfs_fixture.daily_trip_summary.columns
+        exp_cols_ds = pd.MultiIndex.from_tuples(
             [
-                ("num_routes", "amin"),
-                ("num_routes", "amax"),
-                ("num_routes", "mean"),
-                ("num_routes", "median"),
-                ("num_trips", "amin"),
-                ("num_trips", "amax"),
-                ("num_trips", "mean"),
-                ("num_trips", "median"),
-                ("service_distance", "amin"),
-                ("service_distance", "amax"),
-                ("service_distance", "mean"),
-                ("service_distance", "median"),
-                ("service_duration", "amin"),
-                ("service_duration", "amax"),
-                ("service_duration", "mean"),
-                ("service_duration", "median"),
+                ("day", ""),
+                ("route_type", ""),
+                ("trip_count", "amax"),
+                ("trip_count", "amin"),
+                ("trip_count", "mean"),
+                ("trip_count", "median"),
             ]
         )
+
         assert (
-            found == exp_cols
-        ).all(), f"Columns were not as expected. Found {found}"
+            found_ds == exp_cols_ds
+        ).all(), f"Columns were not as expected. Found {found_ds}"
+
+        # tests the self.dated_route_counts return schema
+        assert isinstance(
+            gtfs_fixture.dated_trip_counts, pd.core.frame.DataFrame
+        ), (
+            "Expected DF for dated_route_counts,"
+            f"found {type(gtfs_fixture.dated_trip_counts)}"
+        )
+
+        found_drc = gtfs_fixture.dated_trip_counts.columns
+        exp_cols_drc = pd.Index(["date", "route_type", "trip_count", "day"])
+
+        assert (
+            found_drc == exp_cols_drc
+        ).all(), f"Columns were not as expected. Found {found_drc}"
+
+        # tests the output of the daily_route_summary table
+        # using tests/data/newport-20230613_gtfs.zip
+        expected_df = {
+            ("day", ""): {8: "friday", 9: "friday"},
+            ("route_type", ""): {8: 3, 9: 200},
+            ("trip_count", "amax"): {8: 1211, 9: 90},
+            ("trip_count", "amin"): {8: 1211, 9: 88},
+            ("trip_count", "mean"): {8: 1211.0, 9: 88.0},
+            ("trip_count", "median"): {8: 1211.0, 9: 88.0},
+        }
+
+        found_df = gtfs_fixture.daily_trip_summary[
+            gtfs_fixture.daily_trip_summary["day"] == "friday"
+        ].to_dict()
+        assert (
+            found_df == expected_df
+        ), f"Daily summary not as expected. Found {found_df}"
+
+        # test that the dated_trip_counts can be returned
+        expected_size = (542, 4)
+        found_size = gtfs_fixture.summarise_trips(return_summary=False).shape
+        assert expected_size == found_size, (
+            "Size of date_route_counts not as expected. "
+            "Expected {expected_size}"
+        )
+
+    def test_summarise_routes_on_pass(self, gtfs_fixture):
+        """Assertions about the outputs from summarise_routes()."""
+        gtfs_fixture.summarise_routes()
+        # tests the daily_routes_summary return schema
+        assert isinstance(
+            gtfs_fixture.daily_route_summary, pd.core.frame.DataFrame
+        ), (
+            "Expected DF for daily_summary,"
+            f"found {type(gtfs_fixture.daily_route_summary)}"
+        )
+
+        found_ds = gtfs_fixture.daily_route_summary.columns
+        exp_cols_ds = pd.MultiIndex.from_tuples(
+            [
+                ("day", ""),
+                ("route_count", "amax"),
+                ("route_count", "amin"),
+                ("route_count", "mean"),
+                ("route_count", "median"),
+                ("route_type", ""),
+            ]
+        )
+
+        assert (
+            found_ds == exp_cols_ds
+        ).all(), f"Columns were not as expected. Found {found_ds}"
+
+        # tests the self.dated_route_counts return schema
+        assert isinstance(
+            gtfs_fixture.dated_route_counts, pd.core.frame.DataFrame
+        ), (
+            "Expected DF for dated_route_counts,"
+            f"found {type(gtfs_fixture.dated_route_counts)}"
+        )
+
+        found_drc = gtfs_fixture.dated_route_counts.columns
+        exp_cols_drc = pd.Index(["date", "route_type", "day", "route_count"])
+
+        assert (
+            found_drc == exp_cols_drc
+        ).all(), f"Columns were not as expected. Found {found_drc}"
+
+        # tests the output of the daily_route_summary table
+        # using tests/data/newport-20230613_gtfs.zip
+        expected_df = {
+            ("day", ""): {8: "friday", 9: "friday"},
+            ("route_count", "amax"): {8: 74, 9: 10},
+            ("route_count", "amin"): {8: 74, 9: 9},
+            ("route_count", "mean"): {8: 74.0, 9: 9.0},
+            ("route_count", "median"): {8: 74.0, 9: 9.0},
+            ("route_type", ""): {8: 3, 9: 200},
+        }
+
+        found_df = gtfs_fixture.daily_route_summary[
+            gtfs_fixture.daily_route_summary["day"] == "friday"
+        ].to_dict()
+        assert (
+            found_df == expected_df
+        ), f"Daily summary not as expected. Found {found_df}"
+
+        # test that the dated_route_counts can be returned
+        expected_size = (542, 4)
+        found_size = gtfs_fixture.summarise_routes(return_summary=False).shape
+        assert expected_size == found_size, (
+            "Size of date_route_counts not as expected. "
+            "Expected {expected_size}"
+        )
