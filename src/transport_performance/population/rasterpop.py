@@ -32,8 +32,8 @@ class RasterPop:
 
     Attributes
     ----------
-    var_gdf : gpd.GeoDataFrame
-        A geopandas dataframe of raster data, with the geometry is the grid.
+    pop_gdf : gpd.GeoDataFrame
+        A geopandas dataframe of the raster data, with gridded geometry.
         This is in the same CRS as the input raster data.
     centroid_gdf
         A geopandas dataframe of grid centroids, converted to EPSG:4326 for
@@ -69,7 +69,7 @@ class RasterPop:
             self.__crs = src.crs.to_string()
 
         # set attributes to None to prevent plotting function calls
-        self.var_gdf = None
+        self.pop_gdf = None
         self._uc_gdf = None
 
     def get_pop(
@@ -113,9 +113,9 @@ class RasterPop:
 
         Returns
         -------
-        var_gdf : gpd.GeoDataFrame
-            A geopandas dataframe of raster data, with the geometry is the
-            grid. This is in the same CRS as the input raster data.
+        pop_gdf : gpd.GeoDataFrame
+            A geopandas dataframe of raster data, with gridded geometry. This
+            is in the same CRS as the input raster data.
         centroid_gdf
             A geopandas dataframe of grid centroids, converted to EPSG:4326 for
             transport analysis.
@@ -142,7 +142,7 @@ class RasterPop:
                 urban_centre_bounds, urban_centre_crs=urban_centre_crs
             )
 
-        return self.var_gdf, self.centroid_gdf
+        return self.pop_gdf, self.centroid_gdf
 
     def plot(
         self, which: str = "folium", save: str = None, **kwargs
@@ -190,7 +190,7 @@ class RasterPop:
         WHICH_VALUES = {"matplotlib", "catropy", "folium"}
 
         # defend against case where `get_pop` hasn't been called
-        if self.var_gdf is None:
+        if self.pop_gdf is None:
             raise NotImplementedError(
                 "Unable to call `plot` without calling `get_pop`."
             )
@@ -282,21 +282,21 @@ class RasterPop:
         else:
             set_type = np.float32
         # squeeze needed since shape is (1xnxm) (1 band in tiff file)
-        self.var_gdf = vectorize(self._xds.squeeze(axis=0).astype(set_type))
+        self.pop_gdf = vectorize(self._xds.squeeze(axis=0).astype(set_type))
 
         # dropna to remove nodata regions and those below threshold (if set)
-        self.var_gdf = self.var_gdf.dropna(subset=self.__var_name).reset_index(
+        self.pop_gdf = self.pop_gdf.dropna(subset=self.__var_name).reset_index(
             drop=True
         )
 
         # add an id for each cell
-        self.var_gdf["id"] = np.arange(0, len(self.var_gdf.index))
+        self.pop_gdf["id"] = np.arange(0, len(self.pop_gdf.index))
 
         # re-order columns for consistency
-        self.var_gdf = self.var_gdf[["id", self.__var_name, "geometry"]]
+        self.pop_gdf = self.pop_gdf[["id", self.__var_name, "geometry"]]
 
         # create centroid geodataframe using only necessary columns
-        self.centroid_gdf = self.var_gdf[["id", "geometry"]].copy()
+        self.centroid_gdf = self.pop_gdf[["id", "geometry"]].copy()
         self.centroid_gdf["centroid"] = self.centroid_gdf.geometry.centroid
         self.centroid_gdf.set_geometry("centroid", inplace=True)
         self.centroid_gdf.drop("geometry", axis=1, inplace=True)
@@ -347,16 +347,16 @@ class RasterPop:
 
         # spatial join when cell is within urban centre, filling to false
         # drop index_right and boundary columns as they aren't needed
-        self.var_gdf = self.var_gdf.sjoin(
+        self.pop_gdf = self.pop_gdf.sjoin(
             self._uc_gdf, how="left", predicate="within"
         ).drop(["index_right", "boundary"], axis=1)
-        self.var_gdf[self.__UC_COL_NAME] = self.var_gdf[
+        self.pop_gdf[self.__UC_COL_NAME] = self.pop_gdf[
             self.__UC_COL_NAME
         ].fillna(False)
 
         # add within_urban_centre column to centroid data
         self.centroid_gdf = self.centroid_gdf.merge(
-            self.var_gdf[["id", self.__UC_COL_NAME]], on="id"
+            self.pop_gdf[["id", self.__UC_COL_NAME]], on="id"
         )
 
     def _plot_folium(
@@ -427,7 +427,7 @@ class RasterPop:
         ).add_to(m)
 
         # add the variable data to the map
-        self.var_gdf.explore(
+        self.pop_gdf.explore(
             self.__var_name, cmap=cmap, name=self.__var_name.capitalize(), m=m
         )
 
