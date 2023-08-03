@@ -1,4 +1,4 @@
-"""Classes to handle population data."""
+"""Classes to handle raster population data."""
 
 import geopandas as gpd
 import os
@@ -699,16 +699,3 @@ class RasterPop:
             ax = None
 
         return ax
-
-
-class VectorPop:
-    """Prepare vector population inputs for trasport analysis.
-
-    This class is suited to working with vectored population data (e.g.
-    population data defined within administitive boundaries).
-
-    TODO: add methods and updated documentation.
-    """
-
-    def __init__(self) -> None:
-        raise NotImplementedError("This class has not yet been implemented.")
