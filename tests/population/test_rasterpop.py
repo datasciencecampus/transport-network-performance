@@ -78,10 +78,10 @@ def xarr_1() -> xr.DataArray:
     """Create a dummay xarray.DataFrame for RasterPop methods testing."""
     array_1 = np.array(
         [
-            [1.1, 2.2, 3.3, 4.4],
-            [5.5, 6.6, 7.7, 8.8],
-            [9.9, 10.1, 11.2, 12.3],
-            [13.4, 14.5, 15.6, 16.7],
+            [1.25, 2.0, 3.75, 4.0],
+            [5.5, 6.25, 7.5, 8.75],
+            [9.25, 10.5, 11.0, 12.0],
+            [13.75, 14.75, 15.25, 16.5],
         ]
     )
     transform_1 = rio.Affine(100, 0, -225800, 0, -100, 6036800)
@@ -193,6 +193,8 @@ class TestRasterPop:
 
         # instantiate RasterPop and read + clip to AOI
         rp = RasterPop(xarr_1_fpath)
-        rac = rp._read_and_clip(aoi_bounds=xarr_1_aoi)
 
-        print(rac)
+        # call and test read and clip method
+        rp._read_and_clip(aoi_bounds=xarr_1_aoi)
+
+        print(rp._xds)
