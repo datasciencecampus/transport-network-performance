@@ -339,6 +339,11 @@ class RasterPop:
         self._uc_gdf.loc[:, self.__UC_COL_NAME] = True
         self._uc_gdf.loc[:, "boundary"] = "Urban Centre"
 
+        # if the provided crs does not match the raster crs, the convert the
+        # crs before the sjoin
+        if self._uc_gdf.crs != self.__crs:
+            self._uc_gdf = self._uc_gdf.to_crs(self.__crs)
+
         # spatial join when cell is within urban centre, filling to false
         # drop index_right and boundary columns as they aren't needed
         self.pop_gdf = self.pop_gdf.sjoin(
