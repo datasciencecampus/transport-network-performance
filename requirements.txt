@@ -13,4 +13,5 @@ cartopy
 folium
 geocube
 mapclassify
+pytest-lazy-fixture
 -e .
