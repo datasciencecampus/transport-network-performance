@@ -17,6 +17,7 @@ from typing import Type, Tuple
 from shapely.geometry import Polygon
 from numpy.dtypes import Float64DType
 from pytest_lazyfixture import lazy_fixture
+from _pytest.python_api import RaisesContext
 
 from transport_performance.population.rasterpop import RasterPop
 
@@ -379,19 +380,56 @@ class TestRasterPop:
         # assert the population values are as expected
         assert np.array_equal(pop_gdf[var_name], expected[1][key])
 
-    # @pytest.mark.parametrize(
-    #     "fpath, aoi_bounds, urban_centre_bounds, expected",
-    #     [
-    #         ("test", None, None, pytest.raises(FileNotFoundError)),
-    #     ],
-    # )
-    # def test_rasterpop_raises(
-    #     self,
-    #     fpath,
-    #     aoi_bounds,
-    #     urban_centre_bounds,
-    #     expected,
-    # ) -> None:
-    #     # with expected:
-    #     rp = RasterPop(fpath)
-    #     rp.get_pop()
+    @pytest.mark.parametrize(
+        "fpath, aoi_bounds, urban_centre_bounds, expected",
+        [
+            ("test.tif", None, None, pytest.raises(FileNotFoundError)),
+            (
+                lazy_fixture("xarr_1_fpath"),
+                ("test"),
+                None,
+                pytest.raises(TypeError),
+            ),
+            (
+                lazy_fixture("xarr_1_fpath"),
+                lazy_fixture("xarr_1_aoi"),
+                "test",
+                pytest.raises(TypeError),
+            ),
+        ],
+    )
+    def test_rasterpop_raises(
+        self,
+        fpath: str,
+        aoi_bounds: Tuple[str],
+        urban_centre_bounds: str,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Test raises statements in RasterPop.
+
+        Parameters
+        ----------
+        fpath : str
+            Filepath to dummy data.
+        aoi_bounds : Tuple[str]
+            Area of interest bounds, as a tuple where the 0th index is used (
+            for consistency with the `xarr1_aoi` fixture).
+        urban_centre_bounds : str
+            Urban centre bounds test string.
+        expected : Type[RaisesContext]
+            Expected raise result.
+
+        Note
+        ----
+        The use of strings to compare with expected Polygon types is not
+        completely thourough, but is a basic unit test to ensure the raises
+        is thrown when there is a type mismatch.
+
+        """
+        # trigger the raise and ensure it matches the expected type.
+        with expected:
+            rp = RasterPop(fpath)
+            rp.get_pop(
+                aoi_bounds=aoi_bounds[0],
+                urban_centre_bounds=urban_centre_bounds,
+            )
