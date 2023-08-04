@@ -110,6 +110,7 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
         A dictionary of expected results when applying the area of interest
         polygon. Keys include:
         - "post_clip": state of values after reading and clipping xarr_1.
+        - "geopandas": expected values of population column in geopandas df.
 
     """
     coords = (
@@ -158,10 +159,22 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
 
 
 @pytest.fixture
-def xarr_1_uc() -> Type[Polygon]:
+def xarr_1_uc() -> Tuple[Type[Polygon], dict]:
     """Create urban centre polygon for xarr1.
 
-    This is a square pattern encompassing the 4 central grids of xarr1.
+    This is a rectangular pattern encompassing the 2 right hand central grids
+    of xarr1.
+
+    Returns
+    -------
+    Type[Polygon]
+        A polygon representing a dummy urban centre for xarr_1
+    dict
+        A dictionary of expected results when applying the area of interest
+        polygon. Keys include:
+        - "within_uc": expected statuses (booleans) showing which grids are
+        within the dummy urban centre.
+
     """
     coords = (
         (-225600, 6036700),
@@ -171,7 +184,31 @@ def xarr_1_uc() -> Type[Polygon]:
         (-225600, 6036700),
     )
 
-    return Polygon(coords)
+    # build a dictionary to store expected results (to use during asserts)
+    expected = {}
+
+    # build an array of booleans indicating which cells are within the UC
+    exp_within_uc = np.array(
+        [
+            False,
+            False,
+            False,
+            False,
+            True,
+            False,
+            False,
+            False,
+            True,
+            False,
+            False,
+            False,
+        ]
+    )
+
+    # update expected dictionary for returning
+    expected["within_uc"] = exp_within_uc
+
+    return Polygon(coords), expected
 
 
 @pytest.fixture
@@ -209,6 +246,7 @@ class TestRasterPop:
         self,
         xarr_1_fpath: str,
         xarr_1_aoi: tuple,
+        xarr_1_uc: tuple,
     ) -> None:
         """Test all the internal methods of the RasterPop call.
 
@@ -226,6 +264,12 @@ class TestRasterPop:
             0) and a dictionary of expected method outputs after applying the
             area of interest polygon (index 1). For more information on the
             valid keys of this dictionary see the docstring of the `xarr_1_aoi`
+            fixture.
+        xarr_1_uc : tuple
+            A tuple containing the urban centre polygon for xarr_1 (index
+            0) and a dictionary of expected method outputs after applying the
+            urban centre polygon (index 1). For more information on the valid
+            keys of this dictionary see the docstring of the `xarr_1_uc`
             fixture.
 
         """
@@ -248,3 +292,14 @@ class TestRasterPop:
             rp.pop_gdf.population, xarr_1_aoi[1]["geopandas"]
         )
         assert isinstance(rp.pop_gdf.population.dtype, Float64DType)
+
+        # call and test _within_urban_centre
+        rp._within_urban_centre(xarr_1_uc[0])
+        assert "within_urban_centre" in rp.pop_gdf.columns
+        assert "within_urban_centre" in rp.centroid_gdf.columns
+        assert np.array_equal(
+            rp.pop_gdf.within_urban_centre, xarr_1_uc[1]["within_uc"]
+        )
+        assert np.array_equal(
+            rp.centroid_gdf.within_urban_centre, xarr_1_uc[1]["within_uc"]
+        )
