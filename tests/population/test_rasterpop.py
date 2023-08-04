@@ -292,6 +292,7 @@ class TestRasterPop:
             rp.pop_gdf.population, xarr_1_aoi[1]["geopandas"]
         )
         assert isinstance(rp.pop_gdf.population.dtype, Float64DType)
+        assert rp.centroid_gdf.crs == "EPSG:4326"
 
         # call and test _within_urban_centre
         rp._within_urban_centre(xarr_1_uc[0])
