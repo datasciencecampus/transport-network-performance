@@ -18,7 +18,7 @@ import rioxarray  # noqa: F401 - import required for xarray but not needed here
 import geopandas as gpd
 
 from typing import Type, Tuple
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, Point
 from numpy.dtypes import Float64DType
 from pytest_lazyfixture import lazy_fixture
 from _pytest.python_api import RaisesContext
@@ -169,11 +169,36 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
     # expected result are setting a threshold of THRESHOLD_TEST
     exp_threshold = exp_gpd[exp_gpd >= THRESHOLD_TEST]
 
+    # test coords of one cell. light unit test since `geocube` unit tests the
+    # `vectorize` function here: https://github.com/corteva/geocube/blob/master
+    # /test/integration/test_vector.py#L10
+    test_grid_idx = 1
+    test_grid_coords = (
+        (-225600, 6036800),
+        (-225600, 6036700),
+        (-225500, 6036700),
+        (-225500, 6036800),
+        (-225600, 6036800),
+    )
+    test_grid_polygon = Polygon(test_grid_coords)
+    exp_test_grid = {"idx": test_grid_idx, "polygon": test_grid_polygon}
+
+    # test a single centroid. light unit test since `geopandas` unit tests the
+    # `centroid` function here: https://github.com/geopandas/geopandas/blob/b4b
+    # 10313ab57bf2c55592a28fb99687c9a538fc2/geopandas/tests/test_geom_methods.p
+    # y#L778
+    test_centoid_idx = 7
+    test_centoid_coord = (-3.0300622961483463, 51.566809602591896)
+    test_centroid_point = Point(test_centoid_coord)
+    exp_test_centroid = {"idx": test_centoid_idx, "point": test_centroid_point}
+
     # updated the dictionary for returning
     expected["post_clip"] = exp_post_clip
     expected["geopandas"] = exp_gpd
     expected["round"] = exp_round
     expected["threshold"] = exp_threshold
+    expected["grid"] = exp_test_grid
+    expected["centroid"] = exp_test_centroid
 
     return Polygon(coords), expected
 
@@ -356,13 +381,21 @@ class TestRasterPop:
             rp._xds.to_numpy(), xarr_1_aoi[1]["post_clip"], equal_nan=True
         )
 
-        # call and test _to_geopandas and assert to geopandas expectation
+        # call and test _to_geopandas and assert to geopandas expectations
         rp._to_geopandas()
         assert np.array_equal(
             rp.pop_gdf.population, xarr_1_aoi[1]["geopandas"]
         )
         assert isinstance(rp.pop_gdf.population.dtype, Float64DType)
+        assert (
+            rp.pop_gdf.geometry.iloc[xarr_1_aoi[1]["grid"]["idx"]]
+            == xarr_1_aoi[1]["grid"]["polygon"]
+        )
         assert rp.centroid_gdf.crs == "EPSG:4326"
+        assert (
+            rp.centroid_gdf.geometry.iloc[xarr_1_aoi[1]["centroid"]["idx"]]
+            == xarr_1_aoi[1]["centroid"]["point"]
+        )
 
         # call and test _within_urban_centre
         rp._within_urban_centre(xarr_1_uc[0])
