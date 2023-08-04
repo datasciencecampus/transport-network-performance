@@ -16,8 +16,12 @@ import rioxarray  # noqa: F401 - import required for xarray but not needed here
 from typing import Type, Tuple
 from shapely.geometry import Polygon
 from numpy.dtypes import Float64DType
+from pytest_lazyfixture import lazy_fixture
 
 from transport_performance.population.rasterpop import RasterPop
+
+# value to test thresholding (removal of populations below this value)
+THRESHOLD_TEST = 5
 
 
 def np_to_rioxarray(
@@ -151,9 +155,20 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
     exp_gpd = exp_post_clip.flatten()
     exp_gpd = exp_gpd[~np.isnan(exp_gpd)]
 
+    # extended results following rounding. Note: xarray/numpy round functions
+    # use round half to even method, so 10.5 gets rounded down to 10. Also
+    # 6 and 15 aren't repeated since geocube combines neighbouring cells with
+    # identical values into a larger polygon
+    exp_round = np.array([2, 4, 6, 8, 9, 9, 10, 11, 12, 15])
+
+    # expected result are setting a threshold of THRESHOLD_TEST
+    exp_threshold = exp_gpd[exp_gpd >= THRESHOLD_TEST]
+
     # updated the dictionary for returning
     expected["post_clip"] = exp_post_clip
     expected["geopandas"] = exp_gpd
+    expected["round"] = exp_round
+    expected["threshold"] = exp_threshold
 
     return Polygon(coords), expected
 
@@ -304,3 +319,62 @@ class TestRasterPop:
         assert np.array_equal(
             rp.centroid_gdf.within_urban_centre, xarr_1_uc[1]["within_uc"]
         )
+
+    @pytest.mark.parametrize(
+        "round, threshold, expected, key",
+        [
+            (True, None, lazy_fixture("xarr_1_aoi"), "round"),
+            (False, THRESHOLD_TEST, lazy_fixture("xarr_1_aoi"), "threshold"),
+        ],
+    )
+    def test_rasterpop(
+        self,
+        round: bool,
+        threshold: int,
+        expected: tuple,
+        key: str,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+        xarr_1_uc: tuple,
+        var_name: str = "test_var_name",
+    ) -> None:
+        """Test RasterPop expected functionalities.
+
+        Parameters
+        ----------
+        round : bool
+            Flag to set rounding pre-processing stage. Round population when
+            then flag is true.
+        threshold : int
+            Threshold to set for removing population grids below a minimum
+            level. None implies no thresholding will occur.
+        expected : tuple
+            Expected result to assert against. Defined and build inside the
+            `xarr_1_aoi` fixture.
+        key : str
+            Key to use in `xarr_1_aoi` dict output, to assert against.
+        xarr_1_fpath : str
+            Filepath to dummy data
+        xarr_1_aoi : tuple
+            Dummy area of interest. Output from `xarr_1_aoi` fixture.
+        xarr_1_uc : tuple
+            Dummy urban centre fixture. Output from `xarr_1_uc` fixture.
+        var_name : str, optional
+            Name of variable in raster file, by default "test_var_name" to
+            test this functionality of renaming the variable of interest.
+
+        """
+        # instanstiate RasterPop
+        rp = RasterPop(xarr_1_fpath)
+
+        # get the population data for the dummy aoi and uc
+        pop_gdf, _ = rp.get_pop(
+            aoi_bounds=xarr_1_aoi[0],
+            round=round,
+            threshold=threshold,
+            var_name=var_name,
+            urban_centre_bounds=xarr_1_uc[0],
+        )
+
+        # assert the population values are as expected
+        assert np.array_equal(pop_gdf[var_name], expected[1][key])
