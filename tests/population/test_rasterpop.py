@@ -12,6 +12,7 @@ import numpy as np
 import rasterio as rio
 import xarray as xr
 import rioxarray  # noqa: F401 - import required for xarray but not needed here
+import geopandas as gpd
 
 from typing import Type, Tuple
 from shapely.geometry import Polygon
@@ -255,6 +256,56 @@ def xarr_1_fpath(xarr_1: xr.DataArray, tmp_path: str) -> str:
     return out_filepath
 
 
+@pytest.fixture
+def xarr_1_4326(
+    xarr_1_aoi: tuple, xarr_1_uc: tuple
+) -> Tuple[Polygon, Polygon]:
+    """Build AOI and urban centre polygons in EPSG:4326.
+
+    Parameters
+    ----------
+    xarr_1_aoi : tuple
+        Output from `xarr_1_aoi`. The 0th element contains the AOI polygon to
+        be converted to EPSG:4326.
+    xarr_1_uc : tuple
+        Output from `xarr_1_uc`. The 0th element contains the uc polygon to be
+        converted to EPSG:4326.
+
+    Returns
+    -------
+    Tuple[Polygon, Polygon]
+        A tuple of polygons in EPSG:4326. At the 0th index is the AOI and at
+        the 1st index is the urban centre.
+
+    Note
+    ----
+    The dummy urban centre boundary used in these unit tests is set to the
+    extremites of 2 cells (representive of real example). Conversion to
+    EPSG:4325 introduces floating point/rounding errors. This results in
+    the reconversion back to mollweide (the step being unit tested) is no
+    longer the precise extremeties. This means the grids are no longer with the
+    bounds of the re-converted urban centre geometry. Therefore, only for this
+    unit test, a buffer is applied to the urban centre before conversion (just
+    1m). This is enough to negate the floating point/rounding errors and bring
+    the grids back within the converted urban centre boundary. This step is
+    not needed for the area of interest since floating point/round errors can
+    not lead to a conflicting scenario since there is always sufficent overlap
+    into the cells.
+
+    """
+    # convert aoi to EPSG:4326
+    aoi_4326_gdf = gpd.GeoDataFrame(
+        geometry=[xarr_1_aoi[0]], crs="ESRI:54009"
+    ).to_crs("EPSG:4326")
+
+    # convert uc to EPSG:4326 - see note for more details.
+    uc_4326_gdf = gpd.GeoDataFrame(geometry=[xarr_1_uc[0]], crs="ESRI:54009")
+    uc_4326_gdf["geometry"] = uc_4326_gdf.geometry.buffer(1, join_style=2)
+    uc_4326_gdf = uc_4326_gdf.to_crs("EPSG:4326")
+
+    return aoi_4326_gdf.loc[0, "geometry"], uc_4326_gdf.loc[0, "geometry"]
+
+
 class TestRasterPop:
     """A class to test population.RasterPop methods."""
 
@@ -433,3 +484,46 @@ class TestRasterPop:
                 aoi_bounds=aoi_bounds[0],
                 urban_centre_bounds=urban_centre_bounds,
             )
+
+    def test_rasterpop_crs_conversion(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_4326: tuple,
+        xarr_1_aoi: tuple,
+        xarr_1_uc: tuple,
+    ):
+        """Test the AOI and Urban Centre CRS conversion steps.
+
+        Check population values and within urban centre categorisation
+        remains consistent dispite providing inputs in EPSG:4326.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            Filepath to dummy data
+        xarr_1_4326 : tuple
+            Area of interest and urban centre polygons in "EPSG:4326". Output
+            from the `xarr_1_4326` fixture.
+        xarr_1_aoi : tuple
+            Output from the `xarr_1_aoi` fixture. Contains expected results
+            to use for assertion (checking pop values remain consistent).
+        xarr_1_uc : tuple
+            _Output from the `xarr_1_uc` fixture. Contains expected results to
+            use for assertion (checking within urban centre bools are
+            consistent).
+
+        """
+        # instantiate RasterPop with AOI and UC in EPSG:4326
+        rp = RasterPop(xarr_1_fpath)
+        pop_gdf, _ = rp.get_pop(
+            aoi_bounds=xarr_1_4326[0],
+            aoi_crs="EPSG:4326",
+            urban_centre_bounds=xarr_1_4326[1],
+            urban_centre_crs="EPSG:4326",
+        )
+
+        # check results remain consistent
+        assert np.array_equal(pop_gdf.population, xarr_1_aoi[1]["geopandas"])
+        assert np.array_equal(
+            pop_gdf.within_urban_centre, xarr_1_uc[1]["within_uc"]
+        )
