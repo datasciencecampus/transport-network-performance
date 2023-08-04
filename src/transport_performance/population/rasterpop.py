@@ -58,8 +58,6 @@ class RasterPop:
         # defend against cases where input is not a file and does not exist
         if not os.path.isfile(filepath):
             raise FileNotFoundError(f"{filepath} is not a file.")
-        if not os.path.exists(filepath):
-            raise FileNotFoundError(f"Unable to find {filepath}.")
 
         self.__filepath = filepath
 

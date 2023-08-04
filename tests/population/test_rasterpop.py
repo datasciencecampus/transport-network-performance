@@ -378,3 +378,20 @@ class TestRasterPop:
 
         # assert the population values are as expected
         assert np.array_equal(pop_gdf[var_name], expected[1][key])
+
+    # @pytest.mark.parametrize(
+    #     "fpath, aoi_bounds, urban_centre_bounds, expected",
+    #     [
+    #         ("test", None, None, pytest.raises(FileNotFoundError)),
+    #     ],
+    # )
+    # def test_rasterpop_raises(
+    #     self,
+    #     fpath,
+    #     aoi_bounds,
+    #     urban_centre_bounds,
+    #     expected,
+    # ) -> None:
+    #     # with expected:
+    #     rp = RasterPop(fpath)
+    #     rp.get_pop()
