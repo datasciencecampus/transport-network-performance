@@ -4,6 +4,9 @@ Fixtures used in this file geographically represent a small area over ONS site
 in Newport. The data vales do not represent any real or meaningfull measurments
 , they are purely for use as a unit test and mimic input data used in this repo
 .
+
+Note: this suite of tests does not cover plotting methods. TODO add plotting
+unit tests. See issue #43.
 """
 
 import os
