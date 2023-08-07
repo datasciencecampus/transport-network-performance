@@ -102,7 +102,7 @@ def xarr_1() -> xr.DataArray:
 
 @pytest.fixture
 def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
-    """Create aoi polygon for xarr1.
+    """Create dummy aoi polygon for xarr1.
 
     This is a cross shape pattern, that excludes the 4 corners of the xarr1.
 
@@ -120,6 +120,10 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
         polygon. Keys include:
         - "post_clip": state of values after reading and clipping xarr_1.
         - "geopandas": expected values of population column in geopandas df.
+        - "round": expected values following rounding
+        - "threshold": expected values following thresholding
+        - "grid": expected grid geometry for test cell
+        - "centroid": expected centroid coordinate for test cell.
 
     """
     coords = (
@@ -155,7 +159,7 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
     exp_post_clip[-1, -1] = np.nan
     exp_post_clip = np.expand_dims(exp_post_clip, axis=0)
 
-    # expected results after converting to geopandas
+    # expected results after converting to geopandas dataframe
     # flatten to get 1-d array, and remove nans as per _to_geopandas()
     exp_gpd = exp_post_clip.flatten()
     exp_gpd = exp_gpd[~np.isnan(exp_gpd)]
@@ -205,7 +209,7 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
 
 @pytest.fixture
 def xarr_1_uc() -> Tuple[Type[Polygon], dict]:
-    """Create urban centre polygon for xarr1.
+    """Create dummy urban centre polygon for xarr1.
 
     This is a rectangular pattern encompassing the 2 right hand central grids
     of xarr1.
@@ -293,11 +297,9 @@ def xarr_1_4326(
     Parameters
     ----------
     xarr_1_aoi : tuple
-        Output from `xarr_1_aoi`. The 0th element contains the AOI polygon to
-        be converted to EPSG:4326.
+        Output from `xarr_1_aoi`.
     xarr_1_uc : tuple
-        Output from `xarr_1_uc`. The 0th element contains the uc polygon to be
-        converted to EPSG:4326.
+        Output from `xarr_1_uc`.
 
     Returns
     -------
@@ -355,24 +357,21 @@ class TestRasterPop:
             Filepath to dummy data GeoTIFF file. Output from `xarr_1_fpath`
             fixture.
         xarr_1_aoi : tuple
-            A tuple containing the area of interest polygon for xarr_1 (index
-            0) and a dictionary of expected method outputs after applying the
-            area of interest polygon (index 1). For more information on the
-            valid keys of this dictionary see the docstring of the `xarr_1_aoi`
-            fixture.
+            A tuple containing the area of interest polygon for xarr_1 and a
+            dictionary of expected method outputs after applying the area of
+            interest polygon. For more information on the valid keys of this
+            dictionary see the docstring of the `xarr_1_aoi` fixture.
         xarr_1_uc : tuple
-            A tuple containing the urban centre polygon for xarr_1 (index
-            0) and a dictionary of expected method outputs after applying the
-            urban centre polygon (index 1). For more information on the valid
-            keys of this dictionary see the docstring of the `xarr_1_uc`
-            fixture.
+            A tuple containing the urban centre polygon for xarr_1 and a
+            dictionary of expected method outputs after applying the urban
+            centre polygon. For more information on the valid keys of this
+            dictionary see the docstring of the `xarr_1_uc` fixture.
 
         """
         # print fpath where input data resides in tmp folder
         # useful when using -rP flag in pytest to see directory
         print(f"Temp file path for tif input: {xarr_1_fpath}")
 
-        # instantiate RasterPop and read + clip to AOI
         rp = RasterPop(xarr_1_fpath)
 
         # call and test read and clip method asserting post clip expectation
@@ -426,7 +425,7 @@ class TestRasterPop:
         xarr_1_uc: tuple,
         var_name: str = "test_var_name",
     ) -> None:
-        """Test RasterPop expected functionalities.
+        """Test RasterPop core functionalities.
 
         Parameters
         ----------
@@ -452,7 +451,6 @@ class TestRasterPop:
             test this functionality of renaming the variable of interest.
 
         """
-        # instanstiate RasterPop
         rp = RasterPop(xarr_1_fpath)
 
         # get the population data for the dummy aoi and uc
