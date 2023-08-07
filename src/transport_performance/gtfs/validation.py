@@ -408,7 +408,9 @@ class GtfsInstance:
 
         if isinstance(summ_ops, list):
             for i in summ_ops:
-                if inspect.isfunction(i):
+                # updated for numpy >= 1.25.0, this check rules out cases
+                # that are not functions
+                if inspect.isfunction(i) or type(i).__module__ == "numpy":
                     if not _check_namespace_export(pkg=np, func=i):
                         raise TypeError(
                             "Each item in `summ_ops` must be a numpy function."
