@@ -14,4 +14,5 @@ folium
 geocube
 mapclassify
 pytest-lazy-fixture
+seaborn
 -e .
