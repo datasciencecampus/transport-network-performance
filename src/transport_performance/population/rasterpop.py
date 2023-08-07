@@ -1,4 +1,4 @@
-"""Classes to handle raster population data."""
+"""Class to handle raster population data."""
 
 import geopandas as gpd
 import os
@@ -22,7 +22,7 @@ class RasterPop:
     """Prepare raster population inputs for trasport analysis.
 
     This class is suited to working with rastered population data (e.g.
-    gridded population data).
+    gridded population estimates).
 
     Parameters
     ----------
@@ -32,8 +32,8 @@ class RasterPop:
     Attributes
     ----------
     pop_gdf : gpd.GeoDataFrame
-        A geopandas dataframe of the raster data, with gridded geometry.
-        This is in the same CRS as the input raster data.
+        A geopandas dataframe of the input data, with gridded geometry. This is
+        in the same CRS as the input raster data.
     centroid_gdf
         A geopandas dataframe of grid centroids, converted to EPSG:4326 for
         transport analysis.
@@ -86,10 +86,11 @@ class RasterPop:
         aoi_bounds : Type[Polygon]
             A shapely polygon defining the boundary of the area of interest.
             Assumed to be in the same CRS as the rastered population data. If
-            it is different, set `aoi_crs` to the CRS of the boundary.
+            it is different, set `aoi_crs` to the CRS of this boundary.
         aoi_crs : str, optional
             CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
-            which means it is assumed to have the same CRS as `aoi_bounds`.
+            which means it is assumed to have the same CRS as the population
+            data.
         round : bool, optional
             Round population estimates to the nearest whole integer.
         threshold : int, optional
@@ -97,10 +98,9 @@ class RasterPop:
             threshold will be set to nan, by default None which means no
             thresholding will occur.
         var_name : str, optional
-            The variable name corresponding to the data's measurement, by
-            default "population"
+            The variable name, by default "population"
         urban_centre_bounds : Type[Polygon], optional
-            Polygon defining urban centre bounday, by default None meaning
+            Polygon defining an urban centre bounday, by default None meaning
             information concerning whether the grid resides within the urban
             centre will not be added.
         urban_centre_crs : str, optional
@@ -111,8 +111,8 @@ class RasterPop:
         Returns
         -------
         pop_gdf : gpd.GeoDataFrame
-            A geopandas dataframe of raster data, with gridded geometry. This
-            is in the same CRS as the input raster data.
+            A geopandas dataframe of the input data, with gridded geometry.
+            This is in the same CRS as the input raster data.
         centroid_gdf
             A geopandas dataframe of grid centroids, converted to EPSG:4326 for
             transport analysis.
@@ -143,7 +143,7 @@ class RasterPop:
     def plot(
         self, which: str = "folium", save: str = None, **kwargs
     ) -> Union[folium.Map, Type[GeoAxes], plt.Axes, None]:
-        """Plot data.
+        """Plot population data.
 
         Parameters
         ----------
@@ -161,7 +161,7 @@ class RasterPop:
         -------
         Union[folium.Map, Type[GeoAxes], plt.Axes, None]
             A folium map is returned when the `folium` backend is used. A
-            matplotlib Axes object is returned when `matplotlib` backend is
+            matplotlib Axes object is returned when the `matplotlib` backend is
             used. A matplotlib/cartopy GeoAxes object is return when the
             `cartopy` backend is used. None will be returned when saving to
             file.
@@ -226,8 +226,7 @@ class RasterPop:
             CRS string for `aoi_bounds` (e.g. "EPSG:4326"), by default None
             which means it is assumed to have the same CRS as `aoi_bounds`.
         var_name : str, optional
-            The variable name corresponding to the data's measurement, by
-            default "population"
+            The variable name, by default "population".
 
         """
         # defend against case where aoi_bounds is not a shapely polygon
@@ -243,13 +242,13 @@ class RasterPop:
             gdf = gdf.to_crs(self.__crs)
             aoi_bounds = gdf.loc[0, "geometry"]
 
-        # open and clip raster data - using all_touched method and from_disk
-        # for improved reading speeds.
+        # open and clip raster data - using `all_touched` method to include any
+        # cell touched and `from_disk` for improved reading speeds.
         self._xds = rioxarray.open_rasterio(
             self.__filepath, masked=True
         ).rio.clip([aoi_bounds], from_disk=True, all_touched=True)
 
-        # set the variable name
+        # set the variable name - set internal variable for reuse in class
         self._xds.name = var_name
         self.__var_name = var_name
 
@@ -263,13 +262,15 @@ class RasterPop:
 
     def _threshold_population(self, threshold: int) -> None:
         """Threshold population data."""
+        # `where()` is working differently to expectation here - it keeps
+        # values above the threshold and otherwise sets them to nan.
         self._xds = self._xds.where(self._xds >= threshold)
 
     def _to_geopandas(self, round: bool = False) -> None:
         """Convert to geopandas dataframe."""
         # vectorise to geopandas dataframe, setting data type to np.float32 -
-        # handles nan values squeeze needed since shape is (1xnxm) (1 band in
-        # tiff file)
+        # dtype is required by vecotrize function. Squeeze needed since shape
+        # is (1xnxm) (1 band in tiff file)
         self.pop_gdf = vectorize(self._xds.squeeze(axis=0).astype(np.float32))
 
         # dropna to remove nodata regions and those below threshold (if set)
@@ -283,13 +284,14 @@ class RasterPop:
                 self.__var_name
             ].astype("int")
 
-        # add an id for each cell
+        # add an id for each cell - needed for r5py
         self.pop_gdf["id"] = np.arange(0, len(self.pop_gdf.index))
 
         # re-order columns for consistency
         self.pop_gdf = self.pop_gdf[["id", self.__var_name, "geometry"]]
 
-        # create centroid geodataframe using only necessary columns
+        # create centroid geodataframe using only necessary columns - save on
+        # duplicated data, can join gdfs on id if ever needed.
         self.centroid_gdf = self.pop_gdf[["id", "geometry"]].copy()
         self.centroid_gdf["centroid"] = self.centroid_gdf.geometry.centroid
         self.centroid_gdf.set_geometry("centroid", inplace=True)
@@ -320,18 +322,21 @@ class RasterPop:
             When `urban_centre_bounds` is not a shapely Polygon.
 
         """
-        # defend against case where aoi_bounds is not a shapely polygon
+        # defend against case where urban_centre_bounds is not a polygon
         if not isinstance(urban_centre_bounds, Polygon):
             raise TypeError(
                 f"Expected type {Polygon.__name__} for `urban_centre_bounds`, "
                 f"got {type(urban_centre_bounds).__name__}."
             )
 
-        # match the crs is one isn't provided
+        # match the crs if is one isn't provided - default assumption if this
+        # arg is not set, and a CRS is needed when building the gdf below
         if urban_centre_crs is None:
             urban_centre_crs = self.__crs
 
-        # build urban centre dataframe - set to true for sjoin
+        # build urban centre dataframe - set within column to true for sjoin
+        # such that nan values post join imply no within urban centre. Add an a
+        # column for the boundary name - only useful for plotting.
         self.__UC_COL_NAME = "within_urban_centre"
         self._uc_gdf = gpd.GeoDataFrame(
             geometry=[urban_centre_bounds], crs=urban_centre_crs
@@ -339,13 +344,13 @@ class RasterPop:
         self._uc_gdf.loc[:, self.__UC_COL_NAME] = True
         self._uc_gdf.loc[:, "boundary"] = "Urban Centre"
 
-        # if the provided crs does not match the raster crs, the convert the
+        # if the provided crs does not match the raster crs, then convert the
         # crs before the sjoin
         if self._uc_gdf.crs != self.__crs:
             self._uc_gdf = self._uc_gdf.to_crs(self.__crs)
 
-        # spatial join when cell is within urban centre, filling to false
-        # drop index_right and boundary columns as they aren't needed
+        # spatial join when cell is within urban centre, filling nan to false.
+        # drop index_right and boundary columns as they aren't needed.
         self.pop_gdf = self.pop_gdf.sjoin(
             self._uc_gdf, how="left", predicate="within"
         ).drop(["index_right", "boundary"], axis=1)
@@ -353,7 +358,8 @@ class RasterPop:
             self.__UC_COL_NAME
         ].fillna(False)
 
-        # add within_urban_centre column to centroid data
+        # add within_urban_centre column to centroid data too - could be useful
+        # during selecting sources/destinations, so duplication is OK.
         self.centroid_gdf = self.centroid_gdf.merge(
             self.pop_gdf[["id", self.__UC_COL_NAME]], on="id"
         )
@@ -526,7 +532,7 @@ class RasterPop:
         cbar_label : str, optional
             Colour label, by default "Population count per cell".
         var_attr : str, optional
-            Attribution to assign for variable/data of interest, by default
+            Attribution to assign for variable/population data, by default
             "GHS-POP 2020 (R2023)".
         base_map_attr : str, optional
             Base map tile attribution, by default "(C) OpenSteetMap
@@ -582,7 +588,8 @@ class RasterPop:
         ax.add_image(map_tile, map_tile_zoom, cmap="gray")
 
         # build a colormap and add pcolormesh plot data, setting vmin and vmax
-        # to match the whole colormap range
+        # to match the whole colormap range. transform to data_crs required to
+        # project onto base map.
         plot_cmap = colormaps.get_cmap(cmap)
         plot_data = self._xds.squeeze(axis=0).to_numpy()
         vmin_data = np.nanmin(plot_data)
