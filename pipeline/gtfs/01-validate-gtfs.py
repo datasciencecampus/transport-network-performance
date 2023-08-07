@@ -40,13 +40,13 @@ post_init = time.perf_counter()
 if PROFILING:
     print(f"Init in {post_init - pre_init:0.4f} seconds")
 
-feed.get_calendar_dates()
+available_dates = feed.feed.get_dates()
 post_dates = time.perf_counter()
 if PROFILING:
-    print(f"get_calendar_dates in {post_dates - post_init:0.4f} seconds")
-s = feed.available_dates[0]
-f = feed.available_dates[-1]
-print(f"{len(feed.available_dates)} dates available between {s} & {f}.")
+    print(f"get_dates in {post_dates - post_init:0.4f} seconds")
+s = available_dates[0]
+f = available_dates[-1]
+print(f"{len(available_dates)} dates available between {s} & {f}.")
 
 try:
     # If agency_id is missing, an AttributeError is raised. GTFS spec states
