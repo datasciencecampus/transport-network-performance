@@ -450,10 +450,10 @@ class TestGtfsInstance(object):
             [
                 ("day", ""),
                 ("route_type", ""),
-                ("trip_count", "amax"),
-                ("trip_count", "amin"),
+                ("trip_count", "max"),
                 ("trip_count", "mean"),
                 ("trip_count", "median"),
+                ("trip_count", "min"),
             ]
         )
 
@@ -481,10 +481,10 @@ class TestGtfsInstance(object):
         expected_df = {
             ("day", ""): {8: "friday", 9: "friday"},
             ("route_type", ""): {8: 3, 9: 200},
-            ("trip_count", "amax"): {8: 1211, 9: 90},
-            ("trip_count", "amin"): {8: 1211, 9: 88},
+            ("trip_count", "max"): {8: 1211, 9: 90},
             ("trip_count", "mean"): {8: 1211.0, 9: 88.0},
             ("trip_count", "median"): {8: 1211.0, 9: 88.0},
+            ("trip_count", "min"): {8: 1211, 9: 88},
         }
 
         found_df = gtfs_fixture.daily_trip_summary[
@@ -517,10 +517,10 @@ class TestGtfsInstance(object):
         exp_cols_ds = pd.MultiIndex.from_tuples(
             [
                 ("day", ""),
-                ("route_count", "amax"),
-                ("route_count", "amin"),
+                ("route_count", "max"),
                 ("route_count", "mean"),
                 ("route_count", "median"),
+                ("route_count", "min"),
                 ("route_type", ""),
             ]
         )
@@ -548,10 +548,10 @@ class TestGtfsInstance(object):
         # using tests/data/newport-20230613_gtfs.zip
         expected_df = {
             ("day", ""): {8: "friday", 9: "friday"},
-            ("route_count", "amax"): {8: 74, 9: 10},
-            ("route_count", "amin"): {8: 74, 9: 9},
+            ("route_count", "max"): {8: 74, 9: 10},
             ("route_count", "mean"): {8: 74.0, 9: 9.0},
             ("route_count", "median"): {8: 74.0, 9: 9.0},
+            ("route_count", "min"): {8: 74, 9: 9},
             ("route_type", ""): {8: 3, 9: 200},
         }
 
