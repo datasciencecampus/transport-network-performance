@@ -15,4 +15,5 @@ geocube
 mapclassify
 pytest-lazy-fixture
 seaborn
+rioxarray
 -e .
