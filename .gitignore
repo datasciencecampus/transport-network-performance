@@ -309,6 +309,7 @@ vignettes/*.pdf
 # pkgdown site
 docs/*
 !docs/README.md
+!docs/gtfs
 
 # translation temp files
 po/*~

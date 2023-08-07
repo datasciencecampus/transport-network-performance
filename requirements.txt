@@ -9,6 +9,16 @@ beautifulsoup4
 requests
 pytest-mock
 toml
-pyprojroot
 numpy==1.24.3
+rasterio
+pyprojroot
+matplotlib
+plotly
+nbformat>=4.2.0
+scikit-image
+cartopy
+folium
+geocube
+mapclassify
+seaborn
 -e .
