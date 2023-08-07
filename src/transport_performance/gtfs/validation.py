@@ -381,7 +381,7 @@ class GtfsInstance:
         self,
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
-    ) -> pd.DataFrame:
+    ) -> None:
         """Check for any invalid parameters in a summarising function.
 
         Parameters
