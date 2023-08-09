@@ -14,7 +14,6 @@ import pytest
 import numpy as np
 import rasterio as rio
 import xarray as xr
-import rioxarray  # noqa: F401 - import required for xarray but not needed here
 import geopandas as gpd
 
 from typing import Type, Tuple
