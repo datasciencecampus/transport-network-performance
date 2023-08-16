@@ -19,6 +19,8 @@ cartopy
 folium
 geocube
 mapclassify
+pytest-lazy-fixture
 seaborn
 numpy>=1.25.0 # test suite will fail if user installed lower than this
+rioxarray
 -e .
