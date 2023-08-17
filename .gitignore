@@ -2,11 +2,13 @@
 **/*.pbf
 **/*.mapdb
 **/*.mapdb.p
-# moved zip blanket rule above specific exception for test fixture below
+# moved blanket rules above specific exceptions for test fixtures
 *.zip
+*.pkl
 # except test fixtures
 !tests/data/newport-2023-06-13.osm.pbf
 !tests/data/newport-20230613_gtfs.zip
+!tests/data/gtfs/route_lookup.pkl
 
 ### Project structure ###
 data/*
@@ -36,7 +38,6 @@ outputs/*
 *.html
 *.pdf
 *.csv
-*.pkl
 *.rds
 *.rda
 *.parquet
@@ -308,6 +309,7 @@ vignettes/*.pdf
 # pkgdown site
 docs/*
 !docs/README.md
+!docs/gtfs
 
 # translation temp files
 po/*~

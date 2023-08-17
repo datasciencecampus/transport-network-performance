@@ -6,11 +6,24 @@ matplotlib
 scipy
 rioxarray
 geopandas
-matplotlib
 geocube
 pyproj>=3.6.0
 pytest
 coverage
 pyprojroot
 pytest-lazy-fixture
+ipykernel==6.23.1
+pandas
+beautifulsoup4
+requests
+pytest-mock
+toml
+plotly
+nbformat>=4.2.0
+scikit-image
+cartopy
+folium
+mapclassify
+seaborn
+numpy>=1.25.0 # test suite will fail if user installed lower than this
 -e .
