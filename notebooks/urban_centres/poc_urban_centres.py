@@ -35,7 +35,7 @@ from rioxarray.merge import merge_arrays
 import matplotlib.pyplot as plt
 import folium
 
-import transport_performance.urban_centres.urban_centres_class as ucc
+import transport_performance.urban_centres.raster_uc as ucc
 
 # %%
 # merge raster tiles into single file

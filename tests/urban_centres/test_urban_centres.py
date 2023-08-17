@@ -16,7 +16,7 @@ from contextlib import nullcontext as does_not_raise
 from pytest_lazyfixture import lazy_fixture
 from shapely.geometry import Polygon
 
-import transport_performance.urban_centres.urban_centres_class as ucc
+import transport_performance.urban_centres.raster_uc as ucc
 
 
 @pytest.fixture
