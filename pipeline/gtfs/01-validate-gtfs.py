@@ -12,8 +12,6 @@
 """
 import toml
 from pyprojroot import here
-import warnings
-import pandas as pd
 import time
 import subprocess
 
@@ -42,13 +40,13 @@ post_init = time.perf_counter()
 if PROFILING:
     print(f"Init in {post_init - pre_init:0.4f} seconds")
 
-feed.get_calendar_dates()
+available_dates = feed.feed.get_dates()
 post_dates = time.perf_counter()
 if PROFILING:
-    print(f"get_calendar_dates in {post_dates - post_init:0.4f} seconds")
-s = feed.available_dates[0]
-f = feed.available_dates[-1]
-print(f"{len(feed.available_dates)} dates available between {s} & {f}.")
+    print(f"get_dates in {post_dates - post_init:0.4f} seconds")
+s = available_dates[0]
+f = available_dates[-1]
+print(f"{len(available_dates)} dates available between {s} & {f}.")
 
 try:
     # If agency_id is missing, an AttributeError is raised. GTFS spec states
@@ -106,9 +104,8 @@ if PROFILING:
     print(f"route_modes in {post_route_modes - pre_route_modes:0.4f} seconds")
 
 pre_summ_weekday = time.perf_counter()
-with warnings.catch_warnings():  # slow & triggers warnings, gtfs_kit issue
-    warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
-    print(feed.summarise_weekday())
+print(feed.summarise_trips())
+print(feed.summarise_routes())
 post_summ_weekday = time.perf_counter()
 if PROFILING:
     print(f"summ_weekday in {post_summ_weekday - pre_summ_weekday:0.4f} secs")

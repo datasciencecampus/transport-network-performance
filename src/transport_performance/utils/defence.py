@@ -24,7 +24,7 @@ def _is_path_like(pth, param_nm):
     None
 
     """
-    if not isinstance(pth, (str, pathlib.PosixPath)):
+    if not isinstance(pth, (str, pathlib.Path)):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
 
