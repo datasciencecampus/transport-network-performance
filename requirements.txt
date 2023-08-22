@@ -9,8 +9,8 @@ beautifulsoup4
 requests
 pytest-mock
 toml
-rasterio
 pyprojroot
+rasterio
 matplotlib
 plotly
 nbformat>=4.2.0
