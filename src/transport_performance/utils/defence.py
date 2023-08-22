@@ -30,6 +30,8 @@ def _is_path_like(pth, param_nm):
 
 def _check_parent_dir_exists(pth, param_nm, create=False):
     _is_path_like(pth, param_nm)
+    # realpath helps to catch cases where relative paths are passed in main
+    pth = os.path.realpath(pth)
     parent = os.path.dirname(pth)
     if not os.path.exists(parent):
         if create:
@@ -43,8 +45,8 @@ def _check_parent_dir_exists(pth, param_nm, create=False):
     return None
 
 
-def _is_gtfs_pth(pth, param_nm, check_existing=True):
-    """Handle file paths that should be existing GTFS feeds.
+def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
+    """Handle file paths that should be existing filetypes.
 
     Parameters
     ----------
@@ -53,13 +55,15 @@ def _is_gtfs_pth(pth, param_nm, check_existing=True):
     param_nm : str
         The name of the parameter being tested. Helps with debugging.
     check_existing : bool
-        Whether to check if the GTFS file already exists. Defaults to True.
+        Whether to check if the filetype file already exists. Defaults to True.
+    exp_ext: str
+        The expected filetype.
 
     Raises
     ------
     TypeError: `pth` is not either of string or pathlib.PosixPath.
     FileExistsError: `pth` does not exist on disk.
-    ValueError: `pth` does not have a `.zip` file extension.
+    ValueError: `pth` does not have the expected file extension.
 
     Returns
     -------
@@ -71,9 +75,9 @@ def _is_gtfs_pth(pth, param_nm, check_existing=True):
     _, ext = os.path.splitext(pth)
     if check_existing and not os.path.exists(pth):
         raise FileExistsError(f"{pth} not found on file.")
-    if ext != ".zip":
+    if ext != exp_ext:
         raise ValueError(
-            f"`gtfs_pth` expected a zip file extension. Found {ext}"
+            f"`{param_nm}` expected file extension {exp_ext}. Found {ext}"
         )
 
     return None
@@ -109,11 +113,11 @@ def _url_defence(url):
     return None
 
 
-def _bool_defence(some_bool):
+def _bool_defence(some_bool, param_nm):
     """Defence checking. Not exported."""
     if not isinstance(some_bool, bool):
         raise TypeError(
-            f"`extended_schema` expected boolean. Got {type(some_bool)}"
+            f"`{param_nm}` expected boolean. Got {type(some_bool)}"
         )
 
     return None

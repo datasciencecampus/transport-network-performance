@@ -11,7 +11,7 @@ import inspect
 
 from transport_performance.gtfs.routes import scrape_route_type_lookup
 from transport_performance.utils.defence import (
-    _is_gtfs_pth,
+    _is_expected_filetype,
     _check_namespace_export,
     _check_parent_dir_exists,
 )
@@ -91,7 +91,7 @@ class GtfsInstance:
     def __init__(
         self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
     ):
-        _is_gtfs_pth(pth=gtfs_pth, param_nm="gtfs_pth")
+        _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
         # validate units param
         if not isinstance(units, str):

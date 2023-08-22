@@ -4,7 +4,10 @@ import geopandas as gpd
 from shapely.geometry import box
 from pyprojroot import here
 
-from transport_performance.utils.defence import _is_gtfs_pth, _check_list
+from transport_performance.utils.defence import (
+    _is_expected_filetype,
+    _check_list,
+)
 
 
 def bbox_filter_gtfs(
@@ -38,8 +41,10 @@ def bbox_filter_gtfs(
     None
 
     """
-    _is_gtfs_pth(pth=in_pth, param_nm="in_pth")
-    _is_gtfs_pth(pth=out_pth, param_nm="out_pth", check_existing=False)
+    _is_expected_filetype(pth=in_pth, param_nm="in_pth")
+    _is_expected_filetype(
+        pth=out_pth, param_nm="out_pth", check_existing=False
+    )
     _check_list(ls=bbox_list, param_nm="bbox_list", exp_type=float)
     for param in [units, crs]:
         if not isinstance(param, str):

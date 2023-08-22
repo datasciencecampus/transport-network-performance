@@ -40,13 +40,21 @@ jobs:
     - name: Check Java Install
       run: |
         java --version
+    - name: Install Osmosis
+      uses: ConorMacBride/install-package@v1
+      with:
+        brew: osmosis
+        apt: osmosis
+    - name: Run Integration Tests
+      run: |
+          pytest -m runinteg --runinteg # run only those tests marked runinteg
     - name: pre-commit
       run: |
         pre-commit install
         pre-commit run --all-files
     - name: Test with pytest
       run: |
-        pytest --runsetup
+        pytest
     - name: Generate Report
       run: |
         coverage run -m pytest

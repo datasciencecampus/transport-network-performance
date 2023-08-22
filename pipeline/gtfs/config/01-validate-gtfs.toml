@@ -1,7 +1,7 @@
 title = "Config for GTFS Validation Pipeline"
 
 [GTFS]
-PATH = "data/external/croppednewport-bus-07-07-2022_gtfs.zip"
+PATH = "tests/data/newport-20230613_gtfs.zip"
 UNITS = "m"
 GEOMETRIC_CRS = 27700 # used for area calculations only
 
