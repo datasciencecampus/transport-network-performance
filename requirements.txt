@@ -1,26 +1,29 @@
 pre-commit
 r5py>=0.0.4
 gtfs_kit==5.2.7
+rasterio
+matplotlib
+scipy
+rioxarray
+geopandas
+geocube
+pyproj>=3.6.0
 pytest
 coverage
+pyprojroot
+pytest-lazy-fixture
 ipykernel==6.23.1
 pandas
 beautifulsoup4
 requests
 pytest-mock
 toml
-pyprojroot
-rasterio
-matplotlib
 plotly
 nbformat>=4.2.0
 scikit-image
 cartopy
 folium
-geocube
 mapclassify
-pytest-lazy-fixture
 seaborn
 numpy>=1.25.0 # test suite will fail if user installed lower than this
-rioxarray
 -e .
