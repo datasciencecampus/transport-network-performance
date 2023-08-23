@@ -84,14 +84,19 @@ except AttributeError:
 
 # visualise gtfs
 pre_viz_points = time.perf_counter()
-feed.viz_stops(out_pth=POINT_MAP_PTH)
+feed.viz_stops(out_pth=POINT_MAP_PTH, create_out_parent=True)
 post_viz_points = time.perf_counter()
 if PROFILING:
     print(f"viz_points in {post_viz_points - pre_viz_points:0.4f} seconds")
 print(f"Map written to {POINT_MAP_PTH}")
 
 pre_viz_hull = time.perf_counter()
-feed.viz_stops(out_pth=HULL_MAP_PATH, geoms="hull", geom_crs=GEOM_CRS)
+feed.viz_stops(
+    out_pth=HULL_MAP_PATH,
+    geoms="hull",
+    geom_crs=GEOM_CRS,
+    create_out_parent=True,
+)
 post_viz_hull = time.perf_counter()
 if PROFILING:
     print(f"viz_hull in {post_viz_hull - pre_viz_hull:0.4f} seconds")

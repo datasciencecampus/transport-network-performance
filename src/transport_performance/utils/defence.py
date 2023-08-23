@@ -35,7 +35,7 @@ def _check_parent_dir_exists(pth, param_nm, create=False):
     parent = os.path.dirname(pth)
     if not os.path.exists(parent):
         if create:
-            os.mkdir(parent)
+            os.makedirs(parent)
             print(f"Creating parent directory: {parent}")
         else:
             raise FileNotFoundError(

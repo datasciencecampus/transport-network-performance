@@ -1,5 +1,10 @@
 """Tests for defence.py. These internals may be covered elsewhere."""
+import re
+import os
+import shutil
+
 import pytest
+from pyprojroot import here
 
 from transport_performance.utils.defence import (
     _check_list,
@@ -60,3 +65,47 @@ class Test_CheckParentDirExists(object):
             _check_parent_dir_exists(
                 pth="missing/file.someext", param_nm="not_found", create=False
             )
+
+    def test_check_parents_dir_exists(self):
+        """Test that a parent directory is created."""
+        # test without create
+        with pytest.raises(
+            FileNotFoundError,
+            match=re.escape(
+                "Parent directory D:\\DSC\\transport-network-performance"
+                "\\data\\interim\\test_dir not found on disk"
+            ),
+        ):
+            _check_parent_dir_exists(
+                pth="data/interim/test_dir/test_dir.html",
+                param_nm="test_prm",
+                create=False,
+            )
+
+        # test creating the parent directory (1 level)
+        _check_parent_dir_exists(
+            pth="data/interim/test_dir/test_dir.html",
+            param_nm="test_prm",
+            create=True,
+        )
+
+        assert os.path.exists(here("data/interim/test_dir/")), (
+            "_check_parent_dir_exists did not make parent dir"
+            "when 'create=True' (single level)"
+        )
+
+        shutil.rmtree("data/interim/test_dir/")
+
+        # test creating the parent directory (2 levels)
+        _check_parent_dir_exists(
+            pth="data/interim/test_dir/test_dir/test_dir.html",
+            param_nm="test_prm",
+            create=True,
+        )
+
+        assert os.path.exists(here("data/interim/test_dir/test_dir/")), (
+            "_check_parent_dir_exists did not make parent dir"
+            "when 'create=True' (multiple levels)"
+        )
+
+        shutil.rmtree("data/interim/test_dir")
