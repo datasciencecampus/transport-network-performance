@@ -1,6 +1,7 @@
 """Tests for defence.py. These internals may be covered elsewhere."""
 import re
 import os
+import pathlib
 
 import pytest
 
@@ -85,12 +86,12 @@ class Test_CheckParentDirExists(object):
 
         # test creating the parent directory (1 level)
         _check_parent_dir_exists(
-            pth=os.path.join(tmp_path, "test_dir", "test_dir.html"),
+            pth=os.path.join(tmp_path, "test_dir_single", "test.html"),
             param_nm="test_prm",
             create=True,
         )
 
-        assert os.path.exists(os.path.join(tmp_path, "test_dir")), (
+        assert os.path.exists(os.path.join(tmp_path, "test_dir_single")), (
             "_check_parent_dir_exists did not make parent dir"
             " when 'create=True' (single level)"
         )
@@ -98,15 +99,27 @@ class Test_CheckParentDirExists(object):
         # test creating the parent directory (2 levels)
         _check_parent_dir_exists(
             pth=os.path.join(
-                tmp_path, "test_dir", "test_dir", "test_dir.html"
+                tmp_path, "test_dir_multi", "test_dir_multi", "test.html"
             ),
             param_nm="test_prm",
             create=True,
         )
 
         assert os.path.exists(
-            os.path.join(tmp_path, "test_dir", "test_dir")
+            os.path.join(tmp_path, "test_dir_multi", "test_dir_multi")
         ), (
+            "_check_parent_dir_exists did not make parent dir"
+            " when 'create=True' (multiple levels)"
+        )
+
+        # test creating a directory with backslash characters in the name
+        _check_parent_dir_exists(
+            pth=pathlib.Path(f"{tmp_path}\\test_dir_bs\\test.html"),
+            param_nm="test_prm",
+            create=True,
+        )
+
+        assert os.path.exists(os.path.join(tmp_path, "test_dir_bs")), (
             "_check_parent_dir_exists did not make parent dir"
             " when 'create=True' (multiple levels)"
         )
