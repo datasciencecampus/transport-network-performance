@@ -121,5 +121,5 @@ class Test_CheckParentDirExists(object):
 
         assert os.path.exists(os.path.join(tmp_path, "test_dir_bs")), (
             "_check_parent_dir_exists did not make parent dir"
-            " when 'create=True' (multiple levels)"
+            " with escaped backslashes in the path"
         )
