@@ -32,7 +32,6 @@ def _check_parent_dir_exists(pth, param_nm, create=False):
     _is_path_like(pth, param_nm)
     # replace back slashes to ensure consistency
     pth = pth.replace("\\", "/").replace(repr("\\"), "").replace("'", "")
-    pth = pth.replace("\\", "/")
     # convert path to the correct OS specific format
     pth = pathlib.Path(pth)
     # realpath helps to catch cases where relative paths are passed in main
