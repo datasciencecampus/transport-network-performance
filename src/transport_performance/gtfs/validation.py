@@ -8,7 +8,6 @@ import datetime
 import numpy as np
 import os
 import inspect
-import warnings
 
 from transport_performance.gtfs.routes import scrape_route_type_lookup
 from transport_performance.utils.defence import (
@@ -78,13 +77,10 @@ def _create_map_title_text(gdf, units, geom_crs):
         if crs_unit == "metre":
             hull_area = hull_area / 1000000
         if crs_unit not in ["kilometre", "metre"]:
-            warnings.warn(
-                UserWarning(
-                    "\nCRS units for convex hull not recognised. \n"
-                    "Recognised units include: ['metre', 'kilometre'] \n"
-                    "This may lead to the area of the convex hull being"
-                    f" calculated incorrectly. Found '{crs_unit}'"
-                )
+            raise ValueError(
+                "CRS units for convex hull not recognised. "
+                "Recognised units include: ['metre', 'kilometre']. "
+                f" Found '{crs_unit}.'"
             )
         pre = "GTFS Stops Convex Hull Area: "
         post = " nearest km<sup>2</sup>."

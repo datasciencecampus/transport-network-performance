@@ -214,7 +214,7 @@ class TestGtfsInstance(object):
         # CRS without m or km units
         gtfs_hull = gtfs_fixture.feed.compute_convex_hull()
         gdf = GeoDataFrame({"geometry": gtfs_hull}, index=[0], crs="epsg:4326")
-        with pytest.warns(UserWarning):
+        with pytest.raises(ValueError), pytest.warns(UserWarning):
             _create_map_title_text(gdf=gdf, units="m", geom_crs=4326)
 
     def test__create_map_title_text_on_pass(self):
