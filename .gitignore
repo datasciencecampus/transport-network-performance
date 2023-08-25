@@ -167,6 +167,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
+docs/source/reference/_autosummary/
 docs/build/
 !docs/README.md
 !docs/gtfs

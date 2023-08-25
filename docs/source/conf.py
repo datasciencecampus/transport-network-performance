@@ -3,6 +3,12 @@
 For the full list of built-in configuration values, see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
+import os
+import sys
+
+# Add source folder to path for autodoc
+sys.path.insert(0, os.path.abspath("../../src/transport_performance/"))
+
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -15,7 +21,7 @@ release = "0.0.1"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = []
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.autosummary"]
 
 templates_path = ["_templates"]
 exclude_patterns = []
@@ -27,3 +33,9 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_favicon = "_static/favicon.ico"
 html_logo = "_static/dsc.png"
+html_theme_options = {
+    "style_external_links": True,
+}
+html_css_files = [
+    "custom.css",
+]
