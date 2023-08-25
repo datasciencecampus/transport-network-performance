@@ -167,7 +167,9 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/build/
+!docs/README.md
+!docs/gtfs
 
 # PyBuilder
 .pybuilder/
@@ -305,11 +307,6 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
-
-# pkgdown site
-docs/*
-!docs/README.md
-!docs/gtfs
 
 # translation temp files
 po/*~
