@@ -26,13 +26,4 @@ the official `Diátaxis documentation`_ for more details.
    how_to/index
    tutorials/index
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 .. _Diátaxis documentation: https://diataxis.fr/
