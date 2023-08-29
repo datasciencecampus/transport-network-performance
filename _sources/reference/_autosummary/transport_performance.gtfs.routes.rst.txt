@@ -1,0 +1,35 @@
+..
+  module.rst
+
+transport\_performance.gtfs.routes
+==================================
+
+.. automodule:: transport_performance.gtfs.routes
+
+    
+        
+    
+
+    
+        
+            .. rubric:: Functions
+
+            .. autosummary::
+                :toctree:
+                :nosignatures:
+                :template: autosummary/base.rst
+                
+                    scrape_route_type_lookup
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+
+    

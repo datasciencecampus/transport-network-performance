@@ -1,0 +1,35 @@
+..
+  module.rst
+
+transport\_performance.population.vectorpop
+===========================================
+
+.. automodule:: transport_performance.population.vectorpop
+
+    
+        
+    
+
+    
+        
+    
+
+    
+        
+            .. rubric:: Classes
+
+            .. autosummary::
+                :toctree:
+                :nosignatures:
+                :template: autosummary/class.rst
+                
+                    VectorPop
+        
+    
+
+    
+        
+    
+
+
+    

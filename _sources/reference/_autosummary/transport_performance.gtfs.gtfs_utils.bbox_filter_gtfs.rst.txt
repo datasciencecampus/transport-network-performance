@@ -1,0 +1,9 @@
+..
+  base.rst
+
+bbox\_filter\_gtfs
+==================
+
+.. currentmodule:: transport_performance.gtfs.gtfs_utils
+
+.. autofunction:: bbox_filter_gtfs

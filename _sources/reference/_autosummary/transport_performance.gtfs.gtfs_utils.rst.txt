@@ -1,0 +1,35 @@
+..
+  module.rst
+
+transport\_performance.gtfs.gtfs\_utils
+=======================================
+
+.. automodule:: transport_performance.gtfs.gtfs_utils
+
+    
+        
+    
+
+    
+        
+            .. rubric:: Functions
+
+            .. autosummary::
+                :toctree:
+                :nosignatures:
+                :template: autosummary/base.rst
+                
+                    bbox_filter_gtfs
+        
+    
+
+    
+        
+    
+
+    
+        
+    
+
+
+    

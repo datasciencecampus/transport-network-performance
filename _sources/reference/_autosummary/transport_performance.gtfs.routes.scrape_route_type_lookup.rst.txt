@@ -1,0 +1,9 @@
+..
+  base.rst
+
+scrape\_route\_type\_lookup
+===========================
+
+.. currentmodule:: transport_performance.gtfs.routes
+
+.. autofunction:: scrape_route_type_lookup

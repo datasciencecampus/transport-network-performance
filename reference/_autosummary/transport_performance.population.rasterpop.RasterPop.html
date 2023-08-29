@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RasterPop &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="transport_performance.population.vectorpop" href="transport_performance.population.vectorpop.html" />
+    <link rel="prev" title="transport_performance.population.rasterpop" href="transport_performance.population.rasterpop.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../explanation/index.html">Explanation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="transport_performance.urban_centres.html">transport_performance.urban_centres</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="transport_performance.population.html">transport_performance.population</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="transport_performance.population.rasterpop.html">transport_performance.population.rasterpop</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">RasterPop</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.population.vectorpop.html">transport_performance.population.vectorpop</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="transport_performance.gtfs.html">transport_performance.gtfs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transport_performance.osm.html">transport_performance.osm</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to/index.html">How-to Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Reference</a></li>
+          <li class="breadcrumb-item"><a href="transport_performance.population.html">transport_performance.population</a></li>
+          <li class="breadcrumb-item"><a href="transport_performance.population.rasterpop.html">transport_performance.population.rasterpop</a></li>
+      <li class="breadcrumb-item active">RasterPop</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/reference/_autosummary/transport_performance.population.rasterpop.RasterPop.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="rasterpop">
+<h1>RasterPop<a class="headerlink" href="#rasterpop" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="transport_performance.population.rasterpop.RasterPop">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">transport_performance.population.rasterpop.</span></span><span class="sig-name descname"><span class="pre">RasterPop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">PathLike</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#transport_performance.population.rasterpop.RasterPop" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Prepare raster population inputs for trasport analysis.</p>
+<p>This class is suited to working with rastered population data (e.g.
+gridded population estimates).</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>filepath<span class="classifier">Union[str, bytes, os.PathLike]</span></dt><dd><p>File path to population data</p>
+</dd>
+</dl>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>pop_gdf<span class="classifier">gpd.GeoDataFrame</span></dt><dd><p>A geopandas dataframe of the input data, with gridded geometry. This is
+in the same CRS as the input raster data.</p>
+</dd>
+<dt>centroid_gdf<span class="classifier">gpd.GeoDataFrame</span></dt><dd><p>A geopandas dataframe of grid centroids, converted to EPSG:4326 for
+transport analysis.</p>
+</dd>
+</dl>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>get_pop</dt><dd><p>Read and preprocess population estimates into a geopandas dataframe.</p>
+</dd>
+<dt>plot</dt><dd><p>Build static and interactive visualisations of population data. Can
+only use this method once <cite>get_pop</cite> has been called.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl>
+<dt>FileNotFoundError</dt><dd><p>When <cite>filepath</cite> is not a file or can not be found.</p>
+<blockquote>
+<div><p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.population.rasterpop.RasterPop.get_pop" title="transport_performance.population.rasterpop.RasterPop.get_pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pop</span></code></a></p></td>
+<td><p>Get population data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.population.rasterpop.RasterPop.plot" title="transport_performance.population.rasterpop.RasterPop.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
+<td><p>Plot population data.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.population.rasterpop.RasterPop.get_pop">
+<span class="sig-name descname"><span class="pre">get_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aoi_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Polygon</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aoi_crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'population'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">urban_centre_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Polygon</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">urban_centre_crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">GeoDataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">GeoDataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#transport_performance.population.rasterpop.RasterPop.get_pop" title="Link to this definition"></a></dt>
+<dd><p>Get population data.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>aoi_bounds<span class="classifier">Type[Polygon]</span></dt><dd><p>A shapely polygon defining the boundary of the area of interest.
+Assumed to be in the same CRS as the rastered population data. If
+it is different, set <cite>aoi_crs</cite> to the CRS of this boundary.</p>
+</dd>
+<dt>aoi_crs<span class="classifier">str, optional</span></dt><dd><p>CRS string for <cite>aoi_bounds</cite> (e.g. “EPSG:4326”), by default None
+which means it is assumed to have the same CRS as the population
+data.</p>
+</dd>
+<dt>round<span class="classifier">bool, optional</span></dt><dd><p>Round population estimates to the nearest whole integer.</p>
+</dd>
+<dt>threshold<span class="classifier">int, optional</span></dt><dd><p>Threshold population estimates, where values below the set
+threshold will be set to nan, by default None which means no
+thresholding will occur.</p>
+</dd>
+<dt>var_name<span class="classifier">str, optional</span></dt><dd><p>The variable name, by default “population”</p>
+</dd>
+<dt>urban_centre_bounds<span class="classifier">Type[Polygon], optional</span></dt><dd><p>Polygon defining an urban centre bounday, by default None meaning
+information concerning whether the grid resides within the urban
+centre will not be added.</p>
+</dd>
+<dt>urban_centre_crs<span class="classifier">str, optional</span></dt><dd><p>The urban centre polygon CRS, by default None meaning this is the
+same CRS as the input raster data. Only used when
+<cite>urban_centre_bounds</cite> is set.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>pop_gdf<span class="classifier">gpd.GeoDataFrame</span></dt><dd><p>A geopandas dataframe of the input data, with gridded geometry.
+This is in the same CRS as the input raster data.</p>
+</dd>
+<dt>centroid_gdf</dt><dd><p>A geopandas dataframe of grid centroids, converted to EPSG:4326 for
+transport analysis.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.population.rasterpop.RasterPop.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'folium'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Map</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">GeoAxes</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Axes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#transport_performance.population.rasterpop.RasterPop.plot" title="Link to this definition"></a></dt>
+<dd><p>Plot population data.</p>
+<section id="id2">
+<h3>Parameters<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>which<span class="classifier">str, optional</span></dt><dd><p>Package to use for plotting. Must be one of {“matplotlib”,
+“cartopy”, “folium”}, by default “folium”.</p>
+</dd>
+<dt>save<span class="classifier">str, optional</span></dt><dd><p>Filepath to save file, with the file extension, by default None
+meaning a file will not be saved.</p>
+</dd>
+<dt>kwargs<span class="classifier">dict, optional</span></dt><dd><p>Extra arguments passed to plotting functions to configure the plot
+styling. See Notes for more support.</p>
+</dd>
+</dl>
+</section>
+<section id="id3">
+<h3>Returns<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Union[folium.Map, Type[GeoAxes], plt.Axes, None]</dt><dd><p>A folium map is returned when the <cite>folium</cite> backend is used. A
+matplotlib Axes object is returned when the <cite>matplotlib</cite> backend is
+used. A matplotlib/cartopy GeoAxes object is return when the
+<cite>cartopy</cite> backend is used. None will be returned when saving to
+file.</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h3>Raises<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>ValueError</dt><dd><p>Unexpected value of <cite>which</cite>.</p>
+</dd>
+<dt>NotImplementedError</dt><dd><p>When plot is called without reading data.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
+<p>Calling <cite>help</cite> as follows will provide more insights on possible kwarg
+arguments for the valid plotting backends:</p>
+<ul class="simple">
+<li><p>Folium backend: <cite>help(RasterPop._plot_folium)</cite></p></li>
+<li><p>Matplotlib backend: <cite>help(RasterPop._plot_matplotlib)</cite></p></li>
+<li><p>Cartopy backend: <cite>help(RasterPop._plot_cartopy)</cite></p></li>
+</ul>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="transport_performance.population.rasterpop.html" class="btn btn-neutral float-left" title="transport_performance.population.rasterpop" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="transport_performance.population.vectorpop.html" class="btn btn-neutral float-right" title="transport_performance.population.vectorpop" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

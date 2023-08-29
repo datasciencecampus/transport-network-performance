@@ -1,0 +1,25 @@
+..
+  class.rst
+
+RasterPop
+=========
+
+.. currentmodule:: transport_performance.population.rasterpop
+
+.. autoclass:: RasterPop
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+    
+        
+            .. rubric:: Methods
+
+            .. autosummary::
+                :nosignatures:
+                
+                    ~RasterPop.__init__
+                    ~RasterPop.get_pop
+                    ~RasterPop.plot
+        
+    

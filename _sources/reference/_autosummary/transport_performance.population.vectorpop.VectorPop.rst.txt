@@ -1,0 +1,23 @@
+..
+  class.rst
+
+VectorPop
+=========
+
+.. currentmodule:: transport_performance.population.vectorpop
+
+.. autoclass:: VectorPop
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+    
+        
+            .. rubric:: Methods
+
+            .. autosummary::
+                :nosignatures:
+                
+                    ~VectorPop.__init__
+        
+    

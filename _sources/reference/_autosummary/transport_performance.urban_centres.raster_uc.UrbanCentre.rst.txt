@@ -1,0 +1,24 @@
+..
+  class.rst
+
+UrbanCentre
+===========
+
+.. currentmodule:: transport_performance.urban_centres.raster_uc
+
+.. autoclass:: UrbanCentre
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+    
+        
+            .. rubric:: Methods
+
+            .. autosummary::
+                :nosignatures:
+                
+                    ~UrbanCentre.__init__
+                    ~UrbanCentre.get_urban_centre
+        
+    
