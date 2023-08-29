@@ -360,7 +360,7 @@ class UrbanCentre:
         if not (5 <= threshold <= 8):
             raise ValueError(
                 "Wrong value for `threshold`, "
-                "please enter value between 1 and 9"
+                "please enter value between 5 and 8"
             )
 
         filled = urban_centres.copy()
