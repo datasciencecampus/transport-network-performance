@@ -153,7 +153,7 @@ class RasterPop:
         save : str, optional
             Filepath to save file, with the file extension, by default None
             meaning a file will not be saved.
-        kwargs : dict, optional
+        **kwargs : dict, optional
             Extra arguments passed to plotting functions to configure the plot
             styling. See Notes for more support.
 
