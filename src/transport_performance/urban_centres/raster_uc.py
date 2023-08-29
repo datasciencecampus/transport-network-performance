@@ -282,7 +282,6 @@ class UrbanCentre:
         urban_centres = labelled_array.copy()
         for n in range(1, num_clusters + 1):
             total_pop = ma.sum(ma.masked_where(urban_centres != n, band))
-            # print(n, total_pop)
 
             if total_pop < cluster_pop_threshold:
                 urban_centres[urban_centres == n] = 0
@@ -377,7 +376,6 @@ class UrbanCentre:
                 extra_keywords={"threshold": threshold},
             )
             if np.array_equal(filled, check):
-                # print("iter", n)
                 break
         return filled
 
