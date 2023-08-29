@@ -7,12 +7,12 @@ transport-performance
 =====================
 
 .. warning::
-   The `transport-performance` package and this documentation are still under
+   The :code:`transport-performance` package and this documentation are still under
    active development and are not yet complete. Caution should be taken before
    using or referencing this work in any way.
 
-`transport-performance` is a python package for measuring the performance of
-transport networks around urban centres.
+:code:`transport-performance` is a python package for measuring the performance of
+transport networks in and around urban centres.
 
 This documentation adopts the Diátaxis framework to structure pages and
 content. See the official `Diátaxis documentation`_ for more details.
@@ -30,6 +30,7 @@ content. See the official `Diátaxis documentation`_ for more details.
    :caption: Reference
 
    reference/index
+   reference/coverage
 
 .. toctree::
    :hidden:
