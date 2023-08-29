@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>transport_performance.population.rasterpop &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html"><cite>transport-performance</cite> API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">transport_performance.population.rasterpop</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for transport_performance.population.rasterpop</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Class to handle raster population data.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">rasterio</span> <span class="k">as</span> <span class="nn">rio</span>
+<span class="kn">import</span> <span class="nn">rioxarray</span>
+<span class="kn">import</span> <span class="nn">folium</span>
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
+<span class="kn">import</span> <span class="nn">cartopy.io.img_tiles</span> <span class="k">as</span> <span class="nn">cimgt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">geocube.vector</span> <span class="kn">import</span> <span class="n">vectorize</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry.polygon</span> <span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">colormaps</span>
+<span class="kn">from</span> <span class="nn">cartopy.mpl.geoaxes</span> <span class="kn">import</span> <span class="n">GeoAxes</span>
+
+
+<div class="viewcode-block" id="RasterPop">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.population.rasterpop.RasterPop.html#transport_performance.population.rasterpop.RasterPop">[docs]</a>
+<span class="k">class</span> <span class="nc">RasterPop</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare raster population inputs for trasport analysis.</span>
+
+<span class="sd">    This class is suited to working with rastered population data (e.g.</span>
+<span class="sd">    gridded population estimates).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filepath : Union[str, bytes, os.PathLike]</span>
+<span class="sd">        File path to population data</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pop_gdf : gpd.GeoDataFrame</span>
+<span class="sd">        A geopandas dataframe of the input data, with gridded geometry. This is</span>
+<span class="sd">        in the same CRS as the input raster data.</span>
+<span class="sd">    centroid_gdf : gpd.GeoDataFrame</span>
+<span class="sd">        A geopandas dataframe of grid centroids, converted to EPSG:4326 for</span>
+<span class="sd">        transport analysis.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_pop</span>
+<span class="sd">        Read and preprocess population estimates into a geopandas dataframe.</span>
+<span class="sd">    plot</span>
+<span class="sd">        Build static and interactive visualisations of population data. Can</span>
+<span class="sd">        only use this method once `get_pop` has been called.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        When `filepath` is not a file or can not be found.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># defend against cases where input is not a file and does not exist</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2"> is not a file.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__filepath</span> <span class="o">=</span> <span class="n">filepath</span>
+
+        <span class="c1"># record the crs of the data source without reading in data</span>
+        <span class="k">with</span> <span class="n">rio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__crs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span>
+
+        <span class="c1"># set attributes to None to prevent plotting function calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RasterPop.get_pop">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.population.rasterpop.RasterPop.html#transport_performance.population.rasterpop.RasterPop.get_pop">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pop</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">aoi_bounds</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Polygon</span><span class="p">],</span>
+        <span class="n">aoi_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">round</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">var_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;population&quot;</span><span class="p">,</span>
+        <span class="n">urban_centre_bounds</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Polygon</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">urban_centre_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get population data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        aoi_bounds : Type[Polygon]</span>
+<span class="sd">            A shapely polygon defining the boundary of the area of interest.</span>
+<span class="sd">            Assumed to be in the same CRS as the rastered population data. If</span>
+<span class="sd">            it is different, set `aoi_crs` to the CRS of this boundary.</span>
+<span class="sd">        aoi_crs : str, optional</span>
+<span class="sd">            CRS string for `aoi_bounds` (e.g. &quot;EPSG:4326&quot;), by default None</span>
+<span class="sd">            which means it is assumed to have the same CRS as the population</span>
+<span class="sd">            data.</span>
+<span class="sd">        round : bool, optional</span>
+<span class="sd">            Round population estimates to the nearest whole integer.</span>
+<span class="sd">        threshold : int, optional</span>
+<span class="sd">            Threshold population estimates, where values below the set</span>
+<span class="sd">            threshold will be set to nan, by default None which means no</span>
+<span class="sd">            thresholding will occur.</span>
+<span class="sd">        var_name : str, optional</span>
+<span class="sd">            The variable name, by default &quot;population&quot;</span>
+<span class="sd">        urban_centre_bounds : Type[Polygon], optional</span>
+<span class="sd">            Polygon defining an urban centre bounday, by default None meaning</span>
+<span class="sd">            information concerning whether the grid resides within the urban</span>
+<span class="sd">            centre will not be added.</span>
+<span class="sd">        urban_centre_crs : str, optional</span>
+<span class="sd">            The urban centre polygon CRS, by default None meaning this is the</span>
+<span class="sd">            same CRS as the input raster data. Only used when</span>
+<span class="sd">            `urban_centre_bounds` is set.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pop_gdf : gpd.GeoDataFrame</span>
+<span class="sd">            A geopandas dataframe of the input data, with gridded geometry.</span>
+<span class="sd">            This is in the same CRS as the input raster data.</span>
+<span class="sd">        centroid_gdf</span>
+<span class="sd">            A geopandas dataframe of grid centroids, converted to EPSG:4326 for</span>
+<span class="sd">            transport analysis.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read and clip population data to area of interest</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_and_clip</span><span class="p">(</span><span class="n">aoi_bounds</span><span class="p">,</span> <span class="n">aoi_crs</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
+
+        <span class="c1"># round population estimates, if requested</span>
+        <span class="k">if</span> <span class="nb">round</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_round_population</span><span class="p">()</span>
+
+        <span class="c1"># threshold the population data, if requested</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_threshold_population</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span>
+
+        <span class="c1"># convert to variable and centroid geopandas dataframes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_geopandas</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span>
+
+        <span class="c1"># add within urban centre details</span>
+        <span class="k">if</span> <span class="n">urban_centre_bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_within_urban_centre</span><span class="p">(</span>
+                <span class="n">urban_centre_bounds</span><span class="p">,</span> <span class="n">urban_centre_crs</span><span class="o">=</span><span class="n">urban_centre_crs</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span></div>
+
+
+<div class="viewcode-block" id="RasterPop.plot">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.population.rasterpop.RasterPop.html#transport_performance.population.rasterpop.RasterPop.plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;folium&quot;</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">GeoAxes</span><span class="p">],</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot population data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        which : str, optional</span>
+<span class="sd">            Package to use for plotting. Must be one of {&quot;matplotlib&quot;,</span>
+<span class="sd">            &quot;cartopy&quot;, &quot;folium&quot;}, by default &quot;folium&quot;.</span>
+<span class="sd">        save : str, optional</span>
+<span class="sd">            Filepath to save file, with the file extension, by default None</span>
+<span class="sd">            meaning a file will not be saved.</span>
+<span class="sd">        kwargs : dict, optional</span>
+<span class="sd">            Extra arguments passed to plotting functions to configure the plot</span>
+<span class="sd">            styling. See Notes for more support.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[folium.Map, Type[GeoAxes], plt.Axes, None]</span>
+<span class="sd">            A folium map is returned when the `folium` backend is used. A</span>
+<span class="sd">            matplotlib Axes object is returned when the `matplotlib` backend is</span>
+<span class="sd">            used. A matplotlib/cartopy GeoAxes object is return when the</span>
+<span class="sd">            `cartopy` backend is used. None will be returned when saving to</span>
+<span class="sd">            file.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Unexpected value of `which`.</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            When plot is called without reading data.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Calling `help` as follows will provide more insights on possible kwarg</span>
+<span class="sd">        arguments for the valid plotting backends:</span>
+
+<span class="sd">        - Folium backend: `help(RasterPop._plot_folium)`</span>
+<span class="sd">        - Matplotlib backend: `help(RasterPop._plot_matplotlib)`</span>
+<span class="sd">        - Cartopy backend: `help(RasterPop._plot_cartopy)`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># record of valid which values</span>
+        <span class="n">WHICH_VALUES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;matplotlib&quot;</span><span class="p">,</span> <span class="s2">&quot;catropy&quot;</span><span class="p">,</span> <span class="s2">&quot;folium&quot;</span><span class="p">}</span>
+
+        <span class="c1"># defend against case where `get_pop` hasn&#39;t been called</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to call `plot` without calling `get_pop`.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;folium&quot;</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_folium</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">m</span>
+        <span class="k">elif</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;cartopy&quot;</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_cartopy</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ax</span>
+        <span class="k">elif</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;matplotlib&quot;</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_matplotlib</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ax</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unrecognised value for `which` </span><span class="si">{</span><span class="n">which</span><span class="si">}</span><span class="s2">. Must be one of &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">WHICH_VALUES</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_read_and_clip</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">aoi_bounds</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Polygon</span><span class="p">],</span>
+        <span class="n">aoi_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">var_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;population&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Open data and clip to the area of interest boundary.</span>
+
+<span class="sd">        Read and clip raster file from disk (more performant). Mask the data</span>
+<span class="sd">        (such that no data values are nan) and read in all grids that touch</span>
+<span class="sd">        the aoi boundary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        aoi_bounds : Type[Polygon]</span>
+<span class="sd">            A shapely polygon defining the boundary of the area of interest.</span>
+<span class="sd">        aoi_crs : str, optional</span>
+<span class="sd">            CRS string for `aoi_bounds` (e.g. &quot;EPSG:4326&quot;), by default None</span>
+<span class="sd">            which means it is assumed to have the same CRS as `aoi_bounds`.</span>
+<span class="sd">        var_name : str, optional</span>
+<span class="sd">            The variable name, by default &quot;population&quot;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defend against case where aoi_bounds is not a shapely polygon</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aoi_bounds</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected type </span><span class="si">{</span><span class="n">Polygon</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for `aoi_bounds`, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">aoi_bounds</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># convert aoi bounds CRS if needed</span>
+        <span class="k">if</span> <span class="n">aoi_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">aoi_bounds</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="n">aoi_crs</span><span class="p">)</span>
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__crs</span><span class="p">)</span>
+            <span class="n">aoi_bounds</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
+
+        <span class="c1"># open and clip raster data - using `all_touched` method to include any</span>
+        <span class="c1"># cell touched and `from_disk` for improved reading speeds.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span> <span class="o">=</span> <span class="n">rioxarray</span><span class="o">.</span><span class="n">open_rasterio</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__filepath</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">clip</span><span class="p">([</span><span class="n">aoi_bounds</span><span class="p">],</span> <span class="n">from_disk</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">all_touched</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># set the variable name - set internal variable for reuse in class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">var_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__var_name</span> <span class="o">=</span> <span class="n">var_name</span>
+
+        <span class="c1"># build aoi bounds dataframe for plotting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aoi_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">aoi_bounds</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__crs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aoi_gdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;boundary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;AOI Bounds&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_round_population</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Round population data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_threshold_population</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Threshold population data.&quot;&quot;&quot;</span>
+        <span class="c1"># `where()` is working differently to expectation here - it keeps</span>
+        <span class="c1"># values above the threshold and otherwise sets them to nan.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xds</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_to_geopandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">round</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to geopandas dataframe.&quot;&quot;&quot;</span>
+        <span class="c1"># vectorise to geopandas dataframe, setting data type to np.float32 -</span>
+        <span class="c1"># dtype is required by vecotrize function. Squeeze needed since shape</span>
+        <span class="c1"># is (1xnxm) (1 band in tiff file)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span> <span class="o">=</span> <span class="n">vectorize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+        <span class="c1"># dropna to remove nodata regions and those below threshold (if set)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__var_name</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
+            <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># if rounding, cast to int after removing na values</span>
+        <span class="k">if</span> <span class="nb">round</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__var_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__var_name</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+
+        <span class="c1"># add an id for each cell - needed for r5py</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="o">.</span><span class="n">index</span><span class="p">))</span>
+
+        <span class="c1"># re-order columns for consistency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__var_name</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]]</span>
+
+        <span class="c1"># create centroid geodataframe using only necessary columns - save on</span>
+        <span class="c1"># duplicated data, can join gdfs on id if ever needed.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span><span class="p">[</span><span class="s2">&quot;centroid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">centroid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="s2">&quot;centroid&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;geometry&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># convert centroids to EPSG:4326 for use in r5py</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__crs</span> <span class="o">!=</span> <span class="s2">&quot;EPSG:4326&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_within_urban_centre</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">urban_centre_bounds</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Polygon</span><span class="p">],</span>
+        <span class="n">urban_centre_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Categorise grid whether within urban centre.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        urban_centre_bounds : Type[Polygon]</span>
+<span class="sd">            Polygon defining urban centre bounday</span>
+<span class="sd">        urban_centre_crs : str, optional</span>
+<span class="sd">            The urban centre polygon CRS, by default None meaning this is the</span>
+<span class="sd">            same CRS as the input raster data.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            When `urban_centre_bounds` is not a shapely Polygon.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defend against case where urban_centre_bounds is not a polygon</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urban_centre_bounds</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected type </span><span class="si">{</span><span class="n">Polygon</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for `urban_centre_bounds`, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">urban_centre_bounds</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># match the crs if is one isn&#39;t provided - default assumption if this</span>
+        <span class="c1"># arg is not set, and a CRS is needed when building the gdf below</span>
+        <span class="k">if</span> <span class="n">urban_centre_crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">urban_centre_crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__crs</span>
+
+        <span class="c1"># build urban centre dataframe - set within column to true for sjoin</span>
+        <span class="c1"># such that nan values post join imply no within urban centre. Add an a</span>
+        <span class="c1"># column for the boundary name - only useful for plotting.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__UC_COL_NAME</span> <span class="o">=</span> <span class="s2">&quot;within_urban_centre&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+            <span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">urban_centre_bounds</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="n">urban_centre_crs</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__UC_COL_NAME</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;boundary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Urban Centre&quot;</span>
+
+        <span class="c1"># if the provided crs does not match the raster crs, then convert the</span>
+        <span class="c1"># crs before the sjoin</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span><span class="o">.</span><span class="n">crs</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__crs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__crs</span><span class="p">)</span>
+
+        <span class="c1"># spatial join when cell is within urban centre, filling nan to false.</span>
+        <span class="c1"># drop index_right and boundary columns as they aren&#39;t needed.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;index_right&quot;</span><span class="p">,</span> <span class="s2">&quot;boundary&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__UC_COL_NAME</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__UC_COL_NAME</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># add within_urban_centre column to centroid data too - could be useful</span>
+        <span class="c1"># during selecting sources/destinations, so duplication is OK.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="p">[[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__UC_COL_NAME</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;id&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_folium</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">save</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tiles</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;https://</span><span class="si">{s}</span><span class="s2">.basemaps.cartocdn.com/light_all/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}{r}</span><span class="s2">.png&quot;</span>
+        <span class="p">),</span>
+        <span class="n">attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStre&#39;</span>
+            <span class="s1">&#39;etMap&lt;/a&gt; contributors &amp;copy; &lt;a href=&quot;https://carto.com/attribut&#39;</span>
+            <span class="s1">&#39;ions&quot;&gt;CARTO&lt;/a&gt;&#39;</span>
+        <span class="p">),</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+        <span class="n">boundary_color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+        <span class="n">boundary_weight</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot data onto a folium map.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        save : str, optional</span>
+<span class="sd">            Filepath to save location, with &quot;.html&quot; extension, by default None</span>
+<span class="sd">            meaning the map will not be saved to file.</span>
+<span class="sd">        tiles : str, optional</span>
+<span class="sd">            Tile layer for base map, by default Carto Positron tiles. As per</span>
+<span class="sd">            folium, the base map can be generated using a built in key words</span>
+<span class="sd">            [1]_ or a custom tileset url [2]_.</span>
+<span class="sd">        attr : str, optional</span>
+<span class="sd">            Tile layer attribution, by default Carto Positron attribution.</span>
+<span class="sd">        cmap : str, optional</span>
+<span class="sd">            A colormap string recognised by `matplotlib` [3]_, by default</span>
+<span class="sd">            &quot;viridis&quot;.</span>
+<span class="sd">        boundary_color : str, optional</span>
+<span class="sd">            Color of the boundary lines, by default &quot;red&quot;. Could also be a</span>
+<span class="sd">            hexstring.</span>
+<span class="sd">        boundary_weight : float, optional</span>
+<span class="sd">            Weight (in pixels) of the boudary lines, by default 2.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        folium.Map</span>
+<span class="sd">            Folium map obeject, with data and boundaries in layers. Will be</span>
+<span class="sd">            None when writing to file (saves time when displaying map</span>
+<span class="sd">            interactive mode).</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        1. When using tile layers, check the tile provider&#39;s terms and</span>
+<span class="sd">        conditions and assign an attribution as needed.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [1] https://python-visualization.github.io/folium/modules.html</span>
+<span class="sd">        .. [2] http://leaflet-extras.github.io/leaflet-providers/preview/</span>
+<span class="sd">        .. [3] https://matplotlib.org/stable/tutorials/colors/colormaps.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># add a base map with no tile - then is it not on a layer control</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">tiles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">control_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">zoom_control</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># add a tile layer</span>
+        <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span>
+            <span class="n">tiles</span><span class="o">=</span><span class="n">tiles</span><span class="p">,</span>
+            <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">,</span>
+            <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">control</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+        <span class="c1"># add the variable data to the map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop_gdf</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__var_name</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__var_name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">(),</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span>
+        <span class="p">)</span>
+
+        <span class="c1"># add the urban centre boundary, if one was provided</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uc_gdf</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span>
+                <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;boundary&quot;</span><span class="p">],</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Urban Centre Boundary&quot;</span><span class="p">,</span>
+                <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
+                <span class="n">style_kwds</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;fill&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">boundary_color</span><span class="p">,</span>
+                    <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="n">boundary_weight</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+
+        <span class="c1"># add the area of interest boundary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aoi_gdf</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span>
+            <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;boundary&quot;</span><span class="p">],</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Area of Interest Boundary&quot;</span><span class="p">,</span>
+            <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
+            <span class="n">style_kwds</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;fill&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">boundary_color</span><span class="p">,</span>
+                <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="n">boundary_weight</span><span class="p">,</span>
+                <span class="s2">&quot;dashArray&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># add the centroids to a separate layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centroid_gdf</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__UC_COL_NAME</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Centroids&quot;</span><span class="p">,</span>
+            <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">,</span>
+            <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">style_kwds</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;style_function&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#BC544B&quot;</span>
+                    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">__UC_COL_NAME</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span>
+                    <span class="k">else</span> <span class="s2">&quot;#8B0000&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># fit bounds to the plot limits and add a layer control button</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">())</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">folium</span><span class="o">.</span><span class="n">LayerControl</span><span class="p">())</span>
+
+        <span class="c1"># write to file if filepath is given</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_df</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_df</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">out_df</span><span class="p">)</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">m</span>
+
+    <span class="k">def</span> <span class="nf">_plot_cartopy</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">save</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+        <span class="n">map_tile_zoom</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+        <span class="n">cbar_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.034</span><span class="p">,</span>
+        <span class="n">cbar_pad</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.04</span><span class="p">,</span>
+        <span class="n">cbar_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Population count per cell&quot;</span><span class="p">,</span>
+        <span class="n">var_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;GHS-POP 2020 (R2023)&quot;</span><span class="p">,</span>
+        <span class="n">base_map_attr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;(C) OpenSteetMap contributors&quot;</span><span class="p">,</span>
+        <span class="n">attr_font_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">7.5</span><span class="p">,</span>
+        <span class="n">attr_location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bottom_left&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">GeoAxes</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot data via cartopy (static plot with an OpenStreetMap base tile).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        save : str, optional</span>
+<span class="sd">            Filepath to save location, with &quot;.png&quot; extension, by default None</span>
+<span class="sd">            meaning the map will not be saved to file.</span>
+<span class="sd">        figsize : tuple, optional</span>
+<span class="sd">            The matplotlib figure size width and height in inches, by default</span>
+<span class="sd">            (10, 8).</span>
+<span class="sd">        map_tile_zoom : int, optional</span>
+<span class="sd">            The zoom level for the OpenSteetMap base tile layer, by default 12</span>
+<span class="sd">            which is suitable for towns/cities. See [1]_ for more details on</span>
+<span class="sd">            the zoom level.</span>
+<span class="sd">        cmap : str, optional</span>
+<span class="sd">            A colormap string recognised by `matplotlib` [2]_, by default</span>
+<span class="sd">            &quot;viridis&quot;.</span>
+<span class="sd">        cbar_fraction : float, optional</span>
+<span class="sd">            Fractional size of the colour bar. Use this value to change the</span>
+<span class="sd">            height of the colour bar, by default 0.034.</span>
+<span class="sd">        cbar_pad : float, optional</span>
+<span class="sd">            Amount of padding between the plot and the colourbar, by default</span>
+<span class="sd">            0.04.</span>
+<span class="sd">        cbar_label : str, optional</span>
+<span class="sd">            Colour label, by default &quot;Population count per cell&quot;.</span>
+<span class="sd">        var_attr : str, optional</span>
+<span class="sd">            Attribution to assign for variable/population data, by default</span>
+<span class="sd">            &quot;GHS-POP 2020 (R2023)&quot;.</span>
+<span class="sd">        base_map_attr : str, optional</span>
+<span class="sd">            Base map tile attribution, by default &quot;(C) OpenSteetMap</span>
+<span class="sd">            contributors&quot;.</span>
+<span class="sd">        attr_font_size : float, optional</span>
+<span class="sd">            Font size of the attribution text, by default 7.5.</span>
+<span class="sd">        attr_location : str, optional</span>
+<span class="sd">            Location of the attribution. Must be one of {&quot;bottom_left&quot;,</span>
+<span class="sd">            &quot;bottom_right&quot;, &quot;top_right&quot;, &quot;top_left&quot;}, by default &quot;bottom_left&quot;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[Type[GeoAxes], None]</span>
+<span class="sd">            A matplotlib/cartopy GeoAxes displaying the data ontop of an</span>
+<span class="sd">            OpenStreetMap base tile. Returns None when writing to file.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            When `attr_location` is assigned an unexpected value.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [1] https://wiki.openstreetmap.org/wiki/Zoom_levels</span>
+<span class="sd">        .. [2] https://matplotlib.org/stable/tutorials/colors/colormaps.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># make attribution location dictionary</span>
+        <span class="n">ATTR_LOC</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bottom_left&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
+                <span class="s2">&quot;ha&quot;</span><span class="p">:</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;va&quot;</span><span class="p">:</span> <span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;bottom_right&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
+                <span class="s2">&quot;ha&quot;</span><span class="p">:</span> <span class="s2">&quot;right&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;va&quot;</span><span class="p">:</span> <span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;top_right&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span> <span class="s2">&quot;ha&quot;</span><span class="p">:</span> <span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="s2">&quot;va&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;top_left&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span> <span class="s2">&quot;ha&quot;</span><span class="p">:</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;va&quot;</span><span class="p">:</span> <span class="s2">&quot;top&quot;</span><span class="p">},</span>
+        <span class="p">}</span>
+
+        <span class="c1"># get OpenStreetMap tile layer object in greyscale</span>
+        <span class="n">map_tile</span> <span class="o">=</span> <span class="n">cimgt</span><span class="o">.</span><span class="n">OSM</span><span class="p">(</span><span class="n">desired_tile_form</span><span class="o">=</span><span class="s2">&quot;L&quot;</span><span class="p">)</span>
+
+        <span class="c1"># build plot axis and add map tile</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">map_tile</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="o">*</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="n">data_crs</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Mollweide</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="n">map_tile</span><span class="p">,</span> <span class="n">map_tile_zoom</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+
+        <span class="c1"># build a colormap and add pcolormesh plot data, setting vmin and vmax</span>
+        <span class="c1"># to match the whole colormap range. transform to data_crs required to</span>
+        <span class="c1"># project onto base map.</span>
+        <span class="n">plot_cmap</span> <span class="o">=</span> <span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="n">plot_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">vmin_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">plot_data</span><span class="p">)</span>
+        <span class="n">vmax_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">plot_data</span><span class="p">)</span>
+        <span class="n">ctf</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
+            <span class="n">plot_data</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="n">plot_cmap</span><span class="p">,</span>
+            <span class="n">vmin</span><span class="o">=</span><span class="n">vmin_data</span><span class="p">,</span>
+            <span class="n">vmax</span><span class="o">=</span><span class="n">vmax_data</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">data_crs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># add a colorbar - converting format of smaller numbers to exponents</span>
+        <span class="c1"># modify the y label and reformat the tick axis to show min and max</span>
+        <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span>
+            <span class="n">ctf</span><span class="p">,</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+            <span class="n">fraction</span><span class="o">=</span><span class="n">cbar_fraction</span><span class="p">,</span>
+            <span class="n">pad</span><span class="o">=</span><span class="n">cbar_pad</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.0E</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">cbar_label</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">270</span><span class="p">,</span> <span class="n">labelpad</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">vmin_data</span><span class="p">]),</span>
+                    <span class="n">cbar</span><span class="o">.</span><span class="n">get_ticks</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">vmax_data</span><span class="p">]),</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># defend against case attr_location is invalid</span>
+        <span class="k">if</span> <span class="n">attr_location</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ATTR_LOC</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unrecognised value for `attr_location` </span><span class="si">{</span><span class="n">attr_location</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Expecting one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">ATTR_LOC</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># create an attribution string and add it to the axis</span>
+        <span class="n">grid_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span>
+        <span class="n">attribution</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Generated on: </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span><span class="w"> </span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Population data: </span><span class="si">{</span><span class="n">var_attr</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Grid Size: </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">grid_res</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2">m x </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">grid_res</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2">m</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Base map: </span><span class="si">{</span><span class="n">base_map_attr</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="n">ATTR_LOC</span><span class="p">[</span><span class="n">attr_location</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">],</span>
+            <span class="n">ATTR_LOC</span><span class="p">[</span><span class="n">attr_location</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">],</span>
+            <span class="n">attribution</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">attr_font_size</span><span class="p">,</span>
+            <span class="n">wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">fontdict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Arial&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#000000&quot;</span><span class="p">},</span>
+            <span class="n">va</span><span class="o">=</span><span class="n">ATTR_LOC</span><span class="p">[</span><span class="n">attr_location</span><span class="p">][</span><span class="s2">&quot;va&quot;</span><span class="p">],</span>
+            <span class="n">ha</span><span class="o">=</span><span class="n">ATTR_LOC</span><span class="p">[</span><span class="n">attr_location</span><span class="p">][</span><span class="s2">&quot;ha&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># use tight layout to maximise axis size of axis</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+        <span class="c1"># write to file if filepath is given, since there is no figure, need to</span>
+        <span class="c1"># get the current figure and resize it to match the axis before saving</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_df</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_df</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">out_df</span><span class="p">)</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="o">*</span><span class="n">figsize</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">ax</span>
+
+    <span class="k">def</span> <span class="nf">_plot_matplotlib</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">save</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mf">6.4</span><span class="p">,</span> <span class="mf">4.8</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot raster data using matplotlib.</span>
+
+<span class="sd">        A shallow wrapper around rioxarray&#39;s plot function, to display the</span>
+<span class="sd">        population as a raster using the matplotlib backend.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        save : str, optional</span>
+<span class="sd">            Filepath to save location, with &quot;.png&quot; extension, by default None</span>
+<span class="sd">            meaning the plot will not be saved to file.</span>
+<span class="sd">        figsize : tuple, optional</span>
+<span class="sd">            The matplotlib figursize width and height in inches, by default</span>
+<span class="sd">            (6.4, 4.8).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[plt.Axes, None]</span>
+<span class="sd">            Returns a QuadMesh axis object when not writing to file. When</span>
+<span class="sd">            writing to file, None is return.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># handle matplotlib and rioxarry steps</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+        <span class="c1"># write to file if filepath is given</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_df</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_df</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">out_df</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">ax</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

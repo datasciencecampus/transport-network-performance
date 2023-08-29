@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>transport_performance.gtfs.gtfs_utils &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html"><cite>transport-performance</cite> API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">transport_performance.gtfs.gtfs_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for transport_performance.gtfs.gtfs_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utility functions for GTFS archives.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">gtfs_kit</span> <span class="k">as</span> <span class="nn">gk</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
+<span class="kn">from</span> <span class="nn">pyprojroot</span> <span class="kn">import</span> <span class="n">here</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_is_expected_filetype</span><span class="p">,</span>
+    <span class="n">_check_list</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="bbox_filter_gtfs">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.gtfs_utils.bbox_filter_gtfs.html#transport_performance.gtfs.gtfs_utils.bbox_filter_gtfs">[docs]</a>
+<span class="k">def</span> <span class="nf">bbox_filter_gtfs</span><span class="p">(</span>
+    <span class="n">in_pth</span><span class="o">=</span><span class="n">here</span><span class="p">(</span><span class="s2">&quot;tests/data/newport-20230613_gtfs.zip&quot;</span><span class="p">),</span>
+    <span class="n">out_pth</span><span class="o">=</span><span class="n">here</span><span class="p">(</span><span class="s2">&quot;data/external/filtered_gtfs.zip&quot;</span><span class="p">),</span>
+    <span class="n">bbox_list</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">3.077081</span><span class="p">,</span> <span class="mf">51.52222</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.925075</span><span class="p">,</span> <span class="mf">51.593596</span><span class="p">],</span>
+    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter a GTFS feed to any routes intersecting with a bounding box.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    in_pth : (str, pathlib.PosixPath)</span>
+<span class="sd">        Path to the unfiltered GTFS feed. Defaults to</span>
+<span class="sd">        here(&quot;tests/data/newport-20230613_gtfs.zip&quot;).</span>
+<span class="sd">    out_pth : (str, pathlib.PosixPath)</span>
+<span class="sd">        Path to write the filtered feed to. Defaults to</span>
+<span class="sd">        here(&quot;data/external/filtered_gtfs.zip&quot;).</span>
+<span class="sd">    bbox_list : list(float)</span>
+<span class="sd">        A list of x and y values in the order of minx, miny, maxx, maxy.</span>
+<span class="sd">        Defaults to [-3.077081, 51.52222, -2.925075, 51.593596].</span>
+<span class="sd">    units : str</span>
+<span class="sd">        Distance units of the original GTFS. Defaults to &quot;m&quot;.</span>
+<span class="sd">    crs : str</span>
+<span class="sd">        What projection should the `bbox_list` be interpreted as. Defaults to</span>
+<span class="sd">        &quot;epsg:4326&quot; for lat long.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">pth</span><span class="o">=</span><span class="n">in_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;in_pth&quot;</span><span class="p">)</span>
+    <span class="n">_is_expected_filetype</span><span class="p">(</span>
+        <span class="n">pth</span><span class="o">=</span><span class="n">out_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;out_pth&quot;</span><span class="p">,</span> <span class="n">check_existing</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">_check_list</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="n">bbox_list</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;bbox_list&quot;</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">[</span><span class="n">units</span><span class="p">,</span> <span class="n">crs</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected string. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">param</span><span class="p">)</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># create box polygon around provided coords, need to splat</span>
+    <span class="n">box_poly</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">bbox_list</span><span class="p">)</span>
+    <span class="c1"># gtfs_kit expects gdf</span>
+    <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">box_poly</span><span class="p">])</span>
+    <span class="n">feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">read_feed</span><span class="p">(</span><span class="n">in_pth</span><span class="p">,</span> <span class="n">dist_units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+    <span class="n">newport_feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">miscellany</span><span class="o">.</span><span class="n">restrict_to_area</span><span class="p">(</span><span class="n">feed</span><span class="o">=</span><span class="n">feed</span><span class="p">,</span> <span class="n">area</span><span class="o">=</span><span class="n">gdf</span><span class="p">)</span>
+    <span class="n">newport_feed</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_pth</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtered feed written to </span><span class="si">{</span><span class="n">out_pth</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

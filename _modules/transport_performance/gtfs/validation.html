@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>transport_performance.gtfs.validation &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html"><cite>transport-performance</cite> API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">transport_performance.gtfs.validation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for transport_performance.gtfs.validation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Validating GTFS data.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">gtfs_kit</span> <span class="k">as</span> <span class="nn">gk</span>
+<span class="kn">from</span> <span class="nn">pyprojroot</span> <span class="kn">import</span> <span class="n">here</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">folium</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.routes</span> <span class="kn">import</span> <span class="n">scrape_route_type_lookup</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_is_expected_filetype</span><span class="p">,</span>
+    <span class="n">_check_namespace_export</span><span class="p">,</span>
+    <span class="n">_check_parent_dir_exists</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_intermediate_dates</span><span class="p">(</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a list of daily timestamps between two dates.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start : pd.Timestamp</span>
+<span class="sd">        The start date of the given time period in %Y%m%d format.</span>
+<span class="sd">    end : pd.Timestamp</span>
+<span class="sd">        The end date of the given time period in %Y%m%d format.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[pd.Timestamp]</span>
+<span class="sd">        A list of daily timestamps for each day in the time period</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># checks for start and end</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;&#39;start&#39; expected type pd.Timestamp.&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; Recieved type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;&#39;end&#39; expected type pd.Timestamp.&quot;</span> <span class="sa">f</span><span class="s2">&quot; Recieved type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">_create_map_title_text</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">geom_crs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate the map title text when plotting convex hull.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gdf :  gpd.GeoDataFrame</span>
+<span class="sd">        GeoDataFrame containing the spatial features.</span>
+<span class="sd">    units :  str</span>
+<span class="sd">        Distance units of the GTFS feed from which `gdf` originated.</span>
+<span class="sd">    geom_crs : (str, int):</span>
+<span class="sd">        The geometric crs to use in reprojecting the data in order to</span>
+<span class="sd">        calculate the area of the hull polygon.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str : The formatted text string for presentation in the map title.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">units</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;km&quot;</span><span class="p">]:</span>
+        <span class="n">converted_gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">geom_crs</span><span class="p">)</span>
+        <span class="n">hull_area</span> <span class="o">=</span> <span class="n">converted_gdf</span><span class="o">.</span><span class="n">area</span>
+        <span class="n">crs_unit</span> <span class="o">=</span> <span class="n">converted_gdf</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">axis_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unit_name</span>
+        <span class="k">if</span> <span class="n">crs_unit</span> <span class="o">==</span> <span class="s2">&quot;metre&quot;</span><span class="p">:</span>
+            <span class="n">hull_area</span> <span class="o">=</span> <span class="n">hull_area</span> <span class="o">/</span> <span class="mi">1000000</span>
+        <span class="k">if</span> <span class="n">crs_unit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;kilometre&quot;</span><span class="p">,</span> <span class="s2">&quot;metre&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;CRS units for convex hull not recognised. &quot;</span>
+                <span class="s2">&quot;Recognised units include: [&#39;metre&#39;, &#39;kilometre&#39;]. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; Found &#39;</span><span class="si">{</span><span class="n">crs_unit</span><span class="si">}</span><span class="s2">.&#39;&quot;</span>
+            <span class="p">)</span>
+        <span class="n">pre</span> <span class="o">=</span> <span class="s2">&quot;GTFS Stops Convex Hull Area: &quot;</span>
+        <span class="n">post</span> <span class="o">=</span> <span class="s2">&quot; nearest km&lt;sup&gt;2&lt;/sup&gt;.&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pre</span><span class="si">}{</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">hull_area</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span><span class="si">:</span><span class="s2">,</span><span class="si">}{</span><span class="n">post</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;GTFS Stops Convex Hull. Area Calculation for Metric &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Units Only. Units Found are in </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">txt</span>
+
+
+<div class="viewcode-block" id="GtfsInstance">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance">[docs]</a>
+<span class="k">class</span> <span class="nc">GtfsInstance</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a feed instance for validation, cleaning &amp; visualisation.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">gtfs_pth</span><span class="o">=</span><span class="n">here</span><span class="p">(</span><span class="s2">&quot;tests/data/newport-20230613_gtfs.zip&quot;</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;m&quot;</span>
+    <span class="p">):</span>
+        <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">pth</span><span class="o">=</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;gtfs_pth&quot;</span><span class="p">)</span>
+
+        <span class="c1"># validate units param</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`units` expected a string. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">units</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">units</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;metres&quot;</span><span class="p">,</span> <span class="s2">&quot;meters&quot;</span><span class="p">]:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
+        <span class="k">elif</span> <span class="n">units</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;kilometers&quot;</span><span class="p">,</span> <span class="s2">&quot;kilometres&quot;</span><span class="p">]:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;km&quot;</span>
+        <span class="n">accepted_units</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;km&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">accepted_units</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`units` accepts metric only. Found: </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">read_feed</span><span class="p">(</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">dist_units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GtfsInstance.is_valid">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.is_valid">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check a feed is valid with `gtfs_kit`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            pd.core.frame.DataFrame: Table of errors, warnings &amp; their</span>
+<span class="sd">            descriptions.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.print_alerts">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.print_alerts">[docs]</a>
+    <span class="k">def</span> <span class="nf">print_alerts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alert_type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print validity errors &amp; warnins messages in full.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        alert_type : str, optional</span>
+<span class="sd">                The alert type to print messages. Defaults to &quot;error&quot;. Also</span>
+<span class="sd">                accepts &quot;warning&quot;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;validity_df&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s2">&quot;`self.validity_df` is None, did you forget to use &quot;</span>
+                <span class="s2">&quot;`self.is_valid()`?&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># In cases where no alerts of alert_type are found, KeyError raised</span>
+            <span class="n">msgs</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">alert_type</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="c1"># multiple errors</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msgs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">msgs</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="c1"># case where single error</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msgs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">msgs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No alerts of type </span><span class="si">{</span><span class="n">alert_type</span><span class="si">}</span><span class="s2"> were found.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.clean_feed">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.clean_feed">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean_feed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attempt to clean feed using `gtfs_kit`.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># In cases where shape_id is missing, keyerror is raised.</span>
+            <span class="c1"># https://developers.google.com/transit/gtfs/reference#shapestxt</span>
+            <span class="c1"># shows that shapes.txt is optional file.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;KeyError. Feed was not cleaned.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.viz_stops">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.viz_stops">[docs]</a>
+    <span class="k">def</span> <span class="nf">viz_stops</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">out_pth</span><span class="p">,</span> <span class="n">geoms</span><span class="o">=</span><span class="s2">&quot;point&quot;</span><span class="p">,</span> <span class="n">geom_crs</span><span class="o">=</span><span class="mi">27700</span><span class="p">,</span> <span class="n">create_out_parent</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualise the stops on a map as points or convex hull. Writes file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        out_pth : str</span>
+<span class="sd">            Path to write the map file html document to, including the file</span>
+<span class="sd">            name. Must end with &#39;.html&#39; file extension.</span>
+
+<span class="sd">        geoms : str</span>
+<span class="sd">            Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`</span>
+<span class="sd">            to map point locations of available stops. If `geoms=hull`,</span>
+<span class="sd">            calculates the convex hull &amp; its area. Defaults to &quot;point&quot;.</span>
+
+<span class="sd">        geom_crs : (str, int)</span>
+<span class="sd">            Geometric CRS to use for the calculation of the convex hull area</span>
+<span class="sd">            only. Defaults to &quot;27700&quot; (OSGB36, British National Grid).</span>
+
+<span class="sd">        create_out_parent : bool</span>
+<span class="sd">            Should the parent directory of `out_pth` be created if not found.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># out_pth defence</span>
+        <span class="n">_check_parent_dir_exists</span><span class="p">(</span>
+            <span class="n">pth</span><span class="o">=</span><span class="n">out_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;out_pth&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="n">create_out_parent</span>
+        <span class="p">)</span>
+
+        <span class="n">pre</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">out_pth</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">!=</span> <span class="s2">&quot;.html&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2"> format not implemented. Writing to .html&quot;</span><span class="p">)</span>
+            <span class="n">out_pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">pre</span> <span class="o">+</span> <span class="s2">&quot;.html&quot;</span><span class="p">)</span>
+
+        <span class="c1"># geoms defence</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geoms</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`geoms` expects a string. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">geoms</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">geoms</span> <span class="o">=</span> <span class="n">geoms</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">accept_vals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;point&quot;</span><span class="p">,</span> <span class="s2">&quot;hull&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">geoms</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">accept_vals</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`geoms` must be either &#39;point&#39; or &#39;hull.&#39;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># geom_crs defence</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom_crs</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;`geom_crs` expects string or integer. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">geom_crs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># map_stops will fail if stop_code not present. According to :</span>
+            <span class="c1"># https://developers.google.com/transit/gtfs/reference#stopstxt</span>
+            <span class="c1"># This should be an optional column</span>
+            <span class="k">if</span> <span class="n">geoms</span> <span class="o">==</span> <span class="s2">&quot;point&quot;</span><span class="p">:</span>
+                <span class="c1"># viz stop locations</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">map_stops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">[</span><span class="s2">&quot;stop_id&quot;</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">geoms</span> <span class="o">==</span> <span class="s2">&quot;hull&quot;</span><span class="p">:</span>
+                <span class="c1"># visualise feed, output to file with area est, based on stops</span>
+                <span class="n">gtfs_hull</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">compute_convex_hull</span><span class="p">()</span>
+                <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+                    <span class="p">{</span><span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">gtfs_hull</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;epsg:4326&quot;</span>
+                <span class="p">)</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">dist_units</span>
+                <span class="c1"># prepare the map title</span>
+                <span class="n">txt</span> <span class="o">=</span> <span class="n">_create_map_title_text</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">geom_crs</span><span class="p">)</span>
+
+                <span class="n">title_pre</span> <span class="o">=</span> <span class="s2">&quot;&lt;h3 align=&#39;center&#39; style=&#39;font-size:16px&#39;&gt;&lt;b&gt;&quot;</span>
+                <span class="n">title_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">title_pre</span><span class="si">}{</span><span class="n">txt</span><span class="si">}</span><span class="s2">&lt;/b&gt;&lt;/h3&gt;&quot;</span>
+
+                <span class="n">gtfs_centroid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">compute_centroid</span><span class="p">()</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span>
+                    <span class="n">location</span><span class="o">=</span><span class="p">[</span><span class="n">gtfs_centroid</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">gtfs_centroid</span><span class="o">.</span><span class="n">x</span><span class="p">],</span> <span class="n">zoom_start</span><span class="o">=</span><span class="mi">5</span>
+                <span class="p">)</span>
+                <span class="n">geo_j</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+                <span class="n">geo_j</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">GeoJson</span><span class="p">(</span>
+                    <span class="n">data</span><span class="o">=</span><span class="n">geo_j</span><span class="p">,</span> <span class="n">style_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;fillColor&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">}</span>
+                <span class="p">)</span>
+                <span class="n">geo_j</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">get_root</span><span class="p">()</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">folium</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="n">title_html</span><span class="p">))</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">out_pth</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Key Error. Map was not written.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_order_dataframe_by_day</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">day_column_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;day&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Order a dataframe by days of the week in real-world order.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df : pd.DataFrame</span>
+<span class="sd">            Input dataframe containing a column with the name</span>
+<span class="sd">            of the day of a record</span>
+<span class="sd">        day_column_name : str, optional</span>
+<span class="sd">            The name of the columns in the pandas dataframe</span>
+<span class="sd">            that contains the name of the day of a record,</span>
+<span class="sd">            by default &quot;day&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            The inputted dataframe ordered by the day column</span>
+<span class="sd">            (by real world order).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences for parameters</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;df&#39; expected type pd.DataFrame, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">day_column_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;day_column_name&#39; expected type str, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">day_column_name</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># hard coded day order</span>
+        <span class="n">day_order</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;monday&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;tuesday&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;wednesday&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;thursday&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s2">&quot;friday&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s2">&quot;saturday&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s2">&quot;sunday&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># apply the day order and sort the df</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;day_order&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">day_column_name</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">day_order</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;day_order&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;day_order&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span> <span class="nf">_preprocess_trips_and_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a trips table containing a record for each trip on each date.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            A dataframe containing a record of every trip on every day</span>
+<span class="sd">            from the gtfs feed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a calendar lookup (one row = one date, rather than date range)</span>
+        <span class="n">calendar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">calendar</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># convert dates to dt and create a list of dates between them</span>
+        <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+            <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+            <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">],</span> <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">])</span>
+        <span class="p">]</span>
+
+        <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calendar</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_get_intermediate_dates</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="c1"># explode the dataframe into daily rows for each service</span>
+        <span class="c1">#  (between the given time period)</span>
+        <span class="n">full_calendar</span> <span class="o">=</span> <span class="n">calendar</span><span class="o">.</span><span class="n">explode</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+        <span class="n">calendar</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">,</span> <span class="s2">&quot;end_date&quot;</span><span class="p">,</span> <span class="s2">&quot;period&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># obtain the day of a given date</span>
+        <span class="n">full_calendar</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_calendar</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day_name</span><span class="p">()</span>
+        <span class="n">full_calendar</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_calendar</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">day</span><span class="p">:</span> <span class="n">day</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># reformat the data into a long format and only keep dates</span>
+        <span class="c1"># where the service is active.</span>
+        <span class="c1"># this ensures that dates are only kept when the service</span>
+        <span class="c1"># is running (e.g., Friday)</span>
+        <span class="n">melted_calendar</span> <span class="o">=</span> <span class="n">full_calendar</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span>
+            <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;service_id&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;valid_day&quot;</span>
+        <span class="p">)</span>
+        <span class="n">melted_calendar</span> <span class="o">=</span> <span class="n">melted_calendar</span><span class="p">[</span><span class="n">melted_calendar</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">melted_calendar</span> <span class="o">=</span> <span class="n">melted_calendar</span><span class="p">[</span>
+            <span class="n">melted_calendar</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">melted_calendar</span><span class="p">[</span><span class="s2">&quot;valid_day&quot;</span><span class="p">]</span>
+        <span class="p">][[</span><span class="s2">&quot;service_id&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">]]</span>
+
+        <span class="c1"># join the dates to the trip information to then join on the</span>
+        <span class="c1"># route_type from the route table</span>
+        <span class="n">trips</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">get_trips</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">routes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">get_routes</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">dated_trips</span> <span class="o">=</span> <span class="n">trips</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">melted_calendar</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;service_id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+        <span class="n">dated_trips_routes</span> <span class="o">=</span> <span class="n">dated_trips</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">routes</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;route_id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">dated_trips_routes</span>
+
+    <span class="k">def</span> <span class="nf">_get_pre_processed_trips</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtain pre-processed trip data.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_processed_trips</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre_processed_trips</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_trips_and_routes</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_processed_trips</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_summary_defence</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check for any invalid parameters in a summarising function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        summ_ops : list, optional</span>
+<span class="sd">            A list of operators used to get a summary of a given day,</span>
+<span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
+<span class="sd">        return_summary : bool, optional</span>
+<span class="sd">            When True, a summary is returned. When False, route data</span>
+<span class="sd">            for each date is returned,</span>
+<span class="sd">            by default True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">return_summary</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;return_summary&#39; must be of type boolean.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">return_summary</span><span class="p">)</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">return_summary</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># summ_ops defence</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summ_ops</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">summ_ops</span><span class="p">:</span>
+                <span class="c1"># updated for numpy &gt;= 1.25.0, this check rules out cases</span>
+                <span class="c1"># that are not functions</span>
+                <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">==</span> <span class="s2">&quot;numpy&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_namespace_export</span><span class="p">(</span><span class="n">pkg</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">i</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                            <span class="s2">&quot;Each item in `summ_ops` must be a numpy function.&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">i</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="s2">&quot;Each item in `summ_ops` must be a function.&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">summ_ops</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_namespace_export</span><span class="p">(</span><span class="n">pkg</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="s2">&quot;`summ_ops` expects numpy functions only.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;`summ_ops` expects a numpy function or list of numpy&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; functions. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">summ_ops</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="GtfsInstance.summarise_trips">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.summarise_trips">[docs]</a>
+    <span class="k">def</span> <span class="nf">summarise_trips</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Produce a summarised table of trip statistics by day of week.</span>
+
+<span class="sd">        For trip count summaries, func counts distinct trip_id only. These</span>
+<span class="sd">        are then summarised into average/median/min/max (default) number</span>
+<span class="sd">        of trips per day. Raw data for each date can also be obtained by</span>
+<span class="sd">        setting the &#39;return_summary&#39; parameter to False (bool).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        summ_ops : list, optional</span>
+<span class="sd">            A list of operators used to get a summary of a given day,</span>
+<span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
+<span class="sd">        return_summary : bool, optional</span>
+<span class="sd">            When True, a summary is returned. When False, trip data</span>
+<span class="sd">            for each date is returned,</span>
+<span class="sd">            by default True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame: A dataframe containing either summarized</span>
+<span class="sd">                      results or dated route data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_summary_defence</span><span class="p">(</span><span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span> <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">)</span>
+        <span class="n">pre_processed_trips</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pre_processed_trips</span><span class="p">()</span>
+
+        <span class="c1"># clean the trips to ensure that there are no duplicates</span>
+        <span class="n">cleaned_trips</span> <span class="o">=</span> <span class="n">pre_processed_trips</span><span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;trip_id&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+        <span class="n">trip_counts</span> <span class="o">=</span> <span class="n">cleaned_trips</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;trip_id&quot;</span><span class="p">:</span> <span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">:</span> <span class="s2">&quot;first&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">trip_counts</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">trip_counts</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">mapper</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;trip_id&quot;</span><span class="p">:</span> <span class="s2">&quot;trip_count&quot;</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dated_trip_counts</span> <span class="o">=</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_summary</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dated_trip_counts</span>
+
+        <span class="c1"># aggregate to mean/median/min/max (default) trips on each day</span>
+        <span class="c1"># of the week</span>
+        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;trip_count&quot;</span><span class="p">:</span> <span class="n">summ_ops</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># order the days (for plotting future purposes)</span>
+        <span class="c1"># order the days (for plotting future purposes)</span>
+        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_dataframe_by_day</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">day_trip_counts</span><span class="p">)</span>
+        <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span> <span class="o">=</span> <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.summarise_routes">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.summarise_routes">[docs]</a>
+    <span class="k">def</span> <span class="nf">summarise_routes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Produce a summarised table of route statistics by day of week.</span>
+
+<span class="sd">        For route count summaries, func counts route_id only, irrespective of</span>
+<span class="sd">        which service_id the routes map to. If the services run on different</span>
+<span class="sd">        calendar days, they will be counted separately. In cases where more</span>
+<span class="sd">        than one service runs the same route on the same day, these will not be</span>
+<span class="sd">        counted as distinct routes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        summ_ops : list, optional</span>
+<span class="sd">            A list of operators used to get a summary of a given day,</span>
+<span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
+<span class="sd">        return_summary : bool, optional</span>
+<span class="sd">            When True, a summary is returned. When False, route data</span>
+<span class="sd">            for each date is returned,</span>
+<span class="sd">            by default True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame: A dataframe containing either summarized</span>
+<span class="sd">                      results or dated route data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_summary_defence</span><span class="p">(</span><span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span> <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">)</span>
+        <span class="n">pre_processed_trips</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pre_processed_trips</span><span class="p">()</span>
+        <span class="n">cleaned_routes</span> <span class="o">=</span> <span class="n">pre_processed_trips</span><span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;route_id&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+        <span class="c1"># group data into route counts per day</span>
+        <span class="n">route_count</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">cleaned_routes</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="s2">&quot;count&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">route_count</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">mapper</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="s2">&quot;route_count&quot;</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dated_route_counts</span> <span class="o">=</span> <span class="n">route_count</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_summary</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dated_route_counts</span>
+
+        <span class="c1"># aggregate the to the average number of routes</span>
+        <span class="c1"># on a given day (e.g., Monday)</span>
+        <span class="n">day_route_count</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">route_count</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s2">&quot;route_count&quot;</span><span class="p">:</span> <span class="n">summ_ops</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># order the days (for plotting future purposes)</span>
+        <span class="n">day_route_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_dataframe_by_day</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">day_route_count</span><span class="p">)</span>
+        <span class="n">day_route_count</span> <span class="o">=</span> <span class="n">day_route_count</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">day_route_count</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span> <span class="o">=</span> <span class="n">day_route_count</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.get_route_modes">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.get_route_modes">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_route_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the available routes by their associated `route_type`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            pd.core.frame.DataFrame: Summary table of route counts by transport</span>
+<span class="sd">            mode.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get the available modalities</span>
+        <span class="n">lookup</span> <span class="o">=</span> <span class="n">scrape_route_type_lookup</span><span class="p">()</span>
+        <span class="n">gtfs_route_types</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">routes</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="c1"># Get readable route_type descriptions</span>
+        <span class="n">out_tab</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span>
+            <span class="n">lookup</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">gtfs_route_types</span><span class="p">)</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">out_tab</span><span class="p">[</span><span class="s2">&quot;n_routes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">routes</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">out_tab</span><span class="p">[</span><span class="s2">&quot;prop_routes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">routes</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">route_mode_summary_df</span> <span class="o">=</span> <span class="n">out_tab</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">route_mode_summary_df</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
