@@ -84,9 +84,13 @@ BBOX_DICT = {
 AREA_OF_INTEREST = "newport"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
+# bbox
 bbox_npt = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_npt_r = bbox_npt.to_crs("esri:54009")
-coords = (float(bbox_npt.centroid.y), float(bbox_npt.centroid.x))
+
+# bbox centroid
+bbox_npt_centroid = bbox_npt.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
+coords = (bbox_npt_centroid.y[0], bbox_npt_centroid.x[0])
 
 # pop only criteria
 npt = ucc.UrbanCentre(file=(MERGED_DIR))
@@ -105,9 +109,13 @@ m
 AREA_OF_INTEREST = "leeds"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
+# bbox
 bbox_lds = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_lds_r = bbox_lds.to_crs("esri:54009")
-coords = (float(bbox_lds.centroid.y), float(bbox_lds.centroid.x))
+
+# bbox centroid
+bbox_lds_centroid = bbox_lds.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
+coords = (bbox_lds_centroid.y[0], bbox_lds_centroid.x[0])
 
 # pop only criteria
 lds = ucc.UrbanCentre(file=(MERGED_DIR))
@@ -126,9 +134,13 @@ m
 AREA_OF_INTEREST = "london"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
+# bbox
 bbox_lnd = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_lnd_r = bbox_lnd.to_crs("esri:54009")
-coords = (float(bbox_lnd.centroid.y), float(bbox_lnd.centroid.x))
+
+# bbox centroid
+bbox_lnd_centroid = bbox_lnd.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
+coords = (bbox_lnd_centroid.y[0], bbox_lnd_centroid.x[0])
 
 # pop only criteria
 lnd = ucc.UrbanCentre(file=(MERGED_DIR))
@@ -146,9 +158,13 @@ m
 AREA_OF_INTEREST = "marseille"
 BBOX = BBOX_DICT[AREA_OF_INTEREST]
 
+# bbox
 bbox_mrs = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_mrs_r = bbox_mrs.to_crs("esri:54009")
-coords = (float(bbox_mrs.centroid.y), float(bbox_mrs.centroid.x))
+
+# bbox centroid
+bbox_mrs_centroid = bbox_mrs.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
+coords = (bbox_mrs_centroid.y[0], bbox_mrs_centroid.x[0])
 
 # pop only criteria
 mrs = ucc.UrbanCentre(file=(MERGED_DIR))
