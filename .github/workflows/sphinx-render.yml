@@ -4,7 +4,7 @@ on: push
 
 env:
   PYTHON_VERSION: "3.9"
-  PUSH_BRANCH: "102-setup-sphinx"
+  PUSH_BRANCH: "refs/heads/102-setup-sphinx"
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       # deploy if it's being pushed only to this branch
-      if: github.ref == "refs/heads/$PUSH_BRANCH"
+      if: github.ref == ${{ env.PUSH_BRANCH }}
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: docs/build/html
