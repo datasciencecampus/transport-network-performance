@@ -14,12 +14,16 @@ from pyproj import Transformer
 from rasterio.mask import raster_geometry_mask
 from rasterio.transform import rowcol
 from scipy.ndimage import generic_filter, label
+from transport_performance.utils.defence import _is_path_like
 
 
 class UrbanCentre:
     """Create urban centre object."""
 
     def __init__(self, file):
+
+        # check that path is str or PosixPath
+        _is_path_like(file, "filepath")
         self.file = file
 
     def get_urban_centre(
@@ -126,10 +130,6 @@ class UrbanCentre:
             tuple[2]: crs string from the raster.
 
         """
-        if not isinstance(file, str):
-            raise TypeError(
-                "`file` expected string, " f"got {type(file).__name__}."
-            )
         if not isinstance(bbox, gpd.GeoDataFrame):
             raise TypeError(
                 "`bbox` expected GeoDataFrame, " f"got {type(bbox).__name__}."
