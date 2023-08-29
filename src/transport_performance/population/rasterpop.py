@@ -34,7 +34,7 @@ class RasterPop:
     pop_gdf : gpd.GeoDataFrame
         A geopandas dataframe of the input data, with gridded geometry. This is
         in the same CRS as the input raster data.
-    centroid_gdf
+    centroid_gdf : gpd.GeoDataFrame
         A geopandas dataframe of grid centroids, converted to EPSG:4326 for
         transport analysis.
 
@@ -153,7 +153,7 @@ class RasterPop:
         save : str, optional
             Filepath to save file, with the file extension, by default None
             meaning a file will not be saved.
-        **kwargs
+        kwargs : dict, optional
             Extra arguments passed to plotting functions to configure the plot
             styling. See Notes for more support.
 
@@ -177,9 +177,10 @@ class RasterPop:
         -----
         Calling `help` as follows will provide more insights on possible kwarg
         arguments for the valid plotting backends:
-            - Folium backend: `help(RasterPop._plot_folium)
-            - Matplotlib backend: `help(RasterPop._plot_matplotlib)
-            - Cartopy backend: `help(RasterPop._plot_cartopy)
+
+        - Folium backend: `help(RasterPop._plot_folium)`
+        - Matplotlib backend: `help(RasterPop._plot_matplotlib)`
+        - Cartopy backend: `help(RasterPop._plot_cartopy)`
 
         """
         # record of valid which values
