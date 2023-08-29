@@ -20,10 +20,29 @@ content. See the official `Diátaxis documentation`_ for more details.
 .. toctree::
    :hidden:
    :titlesonly:
+   :caption: Explanation
 
    explanation/index
+
+.. toctree::
+   :hidden:
+   :titlesonly:
+   :caption: Reference
+
    reference/index
+
+.. toctree::
+   :hidden:
+   :titlesonly:
+   :caption: How-to Guides
+
    how_to/index
+
+.. toctree::
+   :hidden:
+   :titlesonly:
+   :caption: Tutorials
+
    tutorials/index
 
 .. _Diátaxis documentation: https://diataxis.fr/
