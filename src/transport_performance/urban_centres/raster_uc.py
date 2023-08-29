@@ -341,7 +341,7 @@ class UrbanCentre:
         threshold: int
             If the number of cells adjacent to any empty cell belonging to
             a cluster is higher than the threshold, the cell is filled with
-            the cluster value.
+            the cluster value.  Needs to be between 5 and 8.
 
         Returns
         -------
@@ -358,7 +358,7 @@ class UrbanCentre:
                 "`threshold` expected integer, "
                 f"got {type(threshold).__name__}"
             )
-        if not (1 <= threshold <= 9):
+        if not (5 <= threshold <= 8):
             raise ValueError(
                 "Wrong value for `threshold`, "
                 "please enter value between 1 and 9"
