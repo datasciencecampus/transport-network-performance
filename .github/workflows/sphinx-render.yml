@@ -11,15 +11,6 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.9  # adding in python to install reqs (themes)
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.9"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install sphinx_rtd_theme
     - name: Build HTML
       uses: ammaraskar/sphinx-action@master
     - name: Upload artifacts
