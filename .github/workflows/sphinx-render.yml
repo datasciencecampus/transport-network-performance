@@ -4,7 +4,7 @@ on: push
 
 env:
   PYTHON_VERSION: "3.9"
-  PUSH_BRANCH: "refs/heads/102-setup-sphinx"
+  PUSH_BRANCH: "refs/heads/dev"
 
 jobs:
   build:
