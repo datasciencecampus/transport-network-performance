@@ -172,6 +172,7 @@ docs/build/
 !docs/README.md
 !docs/gtfs
 !docs/source/_static/dsc.png
+!docs/source/_templates/footer.html
 
 # PyBuilder
 .pybuilder/
