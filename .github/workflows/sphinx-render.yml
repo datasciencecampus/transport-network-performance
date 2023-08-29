@@ -1,8 +1,6 @@
 name: "Sphinx: Render docs"
 
-on:
-  push:
-    branches: [ "102-setup-sphinx" ]
+on: push
 
 jobs:
   build:
@@ -24,6 +22,8 @@ jobs:
         make -C docs/ html SPHINXOPTS="-W"
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
+      # deploy if it's being pushed only to this branch
+      if: github.ref == 'refs/heads/102-setup-sphinx'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: docs/build/html
