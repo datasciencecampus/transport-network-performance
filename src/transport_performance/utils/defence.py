@@ -2,10 +2,14 @@
 import pathlib
 import numpy as np
 import os
+from typing import Union
 
 
 def _is_path_like(pth, param_nm):
     """Handle path-like parameter values.
+
+    It is important to note that paths including backslashes are not accepted,
+    with forward slashes being the only option.
 
     Parameters
     ----------
@@ -27,11 +31,49 @@ def _is_path_like(pth, param_nm):
     if not isinstance(pth, (str, pathlib.Path)):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
+    if not isinstance(pth, pathlib.Path):
+        if "\\" in repr(pth):
+            raise ValueError(
+                "Please specify string paths with single forward"
+                " slashes only."
+                f" Got {repr(pth)}"
+            )
 
-def _check_parent_dir_exists(pth, param_nm, create=False):
+
+def _check_parent_dir_exists(
+    pth: Union[str, pathlib.Path], param_nm: str, create: bool = False
+) -> None:
+    """Check if a files parent directory exists.
+
+    The parent directory in this case will be the second layer. If only a
+    single layer is passed, the parent directory will be assumed to exist as
+    it will be the current working directory.
+
+    Parameters
+    ----------
+    pth : Union[str, pathlib.Path]
+        The path to the file who's parent dir is being confirmed to exist. The
+        function will consider the second layer of the path to be the parent
+        directory.
+    param_nm : str
+        The name of the parameter for the path. This is used in the error
+        message within is_path_like()
+    create : bool, optional
+        Whether or not to create the parent directory if it does not already
+        exist, by default False
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    FileNotFoundError
+        An error is raised if the parent directory could not be found and also
+        the create parameter is False.
+
+    """
     _is_path_like(pth, param_nm)
-    # replace back slashes to ensure consistency
-    pth = str(pth).replace("\\", "/").replace(repr("\\"), "").replace("'", "")
     # convert path to the correct OS specific format
     pth = pathlib.Path(pth)
     # realpath helps to catch cases where relative paths are passed in main
