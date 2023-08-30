@@ -14,12 +14,16 @@ from pyproj import Transformer
 from rasterio.mask import raster_geometry_mask
 from rasterio.transform import rowcol
 from scipy.ndimage import generic_filter, label
+from transport_performance.utils.defence import _is_path_like
 
 
 class UrbanCentre:
     """Create urban centre object."""
 
     def __init__(self, file):
+
+        # check that path is str or PosixPath
+        _is_path_like(file, "filepath")
         self.file = file
 
     def get_urban_centre(
@@ -126,10 +130,6 @@ class UrbanCentre:
             tuple[2]: crs string from the raster.
 
         """
-        if not isinstance(file, str):
-            raise TypeError(
-                "`file` expected string, " f"got {type(file).__name__}."
-            )
         if not isinstance(bbox, gpd.GeoDataFrame):
             raise TypeError(
                 "`bbox` expected GeoDataFrame, " f"got {type(bbox).__name__}."
@@ -282,7 +282,6 @@ class UrbanCentre:
         urban_centres = labelled_array.copy()
         for n in range(1, num_clusters + 1):
             total_pop = ma.sum(ma.masked_where(urban_centres != n, band))
-            # print(n, total_pop)
 
             if total_pop < cluster_pop_threshold:
                 urban_centres[urban_centres == n] = 0
@@ -341,7 +340,7 @@ class UrbanCentre:
         threshold: int
             If the number of cells adjacent to any empty cell belonging to
             a cluster is higher than the threshold, the cell is filled with
-            the cluster value.
+            the cluster value.  Needs to be between 5 and 8.
 
         Returns
         -------
@@ -358,10 +357,10 @@ class UrbanCentre:
                 "`threshold` expected integer, "
                 f"got {type(threshold).__name__}"
             )
-        if not (1 <= threshold <= 9):
+        if not (5 <= threshold <= 8):
             raise ValueError(
                 "Wrong value for `threshold`, "
-                "please enter value between 1 and 9"
+                "please enter value between 5 and 8"
             )
 
         filled = urban_centres.copy()
@@ -377,7 +376,6 @@ class UrbanCentre:
                 extra_keywords={"threshold": threshold},
             )
             if np.array_equal(filled, check):
-                # print("iter", n)
                 break
         return filled
 
