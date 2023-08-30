@@ -137,8 +137,9 @@ class TestGtfsInstance(object):
         ], f"Expected print statements about GTFS warnings. Found: {fun_out}"
 
     @patch("builtins.print")
-    def test_viz_stops_defence(self, mocked_print, gtfs_fixture):
+    def test_viz_stops_defence(self, mocked_print, tmpdir, gtfs_fixture):
         """Check defensive behaviours of viz_stops()."""
+        tmp = os.path.join(tmpdir, "somefile.html")
         with pytest.raises(
             TypeError,
             match="`out_pth` expected path-like, found <class 'bool'>",
@@ -147,23 +148,19 @@ class TestGtfsInstance(object):
         with pytest.raises(
             TypeError, match="`geoms` expects a string. Found <class 'int'>"
         ):
-            gtfs_fixture.viz_stops(out_pth="outputs/somefile.html", geoms=38)
+            gtfs_fixture.viz_stops(out_pth=tmp, geoms=38)
         with pytest.raises(
             ValueError, match="`geoms` must be either 'point' or 'hull."
         ):
-            gtfs_fixture.viz_stops(
-                out_pth="outputs/somefile.html", geoms="foobar"
-            )
+            gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
         with pytest.raises(
             TypeError,
             match="`geom_crs`.*string or integer. Found <class 'float'>",
         ):
-            gtfs_fixture.viz_stops(
-                out_pth="outputs/somefile.html", geom_crs=1.1
-            )
+            gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
         # check missing stop_id results in print instead of exception
         gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
-        gtfs_fixture.viz_stops(out_pth="outputs/out.html")
+        gtfs_fixture.viz_stops(out_pth=tmp)
         fun_out = mocked_print.mock_calls
         assert fun_out == [
             call("Key Error. Map was not written.")
