@@ -153,7 +153,7 @@ def test_file(filepath, func, bbox, cluster_centre, expected):
     """Test filepath."""
     if func == "str":
         filepath = str(filepath)
-    elif func == "str":
+    else:
         filepath = Path(filepath)
     with expected:
         assert (
