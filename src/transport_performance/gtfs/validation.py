@@ -676,7 +676,7 @@ class GtfsInstance:
         save_html: bool = False,
         save_image: bool = False,
         save_pth: Union[pathlib.Path, str] = pathlib.Path(
-            os.path.join("outputs", "gtfs")
+            os.path.join("outputs", "gtfs", "summary_plot")
         ),
     ) -> Union[PlotlyFigure, str]:
         """Plot (and save) a summary table using plotly.
@@ -829,10 +829,11 @@ class GtfsInstance:
 
         # save the plot if specified
         if save_html:
-            if ext != ".png":
+            if ext != ".html":
                 print(
-                    "Image save requested but HTML type not specified."
-                    "\nSaving as .html"
+                    "HTML save requested but accepted type not specified.\n"
+                    "Accepted image formats include ['.html']\n"
+                    "Saving as .html"
                 )
             plotly_io.write_html(
                 fig=fig,
@@ -843,14 +844,13 @@ class GtfsInstance:
         if save_image:
             if ext != ".png":
                 print(
-                    "HTML save requested but accepted type not specified.\n"
+                    "Image save requested but accepted type not specified.\n"
                     "Accepted image formats include ['.png']\n"
                     "Saving as .png"
                 )
             plotly_io.write_image(
                 fig=fig, file=os.path.normpath(main + ".png")
             )
-            print(os.path.normpath(main + ".png"))
 
         if return_html:
             return plotly_io.to_html(fig, full_html=False)

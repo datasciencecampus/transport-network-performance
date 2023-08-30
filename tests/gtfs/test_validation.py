@@ -652,7 +652,9 @@ class TestGtfsInstance(object):
             height=800,
             save_html=True,
             save_image=True,
-            save_pth=pathlib.Path(os.path.join(tmp_path, "save_test")),
+            save_pth=pathlib.Path(
+                os.path.join(tmp_path, "save_test", "test_image")
+            ),
             ylabel="Mean",
             xlabel="Day",
             orientation="h",
@@ -660,13 +662,13 @@ class TestGtfsInstance(object):
         )
 
         assert os.path.exists(
-            "outputs/gtfs"
-        ), "outputs/gtfs could not be created"
+            os.path.join(tmp_path, "save_test")
+        ), "'save_test' dir could not be created'"
         assert os.path.exists(
-            os.path.join(tmp_path, "save_test.html")
+            os.path.join(tmp_path, "save_test", "test_image.html")
         ), "Failed to save summary in HTML"
         assert os.path.exists(
-            os.path.join(tmp_path, "save_test.png")
+            os.path.join(tmp_path, "save_test", "test_image.png")
         ), "Failed to save summary as a PNG"
 
     def test__plot_route_summary_defences(self, gtfs_fixture):
