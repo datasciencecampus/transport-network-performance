@@ -163,7 +163,7 @@ bbox_mrs = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_mrs_r = bbox_mrs.to_crs("esri:54009")
 
 # bbox centroid
-bbox_mrs_centroid = bbox_mrs.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
+bbox_mrs_centroid = bbox_mrs_r.centroid.to_crs("epsg:4326")
 coords = (bbox_mrs_centroid.y[0], bbox_mrs_centroid.x[0])
 
 # pop only criteria
