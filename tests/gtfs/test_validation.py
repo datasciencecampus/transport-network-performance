@@ -1,14 +1,16 @@
 """Tests for validation module."""
+import re
+import os
+
 import pytest
 from pyprojroot import here
 import gtfs_kit as gk
 import pandas as pd
 from unittest.mock import patch, call
-import os
 from geopandas import GeoDataFrame
 import numpy as np
-import re
 import pathlib
+from plotly.graph_objects import Figure as PlotlyFigure
 
 from transport_performance.gtfs.validation import (
     GtfsInstance,
@@ -75,6 +77,24 @@ class TestGtfsInstance(object):
         assert (
             gtfs2.feed.dist_units == "m"
         ), f"Expected 'm', found: {gtfs2.feed.dist_units}"
+
+    def test_get_gtfs_files(self, gtfs_fixture):
+        """Assert files that make up the GTFS."""
+        expected_files = [
+            "agency.txt",
+            "calendar_dates.txt",
+            "stop_times.txt",
+            "frequencies.txt",
+            "shapes.txt",
+            "trips.txt",
+            "feed_info.txt",
+            "stops.txt",
+            "calendar.txt",
+            "routes.txt",
+        ]
+        assert (
+            gtfs_fixture.get_gtfs_files() == expected_files
+        ), "GTFS files not as expected"
 
     def test_is_valid(self, gtfs_fixture):
         """Assertions about validity_df table."""
@@ -457,15 +477,16 @@ class TestGtfsInstance(object):
         )
 
         found_ds = gtfs_fixture.daily_trip_summary.columns
-        exp_cols_ds = pd.MultiIndex.from_tuples(
+        exp_cols_ds = pd.Index(
             [
-                ("day", ""),
-                ("route_type", ""),
-                ("trip_count", "max"),
-                ("trip_count", "mean"),
-                ("trip_count", "median"),
-                ("trip_count", "min"),
-            ]
+                "day",
+                "route_type",
+                "trip_count_max",
+                "trip_count_mean",
+                "trip_count_median",
+                "trip_count_min",
+            ],
+            dtype="object",
         )
 
         assert (
@@ -490,12 +511,12 @@ class TestGtfsInstance(object):
         # tests the output of the daily_route_summary table
         # using tests/data/newport-20230613_gtfs.zip
         expected_df = {
-            ("day", ""): {8: "friday", 9: "friday"},
-            ("route_type", ""): {8: 3, 9: 200},
-            ("trip_count", "max"): {8: 1211, 9: 90},
-            ("trip_count", "mean"): {8: 1211.0, 9: 88.0},
-            ("trip_count", "median"): {8: 1211.0, 9: 88.0},
-            ("trip_count", "min"): {8: 1211, 9: 88},
+            "day": {8: "friday", 9: "friday"},
+            "route_type": {8: 3, 9: 200},
+            "trip_count_max": {8: 1211, 9: 90},
+            "trip_count_min": {8: 1211, 9: 88},
+            "trip_count_mean": {8: 1211.0, 9: 88.0},
+            "trip_count_median": {8: 1211.0, 9: 88.0},
         }
 
         found_df = gtfs_fixture.daily_trip_summary[
@@ -525,15 +546,16 @@ class TestGtfsInstance(object):
         )
 
         found_ds = gtfs_fixture.daily_route_summary.columns
-        exp_cols_ds = pd.MultiIndex.from_tuples(
+        exp_cols_ds = pd.Index(
             [
-                ("day", ""),
-                ("route_count", "max"),
-                ("route_count", "mean"),
-                ("route_count", "median"),
-                ("route_count", "min"),
-                ("route_type", ""),
-            ]
+                "day",
+                "route_count_max",
+                "route_count_mean",
+                "route_count_median",
+                "route_count_min",
+                "route_type",
+            ],
+            dtype="object",
         )
 
         assert (
@@ -558,12 +580,12 @@ class TestGtfsInstance(object):
         # tests the output of the daily_route_summary table
         # using tests/data/newport-20230613_gtfs.zip
         expected_df = {
-            ("day", ""): {8: "friday", 9: "friday"},
-            ("route_count", "max"): {8: 74, 9: 10},
-            ("route_count", "mean"): {8: 74.0, 9: 9.0},
-            ("route_count", "median"): {8: 74.0, 9: 9.0},
-            ("route_count", "min"): {8: 74, 9: 9},
-            ("route_type", ""): {8: 3, 9: 200},
+            "day": {8: "friday", 9: "friday"},
+            "route_count_max": {8: 74, 9: 10},
+            "route_count_min": {8: 74, 9: 9},
+            "route_count_mean": {8: 74.0, 9: 9.0},
+            "route_count_median": {8: 74.0, 9: 9.0},
+            "route_type": {8: 3, 9: 200},
         }
 
         found_df = gtfs_fixture.daily_route_summary[
@@ -580,3 +602,151 @@ class TestGtfsInstance(object):
             "Size of date_route_counts not as expected. "
             "Expected {expected_size}"
         )
+
+    def test__plot_summary_defences(self, gtfs_fixture):
+        """Test defences for _plot_summary()."""
+        current_fixture = gtfs_fixture
+        current_fixture.summarise_routes()
+
+        # test parameters that are yet to be tested
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "'orientation expected 'v' or 'h'"
+                " (non case sensitive)."
+                " Found l of type <class 'str'>."
+            ),
+        ):
+            current_fixture._plot_summary(
+                current_fixture.daily_route_summary,
+                "route_count_mean",
+                orientation="l",
+            )
+
+    def test__plot_summary_on_pass(self, gtfs_fixture, tmp_path):
+        """Test plotting a summary when defences are passed."""
+        current_fixture = gtfs_fixture
+        current_fixture.summarise_routes()
+
+        # test returning a html string
+        test_html = gtfs_fixture._plot_summary(
+            gtfs_fixture.daily_route_summary,
+            "route_count_mean",
+            return_html=True,
+        )
+        assert type(test_html) == str, "Failed to return HTML for the plot"
+
+        # test returning a plotly figure
+        test_image = gtfs_fixture._plot_summary(
+            gtfs_fixture.daily_route_summary, "route_count_mean"
+        )
+        assert (
+            type(test_image) == PlotlyFigure
+        ), "Failed to return plotly.graph_objects.Figure type"
+
+        # test saving plots in html and png format
+        gtfs_fixture._plot_summary(
+            gtfs_fixture.daily_route_summary,
+            "route_count_mean",
+            width=1200,
+            height=800,
+            save_html=True,
+            save_image=True,
+            save_pth=pathlib.Path(os.path.join(tmp_path, "save_test")),
+            ylabel="Mean",
+            xlabel="Day",
+            orientation="h",
+            plotly_kwargs={"legend": dict(bgcolor="lightgrey")},
+        )
+
+        assert os.path.exists(
+            "outputs/gtfs"
+        ), "outputs/gtfs could not be created"
+        assert os.path.exists(
+            os.path.join(tmp_path, "save_test.html")
+        ), "Failed to save summary in HTML"
+        assert os.path.exists(
+            os.path.join(tmp_path, "save_test.png")
+        ), "Failed to save summary as a PNG"
+
+    def test__plot_route_summary_defences(self, gtfs_fixture):
+        """Test the defences for the small wrapper plot_route_summary()."""
+        # test attribute checks
+        with pytest.raises(
+            AttributeError,
+            match=(
+                re.escape(
+                    "The daily_route_summary table could not be found."
+                    " Did you forget to call '.summarise_routes()' first?"
+                )
+            ),
+        ):
+            gtfs_fixture.plot_route_summary(target_summary="mean")
+
+    def test__plot_trip_summary_defences(self, gtfs_fixture):
+        """Test the defences for the small wrapper plot_trip_summary()."""
+        # test attribute checks
+        with pytest.raises(
+            AttributeError,
+            match=(
+                re.escape(
+                    "The daily_trip_summary table could not be found."
+                    " Did you forget to call '.summarise_trips()' first?"
+                )
+            ),
+        ):
+            gtfs_fixture.plot_trip_summary(target_summary="mean")
+
+    def test__plot_route_summary_on_pass(self, gtfs_fixture):
+        """Test plot_route_summary() calls _plot_summary() succesfully."""
+        gtfs_fixture.summarise_routes()
+        assert isinstance(
+            gtfs_fixture.plot_route_summary(target_summary="mean"),
+            PlotlyFigure,
+        ), "plot_route_summary() failed to return plotly figure"
+
+    def test__plot_trip_summary_on_pass(self, gtfs_fixture):
+        """Test plot_trip_summary() calls _plot_summary() succesfully."""
+        gtfs_fixture.summarise_trips()
+        assert isinstance(
+            gtfs_fixture.plot_trip_summary(target_summary="mean"), PlotlyFigure
+        ), "plot_trip_summary() failed to return plotly figure"
+
+    def test_html_report_defences(self, gtfs_fixture, tmp_path):
+        """Test the defences whilst generating a HTML report."""
+        with pytest.raises(
+            ValueError, match="'summary type' must be mean, median, min or max"
+        ):
+            gtfs_fixture.html_report(
+                report_dir=tmp_path,
+                overwrite=True,
+                summary_type="test_sum",
+            )
+
+    def test_html_report_on_pass(self, gtfs_fixture, tmp_path):
+        """Test that a HTML report is generated if defences are passed."""
+        gtfs_fixture.html_report(report_dir=pathlib.Path(tmp_path))
+
+        # assert that the report has been completely generated
+        assert os.path.exists(
+            pathlib.Path(os.path.join(tmp_path, "gtfs_report"))
+        ), "gtfs_report dir was not created"
+        assert os.path.exists(
+            pathlib.Path(os.path.join(tmp_path, "gtfs_report", "index.html"))
+        ), "gtfs_report/index.html was not created"
+        assert os.path.exists(
+            pathlib.Path(os.path.join(tmp_path, "gtfs_report", "styles.css"))
+        ), "gtfs_report/styles.css was not created"
+        assert os.path.exists(
+            pathlib.Path(
+                os.path.join(tmp_path, "gtfs_report", "summaries.html")
+            )
+        ), "gtfs_report/summaries.html was not created"
+        assert os.path.exists(
+            pathlib.Path(
+                os.path.join(tmp_path, "gtfs_report", "stop_locations.html")
+            )
+        ), "gtfs_report/stop_locations.html was not created"
+        assert os.path.exists(
+            pathlib.Path(os.path.join(tmp_path, "gtfs_report", "stops.html"))
+        ), "gtfs_report/stops.html was not created"

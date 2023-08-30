@@ -3,6 +3,7 @@ import pathlib
 import numpy as np
 import os
 from typing import Union
+import pandas as pd
 
 
 def _is_path_like(pth, param_nm):
@@ -169,6 +170,50 @@ def _bool_defence(some_bool, param_nm):
     return None
 
 
+def _string_defence(string, param_nm):
+    """Defence checking. Not exported."""
+    if not isinstance(string, str):
+        raise TypeError(f"'{param_nm}' expected str. Got {type(string)}")
+
+    return None
+
+
+def _integer_defence(some_int, param_nm):
+    """Defence checking. Not exported."""
+    if not isinstance(some_int, int):
+        raise TypeError(f"'{param_nm}' expected int. Got {type(some_int)}")
+
+    return None
+
+
+def _dict_defence(some_dict, param_nm):
+    """Defence checking. Not exported."""
+    if not isinstance(some_dict, dict):
+        raise TypeError(f"'{param_nm}' expected dict. Got {type(some_dict)}")
+
+    return None
+
+
+def _dataframe_defence(some_df, param_nm):
+    """Defence checking. Not exported."""
+    if not isinstance(some_df, pd.DataFrame):
+        raise TypeError(
+            f"'{param_nm}' expected pd.DataFrame. Got {type(some_df)}"
+        )
+
+    return None
+
+
+# main use case for this is to avoid
+# complexity limits in
+# GtfsInstance._plot_summary()
+def _string_and_nonetype_defence(some_value, param_nm):
+    if not isinstance(some_value, (str, type(None))):
+        raise TypeError(
+            f"'{param_nm}' expected type str. Found type {type(some_value)}"
+        )
+
+
 def _check_list(ls, param_nm, check_elements=True, exp_type=str):
     """Check a list and its elements for type.
 
@@ -206,5 +251,32 @@ def _check_list(ls, param_nm, check_elements=True, exp_type=str):
                         f" Found {type(i)} : {i}"
                     )
                 )
+
+    return None
+
+
+def _check_column_in_df(df: pd.DataFrame, column_name: str) -> None:
+    """Defences to check that a column exists in a df.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A pandas dataframe to check for the
+        column withhin
+    column_name : str
+        The name of the column to check for
+
+    Raises
+    ------
+    IndexError
+        'column_name' is not a column in the dataframe
+
+    Returns
+    -------
+    None
+
+    """
+    if column_name not in df.columns:
+        raise IndexError(f"'{column_name}' is not a column in the dataframe.")
 
     return None
