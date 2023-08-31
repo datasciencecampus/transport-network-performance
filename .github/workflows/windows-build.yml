@@ -35,10 +35,15 @@ jobs:
     # - name: Check Java Install
     #   run: |
     #     java --version
-    - name: Install Osmosis
+    # - name: Install Osmosis
+    #   run: |
+    #     curl https://github.com/openstreetmap/osmosis/latest/download/osmosis-0.48.3.zip -L -o MyFilename.zip
+    #     tree .
+
+    - name: Download Zip Folder
       run: |
-        curl https://github.com/openstreetmap/osmosis/latest/download/osmosis-0.48.3.zip -L -o MyFilename.zip
-        tree .
+        curl -o example.zip https://github.com/openstreetmap/osmosis/latest/download/osmosis-0.48.3.zip
+        powershell -command "Expand-Archive -Path example.zip -DestinationPath UnzippedFolder"
       # uses: ConorMacBride/install-package@v1
     # - name: Run Integration Tests
     #   run: |
