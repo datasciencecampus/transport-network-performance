@@ -19,43 +19,33 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.9"
-    # - name: Install geos  # required for cartopy installation
-    #   uses: ConorMacBride/install-package@v1
-    #   with:
-    #     choco: geos
-    # - name: Install dependencies
-    #   run: |
-    #     python -m pip install --upgrade pip
-    #     pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
     - name: Install java
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         java-version: '11'
-    # - name: Check Java Install
-    #   run: |
-    #     java --version
-    # - name: Install Osmosis
-    #   run: |
-    #     curl https://github.com/openstreetmap/osmosis/latest/download/osmosis-0.48.3.zip -L -o MyFilename.zip
-    #     tree .
-
-    - name: Download Zip Folder
+    - name: Check Java Install
       run: |
-        curl -o example.zip https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.zip
-        powershell -Command "Expand-Archive -Path ./example.zip -DestinationPath ./UnzippedFolder"
-      # uses: ConorMacBride/install-package@v1
-    # - name: Run Integration Tests
-    #   run: |
-    #       pytest -m runinteg --runinteg # run only those tests marked runinteg
-    # - name: pre-commit
-    #   run: |
-    #     pre-commit install
-    #     pre-commit run --all-files
-    # - name: Test with pytest
-    #   run: |
-    #     pytest
-    # - name: Generate Report
-    #   run: |
-    #     coverage run -m pytest
-    #     coverage xml
+        java --version
+    - name: Install geos
+      run: |
+        conda install -c conda-forge geos
+        geos-config --version
+    - name: Run Integration Tests
+      run: |
+          pytest -m runinteg --runinteg # run only those tests marked runinteg
+    - name: pre-commit
+      run: |
+        pre-commit install
+        pre-commit run --all-files
+    - name: Test with pytest
+      run: |
+        pytest
+    - name: Generate Report
+      run: |
+        coverage run -m pytest
+        coverage xml
