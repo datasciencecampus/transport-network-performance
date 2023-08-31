@@ -2,7 +2,8 @@
 ===========================
 
 .. warning::
-    Page under construction
+    Page under construction. This section may include topics such as 'one-off'
+    references for users, e.g. API references and contributing/code of conduct.
 
 .. autosummary::
     :toctree: _autosummary
