@@ -18,6 +18,7 @@ class TestUmatchedIDWarnings(object):
 
     def test_unmatched_id_warnings_calendar(self, gtfs_fixture):
         """Tests for unmatched IDs in the calendar table."""
+        # insert invalid data
         gtfs_fixture.feed.calendar = pd.concat(
             [
                 gtfs_fixture.feed.calendar,
@@ -46,6 +47,7 @@ class TestUmatchedIDWarnings(object):
             "rows": [0],
         }
 
+        # ensure raised errors match expected errors
         assert expected_message == gtfs_fixture.is_valid().iloc[0].to_dict(), (
             "GTFS validation failed to identify an unmatched ID in "
             "the calendar table"
@@ -53,6 +55,7 @@ class TestUmatchedIDWarnings(object):
 
     def test_unmatched_id_warnings_trips(self, gtfs_fixture):
         """Tests for unmatched IDs in the trips table."""
+        # insert invalid data
         gtfs_fixture.feed.trips = pd.concat(
             [
                 gtfs_fixture.feed.trips,
@@ -94,6 +97,8 @@ class TestUmatchedIDWarnings(object):
             .iloc[[1, 2, 9]]
             .to_dict()
         )
+
+        # ensure raised errors match expected errors
         assert expected_errors == found_errors, (
             "GTFS validation failed to identify an unmatched IDs and "
             "invalid data in the trips table"
@@ -101,6 +106,7 @@ class TestUmatchedIDWarnings(object):
 
     def test_unmatched_id_warnings_routes(self, gtfs_fixture):
         """Tests for unmatched IDs in the routes table."""
+        # insert invalid data
         gtfs_fixture.feed.routes = pd.concat(
             [
                 gtfs_fixture.feed.routes,
@@ -135,6 +141,8 @@ class TestUmatchedIDWarnings(object):
             .iloc[[0, 1, 6]]
             .to_dict()
         )
+
+        # ensure raised errors match expected errors
         assert expected_errors == found_errors, (
             "GTFS validation failed to identify an unmatched IDs and invalid "
             "data in the routes table"
