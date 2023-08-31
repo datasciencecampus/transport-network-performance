@@ -13,6 +13,7 @@ import plotly.io as plotly_io
 from pretty_html_table import build_table
 import zipfile
 import pathlib
+import warnings
 from typing import Union
 from plotly.graph_objects import Figure as PlotlyFigure
 
@@ -827,13 +828,17 @@ class GtfsInstance:
         # break up the save path
         main, ext = os.path.splitext(save_pth)
 
-        # save the plot if specified
+        # save the plot if specified (with correct file type)
         if save_html:
-            if ext != ".html":
-                print(
-                    "HTML save requested but accepted type not specified.\n"
-                    "Accepted image formats include ['.html']\n"
-                    "Saving as .html"
+            if ext.lower() != ".html":
+                warnings.warn(
+                    (
+                        "HTML save requested but accepted type "
+                        "not specified.\n"
+                        "Accepted image formats include ['.html']\n"
+                        "Saving as .html"
+                    ),
+                    UserWarning,
                 )
             plotly_io.write_html(
                 fig=fig,
@@ -842,16 +847,26 @@ class GtfsInstance:
             )
 
         if save_image:
-            if ext != ".png":
-                print(
-                    "Image save requested but accepted type not specified.\n"
-                    "Accepted image formats include ['.png']\n"
-                    "Saving as .png"
+            valid_img_formats = [
+                ".png",
+                ".pdf",
+                "jpg",
+                "jpeg",
+                ".webp",
+                ".svg",
+            ]
+            if ext.lower() not in valid_img_formats:
+                warnings.warn(
+                    (
+                        "Image save requested but accepted type not "
+                        "specified.\n"
+                        f"Accepted image formats include {valid_img_formats}\n"
+                        "Saving as .png"
+                    ),
+                    UserWarning,
                 )
-            plotly_io.write_image(
-                fig=fig, file=os.path.normpath(main + ".png")
-            )
-
+                ext = ".png"
+            plotly_io.write_image(fig=fig, file=os.path.normpath(main + ext))
         if return_html:
             return plotly_io.to_html(fig, full_html=False)
         return fig

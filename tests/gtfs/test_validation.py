@@ -623,6 +623,7 @@ class TestGtfsInstance(object):
                 orientation="l",
             )
 
+    @pytest.mark.filterwarnings("ignore::UserWarning")
     def test__plot_summary_on_pass(self, gtfs_fixture, tmp_path):
         """Test plotting a summary when defences are passed."""
         current_fixture = gtfs_fixture
@@ -661,6 +662,7 @@ class TestGtfsInstance(object):
             plotly_kwargs={"legend": dict(bgcolor="lightgrey")},
         )
 
+        # general save test
         assert os.path.exists(
             os.path.join(tmp_path, "save_test")
         ), "'save_test' dir could not be created'"
@@ -670,6 +672,55 @@ class TestGtfsInstance(object):
         assert os.path.exists(
             os.path.join(tmp_path, "save_test", "test_image.png")
         ), "Failed to save summary as a PNG"
+
+        # save test for HTML with an invalid file extension
+        with pytest.warns(
+            UserWarning,
+            match=re.escape(
+                "HTML save requested but accepted type not specified.\n"
+                "Accepted image formats include ['.html']\n"
+                "Saving as .html"
+            ),
+        ):
+            gtfs_fixture._plot_summary(
+                gtfs_fixture.daily_route_summary,
+                "route_count_mean",
+                save_html=True,
+                save_pth=pathlib.Path(
+                    os.path.join(
+                        tmp_path, "save_test", "invalid_html_ext.nothtml"
+                    )
+                ),
+            )
+
+        assert os.path.exists(
+            os.path.join(tmp_path, "save_test", "invalid_html_ext.html")
+        ), "Failed to save HTML with automatic file extensions"
+
+        # save test for an image with invalid file extension
+        valid_img_formats = [".png", ".pdf", "jpg", "jpeg", ".webp", ".svg"]
+        with pytest.warns(
+            UserWarning,
+            match=re.escape(
+                "Image save requested but accepted type not specified.\n"
+                f"Accepted image formats include {valid_img_formats}\n"
+                "Saving as .png"
+            ),
+        ):
+            gtfs_fixture._plot_summary(
+                gtfs_fixture.daily_route_summary,
+                "route_count_mean",
+                save_image=True,
+                save_pth=pathlib.Path(
+                    os.path.join(
+                        tmp_path, "save_test", "invalid_image_ext.notimg"
+                    )
+                ),
+            )
+
+        assert os.path.exists(
+            os.path.join(tmp_path, "save_test", "invalid_image_ext.png")
+        ), "Failed to save HTML with automatic file extensions"
 
     def test__plot_route_summary_defences(self, gtfs_fixture):
         """Test the defences for the small wrapper plot_route_summary()."""
@@ -713,6 +764,35 @@ class TestGtfsInstance(object):
         assert isinstance(
             gtfs_fixture.plot_trip_summary(target_summary="mean"), PlotlyFigure
         ), "plot_trip_summary() failed to return plotly figure"
+
+    def test__create_extended_repeated_pair_table(self, gtfs_fixture):
+        """Test _create_extended_repeated_pair_table()."""
+        test_table = pd.DataFrame(
+            {
+                "trip_name": ["Newport", "Cwmbran", "Cardiff", "Newport"],
+                "trip_abbrev": ["Newp", "Cwm", "Card", "Newp"],
+                "type": ["bus", "train", "bus", "train"],
+            }
+        )
+
+        expected_table = pd.DataFrame(
+            {
+                "trip_name": {0: "Newport"},
+                "trip_abbrev": {0: "Newp"},
+                "type_original": {0: "bus"},
+                "type_duplicate": {0: "train"},
+            }
+        ).to_dict()
+
+        returned_table = gtfs_fixture._create_extended_repeated_pair_table(
+            table=test_table,
+            join_vars=["trip_name", "trip_abbrev"],
+            original_rows=[0],
+        ).to_dict()
+
+        assert (
+            expected_table == returned_table
+        ), "_create_extended_repeated_pair_table() failed"
 
     def test_html_report_defences(self, gtfs_fixture, tmp_path):
         """Test the defences whilst generating a HTML report."""

@@ -1,7 +1,7 @@
 """Test scripts for the GTFS report utility functions."""
 
 import os
-import shutil
+import pathlib
 import re
 
 import pytest
@@ -71,8 +71,6 @@ class TestTemplateHTML(object):
         ), "Test placeholder replacement not acting as expected"
 
 
-# TODO: Replace all instances of set_up_report_dir() with
-# _check_parents_dir_exists() (from src/defences.py)
 class TestSetUpReportDir(object):
     """Test setting up a dir for a report."""
 
@@ -91,15 +89,9 @@ class TestSetUpReportDir(object):
         ):
             set_up_report_dir("tests/data/gtfs/report")
 
-    def test_set_up_report_dir_on_pass(self):
+    def test_set_up_report_dir_on_pass(self, tmp_path):
         """Test set_up_report_dir() when defences are passed."""
-        set_up_report_dir("data/interim")
+        set_up_report_dir(pathlib.Path(os.path.join(tmp_path)), overwrite=True)
         assert os.path.exists(
-            here("data/interim/gtfs_report")
-        ), "Failed to create report in data/interim"
-        shutil.rmtree(path=here("data/interim/gtfs_report"))
-
-        set_up_report_dir("tests/data/gtfs/report", overwrite=True)
-        assert os.path.exists(
-            here("tests/data/gtfs/report/gtfs_report")
+            os.path.join(tmp_path, "gtfs_report")
         ), "Failed to replace report in tests/data/gtfs/report/"
