@@ -43,7 +43,7 @@ jobs:
     - name: Download Zip Folder
       run: |
         curl -o example.zip https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.zip
-        powershell -command "Expand-Archive -Path example.zip -DestinationPath UnzippedFolder"
+        powershell -command "Expand-Archive -Path ./example.zip -DestinationPath ./UnzippedFolder"
       # uses: ConorMacBride/install-package@v1
     # - name: Run Integration Tests
     #   run: |
