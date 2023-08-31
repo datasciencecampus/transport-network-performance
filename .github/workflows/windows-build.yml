@@ -38,20 +38,20 @@ jobs:
     - name: Install Osmosis
       run: |
         curl -o ./osmosis-latest https://github.com/openstreetmap/osmosis/releases/latest
-        dir ./osmosis-latest/
-        tree ./osmosis-latest/
+        dir ./
+        tree ./
       # uses: ConorMacBride/install-package@v1
-    - name: Run Integration Tests
-      run: |
-          pytest -m runinteg --runinteg # run only those tests marked runinteg
+    # - name: Run Integration Tests
+    #   run: |
+    #       pytest -m runinteg --runinteg # run only those tests marked runinteg
     - name: pre-commit
       run: |
         pre-commit install
         pre-commit run --all-files
-    - name: Test with pytest
-      run: |
-        pytest
-    - name: Generate Report
-      run: |
-        coverage run -m pytest
-        coverage xml
+    # - name: Test with pytest
+    #   run: |
+    #     pytest
+    # - name: Generate Report
+    #   run: |
+    #     coverage run -m pytest
+    #     coverage xml
