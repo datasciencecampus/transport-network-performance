@@ -38,7 +38,6 @@ jobs:
     - name: Install Osmosis
       run: |
         curl -o ./osmosis-latest https://github.com/openstreetmap/osmosis/latest/download/osmosis-0.48.3.zip
-        cd osmosis-latest
         tree .
       # uses: ConorMacBride/install-package@v1
     # - name: Run Integration Tests
