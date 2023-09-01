@@ -13,6 +13,7 @@ def gtfs_fixture():
     return gtfs
 
 
+@pytest.mark.runinteg
 class TestUmatchedIDWarnings(object):
     """Tests for unmatch ID warnings in GTFS data."""
 
@@ -53,6 +54,7 @@ class TestUmatchedIDWarnings(object):
             "the calendar table"
         )
 
+    @pytest.mark.runinteg
     def test_unmatched_id_warnings_trips(self, gtfs_fixture):
         """Tests for unmatched IDs in the trips table."""
         # insert invalid data
@@ -104,6 +106,7 @@ class TestUmatchedIDWarnings(object):
             "invalid data in the trips table"
         )
 
+    @pytest.mark.runinteg
     def test_unmatched_id_warnings_routes(self, gtfs_fixture):
         """Tests for unmatched IDs in the routes table."""
         # insert invalid data
