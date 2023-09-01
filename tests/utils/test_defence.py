@@ -28,7 +28,7 @@ class Test_CheckList(object):
             TypeError,
             match=(
                 "`mixed_list` must contain <class 'int'> only. Found "
-                "<class 'str'> : 2"
+                "<class 'str'>"
             ),
         ):
             _check_list(

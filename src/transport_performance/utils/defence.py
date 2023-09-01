@@ -202,8 +202,8 @@ def _check_list(ls, param_nm, check_elements=True, exp_type=str):
             if not isinstance(i, exp_type):
                 raise TypeError(
                     (
-                        f"`{param_nm}` must contain {str(exp_type)} only."
-                        f" Found {type(i)} : {i}"
+                        f"`{param_nm}` must contain {exp_type} only."
+                        f" Found {type(i)}"
                     )
                 )
 

@@ -341,36 +341,29 @@ class TestGtfsInstance(object):
 
     def test_summarise_trips_defence(self, gtfs_fixture):
         """Defensive checks for summarise_trips()."""
+        """Defensive checks for summarise_routes()."""
+        # cases where a function is passed to summ_ops
         with pytest.raises(
             TypeError,
-            match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
+            match="`summ_ops` must contain <class 'str'> only. Found <class "
+            "'numpy._ArrayFunctionDispatcher'>",
         ):
-            gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
-        # case where is function but not exported from numpy
+            gtfs_fixture.summarise_trips(summ_ops=[np.mean])
 
-        def dummy_func():
-            """Test case func."""
-            return None
+        # cases where a list isn't passed to summ_ops
+        with pytest.raises(
+            TypeError,
+            match="`summ_ops` should be a list. Instead found <class 'str'>",
+        ):
+            gtfs_fixture.summarise_trips(summ_ops="tester")
 
+        # cases where in item passed to summ_ops is an invalid operator
         with pytest.raises(
-            TypeError,
-            match=(
-                "Each item in `summ_ops` must be a numpy function. Found"
-                " <class 'function'> : dummy_func"
-            ),
+            AttributeError,
+            match="'SeriesGroupBy' object has no attribute 'tester'",
         ):
-            gtfs_fixture.summarise_trips(summ_ops=[np.min, dummy_func])
-        # case where a single non-numpy func is being passed
-        with pytest.raises(
-            NotImplementedError,
-            match="`summ_ops` expects numpy functions only.",
-        ):
-            gtfs_fixture.summarise_trips(summ_ops=dummy_func)
-        with pytest.raises(
-            TypeError,
-            match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
-        ):
-            gtfs_fixture.summarise_trips(summ_ops=38)
+            gtfs_fixture.summarise_trips(summ_ops=["tester"])
+
         # cases where return_summary are not of type boolean
         with pytest.raises(
             TypeError,
@@ -387,36 +380,28 @@ class TestGtfsInstance(object):
 
     def test_summarise_routes_defence(self, gtfs_fixture):
         """Defensive checks for summarise_routes()."""
+        # cases where a function is passed to summ_ops
         with pytest.raises(
             TypeError,
-            match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
+            match="`summ_ops` must contain <class 'str'> only. Found <class "
+            "'numpy._ArrayFunctionDispatcher'>",
         ):
-            gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
-        # case where is function but not exported from numpy
+            gtfs_fixture.summarise_routes(summ_ops=[np.mean])
 
-        def dummy_func():
-            """Test case func."""
-            return None
+        # cases where a list isn't passed to summ_ops
+        with pytest.raises(
+            TypeError,
+            match="`summ_ops` should be a list. Instead found <class 'str'>",
+        ):
+            gtfs_fixture.summarise_routes(summ_ops="tester")
 
+        # cases where in item passed to summ_ops is an invalid operator
         with pytest.raises(
-            TypeError,
-            match=(
-                "Each item in `summ_ops` must be a numpy function. Found"
-                " <class 'function'> : dummy_func"
-            ),
+            AttributeError,
+            match="'SeriesGroupBy' object has no attribute 'tester'",
         ):
-            gtfs_fixture.summarise_routes(summ_ops=[np.min, dummy_func])
-        # case where a single non-numpy func is being passed
-        with pytest.raises(
-            NotImplementedError,
-            match="`summ_ops` expects numpy functions only.",
-        ):
-            gtfs_fixture.summarise_routes(summ_ops=dummy_func)
-        with pytest.raises(
-            TypeError,
-            match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
-        ):
-            gtfs_fixture.summarise_routes(summ_ops=38)
+            gtfs_fixture.summarise_routes(summ_ops=["tester"])
+
         # cases where return_summary are not of type boolean
         with pytest.raises(
             TypeError,
