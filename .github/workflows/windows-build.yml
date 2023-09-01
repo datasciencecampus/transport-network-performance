@@ -2,14 +2,11 @@
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Python package
-
 on:
   push:
     branches: ["109-develop-windows-os-ci"]
-
 jobs:
   build:
-
     runs-on: "windows-latest"
     strategy:
       fail-fast: false
@@ -25,7 +22,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Integration Tests
       run: |
-          pytest -m runinteg --runinteg # run only those tests marked runinteg
+          pytest -m runinteg --runinteg --deselect tests/osm/ --deselect tests/urban_centres --deselect tests/population # run only those tests marked runinteg & with no geos or osmosis deps
     - name: pre-commit
       run: |
         pre-commit install
