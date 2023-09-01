@@ -5,14 +5,12 @@ import pandas as pd
 import geopandas as gpd
 import folium
 import datetime
-import numpy as np
 import os
-import inspect
 
 from transport_performance.gtfs.routes import scrape_route_type_lookup
 from transport_performance.utils.defence import (
     _is_expected_filetype,
-    _check_namespace_export,
+    _check_list,
     _check_parent_dir_exists,
 )
 
@@ -387,7 +385,7 @@ class GtfsInstance:
 
     def _summary_defence(
         self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        summ_ops: list = ["min", "max", "mean", "median"],
         return_summary: bool = True,
     ) -> None:
         """Check for any invalid parameters in a summarising function.
@@ -395,8 +393,8 @@ class GtfsInstance:
         Parameters
         ----------
         summ_ops : list, optional
-            A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
+            A list of operators in string format used to get a summary of a
+            given day, by default ["min", "max", "mean", "median"]
         return_summary : bool, optional
             When True, a summary is returned. When False, route data
             for each date is returned,
@@ -407,44 +405,16 @@ class GtfsInstance:
         None
 
         """
+        _check_list(ls=summ_ops, param_nm="summ_ops")
         if not isinstance(return_summary, bool):
             raise TypeError(
                 "'return_summary' must be of type boolean."
                 f" Found {type(return_summary)} : {return_summary}"
             )
-        # summ_ops defence
-
-        if isinstance(summ_ops, list):
-            for i in summ_ops:
-                # updated for numpy >= 1.25.0, this check rules out cases
-                # that are not functions
-                if inspect.isfunction(i) or type(i).__module__ == "numpy":
-                    if not _check_namespace_export(pkg=np, func=i):
-                        raise TypeError(
-                            "Each item in `summ_ops` must be a numpy function."
-                            f" Found {type(i)} : {i.__name__}"
-                        )
-                else:
-                    raise TypeError(
-                        (
-                            "Each item in `summ_ops` must be a function."
-                            f" Found {type(i)} : {i}"
-                        )
-                    )
-        elif inspect.isfunction(summ_ops):
-            if not _check_namespace_export(pkg=np, func=summ_ops):
-                raise NotImplementedError(
-                    "`summ_ops` expects numpy functions only."
-                )
-        else:
-            raise TypeError(
-                "`summ_ops` expects a numpy function or list of numpy"
-                f" functions. Found {type(summ_ops)}"
-            )
 
     def summarise_trips(
         self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        summ_ops: list = ["min", "max", "mean", "median"],
         return_summary: bool = True,
     ) -> pd.DataFrame:
         """Produce a summarised table of trip statistics by day of week.
@@ -457,8 +427,8 @@ class GtfsInstance:
         Parameters
         ----------
         summ_ops : list, optional
-            A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
+            A list of operators in string format used to get a summary of a
+            given day, by default ["min", "max", "mean", "median"]
         return_summary : bool, optional
             When True, a summary is returned. When False, trip data
             for each date is returned,
@@ -497,7 +467,6 @@ class GtfsInstance:
         day_trip_counts = day_trip_counts.round(0)
 
         # order the days (for plotting future purposes)
-        # order the days (for plotting future purposes)
         day_trip_counts = self._order_dataframe_by_day(df=day_trip_counts)
         day_trip_counts.reset_index(drop=True, inplace=True)
         self.daily_trip_summary = day_trip_counts.copy()
@@ -505,7 +474,7 @@ class GtfsInstance:
 
     def summarise_routes(
         self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        summ_ops: list = ["min", "max", "mean", "median"],
         return_summary: bool = True,
     ) -> pd.DataFrame:
         """Produce a summarised table of route statistics by day of week.
@@ -519,8 +488,8 @@ class GtfsInstance:
         Parameters
         ----------
         summ_ops : list, optional
-            A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
+            A list of operators in string format used to get a summary of a
+            given day, by default ["min", "max", "mean", "median"]
         return_summary : bool, optional
             When True, a summary is returned. When False, route data
             for each date is returned,
