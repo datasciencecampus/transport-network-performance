@@ -47,7 +47,21 @@ GTFS_UNNEEDED_COLUMNS = {
 
 
 class TemplateHTML:
-    """A class for inserting HTML string into a docstring."""
+    """A class for inserting HTML string into a docstring.
+
+    Attributes
+    ----------
+    template : str
+        A string containing the HTML template.
+
+    Methods
+    -------
+    insert(placeholder: str, value: str, replace_multiple: bool = False)
+        Insert values into the HTML template
+    get_template()
+        Returns the template attribute
+
+    """
 
     def __init__(self, path: Union[str, pathlib.Path]) -> None:
         """Initialise the TemplateHTML object.
@@ -75,21 +89,24 @@ class TemplateHTML:
         Parameters
         ----------
         placeholder : str
-            The placeholder name in the template.
-            This is a string. In the template it
-            should be surrounded by sqsuare brackets.
+            The placeholder name in the template. This is a string. In the
+            template it should be surrounded by square brackets.
         value : str
             The value to place in the placeholder
             location.
         replace_multiple : bool, optional
-            Whether or not to replace multiple
-            placeholders that share the same
-            placeholder value,
-            by default False
+            Whether or not to replace multiple placeholders that share the same
+            placeholder value, by default False
 
         Returns
         -------
         None
+
+        Raises
+        ------
+        ValueError
+            A ValueError is raised if there are multiple instances of a
+            place-holder but 'replace_multiple' is not True
 
         """
         _string_defence(placeholder, "placeholder")
@@ -137,6 +154,12 @@ def set_up_report_dir(
     -------
     None
 
+    Raises
+    ------
+    FileExistsError
+        Raises an error if you the gtfs report directory already exists in the
+        given path and overwrite=False
+
     """
     # defences
     _check_parent_dir_exists(path, "path", create=True)
@@ -149,6 +172,7 @@ def set_up_report_dir(
             "if you'd like to overwrite this."
         )
 
+    # make gtfs_report dir
     try:
         os.mkdir(f"{path}/gtfs_report")
     except FileExistsError:

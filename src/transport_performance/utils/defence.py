@@ -261,19 +261,19 @@ def _check_column_in_df(df: pd.DataFrame, column_name: str) -> None:
     Parameters
     ----------
     df : pd.DataFrame
-        A pandas dataframe to check for the
-        column withhin
+        A pandas dataframe to check if the specified column exists in.
     column_name : str
         The name of the column to check for
-
-    Raises
-    ------
-    IndexError
-        'column_name' is not a column in the dataframe
 
     Returns
     -------
     None
+
+    Raises
+    ------
+    IndexError
+        Raises an error if the column (column_name) does not exist in the
+        dataframe
 
     """
     if column_name not in df.columns:
