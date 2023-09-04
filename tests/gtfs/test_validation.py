@@ -38,7 +38,7 @@ class TestGtfsInstance(object):
             # match refactored to work on windows & mac
             # see https://regex101.com/r/i1C4I4/1
             FileExistsError,
-            match=r"doesnt(/|\\\\)exist not found on file.",
+            match=r"doesnt(/|\\)exist not found on file.",
         ):
             GtfsInstance(gtfs_pth="doesnt/exist")
         #  a case where file is found but not a zip directory
