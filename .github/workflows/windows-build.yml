@@ -23,10 +23,6 @@ jobs:
     - name: Run Integration Tests
       run: |
           pytest -m runinteg --runinteg --deselect tests/osm/ --deselect tests/population # run only those tests marked runinteg & with no geos or osmosis deps
-    - name: pre-commit
-      run: |
-        pre-commit install
-        pre-commit run --all-files
     - name: Test with pytest
       run: |
         pytest --deselect tests/osm/ --deselect tests/population # run only tests with no osmosis or geos dependencies
