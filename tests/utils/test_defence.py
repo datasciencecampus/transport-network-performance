@@ -65,21 +65,6 @@ class Test_CheckParentDirExists(object):
                 pth="missing/file.someext", param_nm="not_found", create=False
             )
 
-        # error_pth = "test_folder\\test_file.py"
-        # with pytest.raises(
-        #     ValueError,
-        #     match=re.escape(
-        #         "Please specify string paths with single forward"
-        #         " slashes only."
-        #         f" Got {repr(error_pth)}"
-        #     ),
-        # ):
-        #     _check_parent_dir_exists(
-        #         pth="test_folder\\test_file.py",
-        #         param_nm="test_prm",
-        #         create=False,
-        #     )
-
     def test_check_parents_dir_exists(self, tmp_path):
         """Test that a parent directory is created."""
         # test without create
