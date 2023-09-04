@@ -2,7 +2,7 @@ pre-commit
 r5py>=0.0.4
 gtfs_kit==5.2.7
 rasterio
-matplotlib
+matplotlib>=3.7.0
 scipy
 rioxarray
 geopandas
