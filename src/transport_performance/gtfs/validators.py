@@ -4,7 +4,8 @@ from haversine import Unit, haversine_vector
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.gtfs_utils import _add_validation_row
-from transport_performance.utils.defence import _gtfs_instance_defence
+
+# from transport_performance.utils.defence import _gtfs_instance_defence
 
 
 # a constant containing the max acceptable speed of a route type (vehicle type)
@@ -31,7 +32,10 @@ def validate_travel_between_consecutive_stops(gtfs: GtfsInstance):
     be deemed invalid.
     """
     # defences
-    _gtfs_instance_defence(gtfs, "gtfs")
+    if not isinstance(gtfs, GtfsInstance):
+        raise TypeError(
+            f"'gtfs' expected type {type(GtfsInstance)} " f"Got {type(gtfs)}"
+        )
 
     gtfs.feed.full_stop_schedule = gtfs.feed.stop_times.merge(
         gtfs.feed.stops[["stop_id", "stop_lat", "stop_lon"]],
@@ -169,7 +173,10 @@ def validate_travel_between_consecutive_stops(gtfs: GtfsInstance):
 def validate_travel_over_multiple_stops(gtfs: GtfsInstance) -> None:
     """Validate travel over multiple stops in the GTFS data."""
     # defences
-    _gtfs_instance_defence(gtfs, "gtfs")
+    if not isinstance(gtfs, GtfsInstance):
+        raise TypeError(
+            f"'gtfs' expected type {type(GtfsInstance)} " f"Got {type(gtfs)}"
+        )
 
     if "full_stop_schedule" not in gtfs.feed.__dict__.keys():
         print(
