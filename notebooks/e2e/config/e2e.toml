@@ -12,10 +12,14 @@ bbox = [
 ]  # must in in 'ESRI:54009', this represents a BBOX around Wales
 centre = [51.5773597, -2.9660008]
 buffer_size = 12000
+write_outputs = true
 output_map_path = "outputs/e2e/urban_centre/urban_centre_map.html"
 
 [population]  # configuration section for population
 override = true
-input_dir = "data/exteral/population/"
+input_dir = "data/external/population/"
 merged_path = "data/interim/population/pop_merged.tif"
 merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
+threshold = 0.000001  # set small and positive, to remove 0 pop cells
+write_outputs = true
+output_map_path = "outputs/e2e/population/population_map.html"
