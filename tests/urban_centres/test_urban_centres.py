@@ -13,6 +13,7 @@ import pytest
 import rasterio as rio
 
 from contextlib import nullcontext as does_not_raise
+from pathlib import Path
 from pytest_lazyfixture import lazy_fixture
 from shapely.geometry import Polygon
 
@@ -141,14 +142,19 @@ def outside_cluster_centre():
 
 # test exceptions for input parameters
 @pytest.mark.parametrize(
-    "filepath, expected",
+    "filepath, func, expected",
     [
-        (lazy_fixture("dummy_pop_array"), does_not_raise()),
-        ("wrongpath", pytest.raises(IOError)),
+        (lazy_fixture("dummy_pop_array"), "str", does_not_raise()),
+        (lazy_fixture("dummy_pop_array"), "path", does_not_raise()),
+        ("wrongpath", "str", pytest.raises(IOError)),
     ],
 )
-def test_file(filepath, bbox, cluster_centre, expected):
+def test_file(filepath, func, bbox, cluster_centre, expected):
     """Test filepath."""
+    if func == "str":
+        filepath = str(filepath)
+    else:
+        filepath = Path(filepath)
     with expected:
         assert (
             ucc.UrbanCentre(filepath).get_urban_centre(bbox, cluster_centre)

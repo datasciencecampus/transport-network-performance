@@ -2,10 +2,14 @@
 import pathlib
 import numpy as np
 import os
+from typing import Union
 
 
-def _is_path_like(pth, param_nm):
+def _handle_path_like(pth, param_nm):
     """Handle path-like parameter values.
+
+    Checks a path for symlinks and relative paths. Converts to realpath &
+    outputs pathlib.Path object (platform agnostic).
 
     Parameters
     ----------
@@ -17,25 +21,65 @@ def _is_path_like(pth, param_nm):
 
     Raises
     ------
-    TypeError: `pth` is not either of string or pathlib.PosixPath.
+    TypeError: `pth` is not either of string or pathlib.Path.
 
     Returns
     -------
-    None
+    pathlib.Path
+        Platform agnostic representation of pth.
 
     """
     if not isinstance(pth, (str, pathlib.Path)):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
-
-def _check_parent_dir_exists(pth, param_nm, create=False):
-    _is_path_like(pth, param_nm)
-    # realpath helps to catch cases where relative paths are passed in main
+    # ensure returned path is not relative or contains symbolic links
     pth = os.path.realpath(pth)
+
+    if not isinstance(pth, pathlib.Path):
+        # coerce to Path even if user passes string
+        pth = pathlib.Path(pth)
+
+    return pth
+
+
+def _check_parent_dir_exists(
+    pth: Union[str, pathlib.Path], param_nm: str, create: bool = False
+) -> None:
+    """Check if a files parent directory exists.
+
+    The parent directory in this case will be the second layer. If only a
+    single layer is passed, the parent directory will be assumed to exist as
+    it will be the current working directory.
+
+    Parameters
+    ----------
+    pth : Union[str, pathlib.Path]
+        The path to the file who's parent dir is being confirmed to exist. The
+        function will consider the second layer of the path to be the parent
+        directory.
+    param_nm : str
+        The name of the parameter for the path. This is used in the error
+        message within is_path_like()
+    create : bool, optional
+        Whether or not to create the parent directory if it does not already
+        exist, by default False
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    FileNotFoundError
+        An error is raised if the parent directory could not be found and also
+        the create parameter is False.
+
+    """
+    pth = _handle_path_like(pth, param_nm)
     parent = os.path.dirname(pth)
     if not os.path.exists(parent):
         if create:
-            os.mkdir(parent)
+            os.makedirs(parent)
             print(f"Creating parent directory: {parent}")
         else:
             raise FileNotFoundError(
@@ -70,7 +114,7 @@ def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
     None
 
     """
-    _is_path_like(pth=pth, param_nm=param_nm)
+    pth = _handle_path_like(pth=pth, param_nm=param_nm)
 
     _, ext = os.path.splitext(pth)
     if check_existing and not os.path.exists(pth):

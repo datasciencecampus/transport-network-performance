@@ -8,6 +8,7 @@ import os
 from geopandas import GeoDataFrame
 import numpy as np
 import re
+import pathlib
 
 from transport_performance.gtfs.validation import (
     GtfsInstance,
@@ -34,7 +35,10 @@ class TestGtfsInstance(object):
         ):
             GtfsInstance(gtfs_pth=1)
         with pytest.raises(
-            FileExistsError, match=r"doesnt/exist not found on file."
+            # match refactored to work on windows & mac
+            # see https://regex101.com/r/i1C4I4/1
+            FileExistsError,
+            match=r"doesnt(/|\\)exist not found on file.",
         ):
             GtfsInstance(gtfs_pth="doesnt/exist")
         #  a case where file is found but not a zip directory
@@ -136,8 +140,9 @@ class TestGtfsInstance(object):
         ], f"Expected print statements about GTFS warnings. Found: {fun_out}"
 
     @patch("builtins.print")
-    def test_viz_stops_defence(self, mocked_print, gtfs_fixture):
+    def test_viz_stops_defence(self, mocked_print, tmpdir, gtfs_fixture):
         """Check defensive behaviours of viz_stops()."""
+        tmp = os.path.join(tmpdir, "somefile.html")
         with pytest.raises(
             TypeError,
             match="`out_pth` expected path-like, found <class 'bool'>",
@@ -146,23 +151,19 @@ class TestGtfsInstance(object):
         with pytest.raises(
             TypeError, match="`geoms` expects a string. Found <class 'int'>"
         ):
-            gtfs_fixture.viz_stops(out_pth="outputs/somefile.html", geoms=38)
+            gtfs_fixture.viz_stops(out_pth=tmp, geoms=38)
         with pytest.raises(
             ValueError, match="`geoms` must be either 'point' or 'hull."
         ):
-            gtfs_fixture.viz_stops(
-                out_pth="outputs/somefile.html", geoms="foobar"
-            )
+            gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
         with pytest.raises(
             TypeError,
             match="`geom_crs`.*string or integer. Found <class 'float'>",
         ):
-            gtfs_fixture.viz_stops(
-                out_pth="outputs/somefile.html", geom_crs=1.1
-            )
+            gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
         # check missing stop_id results in print instead of exception
         gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
-        gtfs_fixture.viz_stops(out_pth="outputs/out.html")
+        gtfs_fixture.viz_stops(out_pth=tmp)
         fun_out = mocked_print.mock_calls
         assert fun_out == [
             call("Key Error. Map was not written.")
@@ -172,19 +173,21 @@ class TestGtfsInstance(object):
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
         """Check behaviour of viz_stops when plotting point geom."""
         tmp = os.path.join(tmpdir, "points.html")
-        gtfs_fixture.viz_stops(out_pth=tmp)
+        gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp))
         assert os.path.exists(
             tmp
         ), f"{tmp} was expected to exist but it was not found."
         # check behaviour when parent directory doesn't exist
         no_parent_pth = os.path.join(tmpdir, "notfound", "points1.html")
-        gtfs_fixture.viz_stops(out_pth=no_parent_pth, create_out_parent=True)
+        gtfs_fixture.viz_stops(
+            out_pth=pathlib.Path(no_parent_pth), create_out_parent=True
+        )
         assert os.path.exists(
             no_parent_pth
         ), f"{no_parent_pth} was expected to exist but it was not found."
         # check behaviour when not implemented fileext used
         tmp1 = os.path.join(tmpdir, "points2.svg")
-        gtfs_fixture.viz_stops(out_pth=tmp1)
+        gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
         # need to use regex for the first print statement, as tmpdir will
         # change.
         start_pat = re.compile(r"Creating parent directory:.*")
@@ -204,7 +207,7 @@ class TestGtfsInstance(object):
     def test_viz_stops_hull(self, tmpdir, gtfs_fixture):
         """Check viz_stops behaviour when plotting hull geom."""
         tmp = os.path.join(tmpdir, "hull.html")
-        gtfs_fixture.viz_stops(out_pth=tmp, geoms="hull")
+        gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp), geoms="hull")
         assert os.path.exists(
             tmp
         ), f"Map should have been written to {tmp} but was not found."

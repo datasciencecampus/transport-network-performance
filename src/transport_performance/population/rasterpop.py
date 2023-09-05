@@ -464,18 +464,30 @@ class RasterPop:
         )
 
         # add the centroids to a separate layer
-        self.centroid_gdf.explore(
-            self.__UC_COL_NAME,
-            name="Centroids",
-            m=m,
-            show=False,
-            style_kwds={
+        # conditionally style plot based on whether UC is provided
+        if self._uc_gdf is not None:
+            centroid_plot_col = self.__UC_COL_NAME
+            # this dict will change the centriod color in/out the UC.
+            centroid_style_dict = {
                 "style_function": lambda x: {
                     "color": "#BC544B"
                     if x["properties"][self.__UC_COL_NAME] is False
                     else "#8B0000"
                 }
-            },
+            }
+        else:
+            centroid_plot_col = None
+            centroid_style_dict = {
+                "style_function": lambda x: {"color": "#BC544B"}
+            }
+
+        # add in the centroid layer with the conditional styling
+        self.centroid_gdf.explore(
+            centroid_plot_col,
+            name="Centroids",
+            m=m,
+            show=False,
+            style_kwds=centroid_style_dict,
             legend=False,
         )
 

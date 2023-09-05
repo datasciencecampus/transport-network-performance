@@ -1,4 +1,8 @@
 """Tests for defence.py. These internals may be covered elsewhere."""
+import re
+import os
+import pathlib
+
 import pytest
 
 from transport_performance.utils.defence import (
@@ -60,3 +64,60 @@ class Test_CheckParentDirExists(object):
             _check_parent_dir_exists(
                 pth="missing/file.someext", param_nm="not_found", create=False
             )
+
+    def test_check_parents_dir_exists(self, tmp_path):
+        """Test that a parent directory is created."""
+        # test without create
+        expected_error_path = os.path.join(tmp_path, "data_path", "data_path")
+        with pytest.raises(
+            FileNotFoundError,
+            match=re.escape(
+                rf"Parent directory {expected_error_path}"
+                r" not found on disk."
+            ),
+        ):
+            _check_parent_dir_exists(
+                pth=pathlib.Path(
+                    os.path.join(
+                        tmp_path, "data_path", "data_path", "test.html"
+                    )
+                ),
+                param_nm="test_prm",
+                create=False,
+            )
+
+        # test creating the parent directory (1 level)
+        _check_parent_dir_exists(
+            pth=pathlib.Path(
+                os.path.join(tmp_path, "test_dir_single", "test.html")
+            ),
+            param_nm="test_prm",
+            create=True,
+        )
+
+        assert os.path.exists(
+            pathlib.Path(os.path.join(tmp_path, "test_dir_single"))
+        ), (
+            "_check_parent_dir_exists did not make parent dir"
+            " when 'create=True' (single level)"
+        )
+
+        # test creating the parent directory (2 levels)
+        _check_parent_dir_exists(
+            pth=pathlib.Path(
+                os.path.join(
+                    tmp_path, "test_dir_multi", "test_dir_multi", "test.html"
+                )
+            ),
+            param_nm="test_prm",
+            create=True,
+        )
+
+        assert os.path.exists(
+            pathlib.Path(
+                os.path.join(tmp_path, "test_dir_multi", "test_dir_multi")
+            )
+        ), (
+            "_check_parent_dir_exists did not make parent dir"
+            " when 'create=True' (multiple levels)"
+        )

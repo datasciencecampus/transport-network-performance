@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# This workflow will install Python dependencies, run tests and lint with Python 3.9
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Python package
@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -23,11 +22,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install geos  # required for cartopy installation
-      uses: ConorMacBride/install-package@v1
-      with:
-        brew: geos
-        apt: libgeos-dev
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -40,11 +34,19 @@ jobs:
     - name: Check Java Install
       run: |
         java --version
-    - name: Install Osmosis
-      uses: ConorMacBride/install-package@v1
-      with:
-        brew: osmosis
-        apt: osmosis
+    - name: Install mac depencies with brew
+      if: runner.os == 'macOS'  # not updating brew version, issue with aom
+      run: |
+        brew install geos
+        brew install osmosis
+      shell: sh
+    - name: Install linux depencies with apt
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update
+        sudo apt install -y libgeos-dev
+        sudo apt install -y osmosis
+      shell: sh
     - name: Run Integration Tests
       run: |
           pytest -m runinteg --runinteg # run only those tests marked runinteg
@@ -56,10 +58,12 @@ jobs:
       run: |
         pytest
     - name: Generate Report
+      if: runner.os == 'macOS'  # run coverage report only on macOS
       run: |
         coverage run -m pytest
         coverage xml
     - name: Upload coverage reports to Codecov
+      if: runner.os == 'macOS'  # run coverage report only on macOS
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
