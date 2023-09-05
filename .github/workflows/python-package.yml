@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -59,10 +58,12 @@ jobs:
       run: |
         pytest
     - name: Generate Report
+      if: runner.os == 'macOS'  # run coverage report only on macOS
       run: |
         coverage run -m pytest
         coverage xml
     - name: Upload coverage reports to Codecov
+      if: runner.os == 'macOS'  # run coverage report only on macOS
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
