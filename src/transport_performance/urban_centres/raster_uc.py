@@ -14,7 +14,7 @@ from pyproj import Transformer
 from rasterio.mask import raster_geometry_mask
 from rasterio.transform import rowcol
 from scipy.ndimage import generic_filter, label
-from transport_performance.utils.defence import _is_path_like
+from transport_performance.utils.defence import _handle_path_like
 
 
 class UrbanCentre:
@@ -23,7 +23,7 @@ class UrbanCentre:
     def __init__(self, file):
 
         # check that path is str or PosixPath
-        _is_path_like(file, "filepath")
+        file = _handle_path_like(file, "file")
         self.file = file
 
     def get_urban_centre(

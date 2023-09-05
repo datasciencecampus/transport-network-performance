@@ -7,11 +7,11 @@ from typing import Union
 # from transport_performance.gtfs.validation import GtfsInstance
 
 
-def _is_path_like(pth, param_nm):
+def _handle_path_like(pth, param_nm):
     """Handle path-like parameter values.
 
-    It is important to note that paths including backslashes are not accepted,
-    with forward slashes being the only option.
+    Checks a path for symlinks and relative paths. Converts to realpath &
+    outputs pathlib.Path object (platform agnostic).
 
     Parameters
     ----------
@@ -23,23 +23,25 @@ def _is_path_like(pth, param_nm):
 
     Raises
     ------
-    TypeError: `pth` is not either of string or pathlib.PosixPath.
+    TypeError: `pth` is not either of string or pathlib.Path.
 
     Returns
     -------
-    None
+    pathlib.Path
+        Platform agnostic representation of pth.
 
     """
     if not isinstance(pth, (str, pathlib.Path)):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
+    # ensure returned path is not relative or contains symbolic links
+    pth = os.path.realpath(pth)
+
     if not isinstance(pth, pathlib.Path):
-        if "\\" in repr(pth):
-            raise ValueError(
-                "Please specify string paths with single forward"
-                " slashes only."
-                f" Got {repr(pth)}"
-            )
+        # coerce to Path even if user passes string
+        pth = pathlib.Path(pth)
+
+    return pth
 
 
 def _check_parent_dir_exists(
@@ -75,11 +77,7 @@ def _check_parent_dir_exists(
         the create parameter is False.
 
     """
-    _is_path_like(pth, param_nm)
-    # convert path to the correct OS specific format
-    pth = pathlib.Path(pth)
-    # realpath helps to catch cases where relative paths are passed in main
-    pth = os.path.realpath(pth)
+    pth = _handle_path_like(pth, param_nm)
     parent = os.path.dirname(pth)
     if not os.path.exists(parent):
         if create:
@@ -118,7 +116,7 @@ def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
     None
 
     """
-    _is_path_like(pth=pth, param_nm=param_nm)
+    pth = _handle_path_like(pth=pth, param_nm=param_nm)
 
     _, ext = os.path.splitext(pth)
     if check_existing and not os.path.exists(pth):
