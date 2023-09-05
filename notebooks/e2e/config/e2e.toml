@@ -1,0 +1,12 @@
+title = "Config for an E2E example around the Newport area"
+
+[general]
+override = true
+
+[urban_centre]
+input_dir = "data/external/urban_centre/"
+merged_resampled_path = "data/processed/urban_centre/uc_merged_resampled.tif"
+
+[population]
+input_dir = "data/exteral/population/"
+merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
