@@ -31,6 +31,7 @@ from transport_performance.urban_centres.raster_uc import UrbanCentre
 from transport_performance.population.rasterpop import RasterPop
 from transport_performance.gtfs.gtfs_utils import bbox_filter_gtfs
 from transport_performance.gtfs.validation import GtfsInstance
+from transport_performance.osm.osm_utils import filter_osm
 from transport_performance.utils.raster import (
     merge_raster_files,
     sum_resample_file,
@@ -45,6 +46,7 @@ config = toml.load(CONFIG_FILE)
 uc_config = config["urban_centre"]
 pop_config = config["population"]
 gtfs_config = config["gtfs"]
+osm_config = config["osm"]
 
 # %% [markdown] noqa: D212, D400, D415
 """
@@ -255,4 +257,31 @@ m = gk.stops.map_stops(gtfs.feed, stop_ids=unique_stops)
 if gtfs_config["write_outputs"]:
     m.save(here(gtfs_config["used_stops_map_path"]))
 m
+# %% [markdown] noqa: D212, D400, D415
+"""
+## OpenStreetMap
+
+Clip the OSM data to the buffered urban centre area.
+
+### Data Sources
+
+In this example a whole of Wales OSM data source is used, provided by the
+[Geofabrik](https://download.geofabrik.de/europe/great-britain.html). The
+`wales-latest.osm.pbf` file is expected to be within the directory set by
+`config['osm']['input_path']`.
+"""
+
+# %%
+# clip osm file to bbox of urban centre + buffer detected above
+if osm_config["override"]:
+    # get the extent of the urban centre bbox (includes buffer)
+    # need to convert to EPSG:4326 here since this is required by osmosis
+    osm_bbox = list(uc_gdf.to_crs("EPSG:4326").loc["bbox"].geometry.bounds)
+
+    filter_osm(
+        pbf_pth=here(osm_config["input_path"]),
+        out_pth=here(osm_config["filtered_path"]),
+        bbox=osm_bbox,
+    )
+
 # %%
