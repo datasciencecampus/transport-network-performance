@@ -23,3 +23,14 @@ merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
 threshold = 0.000001  # set small and positive, to remove 0 pop cells
 write_outputs = true
 output_map_path = "outputs/e2e/population/population_map.html"
+
+[gtfs] # configuration section for gtfs
+override = true
+input_path = "data/external/gtfs/itm_wales_gtfs.zip"
+filtered_path = "data/interim/gtfs/itm_wales_filtered_gtfs.zip"
+units = "km"
+write_outputs = true
+cleaned_path = "data/processed/gtfs/itm_wales_filtered_cleaned_gtfs.zip"
+stops_map_path = "outputs/e2e/gtfs/stops_map.html"
+hull_map_path = "outputs/e2e/gtfs/hull_map.html"
+used_stops_map_path = "outputs/e2e/gtfs/used_stops_map.html"

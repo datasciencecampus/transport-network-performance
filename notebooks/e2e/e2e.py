@@ -23,11 +23,14 @@ Call in script wide imports and the configuration information.
 import toml
 import os
 import geopandas as gpd
+import gtfs_kit as gk
 
 from pyprojroot import here
 from shapely.geometry import box
 from transport_performance.urban_centres.raster_uc import UrbanCentre
 from transport_performance.population.rasterpop import RasterPop
+from transport_performance.gtfs.gtfs_utils import bbox_filter_gtfs
+from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.utils.raster import (
     merge_raster_files,
     sum_resample_file,
@@ -41,6 +44,7 @@ config = toml.load(CONFIG_FILE)
 # split out into separate configs to minimise line length
 uc_config = config["urban_centre"]
 pop_config = config["population"]
+gtfs_config = config["gtfs"]
 
 # %% [markdown] noqa: D212, D400, D415
 """
@@ -160,4 +164,95 @@ if pop_config["write_outputs"]:
 # view static visual in interactive window
 rp.plot(which="cartopy")
 
+# %% [markdown] noqa: D212, D400, D415
+"""
+## GTFS
+
+Clip the GTFS data to the buffered urban centre area, then clean and validate
+then GTFS data.
+
+### Data Sources
+
+In this example a whole of Wales GTFS data source is used, provided by the
+[Department for Transport's BODS ](https://data.bus-data.dft.gov.uk/). The
+`itm_wales_gtfs.zip` file is expected to be within the directory set by
+`config['gtfs']['input_path']`.
+"""
+
+# %%
+# clip the GTFS to the extent of the urban centre buffered area
+if gtfs_config["override"]:
+    # get the extent of the urban centre bbox (includes buffer)
+    gtfs_bbox = list(uc_gdf.loc["bbox"].geometry.bounds)
+
+    # clip to region of interest, setting crs to match the bbox
+    bbox_filter_gtfs(
+        in_pth=here(gtfs_config["input_path"]),
+        out_pth=here(gtfs_config["filtered_path"]),
+        bbox_list=gtfs_bbox,
+        units=gtfs_config["units"],
+        crs=uc_gdf.crs.to_string(),
+    )
+
+# %%
+# read in filtered gtfs feed
+gtfs = GtfsInstance(
+    gtfs_pth=here(gtfs_config["filtered_path"]),
+    units=gtfs_config["units"],
+)
+
+# show valid dates
+available_dates = gtfs.feed.get_dates()
+s = available_dates[0]
+f = available_dates[-1]
+print(f"{len(available_dates)} dates available between {s} & {f}.")
+
+# %%
+# check validity, printing warnings and errors
+gtfs.is_valid()
+print("Errors:")
+gtfs.print_alerts()
+print("Warnings:")
+gtfs.print_alerts(alert_type="warning")
+
+# %%
+# clean the gtfs, then re-check the validity and reprint errors/warnings
+# note: this will remove 'Repeated pair (route_short_name, route_long_name)'
+gtfs.clean_feed()
+gtfs.is_valid()
+print("Errors:")
+gtfs.print_alerts()
+print("Warnings:")
+gtfs.print_alerts(alert_type="warning")
+
+# %%
+# get the route modes - frequency and proportion of modalities
+gtfs.get_route_modes()
+
+# %%
+# summarise the trips by day of the week
+gtfs.summarise_trips()
+
+# %%
+# summarise the routes by day of the week
+gtfs.summarise_routes()
+
+# %%
+# write visuals (stops and hull) and cleaned feed to file
+if gtfs_config["write_outputs"]:
+    gtfs.viz_stops(here(gtfs_config["stops_map_path"]), create_out_parent=True)
+    gtfs.viz_stops(
+        here(gtfs_config["hull_map_path"]),
+        geoms="hull",
+        create_out_parent=True,
+    )
+    gtfs.feed.write(here(gtfs_config["cleaned_path"]))
+
+# %%
+# display a map of only the stops used in `stop_times.txt`, excluding parents
+unique_stops = gtfs.feed.stop_times.stop_id.unique()
+m = gk.stops.map_stops(gtfs.feed, stop_ids=unique_stops)
+if gtfs_config["write_outputs"]:
+    m.save(here(gtfs_config["used_stops_map_path"]))
+m
 # %%
