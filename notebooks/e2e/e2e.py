@@ -20,4 +20,8 @@ from pyprojroot import here
 CONFIG_FILE = here("notebooks/e2e/config/e2e.toml")
 config = toml.load(CONFIG_FILE)
 
+# split out into separate configs to minimise line length
+uc_config = config["urban_centre"]
+pop_config = config["population"]
+
 # %%
