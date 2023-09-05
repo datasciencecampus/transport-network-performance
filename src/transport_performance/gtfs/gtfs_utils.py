@@ -3,11 +3,13 @@ import gtfs_kit as gk
 import geopandas as gpd
 from shapely.geometry import box
 from pyprojroot import here
+import pandas as pd
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_list,
 )
+from transport_performance.gtfs.validation import GtfsInstance
 
 
 def bbox_filter_gtfs(
@@ -59,4 +61,53 @@ def bbox_filter_gtfs(
     newport_feed.write(out_pth)
     print(f"Filtered feed written to {out_pth}.")
 
+    return None
+
+
+def _add_validation_row(
+    gtfs: GtfsInstance, _type: str, message: str, table: str, rows: list = []
+) -> None:
+    """Add a row to the validity_df dataframe.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The gtfs instance containing the validity_df df
+    _type : str
+        The type of error/warning
+    message : str
+        The error/warning message
+    table : str
+        The impacted table
+    rows : list, optional
+        The impacted rows, by default []
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    AttributeError
+        An error is raised if the validity df does not exist
+
+    """
+    # TODO: add dtype defences from defence.py once gtfs-html-new is merged
+    if "validity_df" not in gtfs.__dict__.keys():
+        raise AttributeError(
+            "The validity_df does not exist as an "
+            "attribute of your GtfsInstance object, \n"
+            "Did you forget to run the .is_valid() method?"
+        )
+
+    temp_df = pd.DataFrame(
+        {
+            "type": [_type],
+            "message": [message],
+            "table": [table],
+            "rows": [rows],
+        }
+    )
+
+    gtfs.validity_df = pd.concat([gtfs.validity_df, temp_df])
     return None

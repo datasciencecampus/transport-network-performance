@@ -4,6 +4,8 @@ import numpy as np
 import os
 from typing import Union
 
+from transport_performance.gtfs.validation import GtfsInstance
+
 
 def _is_path_like(pth, param_nm):
     """Handle path-like parameter values.
@@ -206,5 +208,16 @@ def _check_list(ls, param_nm, check_elements=True, exp_type=str):
                         f" Found {type(i)} : {i}"
                     )
                 )
+
+    return None
+
+
+def _gtfs_instance_defence(passed, param_nm: str) -> None:
+    """Defence checking. Not exported."""
+    if not isinstance(passed, GtfsInstance):
+        raise TypeError(
+            f"'{param_nm}' expected type {type(GtfsInstance)} "
+            f"Got {type(passed)}"
+        )
 
     return None
