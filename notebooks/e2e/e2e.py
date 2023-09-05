@@ -22,11 +22,18 @@ Call in script wide imports and the configuration information.
 # %%
 import toml
 import os
+import datetime
 import geopandas as gpd
+import pandas as pd
 import gtfs_kit as gk
 
 from pyprojroot import here
 from shapely.geometry import box
+from r5py import (
+    TransportNetwork,
+    TravelTimeMatrixComputer,
+    TransportMode,
+)
 from transport_performance.urban_centres.raster_uc import UrbanCentre
 from transport_performance.population.rasterpop import RasterPop
 from transport_performance.gtfs.gtfs_utils import bbox_filter_gtfs
@@ -284,4 +291,50 @@ if osm_config["override"]:
         bbox=osm_bbox,
     )
 
+# %% [markdown] noqa: D212, D400, D415
+"""
+## Analyse Network
+
+<ADD_ID>
+"""
+# %%
+# build the transport network
+trans_net = TransportNetwork(
+    here(osm_config["input_path"]),
+    [here(gtfs_config["cleaned_path"])],
+)
+
+# %%
+# build the computer
+travel_time_matrix_computer = TravelTimeMatrixComputer(
+    trans_net,
+    origins=centroid_gdf,
+    destinations=centroid_gdf[centroid_gdf.within_urban_centre],
+    departure=datetime.datetime(2023, 8, 8, 8, 00),
+    transport_modes=[
+        TransportMode.TRANSIT,
+        TransportMode.WALK,
+    ],
+)
+
+# %%
+# run the computer
+travel_times = travel_time_matrix_computer.compute_travel_times()
+
+# %%
+# median to times
+median_to_times = pd.DataFrame(
+    travel_times.groupby("from_id")["travel_time"].median()
+).reset_index()
+
+# %%
+median_to_times_gdf = pop_gdf.merge(
+    median_to_times, left_on="id", right_on="from_id"
+)
+
+median_to_times_gdf.head()
+# %%
+m = median_to_times_gdf.explore("travel_time", cmap="viridis")
+m = uc_gdf[0:1].explore(m=m, color="red", style_kwds={"fill": None})
+m
 # %%
