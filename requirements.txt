@@ -13,7 +13,7 @@ coverage
 pyprojroot
 pytest-lazy-fixture
 ipykernel==6.23.1
-pandas
+pandas<2.1.0
 beautifulsoup4
 requests
 pytest-mock
