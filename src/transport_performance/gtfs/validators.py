@@ -1,5 +1,6 @@
 """A set of functions that validate the GTFS data."""
 import numpy as np
+import pandas as pd
 from haversine import Unit, haversine_vector
 
 from transport_performance.gtfs.validation import GtfsInstance
@@ -37,21 +38,18 @@ def validate_travel_between_consecutive_stops(gtfs: GtfsInstance):
             f"'gtfs' expected type {type(GtfsInstance)} " f"Got {type(gtfs)}"
         )
 
-    gtfs.feed.full_stop_schedule = gtfs.feed.stop_times.merge(
-        gtfs.feed.stops[["stop_id", "stop_lat", "stop_lon"]],
+    stops = gtfs.feed.stops[["stop_id", "stop_lat", "stop_lon"]].copy()
+    stops["lat_lon"] = [
+        (x[0], x[1])
+        for x in list(np.dstack((stops["stop_lat"], stops["stop_lon"]))[0])
+    ]
+    stops.drop(["stop_lat", "stop_lon"], axis=1, inplace=True)
+
+    stop_sched = gtfs.feed.stop_times.merge(
+        stops,
         on="stop_id",
         how="left",
     )
-
-    stop_sched = gtfs.feed.full_stop_schedule
-
-    # create lat_lon tuple (rationale: np.dstack is more efficient than zip)
-    stop_sched["lat_lon"] = [
-        (x[0], x[1])
-        for x in list(
-            np.dstack((stop_sched["stop_lat"], stop_sched["stop_lon"]))[0]
-        )
-    ]
 
     # create a new column with the lonn/lat of the following stop
     stop_sched["lead_lat_lon"] = stop_sched["lat_lon"].shift(-1, fill_value=0)
@@ -99,7 +97,6 @@ def validate_travel_between_consecutive_stops(gtfs: GtfsInstance):
     # clean dataframe
     stop_sched.drop(
         [
-            "lat_lon",
             "lead_lat_lon",
             "lead_trip_id",
             "departure_time_s",
@@ -142,6 +139,7 @@ def validate_travel_between_consecutive_stops(gtfs: GtfsInstance):
         lambda x: _join_max_speed(r_type=int(x))
     )
 
+    gtfs.feed.full_stop_schedule = stop_sched
     # find the stops that exceed the speed boundary
     invalid_stops = stop_sched[stop_sched["speed"] > stop_sched["speed_bound"]]
 
@@ -186,14 +184,91 @@ def validate_travel_over_multiple_stops(gtfs: GtfsInstance) -> None:
         validate_travel_between_consecutive_stops(gtfs)
 
     stop_sched = gtfs.feed.full_stop_schedule
-    trip_ids = stop_sched.trip_id.unique()
 
-    # sequences = []
-    # stop_ids = []
-    # departure_times = []
+    # take a list of unique trip ids that have speeds greater than the limit
+    invalid_rows = stop_sched[stop_sched["speed"] > stop_sched["speed_bound"]]
+    trip_ids = invalid_rows.trip_id.unique()
+
+    needed_sched = stop_sched[stop_sched.trip_id.isin(trip_ids)]
+
+    # create lists to store relevant information
+    sequences = []
+    durations = []
+    avg_speeds = []
+    cum_distances = []
+    all_trip_ids = []
 
     for trip_id in trip_ids:
-        pass
-        # trip_schedule = stop_sched[stop_sched.trip_id == trip_id]
+        # take a subset of the data
+        trip = needed_sched[needed_sched.trip_id == trip_id]
+        trip = trip[
+            [
+                "stop_sequence",
+                "distance",
+                "speed",
+                "speed_bound",
+                "duration",
+                "stop_id",
+            ]
+        ].values
+        FAR_DISTANCE_KM = 10
+        MAX_SPEED_KPH = trip[0, 3]
 
-    return None
+        num_rows = len(trip)
+
+        for end_idx in range(1, num_rows):
+
+            # initialise variable
+            cur_avg_speed = -1
+
+            # reset values
+            distance_to_end_idx = 0
+            overall_duration = 0
+            max_distance_hit = False
+
+            # loop through each row above the end index
+            for start_idx in range(end_idx - 1, -1, -1):
+                distance_to_end_idx += trip[start_idx, 1]
+                overall_duration += trip[start_idx, 4]
+
+                # if the cumulative threshold is exceeded
+                if distance_to_end_idx >= FAR_DISTANCE_KM:
+                    max_distance_hit = True
+                    cur_avg_speed = (
+                        distance_to_end_idx / overall_duration
+                    ) * 3600
+                    break
+
+            # ensure that the distance limit is exceeded and the overall speed
+            # across the stops is out of bounds
+            if cur_avg_speed >= MAX_SPEED_KPH and max_distance_hit:
+                sequences.append(tuple([start_idx, end_idx]))
+                all_trip_ids.append(trip_id)
+                durations.append(overall_duration)
+                avg_speeds.append(cur_avg_speed)
+                cum_distances.append(distance_to_end_idx)
+                break
+
+    far_stops_df = pd.DataFrame(
+        {
+            "trip_id": all_trip_ids,
+            "stop_sequences": sequences,
+            "overall_distance": cum_distances,
+            "avg_speed": avg_speeds,
+            "overall_duration": durations,
+        }
+    )
+
+    # TODO: Add this table to the lookup once gtfs HTML is merged
+    gtfs.feed.multiple_stops_invalid = far_stops_df
+
+    if len(gtfs.feed.multiple_stops_invalid) > 0:
+        _add_validation_row(
+            gtfs=gtfs,
+            _type="warning",
+            message="Fast Travel Between Far Stops",
+            table="multiple_stops_invalid",
+            rows=list(gtfs.feed.multiple_stops_invalid.index),
+        )
+
+    return far_stops_df
