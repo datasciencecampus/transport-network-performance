@@ -309,7 +309,7 @@ trans_net = TransportNetwork(
 travel_time_matrix_computer = TravelTimeMatrixComputer(
     trans_net,
     origins=centroid_gdf,
-    destinations=centroid_gdf[centroid_gdf.within_urban_centre],
+    # destinations=centroid_gdf[centroid_gdf.within_urban_centre],
     departure=datetime.datetime(2023, 8, 8, 8, 00),
     transport_modes=[
         TransportMode.TRANSIT,
@@ -337,4 +337,140 @@ median_to_times_gdf.head()
 m = median_to_times_gdf.explore("travel_time", cmap="viridis")
 m = uc_gdf[0:1].explore(m=m, color="red", style_kwds={"fill": None})
 m
+# %%
+# visualise an ID
+ID = 6274
+snippet_id = travel_times[travel_times.from_id == ID]
+snippet_id = centroid_gdf.merge(snippet_id, left_on="id", right_on="to_id")
+snippet_id[snippet_id.travel_time <= 45].explore("travel_time")
+
+# %%
+# merge on from centroid
+distance_df = (
+    travel_times.merge(
+        centroid_gdf.to_crs("EPSG:27700")[["id", "centroid"]],
+        left_on="from_id",
+        right_on="id",
+    )
+    .drop(columns=["id"])
+    .rename(columns={"centroid": "from_centroid"})
+)
+
+# merge on to centroid
+distance_df = (
+    distance_df.merge(
+        centroid_gdf.to_crs("EPSG:27700")[["id", "centroid"]],
+        left_on="to_id",
+        right_on="id",
+    )
+    .drop(columns=["id"])
+    .rename(columns={"centroid": "to_centroid"})
+)
+
+# %%
+# convert to geoseries
+from_s = gpd.GeoSeries(distance_df.from_centroid, crs="EPSG:27700")
+to_s = gpd.GeoSeries(distance_df.to_centroid, crs="EPSG:27700")
+# %%
+distance_df["centroid_distance"] = from_s.distance(to_s)
+
+# %%
+distance_df["to_population"] = distance_df.merge(
+    pop_gdf[["id", "population"]],
+    left_on="to_id",
+    right_on="id",
+    how="left",
+)["population"]
+
+# %%
+MAX_DISTANCE = 11250
+MAX_TIME = 45
+
+# %%
+numerator = (
+    distance_df[
+        (distance_df.centroid_distance <= MAX_DISTANCE)
+        & (distance_df.travel_time <= MAX_TIME)
+    ]
+    .groupby("from_id")["to_population"]
+    .sum()
+    .reset_index()
+    .rename(columns={"to_population": "reachable_population"})
+)
+# %%
+denominator = (
+    distance_df[(distance_df.centroid_distance <= MAX_DISTANCE)]
+    .groupby("from_id")["to_population"]
+    .sum()
+    .reset_index()
+    .rename(columns={"to_population": "nearby_population"})
+)
+# %%
+perf_gdf = pop_gdf.merge(numerator, left_on="id", right_on="from_id").drop(
+    columns=["from_id"]
+)
+
+perf_gdf = perf_gdf.merge(denominator, left_on="id", right_on="from_id").drop(
+    columns=["from_id"]
+)
+
+perf_gdf.head()
+# %%
+perf_gdf["transport_performance"] = (
+    perf_gdf["reachable_population"] / perf_gdf["nearby_population"]
+) * 100
+
+# %%
+m = perf_gdf.explore("transport_performance")
+m = uc_gdf[0:1].explore(m=m, color="red", style_kwds={"fill": None})
+m
+
+# %%
+ID = 6274
+snippet_df = distance_df[distance_df.from_id == 6274]
+snippet_df = snippet_df[
+    ["from_id", "to_id", "to_centroid", "travel_time", "to_population"]
+]
+
+snippet_df = snippet_df.merge(
+    pop_gdf[["id", "geometry"]], how="left", left_on="to_id", right_on="id"
+).drop(columns=["id"])
+
+snippet_gdf = gpd.GeoDataFrame(
+    snippet_df, geometry=snippet_df.geometry, crs="ESRI:54009"
+)
+
+snippet_gdf = snippet_gdf.merge(
+    distance_df[["from_id", "to_id", "centroid_distance"]],
+    on=["from_id", "to_id"],
+    how="left",
+)
+
+# %%
+# %%
+snippet_gdf[
+    (snippet_gdf.travel_time <= MAX_TIME)
+    & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
+].explore("travel_time")
+
+# %%
+snippet_gdf[
+    (snippet_gdf.travel_time <= MAX_TIME)
+    & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
+].explore("to_population")
+
+# %%
+snippet_gdf[(snippet_gdf.centroid_distance <= MAX_DISTANCE)].explore(
+    "to_population"
+)
+
+# %%
+snippet_gdf[
+    (snippet_gdf.travel_time <= MAX_TIME)
+    & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
+].to_population.sum()
+# %%
+snippet_gdf[
+    (snippet_gdf.centroid_distance <= MAX_DISTANCE)
+].to_population.sum()
 # %%
