@@ -1,13 +1,15 @@
 """A set of functions that validate the GTFS data."""
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 from haversine import Unit, haversine_vector
 
-from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.gtfs_utils import _add_validation_row
+from transport_performance.utils.defence import gtfs_defence
 
-# from transport_performance.utils.defence import _gtfs_instance_defence
-
+if TYPE_CHECKING:
+    from transport_performance.gtfs.validation import GtfsInstance
 
 # a constant containing the max acceptable speed of a route type (vehicle type)
 VEHICLE_SPEED_BOUNDS = {
@@ -25,19 +27,14 @@ VEHICLE_SPEED_BOUNDS = {
 }
 
 
-def validate_travel_between_consecutive_stops(gtfs: GtfsInstance):
+def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
     """Validate the travel between consecutive stops in the GTFS data.
 
     Ensures that a trip is valid by examining the duration and distance
     of a trip. If a vehicle is travelling at an unusual speed, the trip can
     be deemed invalid.
     """
-    # defences
-    if not isinstance(gtfs, GtfsInstance):
-        raise TypeError(
-            f"'gtfs' expected type {type(GtfsInstance)} " f"Got {type(gtfs)}"
-        )
-
+    gtfs_defence(gtfs, "gtfs")
     stops = gtfs.feed.stops[["stop_id", "stop_lat", "stop_lon"]].copy()
     stops["lat_lon"] = [
         (x[0], x[1])
@@ -168,14 +165,10 @@ def validate_travel_between_consecutive_stops(gtfs: GtfsInstance):
     return invalid_stops
 
 
-def validate_travel_over_multiple_stops(gtfs: GtfsInstance) -> None:
+def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
     """Validate travel over multiple stops in the GTFS data."""
     # defences
-    if not isinstance(gtfs, GtfsInstance):
-        raise TypeError(
-            f"'gtfs' expected type {type(GtfsInstance)} " f"Got {type(gtfs)}"
-        )
-
+    gtfs_defence(gtfs, "gtfs")
     if "full_stop_schedule" not in gtfs.feed.__dict__.keys():
         print(
             "'full_stops_schedule' table not found. Passing GtfsInstance to"

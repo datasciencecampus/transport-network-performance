@@ -10,6 +10,10 @@ import os
 import inspect
 
 from transport_performance.gtfs.routes import scrape_route_type_lookup
+from transport_performance.gtfs.validators import (
+    validate_travel_over_multiple_stops,
+    validate_travel_between_consecutive_stops,
+)
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_namespace_export,
@@ -127,6 +131,8 @@ class GtfsInstance:
 
         """
         self.validity_df = self.feed.validate()
+        validate_travel_between_consecutive_stops(self)
+        validate_travel_over_multiple_stops(self)
         return self.validity_df
 
     def print_alerts(self, alert_type="error"):

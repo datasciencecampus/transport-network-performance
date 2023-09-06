@@ -9,7 +9,6 @@ from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_list,
 )
-from transport_performance.gtfs.validation import GtfsInstance
 
 
 def bbox_filter_gtfs(
@@ -65,7 +64,7 @@ def bbox_filter_gtfs(
 
 
 def _add_validation_row(
-    gtfs: GtfsInstance, _type: str, message: str, table: str, rows: list = []
+    gtfs, _type: str, message: str, table: str, rows: list = []
 ) -> None:
     """Add a row to the validity_df dataframe.
 
