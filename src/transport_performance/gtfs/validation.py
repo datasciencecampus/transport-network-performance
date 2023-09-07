@@ -120,9 +120,16 @@ class GtfsInstance:
             raise ValueError(f"`units` accepts metric only. Found: {units}")
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
+        self.gtfs_path = gtfs_pth
 
-    def is_valid(self):
+    def is_valid(self, far_stops: bool = True):
         """Check a feed is valid with `gtfs_kit`.
+
+        Parameters
+        ----------
+        far_stops : bool, optional
+            Whether or not to perform validation for far stops (both
+            between consecutive stops and over multiple stops)
 
         Returns
         -------
@@ -131,8 +138,9 @@ class GtfsInstance:
 
         """
         self.validity_df = self.feed.validate()
-        validate_travel_between_consecutive_stops(self)
-        validate_travel_over_multiple_stops(self)
+        if far_stops:
+            validate_travel_between_consecutive_stops(self)
+            validate_travel_over_multiple_stops(self)
         return self.validity_df
 
     def print_alerts(self, alert_type="error"):

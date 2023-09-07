@@ -208,7 +208,7 @@ def _check_list(ls, param_nm, check_elements=True, exp_type=str):
     return None
 
 
-def gtfs_defence(gtfs, param_nm):
+def _gtfs_defence(gtfs, param_nm):
     """Defence checking. not exported."""
     if gtfs.__class__.__name__ != "GtfsInstance":
         raise TypeError(

@@ -4,6 +4,8 @@ import geopandas as gpd
 from shapely.geometry import box
 from pyprojroot import here
 import pandas as pd
+import os
+import math
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
@@ -108,5 +110,83 @@ def _add_validation_row(
         }
     )
 
-    gtfs.validity_df = pd.concat([gtfs.validity_df, temp_df])
+    gtfs.validity_df = pd.concat([gtfs.validity_df, temp_df]).reset_index(
+        drop=True
+    )
+    return None
+
+
+def filter_gtfs_around_trip(
+    gtfs,
+    trip_id: str,
+    buffer_dist: int = 10000,
+    units: str = "m",
+    crs: str = "27700",
+    out_pth=os.path.join("data", "external", "trip_gtfs.zip"),
+) -> None:
+    """Filter a GTFS file to an area around a given trip in the GTFS.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GtfsInstance object to crop
+    trip_id : str
+        The trip ID
+    buffer_dist : int, optional
+        The distance to create a buffer around the trip, by default 10000
+    units : str, optional
+        Distance units of the original GTFS, by default "m"
+    crs : str, optional
+        The CRS to use for adding a buffer, by default "27700"
+    out_pth : _type_, optional
+        Where to save the new GTFS file,
+          by default os.path.join("data", "external", "trip_gtfs.zip")
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        An error is raised if a shapeID is not available
+
+    """
+    # TODO: Add datatype defences once merged
+    trips = gtfs.feed.trips
+    shapes = gtfs.feed.shapes
+
+    shape_id = list(trips[trips["trip_id"] == trip_id]["shape_id"])[0]
+
+    # defence
+    # try/except for math.isnan() returning TypeError for strings
+    try:
+        if math.isnan(shape_id):
+            raise ValueError(
+                "'shape_id' not available for trip with trip_id: " f"{trip_id}"
+            )
+    except TypeError:
+        pass
+
+    # create a buffer around the trip
+    trip_shape = shapes[shapes["shape_id"] == shape_id]
+    gdf = gpd.GeoDataFrame(
+        trip_shape,
+        geometry=gpd.points_from_xy(
+            trip_shape.shape_pt_lon, trip_shape.shape_pt_lat
+        ),
+        crs="EPSG:4326",
+    )
+    buffered_trip = gdf.to_crs(crs).buffer(distance=buffer_dist)
+    bbox = buffered_trip.total_bounds
+
+    # filter the gtfs to the new bbox
+    bbox_filter_gtfs(
+        in_pth=gtfs.gtfs_path,
+        bbox_list=list(bbox),
+        crs=crs,
+        units=units,
+        out_pth=out_pth,
+    )
+
     return None

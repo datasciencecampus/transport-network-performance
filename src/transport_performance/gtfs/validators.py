@@ -6,7 +6,7 @@ import pandas as pd
 from haversine import Unit, haversine_vector
 
 from transport_performance.gtfs.gtfs_utils import _add_validation_row
-from transport_performance.utils.defence import gtfs_defence
+from transport_performance.utils.defence import _gtfs_defence
 
 if TYPE_CHECKING:
     from transport_performance.gtfs.validation import GtfsInstance
@@ -34,7 +34,15 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
     of a trip. If a vehicle is travelling at an unusual speed, the trip can
     be deemed invalid.
     """
-    gtfs_defence(gtfs, "gtfs")
+    _gtfs_defence(gtfs, "gtfs")
+    # check if the validity_df table exists
+    if "validity_df" not in gtfs.__dict__.keys():
+        raise AttributeError(
+            "The validity_df does not exist in as an "
+            "attribute of your GtfsInstance object, \n"
+            "Did you forget to run the .is_valid() method?"
+        )
+
     stops = gtfs.feed.stops[["stop_id", "stop_lat", "stop_lon"]].copy()
     stops["lat_lon"] = [
         (x[0], x[1])
@@ -140,14 +148,6 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
     # find the stops that exceed the speed boundary
     invalid_stops = stop_sched[stop_sched["speed"] > stop_sched["speed_bound"]]
 
-    # check if the validity_df table exists
-    if "validity_df" not in gtfs.__dict__.keys():
-        raise AttributeError(
-            "The validity_df does not exist in as an "
-            "attribute of your GtfsInstance object, \n"
-            "Did you forget to run the .is_valid() method?"
-        )
-
     # check if the impacted rows are 0
     if len(invalid_stops) == 0:
         return invalid_stops
@@ -168,7 +168,7 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
 def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
     """Validate travel over multiple stops in the GTFS data."""
     # defences
-    gtfs_defence(gtfs, "gtfs")
+    _gtfs_defence(gtfs, "gtfs")
     if "full_stop_schedule" not in gtfs.feed.__dict__.keys():
         print(
             "'full_stops_schedule' table not found. Passing GtfsInstance to"
@@ -188,7 +188,7 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
     sequences = []
     durations = []
     avg_speeds = []
-    cum_distances = []
+    ovr_distances = []
     all_trip_ids = []
 
     for trip_id in trip_ids:
@@ -239,14 +239,14 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
                 all_trip_ids.append(trip_id)
                 durations.append(overall_duration)
                 avg_speeds.append(cur_avg_speed)
-                cum_distances.append(distance_to_end_idx)
+                ovr_distances.append(distance_to_end_idx)
                 break
 
     far_stops_df = pd.DataFrame(
         {
             "trip_id": all_trip_ids,
             "stop_sequences": sequences,
-            "overall_distance": cum_distances,
+            "overall_distance": ovr_distances,
             "avg_speed": avg_speeds,
             "overall_duration": durations,
         }
@@ -259,7 +259,7 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
         _add_validation_row(
             gtfs=gtfs,
             _type="warning",
-            message="Fast Travel Between Far Stops",
+            message="Fast Travel Over Multiple Stops",
             table="multiple_stops_invalid",
             rows=list(gtfs.feed.multiple_stops_invalid.index),
         )
