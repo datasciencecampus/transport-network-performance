@@ -349,6 +349,7 @@ def plot(
     cmap: str = "viridis_r",
     caption: str = None,
     max_labels: int = 9,
+    save: str = None,
 ) -> folium.Map:
     """Plot travel times/transport performance."""
     m = folium.Map(tiles=None, control_scale=True, zoom_control=True)
@@ -417,6 +418,9 @@ def plot(
 
     folium.LayerControl().add_to(m)
 
+    if save is not None:
+        m.save(save)
+
     return m
 
 
@@ -435,6 +439,7 @@ plot(
     column_control_name="Travel Time",
     point_control_name="Destination Centroid",
     caption="Median Travel Time (mins)",
+    save=here(f"outputs/e2e/analyse_network/{UC_ID}_cental_uc.html"),
 )
 
 # %%
@@ -452,6 +457,7 @@ plot(
     column_control_name="Travel Time",
     point_control_name="Destination Centroid",
     caption="Median Travel Time (mins)",
+    save=here(f"outputs/e2e/analyse_network/{UC_ID}_sw_uc.html"),
 )
 
 # %%
@@ -469,6 +475,7 @@ plot(
     column_control_name="Travel Time",
     point_control_name="Destination Centroid",
     caption="Median Travel Time (mins)",
+    save=here(f"outputs/e2e/analyse_network/{UC_ID}_e_uc.html"),
 )
 
 # %%
@@ -578,11 +585,12 @@ plot(
     uc_gdf=uc_gdf[0:1],
     max_labels=6,
     cmap="viridis",
+    save=here("outputs/e2e/metrics/transport_performance.html"),
 )
 
 # %%
 # QA ID
-ID = 5137
+ID = 3974
 
 # filter distance df to only this id and select a sub-set of columns
 snippet_df = distance_df[distance_df.to_id == ID]
@@ -617,6 +625,7 @@ plot(
     column_control_name="Travel Time",
     point=centroid_gdf[centroid_gdf.id == ID],
     point_control_name="Destination Centroid",
+    save=here(f"outputs/e2e/metrics/{ID}_travel_time.html"),
 )
 
 # %%
@@ -633,6 +642,7 @@ plot(
     point=centroid_gdf[centroid_gdf.id == ID],
     point_control_name="Destination Centroid",
     cmap="viridis",
+    save=here(f"outputs/e2e/metrics/{ID}_reachable_population.html"),
 )
 
 # %%
@@ -646,6 +656,7 @@ plot(
     point=centroid_gdf[centroid_gdf.id == ID],
     point_control_name="Destination Centroid",
     cmap="viridis",
+    save=here(f"outputs/e2e/metrics/{ID}_nearby_population.html"),
 )
 
 # %%
@@ -670,4 +681,38 @@ tp
 # %%
 # confirm this ID matches with the overall result
 assert perf_gdf[perf_gdf.id == ID].transport_performance.iloc[0] == tp
+# %%
+# build a results table
+
+# describe columns to include
+describe_cols = ["min", "25%", "50%", "75%", "max"]
+
+# get results dataframe and transpose
+tp_results = pd.DataFrame(
+    perf_gdf[perf_gdf.within_urban_centre].transport_performance.describe()
+).T[["min", "25%", "50%", "75%", "max"]]
+
+# add in area and name columns, reset the index to make it a column
+tp_results.index = ["Newport"]
+tp_results.index.name = "urban centre name"
+tp_results = tp_results.reset_index()
+
+# calculate the urban centre area and total population
+tp_results["urban centre area"] = uc_gdf[0:1].area[0] * 1e-6
+tp_results["urban centre population"] = (
+    perf_gdf[perf_gdf.within_urban_centre].population.sum().round().astype(int)
+)
+
+# reorder columns
+tp_results = tp_results[
+    [
+        "urban centre name",
+        "urban centre area",
+        "urban centre population",
+    ]
+    + describe_cols
+]
+
+tp_results
+
 # %%
