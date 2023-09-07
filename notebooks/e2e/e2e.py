@@ -26,9 +26,11 @@ import datetime
 import geopandas as gpd
 import pandas as pd
 import gtfs_kit as gk
+import folium
 
 from pyprojroot import here
 from shapely.geometry import box
+from folium.map import Icon
 from r5py import (
     TransportNetwork,
     TravelTimeMatrixComputer,
@@ -309,12 +311,11 @@ trans_net = TransportNetwork(
 travel_time_matrix_computer = TravelTimeMatrixComputer(
     trans_net,
     origins=centroid_gdf,
-    # destinations=centroid_gdf[centroid_gdf.within_urban_centre],
+    destinations=centroid_gdf[centroid_gdf.within_urban_centre],
     departure=datetime.datetime(2023, 8, 8, 8, 00),
-    transport_modes=[
-        TransportMode.TRANSIT,
-        TransportMode.WALK,
-    ],
+    departure_time_window=datetime.timedelta(hours=1),
+    max_time=datetime.timedelta(minutes=45),
+    transport_modes=[TransportMode.TRANSIT],
 )
 
 # %%
@@ -322,27 +323,153 @@ travel_time_matrix_computer = TravelTimeMatrixComputer(
 travel_times = travel_time_matrix_computer.compute_travel_times()
 
 # %%
-# median to times
-median_to_times = pd.DataFrame(
-    travel_times.groupby("from_id")["travel_time"].median()
-).reset_index()
+# caution - no control flow, uncomment/commnet as needed TODO: fix this
+# leave this line uncommented
+pd.__version__
+
+# travel time output path
+# travel_time_out_path = here("outputs/e2e/analyse_network/travel_times.pkl")
+
+# save as pickle object
+# travel_times.to_pickle(travel_time_out_path)
+
+# read pickle object
+# travel_times_test = pd.read_pickle(travel_time_out_path)
 
 # %%
-median_to_times_gdf = pop_gdf.merge(
-    median_to_times, left_on="id", right_on="from_id"
+
+
+def plot(
+    gdf: gpd.GeoDataFrame,
+    column: str = None,
+    column_control_name: str = None,
+    uc_gdf: gpd.GeoDataFrame = None,
+    point: gpd.GeoDataFrame = None,
+    point_control_name: str = "POI",
+    cmap: str = "viridis_r",
+    caption: str = None,
+    max_labels: int = 9,
+) -> folium.Map:
+    """Plot travel times/transport performance."""
+    m = folium.Map(tiles=None, control_scale=True, zoom_control=True)
+
+    tiles = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+    attr = (
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStre'
+        'etMap</a> contributors &copy; <a href="https://carto.com/attribut'
+        'ions">CARTO</a>'
+    )
+
+    # add Carto Positron tile layer
+    folium.TileLayer(
+        name="Carto Positron Basemap",
+        tiles=tiles,
+        attr=attr,
+        show=False,
+        control=True,
+    ).add_to(m)
+
+    # add OpenStreetMap tile layer
+    folium.TileLayer(
+        name="OpenStreetMap Basemap",
+        show=False,
+        control=True,
+    ).add_to(m)
+
+    legend_kwds = {}
+    if caption is not None:
+        legend_kwds["caption"] = caption
+    legend_kwds["max_labels"] = max_labels
+
+    if column_control_name is None:
+        column_control_name = column
+
+    m = gdf.explore(
+        column,
+        m=m,
+        cmap=cmap,
+        legend_kwds=legend_kwds,
+        name=column_control_name,
+    )
+
+    if uc_gdf is not None:
+        m = uc_gdf.explore(
+            m=m, color="red", style_kwds={"fill": None}, name="Urban Centre"
+        )
+
+    if point is not None:
+        marker_kwds = {
+            "icon": Icon(
+                color="red",
+                prefix="fa",
+                icon="flag-checkered",
+            )
+        }
+        m = point.explore(
+            m=m,
+            name=point_control_name,
+            marker_type="marker",
+            marker_kwds=marker_kwds,
+            show=False,
+        )
+
+    m.fit_bounds(m.get_bounds())
+
+    folium.LayerControl().add_to(m)
+
+    return m
+
+
+# %%
+# visualise for an ID within the UC
+UC_ID = 4110
+assert UC_ID in travel_times.to_id.unique()
+snippet_id = travel_times[travel_times.to_id == UC_ID]
+snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
+
+plot(
+    snippet_id,
+    uc_gdf=uc_gdf[0:1],
+    point=centroid_gdf[centroid_gdf.id == UC_ID],
+    column="travel_time",
+    column_control_name="Travel Time",
+    point_control_name="Destination Centroid",
+    caption="Median Travel Time (mins)",
 )
 
-median_to_times_gdf.head()
 # %%
-m = median_to_times_gdf.explore("travel_time", cmap="viridis")
-m = uc_gdf[0:1].explore(m=m, color="red", style_kwds={"fill": None})
-m
+# visualise for an ID within the UC
+UC_ID = 5137
+assert UC_ID in travel_times.to_id.unique()
+snippet_id = travel_times[travel_times.to_id == UC_ID]
+snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
+
+plot(
+    snippet_id,
+    uc_gdf=uc_gdf[0:1],
+    point=centroid_gdf[centroid_gdf.id == UC_ID],
+    column="travel_time",
+    column_control_name="Travel Time",
+    point_control_name="Destination Centroid",
+    caption="Median Travel Time (mins)",
+)
+
 # %%
-# visualise an ID
-ID = 6274
-snippet_id = travel_times[travel_times.from_id == ID]
-snippet_id = centroid_gdf.merge(snippet_id, left_on="id", right_on="to_id")
-snippet_id[snippet_id.travel_time <= 45].explore("travel_time")
+# visualise for an ID within the UC
+UC_ID = 3974
+assert UC_ID in travel_times.to_id.unique()
+snippet_id = travel_times[travel_times.to_id == UC_ID]
+snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
+
+plot(
+    snippet_id,
+    uc_gdf=uc_gdf[0:1],
+    point=centroid_gdf[centroid_gdf.id == UC_ID],
+    column="travel_time",
+    column_control_name="Travel Time",
+    point_control_name="Destination Centroid",
+    caption="Median Travel Time (mins)",
+)
 
 # %%
 # merge on from centroid
@@ -367,110 +494,180 @@ distance_df = (
     .rename(columns={"centroid": "to_centroid"})
 )
 
-# %%
-# convert to geoseries
-from_s = gpd.GeoSeries(distance_df.from_centroid, crs="EPSG:27700")
-to_s = gpd.GeoSeries(distance_df.to_centroid, crs="EPSG:27700")
-# %%
-distance_df["centroid_distance"] = from_s.distance(to_s)
+distance_df.head()
 
 # %%
-distance_df["to_population"] = distance_df.merge(
+# convert to geoseries and caluclate distance between from and to
+from_s = gpd.GeoSeries(distance_df.from_centroid, crs="EPSG:27700")
+to_s = gpd.GeoSeries(distance_df.to_centroid, crs="EPSG:27700")
+distance_df["centroid_distance"] = from_s.distance(to_s)
+
+distance_df.head()
+
+# %%
+# get the population using the "from_id" (pop of origin to destination)
+distance_df["from_population"] = distance_df.merge(
     pop_gdf[["id", "population"]],
-    left_on="to_id",
+    left_on="from_id",
     right_on="id",
     how="left",
 )["population"]
 
+distance_df.head()
+
 # %%
+# set the maximum distance and time threshold for calculating performance
 MAX_DISTANCE = 11250
 MAX_TIME = 45
 
 # %%
+# calculate total population reach a destination within the time and distance
+# group by to_id so that it's total population that reaches the destination id
 numerator = (
     distance_df[
         (distance_df.centroid_distance <= MAX_DISTANCE)
         & (distance_df.travel_time <= MAX_TIME)
     ]
-    .groupby("from_id")["to_population"]
+    .groupby("to_id")["from_population"]
     .sum()
     .reset_index()
-    .rename(columns={"to_population": "reachable_population"})
+    .rename(columns={"from_population": "reachable_population"})
 )
 # %%
+# calculate total population that is nearby within the distance threshold
+# group by to_id so that it's total population nearby the destination
 denominator = (
     distance_df[(distance_df.centroid_distance <= MAX_DISTANCE)]
-    .groupby("from_id")["to_population"]
+    .groupby("to_id")["from_population"]
     .sum()
     .reset_index()
-    .rename(columns={"to_population": "nearby_population"})
+    .rename(columns={"from_population": "nearby_population"})
 )
 # %%
-perf_gdf = pop_gdf.merge(numerator, left_on="id", right_on="from_id").drop(
-    columns=["from_id"]
+# create a transport performance gdf, but merging dataframes
+# first the numberator - remove to_id column since it's not needed after merge
+perf_gdf = pop_gdf.merge(numerator, left_on="id", right_on="to_id").drop(
+    columns=["to_id"]
 )
 
-perf_gdf = perf_gdf.merge(denominator, left_on="id", right_on="from_id").drop(
-    columns=["from_id"]
+# then the denominator - remove to_id again, since it's not needed after merge
+perf_gdf = perf_gdf.merge(denominator, left_on="id", right_on="to_id").drop(
+    columns=["to_id"]
 )
 
 perf_gdf.head()
 # %%
+# calculate transport performance, as a percentage
 perf_gdf["transport_performance"] = (
     perf_gdf["reachable_population"] / perf_gdf["nearby_population"]
 ) * 100
 
 # %%
 m = perf_gdf.explore("transport_performance")
-m = uc_gdf[0:1].explore(m=m, color="red", style_kwds={"fill": None})
+m = uc_gdf[0:1].explore(m=m, color="red", style_kwds={"fill": None}, vmin=0)
 m
 
 # %%
-ID = 6274
-snippet_df = distance_df[distance_df.from_id == 6274]
+plot(
+    perf_gdf,
+    column="transport_performance",
+    column_control_name="Transport Performance",
+    caption=(
+        "Transport Performance (%) (to a destination within the urban centre)"
+    ),
+    uc_gdf=uc_gdf[0:1],
+    max_labels=6,
+    cmap="viridis",
+)
+
+# %%
+# QA ID
+ID = 5137
+
+# filter distance df to only this id and select a sub-set of columns
+snippet_df = distance_df[distance_df.to_id == ID]
 snippet_df = snippet_df[
-    ["from_id", "to_id", "to_centroid", "travel_time", "to_population"]
+    [
+        "from_id",
+        "to_id",
+        "centroid_distance",
+        "travel_time",
+        "from_population",
+    ]
 ]
 
+# merge on the geometries for all cells (to this ID), convert to gpd df
 snippet_df = snippet_df.merge(
-    pop_gdf[["id", "geometry"]], how="left", left_on="to_id", right_on="id"
+    pop_gdf[["id", "geometry"]], how="left", left_on="from_id", right_on="id"
 ).drop(columns=["id"])
-
 snippet_gdf = gpd.GeoDataFrame(
     snippet_df, geometry=snippet_df.geometry, crs="ESRI:54009"
 )
 
-snippet_gdf = snippet_gdf.merge(
-    distance_df[["from_id", "to_id", "centroid_distance"]],
-    on=["from_id", "to_id"],
-    how="left",
+# %%
+# plot the travel time of cells that can reach this ID
+plot(
+    snippet_gdf[
+        (snippet_gdf.travel_time <= MAX_TIME)
+        & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
+    ],
+    column="travel_time",
+    caption="Median Travel Time (mins)",
+    uc_gdf=uc_gdf[0:1],
+    column_control_name="Travel Time",
+    point=centroid_gdf[centroid_gdf.id == ID],
+    point_control_name="Destination Centroid",
 )
 
 # %%
-# %%
-snippet_gdf[
-    (snippet_gdf.travel_time <= MAX_TIME)
-    & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
-].explore("travel_time")
-
-# %%
-snippet_gdf[
-    (snippet_gdf.travel_time <= MAX_TIME)
-    & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
-].explore("to_population")
-
-# %%
-snippet_gdf[(snippet_gdf.centroid_distance <= MAX_DISTANCE)].explore(
-    "to_population"
+# plot population of only cells that can reach this ID
+plot(
+    snippet_gdf[
+        (snippet_gdf.travel_time <= MAX_TIME)
+        & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
+    ],
+    column="from_population",
+    caption="Population",
+    uc_gdf=uc_gdf[0:1],
+    column_control_name="Population",
+    point=centroid_gdf[centroid_gdf.id == ID],
+    point_control_name="Destination Centroid",
+    cmap="viridis",
 )
 
 # %%
-snippet_gdf[
+# plot all population cells within MAX_DISTANCE of this ID
+plot(
+    snippet_gdf[(snippet_gdf.centroid_distance <= MAX_DISTANCE)],
+    column="from_population",
+    caption="Population",
+    uc_gdf=uc_gdf[0:1],
+    column_control_name="Population",
+    point=centroid_gdf[centroid_gdf.id == ID],
+    point_control_name="Destination Centroid",
+    cmap="viridis",
+)
+
+# %%
+# calculate the total population that can reach this ID
+reachable_population = snippet_gdf[
     (snippet_gdf.travel_time <= MAX_TIME)
     & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
-].to_population.sum()
+].from_population.sum()
+
+reachable_population
 # %%
-snippet_gdf[
+# calculate the total population within MAX_DISTANCE of this ID
+nearby_population = snippet_gdf[
     (snippet_gdf.centroid_distance <= MAX_DISTANCE)
-].to_population.sum()
+].from_population.sum()
+
+nearby_population
+# %%
+# calculate the transport performance for this ID
+tp = reachable_population / nearby_population * 100
+tp
+# %%
+# confirm this ID matches with the overall result
+assert perf_gdf[perf_gdf.id == ID].transport_performance.iloc[0] == tp
 # %%
