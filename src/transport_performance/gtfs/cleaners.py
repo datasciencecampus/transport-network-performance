@@ -114,3 +114,57 @@ def clean_consecutive_stop_fast_travel_warnings(
 
 # def clean_multiple_stop_fast_travel_warnings(gtfs):
 #     pass
+
+
+def clean_multiple_stop_fast_travel_warnings(
+    gtfs, validate: bool = False
+) -> None:
+    """Clean 'Fast Travel Over Multiple Stops' warnings from validity_df.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GtfsInstance to clean warnings within
+    validate : bool, optional
+        Whether or not to validate the gtfs before carrying out this cleaning
+        operation
+
+    Returns
+    -------
+    None
+
+    """
+    # defences
+    _gtfs_defence(gtfs, "gtfs")
+    if "validity_df" not in gtfs.__dict__.keys() and not validate:
+        raise AttributeError(
+            "The gtfs has not been validated, therefore no"
+            "warnings can be identified. You can pass "
+            "validate=True to this function to validate the "
+            "gtfs."
+        )
+
+    if validate:
+        gtfs.is_valid()
+
+    needed_warning = (
+        gtfs.validity_df[
+            gtfs.validity_df["message"] == "Fast Travel Over Multiple Stops"
+        ]
+        .copy()
+        .values
+    )
+
+    if len(needed_warning) < 1:
+        return None
+
+    trip_ids = gtfs.multiple_stops_invalid.loc[
+        needed_warning[0][3]
+    ].trip_id.unique()
+
+    # drop trips from tables
+    drop_trips(gtfs=gtfs, trip_id=trip_ids)
+    gtfs.multiple_stops_invalid = gtfs.multiple_stops_invalid[
+        ~gtfs.multiple_stops_invalid["trip_id"].isin(trip_ids)
+    ]
+    return None

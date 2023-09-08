@@ -169,7 +169,7 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
     """Validate travel over multiple stops in the GTFS data."""
     # defences
     _gtfs_defence(gtfs, "gtfs")
-    if "full_stop_schedule" not in gtfs.feed.__dict__.keys():
+    if "full_stop_schedule" not in gtfs.__dict__.keys():
         print(
             "'full_stops_schedule' table not found. Passing GtfsInstance to"
             "validate_travel_between_consecutive_stops() first."
