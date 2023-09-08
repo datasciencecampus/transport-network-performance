@@ -14,10 +14,15 @@ from transport_performance.gtfs.validators import (
     validate_travel_over_multiple_stops,
     validate_travel_between_consecutive_stops,
 )
+from transport_performance.gtfs.cleaners import (
+    clean_consecutive_stop_fast_travel_warnings,
+    clean_multiple_stop_fast_travel_warnings,
+)
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_namespace_export,
     _check_parent_dir_exists,
+    _bool_defence,
 )
 
 
@@ -182,13 +187,24 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(self):
-        """Attempt to clean feed using `gtfs_kit`."""
+    def clean_feed(self, fast_travel: bool = True):
+        """Attempt to clean feed using `gtfs_kit`.
+
+        Parameters
+        ----------
+        fast_travel: bool, optional
+            Whether or not to clean warnings related to fast travel.
+
+        """
+        _bool_defence(fast_travel)
         try:
             # In cases where shape_id is missing, keyerror is raised.
             # https://developers.google.com/transit/gtfs/reference#shapestxt
             # shows that shapes.txt is optional file.
             self.feed = self.feed.clean()
+            if fast_travel:
+                clean_consecutive_stop_fast_travel_warnings(self)
+                clean_multiple_stop_fast_travel_warnings(self)
         except KeyError:
             print("KeyError. Feed was not cleaned.")
 
