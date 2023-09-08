@@ -144,7 +144,7 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
         lambda x: _join_max_speed(r_type=int(x))
     )
 
-    gtfs.feed.full_stop_schedule = stop_sched
+    gtfs.full_stop_schedule = stop_sched
     # find the stops that exceed the speed boundary
     invalid_stops = stop_sched[stop_sched["speed"] > stop_sched["speed_bound"]]
 
@@ -176,7 +176,7 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
         )
         validate_travel_between_consecutive_stops(gtfs)
 
-    stop_sched = gtfs.feed.full_stop_schedule
+    stop_sched = gtfs.full_stop_schedule
 
     # take a list of unique trip ids that have speeds greater than the limit
     invalid_rows = stop_sched[stop_sched["speed"] > stop_sched["speed_bound"]]
@@ -253,15 +253,15 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
     )
 
     # TODO: Add this table to the lookup once gtfs HTML is merged
-    gtfs.feed.multiple_stops_invalid = far_stops_df
+    gtfs.multiple_stops_invalid = far_stops_df
 
-    if len(gtfs.feed.multiple_stops_invalid) > 0:
+    if len(gtfs.multiple_stops_invalid) > 0:
         _add_validation_row(
             gtfs=gtfs,
             _type="warning",
             message="Fast Travel Over Multiple Stops",
             table="multiple_stops_invalid",
-            rows=list(gtfs.feed.multiple_stops_invalid.index),
+            rows=list(gtfs.multiple_stops_invalid.index),
         )
 
     return far_stops_df
