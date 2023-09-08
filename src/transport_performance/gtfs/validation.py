@@ -196,7 +196,7 @@ class GtfsInstance:
             Whether or not to clean warnings related to fast travel.
 
         """
-        _bool_defence(fast_travel)
+        _bool_defence(fast_travel, "fast_travel")
         try:
             # In cases where shape_id is missing, keyerror is raised.
             # https://developers.google.com/transit/gtfs/reference#shapestxt
