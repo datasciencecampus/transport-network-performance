@@ -7,7 +7,7 @@ import os
 from transport_performance.utils.defence import (
     _bool_defence,
     _string_defence,
-    _is_path_like,
+    _handle_path_like,
     _check_parent_dir_exists,
 )
 
@@ -62,7 +62,7 @@ class TemplateHTML:
         None
 
         """
-        _is_path_like(path, "path")
+        _handle_path_like(path, "path")
         with open(path, "r", encoding="utf8") as f:
             self.template = f.read()
         return None
