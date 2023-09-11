@@ -25,7 +25,7 @@ def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
     _gtfs_defence(gtfs, "gtfs")
     if not isinstance(trip_id, (str, list, np.ndarray)):
         raise TypeError(
-            f"'trip_id recieved type: {type(trip_id)}. "
+            f"'trip_id' received type: {type(trip_id)}. "
             "Expected types: [str, list, np.ndarray]"
         )
     # ensure trip ID is an iterable
