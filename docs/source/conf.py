@@ -6,8 +6,10 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 import os
 import sys
 
+from pyprojroot import here
+
 # Add source folder to path for autodoc
-sys.path.insert(0, os.path.abspath("../../src/transport_performance/"))
+sys.path.insert(0, os.path.join(here(), "src"))
 
 
 # -- Project information -----------------------------------------------------
