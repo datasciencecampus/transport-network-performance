@@ -9,8 +9,7 @@ import pandas as pd
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_list,
-    _dataframe_defence,
-    _bool_defence,
+    _type_defence,
 )
 
 
@@ -102,8 +101,8 @@ def convert_pandas_to_plotly(
         }
     }
     # defences
-    _dataframe_defence(df, "df")
-    _bool_defence(return_html, "return_html")
+    _type_defence(df, "df", pd.DataFrame)
+    _type_defence(return_html, "return_html", bool)
     if scheme not in list(schemes.keys()):
         raise LookupError(
             f"{scheme} is not a valid colour scheme."
