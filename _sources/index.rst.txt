@@ -21,7 +21,7 @@ transport-performance
 :code:`transport-performance` is a python package for measuring the performance of
 transport networks in and around urban centres.
 
-This documentation adopts the Diátaxis framework to structure pages and
+This documentation adopts the Diátaxis framework to structure pages and its
 content. See the official `Diátaxis documentation`_ for more details.
 
 .. toctree::

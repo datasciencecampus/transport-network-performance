@@ -101,6 +101,7 @@
 <span class="kn">from</span> <span class="nn">rasterio.mask</span> <span class="kn">import</span> <span class="n">raster_geometry_mask</span>
 <span class="kn">from</span> <span class="nn">rasterio.transform</span> <span class="kn">import</span> <span class="n">rowcol</span>
 <span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">generic_filter</span><span class="p">,</span> <span class="n">label</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="n">_handle_path_like</span>
 
 
 <div class="viewcode-block" id="UrbanCentre">
@@ -109,6 +110,9 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create urban centre object.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+
+        <span class="c1"># check that path is str or PosixPath</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="n">_handle_path_like</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file</span>
 
 <div class="viewcode-block" id="UrbanCentre.get_urban_centre">
@@ -218,10 +222,6 @@
 <span class="sd">            tuple[2]: crs string from the raster.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;`file` expected string, &quot;</span> <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                 <span class="s2">&quot;`bbox` expected GeoDataFrame, &quot;</span> <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
@@ -374,7 +374,6 @@
         <span class="n">urban_centres</span> <span class="o">=</span> <span class="n">labelled_array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_clusters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">total_pop</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_where</span><span class="p">(</span><span class="n">urban_centres</span> <span class="o">!=</span> <span class="n">n</span><span class="p">,</span> <span class="n">band</span><span class="p">))</span>
-            <span class="c1"># print(n, total_pop)</span>
 
             <span class="k">if</span> <span class="n">total_pop</span> <span class="o">&lt;</span> <span class="n">cluster_pop_threshold</span><span class="p">:</span>
                 <span class="n">urban_centres</span><span class="p">[</span><span class="n">urban_centres</span> <span class="o">==</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -433,7 +432,7 @@
 <span class="sd">        threshold: int</span>
 <span class="sd">            If the number of cells adjacent to any empty cell belonging to</span>
 <span class="sd">            a cluster is higher than the threshold, the cell is filled with</span>
-<span class="sd">            the cluster value.</span>
+<span class="sd">            the cluster value.  Needs to be between 5 and 8.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -450,10 +449,10 @@
                 <span class="s2">&quot;`threshold` expected integer, &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">threshold</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">5</span> <span class="o">&lt;=</span> <span class="n">threshold</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Wrong value for `threshold`, &quot;</span>
-                <span class="s2">&quot;please enter value between 1 and 9&quot;</span>
+                <span class="s2">&quot;please enter value between 5 and 8&quot;</span>
             <span class="p">)</span>
 
         <span class="n">filled</span> <span class="o">=</span> <span class="n">urban_centres</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -469,7 +468,6 @@
                 <span class="n">extra_keywords</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="n">threshold</span><span class="p">},</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">check</span><span class="p">):</span>
-                <span class="c1"># print(&quot;iter&quot;, n)</span>
                 <span class="k">break</span>
         <span class="k">return</span> <span class="n">filled</span>
 
