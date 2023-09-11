@@ -5,8 +5,7 @@ import shutil
 import os
 
 from transport_performance.utils.defence import (
-    _bool_defence,
-    _string_defence,
+    _type_defence,
     _handle_path_like,
     _check_parent_dir_exists,
 )
@@ -92,9 +91,9 @@ class TemplateHTML:
         None
 
         """
-        _string_defence(placeholder, "placeholder")
-        _string_defence(value, "value")
-        _bool_defence(replace_multiple, "replace_multiple")
+        _type_defence(placeholder, "placeholder", str)
+        _type_defence(value, "value", str)
+        _type_defence(replace_multiple, "replace_multiple", bool)
         occurences = len(self.template.split(f"[{placeholder}]")) - 1
         if occurences > 1 and not replace_multiple:
             raise ValueError(

@@ -150,66 +150,38 @@ def _check_namespace_export(pkg=np, func=np.min):
 
 def _url_defence(url):
     """Defence checking. Not exported."""
-    if not isinstance(url, str):
-        raise TypeError(f"url {url} expected string, instead got {type(url)}")
-    elif not url.startswith((r"http://", r"https://")):
+    _type_defence(url, "url", str)
+    if not url.startswith((r"http://", r"https://")):
         raise ValueError(f"url string expected protocol, instead found {url}")
 
     return None
 
 
-def _bool_defence(some_bool, param_nm):
-    """Defence checking. Not exported."""
-    if not isinstance(some_bool, bool):
+def _type_defence(some_object, param_nm, types) -> None:
+    """Defence checking utility. Can handle NoneType.
+
+    Parameters
+    ----------
+    some_object : Any
+        Object to test with isinstance.
+    param_nm : str
+        A name for the parameter. Useful when this utility is used in a wrapper
+        to inherit the parent's parameter name and present in error message.
+    types : type or tuple
+        A type or a tuple of types to test `some_object` against.
+
+    Raises
+    ------
+    TypeError
+        `some_object` is not of type `types`.
+
+    """
+    if not isinstance(some_object, types):
         raise TypeError(
-            f"`{param_nm}` expected boolean. Got {type(some_bool)}"
+            f"`{param_nm}` expected {types}. Got {type(some_object)}"
         )
 
     return None
-
-
-def _string_defence(string, param_nm):
-    """Defence checking. Not exported."""
-    if not isinstance(string, str):
-        raise TypeError(f"'{param_nm}' expected str. Got {type(string)}")
-
-    return None
-
-
-def _integer_defence(some_int, param_nm):
-    """Defence checking. Not exported."""
-    if not isinstance(some_int, int):
-        raise TypeError(f"'{param_nm}' expected int. Got {type(some_int)}")
-
-    return None
-
-
-def _dict_defence(some_dict, param_nm):
-    """Defence checking. Not exported."""
-    if not isinstance(some_dict, dict):
-        raise TypeError(f"'{param_nm}' expected dict. Got {type(some_dict)}")
-
-    return None
-
-
-def _dataframe_defence(some_df, param_nm):
-    """Defence checking. Not exported."""
-    if not isinstance(some_df, pd.DataFrame):
-        raise TypeError(
-            f"'{param_nm}' expected pd.DataFrame. Got {type(some_df)}"
-        )
-
-    return None
-
-
-# main use case for this is to avoid
-# complexity limits in
-# GtfsInstance._plot_summary()
-def _string_and_nonetype_defence(some_value, param_nm):
-    if not isinstance(some_value, (str, type(None))):
-        raise TypeError(
-            f"'{param_nm}' expected type str. Found type {type(some_value)}"
-        )
 
 
 def _check_list(ls, param_nm, check_elements=True, exp_type=str):
