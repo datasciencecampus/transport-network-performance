@@ -8,6 +8,7 @@ import pytest
 from transport_performance.utils.defence import (
     _check_list,
     _check_parent_dir_exists,
+    _type_defence,
 )
 
 
@@ -121,3 +122,103 @@ class Test_CheckParentDirExists(object):
             "_check_parent_dir_exists did not make parent dir"
             " when 'create=True' (multiple levels)"
         )
+
+
+class Test_TypeDefence(object):
+    """Assertions for _type_defence()."""
+
+    def test_type_defence_raises_on_single_types(self):
+        """Assertions for single values to the `types` parameter."""
+        with pytest.raises(
+            TypeError,
+            match="`empty_list` expected <class 'str'>. Got <class 'list'>",
+        ):
+            _type_defence(list(), "empty_list", str)
+        with pytest.raises(
+            TypeError,
+            match="`int_1` expected <class 'list'>. Got <class 'int'>",
+        ):
+            _type_defence(1, "int_1", list)
+        with pytest.raises(
+            TypeError,
+            match="`string_1` expected <class 'int'>. Got <class 'str'>",
+        ):
+            _type_defence("1", "string_1", int)
+        with pytest.raises(
+            TypeError,
+            match="`float_1` expected <class 'int'>. Got <class 'float'>",
+        ):
+            _type_defence(1.0, "float_1", int)
+        with pytest.raises(
+            TypeError,
+            match="`empty_dict` expected <class 'tuple'>. Got <class 'dict'>",
+        ):
+            _type_defence(dict(), "empty_dict", tuple)
+        with pytest.raises(
+            TypeError,
+            match="`empty_tuple` expected <class 'dict'>. Got <class 'tuple'>",
+        ):
+            _type_defence(tuple(), "empty_tuple", dict)
+        with pytest.raises(
+            TypeError,
+            match="`None` expected <class 'int'>. Got <class 'NoneType'>",
+        ):
+            _type_defence(None, "None", int)
+
+    def test_type_defence_raises_on_multiple_types(object):
+        """Assertions for multiple values to the `types` parameter."""
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "pected (<class 'str'>, <class 'NoneType'>). Got <class 'int'>"
+            ),
+        ):
+            _type_defence(1, "int_1", (str, type(None)))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`str_1` expected (<class 'int'>, <class 'float'>, <class 'Non"
+            ),
+        ):
+            _type_defence("1", "str_1", (int, float, type(None)))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`float_1` expected (<class 'int'>, <class 'str'>, <class 'Non"
+            ),
+        ):
+            _type_defence(1.0, "float_1", (int, str, type(None)))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`empty_dict` expected (<class 'NoneType'>, <class 'str'>, <cl"
+            ),
+        ):
+            _type_defence(
+                dict(), "empty_dict", (type(None), str, bool, list, tuple)
+            )
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`empty_list` expected (<class 'NoneType'>, <class 'str'>, <cl"
+            ),
+        ):
+            _type_defence(list(), "empty_list", (type(None), str, dict, tuple))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`empty_tuple` expected (<class 'NoneType'>, <class 'list'>, <"
+            ),
+        ):
+            _type_defence(
+                tuple(),
+                "empty_tuple",
+                (type(None), list, dict, str, int, float),
+            )
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`None` expected (<class 'int'>, <class 'str'>, <class 'float'"
+            ),
+        ):
+            _type_defence(None, "None", (int, str, float))
