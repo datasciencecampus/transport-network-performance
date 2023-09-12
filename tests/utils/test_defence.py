@@ -128,7 +128,7 @@ class Test_TypeDefence(object):
     """Assertions for _type_defence()."""
 
     def test_type_defence_raises_on_single_types(self):
-        """Assertions for single values to the `types` parameter."""
+        """Assert func raises for single values to the `types` parameter."""
         with pytest.raises(
             TypeError,
             match="`empty_list` expected <class 'str'>. Got <class 'list'>",
@@ -166,7 +166,7 @@ class Test_TypeDefence(object):
             _type_defence(None, "None", int)
 
     def test_type_defence_raises_on_multiple_types(object):
-        """Assertions for multiple values to the `types` parameter."""
+        """Assert func raises for multiple values to the `types` parameter."""
         with pytest.raises(
             TypeError,
             match=re.escape(
@@ -222,3 +222,23 @@ class Test_TypeDefence(object):
             ),
         ):
             _type_defence(None, "None", (int, str, float))
+
+    def test_type_defence_passes_on_single_types(self):
+        """Assert func passes on single values to the `types` parameter."""
+        _type_defence(1, "int_1", int)
+        _type_defence(1.0, "float_1", float)
+        _type_defence("1", "str_1", str)
+        _type_defence(dict(), "empty_dict", dict)
+        _type_defence(tuple(), "empty_tuple", tuple)
+        _type_defence(list(), "empty_list", list)
+        _type_defence(None, "None", type(None))
+
+    def test_type_defence_passes_on_multiple_types(self):
+        """Assert func passes on multiple values to the `types` parameter."""
+        _type_defence(1, "int_1", (tuple, int))
+        _type_defence("1", "str_1", (int, float, str))
+        _type_defence(1.0, "float_1", (float, type(None)))
+        _type_defence(dict(), "empty_dict", (tuple, dict))
+        _type_defence(list(), "empty_list", (type(None), list))
+        _type_defence(tuple(), "empty_tuple", (tuple, dict))
+        _type_defence(None, "None", (list, dict, type(None)))
