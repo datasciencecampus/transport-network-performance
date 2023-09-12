@@ -653,74 +653,44 @@ class TestGtfsInstance(object):
             height=800,
             save_html=True,
             save_image=True,
-            save_pth=pathlib.Path(
-                os.path.join(tmp_path, "save_test", "test_image")
-            ),
             ylabel="Mean",
             xlabel="Day",
             orientation="h",
             plotly_kwargs={"legend": dict(bgcolor="lightgrey")},
+            out_dir=os.path.join(tmp_path, "save_test"),
         )
 
         # general save test
+        save_dir = os.listdir(os.path.join(tmp_path, "save_test"))
+        counts = {"html": 0, "png": 0}
+        for pth in save_dir:
+            if ".html" in pth:
+                counts["html"] += 1
+            elif ".png" in pth:
+                counts["png"] += 1
+
         assert os.path.exists(
             os.path.join(tmp_path, "save_test")
         ), "'save_test' dir could not be created'"
-        assert os.path.exists(
-            os.path.join(tmp_path, "save_test", "test_image.html")
-        ), "Failed to save summary in HTML"
-        assert os.path.exists(
-            os.path.join(tmp_path, "save_test", "test_image.png")
-        ), "Failed to save summary as a PNG"
-
-        # save test for HTML with an invalid file extension
-        with pytest.warns(
-            UserWarning,
-            match=re.escape(
-                "HTML save requested but accepted type not specified.\n"
-                "Accepted image formats include ['.html']\n"
-                "Saving as .html"
-            ),
-        ):
-            gtfs_fixture._plot_summary(
-                gtfs_fixture.daily_route_summary,
-                "route_count_mean",
-                save_html=True,
-                save_pth=pathlib.Path(
-                    os.path.join(
-                        tmp_path, "save_test", "invalid_html_ext.nothtml"
-                    )
-                ),
-            )
-
-        assert os.path.exists(
-            os.path.join(tmp_path, "save_test", "invalid_html_ext.html")
-        ), "Failed to save HTML with automatic file extensions"
+        assert counts["html"] == 1, "Failed to save plot as HTML"
+        assert counts["png"] == 1, "Failed to save plot as png"
 
         # save test for an image with invalid file extension
-        valid_img_formats = [".png", ".pdf", "jpg", "jpeg", ".webp", ".svg"]
-        with pytest.warns(
-            UserWarning,
+        valid_img_formats = ["png", "pdf", "jpg", "jpeg", "webp", "svg"]
+        with pytest.raises(
+            ValueError,
             match=re.escape(
-                "Image save requested but accepted type not specified.\n"
-                f"Accepted image formats include {valid_img_formats}\n"
-                "Saving as .png"
+                "Please specify a valid image format. Valid formats "
+                f"include {valid_img_formats}"
             ),
         ):
             gtfs_fixture._plot_summary(
                 gtfs_fixture.daily_route_summary,
                 "route_count_mean",
                 save_image=True,
-                save_pth=pathlib.Path(
-                    os.path.join(
-                        tmp_path, "save_test", "invalid_image_ext.notimg"
-                    )
-                ),
+                out_dir=os.path.join(tmp_path, "outputs"),
+                img_type="test",
             )
-
-        assert os.path.exists(
-            os.path.join(tmp_path, "save_test", "invalid_image_ext.png")
-        ), "Failed to save HTML with automatic file extensions"
 
     def test__plot_route_summary_defences(self, gtfs_fixture):
         """Test the defences for the small wrapper plot_route_summary()."""
