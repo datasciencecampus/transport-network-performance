@@ -726,6 +726,11 @@ class GtfsInstance:
         Union[PlotlyFigure, str]
             Returns either a HTML string or the plotly figure
 
+        Raises
+        ------
+        ValueError
+            An error is raised if orientation is not 'v' or 'h'.
+
         """
         # parameter type defences
         _type_defence(summary_df, "summary_df", pd.DataFrame)
@@ -884,6 +889,8 @@ class GtfsInstance:
     ) -> Union[PlotlyFigure, str]:
         """Plot the summarised route data of a GTFS file.
 
+        This is a thin wrapper around _plot_summary()
+
         Parameters
         ----------
         target_summary : str
@@ -927,6 +934,12 @@ class GtfsInstance:
         -------
         Union[PlotlyFigure, str]
             Returns either a HTML string or the plotly figure
+
+        Raises
+        ------
+        AttributeError
+            Raise an error if the daily_route_summary table is yet to be #
+            created.
 
         """
         # defensive checks
@@ -973,6 +986,8 @@ class GtfsInstance:
     ):
         """Plot the summarised trip data of a GTFS file.
 
+        This is a thin wrapper around _plot_summary()
+
         Parameters
         ----------
         target_summary : str
@@ -1016,6 +1031,12 @@ class GtfsInstance:
         -------
         Union[PlotlyFigure, str]
             Returns either a HTML string or the plotly figure
+
+        Raises
+        ------
+        AttributeError
+            Raise an error if the daily_trip_summary table is yet to be
+            created.
 
         """
         # defensive checks
@@ -1088,7 +1109,9 @@ class GtfsInstance:
         output_path : Union[str, pathlib.Path]
             The path to save the HTML output to
         scheme : str, optional
-            Colour scheme from pretty_html_table, by default "green_dark"
+            Colour scheme from pretty_html_table, by default "green_dark".
+            Colour schemes can be found here:
+            https://pypi.org/project/pretty-html-table/
 
         Returns
         -------
@@ -1234,6 +1257,11 @@ class GtfsInstance:
         Returns
         -------
         None
+
+        Raises
+        ------
+        ValueError
+            An error raised if the type of summary passed is invalid
 
         """
         _type_defence(overwrite, "overwrite", bool)

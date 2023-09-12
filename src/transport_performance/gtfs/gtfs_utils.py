@@ -88,6 +88,13 @@ def convert_pandas_to_plotly(
     go.Figure
         A plotly figure containing the drawn dataframe
 
+    Raises
+    ------
+    LookupError
+        An error raised if an invalid colour scheme is passed
+    TypeError
+        An error raised if the given pandas dataframe is MultiIndex
+
     """
     # pre-defined colour schemes
     schemes = {
