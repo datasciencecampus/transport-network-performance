@@ -344,9 +344,16 @@ def plot(
     column: str = None,
     column_control_name: str = None,
     uc_gdf: gpd.GeoDataFrame = None,
+    show_uc_gdf: bool = True,
     point: gpd.GeoDataFrame = None,
+    show_point: bool = False,
     point_control_name: str = "POI",
+    point_color: str = "red",
+    point_buffer: int = None,
+    overlay: gpd.GeoDataFrame = None,
+    overlay_control_name: str = "Overlay",
     cmap: str = "viridis_r",
+    color: str = "#12436D",
     caption: str = None,
     max_labels: int = 9,
     save: str = None,
@@ -388,6 +395,7 @@ def plot(
     m = gdf.explore(
         column,
         m=m,
+        color=color,
         cmap=cmap,
         legend_kwds=legend_kwds,
         name=column_control_name,
@@ -395,7 +403,11 @@ def plot(
 
     if uc_gdf is not None:
         m = uc_gdf.explore(
-            m=m, color="red", style_kwds={"fill": None}, name="Urban Centre"
+            m=m,
+            color="red",
+            style_kwds={"fill": None},
+            name="Urban Centre",
+            show=show_uc_gdf,
         )
 
     if point is not None:
@@ -411,7 +423,27 @@ def plot(
             name=point_control_name,
             marker_type="marker",
             marker_kwds=marker_kwds,
-            show=False,
+            show=show_point,
+        )
+
+        if point_buffer is not None:
+            m = (
+                point.to_crs("EPSG:27700")
+                .buffer(point_buffer)
+                .explore(
+                    m=m,
+                    color=point_color,
+                    style_kwds={"fill": None, "dashArray": 5},
+                    name="Max Distance from Destination",
+                    show=show_point,
+                )
+            )
+
+    if overlay is not None:
+        m = overlay.explore(
+            m=m,
+            color="#F46A25",
+            name=overlay_control_name,
         )
 
     m.fit_bounds(m.get_bounds())
@@ -590,7 +622,7 @@ plot(
 
 # %%
 # QA ID
-ID = 3974
+ID = 4110
 
 # filter distance df to only this id and select a sub-set of columns
 snippet_df = distance_df[distance_df.to_id == ID]
@@ -657,6 +689,33 @@ plot(
     point_control_name="Destination Centroid",
     cmap="viridis",
     save=here(f"outputs/e2e/metrics/{ID}_nearby_population.html"),
+)
+
+# %%
+plot(
+    snippet_gdf[(snippet_gdf.centroid_distance <= MAX_DISTANCE)],
+    column=None,
+    caption=None,
+    uc_gdf=uc_gdf[0:1],
+    show_uc_gdf=False,
+    column_control_name="Nearby Population",
+    point=centroid_gdf[centroid_gdf.id == ID],
+    show_point=True,
+    point_control_name="Destination Centroid",
+    point_buffer=MAX_DISTANCE,
+    overlay=gpd.GeoDataFrame(
+        geometry=[
+            snippet_gdf[
+                (snippet_gdf.travel_time <= MAX_TIME)
+                & (snippet_gdf.centroid_distance <= MAX_DISTANCE)
+            ].geometry.unary_union
+        ],
+        crs=snippet_gdf.crs,
+    ),
+    overlay_control_name="Reachable Population",
+    cmap=None,
+    color="#12436D",
+    save=here(f"outputs/e2e/metrics/{ID}_population_overlays.html"),
 )
 
 # %%
