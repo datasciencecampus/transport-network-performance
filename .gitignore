@@ -9,6 +9,7 @@
 !tests/data/newport-2023-06-13.osm.pbf
 !tests/data/newport-20230613_gtfs.zip
 !tests/data/gtfs/route_lookup.pkl
+!tests/data/newport_centroids.pkl
 
 ### Project structure ###
 data/*
