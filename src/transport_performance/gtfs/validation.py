@@ -23,12 +23,7 @@ from transport_performance.utils.defence import (
     _check_namespace_export,
     _check_parent_dir_exists,
     _check_column_in_df,
-    _bool_defence,
-    _integer_defence,
-    _string_defence,
-    _dataframe_defence,
-    _dict_defence,
-    _string_and_nonetype_defence,
+    _type_defence,
 )
 
 from transport_performance.gtfs.report.report_utils import (
@@ -738,17 +733,17 @@ class GtfsInstance:
 
         """
         # parameter type defences
-        _dataframe_defence(summary_df, "summary_df")
-        _string_defence(day_column, "day_column")
-        _string_defence(target_column, "target_column")
-        _dict_defence(plotly_kwargs, "plotly_kwargs")
-        _bool_defence(return_html, "return_html")
-        _integer_defence(width, "width")
-        _integer_defence(height, "height")
-        _string_and_nonetype_defence(xlabel, "xlabel")
-        _string_and_nonetype_defence(ylabel, "ylabel")
-        _bool_defence(save_html, "save_html")
-        _bool_defence(save_image, "save_iamge")
+        _type_defence(summary_df, "summary_df", pd.DataFrame)
+        _type_defence(day_column, "day_column", str)
+        _type_defence(target_column, "target_column", str)
+        _type_defence(plotly_kwargs, "plotly_kwargs", dict)
+        _type_defence(return_html, "return_html", bool)
+        _type_defence(width, "width", int)
+        _type_defence(height, "height", int)
+        _type_defence(xlabel, "xlabel", (str, type(None)))
+        _type_defence(ylabel, "ylabel", (str, type(None)))
+        _type_defence(save_html, "save_html", bool)
+        _type_defence(save_image, "save_iamge", bool)
         _check_parent_dir_exists(save_pth, "save_pth", create=True)
 
         # orientation input defences
@@ -1269,8 +1264,8 @@ class GtfsInstance:
             An error raised if the type of summary passed is invalid
 
         """
-        _bool_defence(overwrite, "overwrite")
-        _string_defence(summary_type, "summary_type")
+        _type_defence(overwrite, "overwrite", bool)
+        _type_defence(summary_type, "summary_type", str)
         set_up_report_dir(path=report_dir, overwrite=overwrite)
         summary_type = summary_type.lower()
         if summary_type not in ["mean", "min", "max", "median"]:

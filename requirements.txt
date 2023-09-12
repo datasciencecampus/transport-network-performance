@@ -2,7 +2,7 @@ pre-commit
 r5py>=0.0.4
 gtfs_kit==5.2.7
 rasterio
-matplotlib
+matplotlib>=3.7.0
 scipy
 rioxarray
 geopandas
@@ -13,7 +13,7 @@ coverage
 pyprojroot
 pytest-lazy-fixture
 ipykernel==6.23.1
-pandas
+pandas<2.1.0
 beautifulsoup4
 requests
 pytest-mock
