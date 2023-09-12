@@ -13,7 +13,6 @@ import plotly.io as plotly_io
 from pretty_html_table import build_table
 import zipfile
 import pathlib
-import warnings
 from typing import Union
 from plotly.graph_objects import Figure as PlotlyFigure
 
@@ -671,9 +670,10 @@ class GtfsInstance:
         return_html: bool = False,
         save_html: bool = False,
         save_image: bool = False,
-        save_pth: Union[pathlib.Path, str] = pathlib.Path(
-            os.path.join("outputs", "gtfs", "summary_plot")
+        out_dir: Union[pathlib.Path, str] = pathlib.Path(
+            os.path.join("outputs", "gtfs")
         ),
+        img_type: str = "png",
     ) -> Union[PlotlyFigure, str]:
         """Plot (and save) a summary table using plotly.
 
@@ -715,11 +715,15 @@ class GtfsInstance:
         save_image : bool, optional
             Whether or not to save the plot as a PNG,
             by default False
-        save_pth : Union[pathlib.Path, str], optional
-            The filepath to save the plot to. Including a file extension is
-            optional (e.g., .html). File paths must include forward slashes if
-            they aren't passed as a path object (pathlib.Path).
-            by default pathlib.Path(os.path.join('outputs', 'gtfs'))
+        out_dir : Union[pathlib.Path, str], optional
+            The directory to save the plot into. If a file extension is added
+            to this directory, it won't be cleaned. Whatever is passed as the
+            out dir will be used as the parent directory of the save, leaving
+            the responsibility on the user to specify the correct path.,
+            by default os.path.join("outputs", "gtfs")
+        img_type : str, optional
+            The type of the image to be saved. E.g, .svg or .jpeg.,
+            by defauly "png"
 
         Returns
         -------
@@ -730,6 +734,8 @@ class GtfsInstance:
         ------
         ValueError
             An error is raised if orientation is not 'v' or 'h'.
+        ValueError
+            An error is raised if an invalid iamge type is passed.
 
         """
         # parameter type defences
@@ -744,7 +750,13 @@ class GtfsInstance:
         _type_defence(ylabel, "ylabel", (str, type(None)))
         _type_defence(save_html, "save_html", bool)
         _type_defence(save_image, "save_iamge", bool)
-        _check_parent_dir_exists(save_pth, "save_pth", create=True)
+        _type_defence(img_type, "img_type", str)
+
+        raw_pth = os.path.join(
+            out_dir,
+            "summary_" + datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S"),
+        )
+        _check_parent_dir_exists(raw_pth, "save_pth", create=True)
 
         # orientation input defences
         if orientation.lower() not in ["v", "h"]:
@@ -825,48 +837,34 @@ class GtfsInstance:
         if plotly_kwargs:
             fig.update_layout(**plotly_kwargs)
 
-        # break up the save path
-        main, ext = os.path.splitext(save_pth)
-
         # save the plot if specified (with correct file type)
         if save_html:
-            if ext.lower() != ".html":
-                warnings.warn(
-                    (
-                        "HTML save requested but accepted type "
-                        "not specified.\n"
-                        "Accepted image formats include ['.html']\n"
-                        "Saving as .html"
-                    ),
-                    UserWarning,
-                )
             plotly_io.write_html(
                 fig=fig,
-                file=os.path.normpath(main + ".html"),
+                file=os.path.normpath(raw_pth + ".html"),
                 full_html=False,
             )
 
         if save_image:
             valid_img_formats = [
-                ".png",
-                ".pdf",
+                "png",
+                "pdf",
                 "jpg",
                 "jpeg",
-                ".webp",
-                ".svg",
+                "webp",
+                "svg",
             ]
-            if ext.lower() not in valid_img_formats:
-                warnings.warn(
-                    (
-                        "Image save requested but accepted type not "
-                        "specified.\n"
-                        f"Accepted image formats include {valid_img_formats}\n"
-                        "Saving as .png"
-                    ),
-                    UserWarning,
+            if img_type.lower().replace(".", "") not in valid_img_formats:
+                raise ValueError(
+                    "Please specify a valid image format. Valid formats "
+                    f"include {valid_img_formats}"
                 )
-                ext = ".png"
-            plotly_io.write_image(fig=fig, file=os.path.normpath(main + ext))
+            plotly_io.write_image(
+                fig=fig,
+                file=os.path.normpath(
+                    raw_pth + f".{img_type.replace('.', '')}"
+                ),
+            )
         if return_html:
             return plotly_io.to_html(fig, full_html=False)
         return fig
@@ -883,9 +881,10 @@ class GtfsInstance:
         ylabel: str = None,
         save_html: bool = False,
         save_image: bool = False,
-        save_pth: Union[pathlib.Path, str] = pathlib.Path(
+        out_dir: Union[pathlib.Path, str] = pathlib.Path(
             os.path.join("outputs", "gtfs")
         ),
+        img_type: str = "png",
     ) -> Union[PlotlyFigure, str]:
         """Plot the summarised route data of a GTFS file.
 
@@ -924,11 +923,15 @@ class GtfsInstance:
         save_image : bool, optional
             Whether or not to save the plot as a PNG,
             by default False
-        save_pth : Union[pathlib.Path, str], optional
-            The filepath to save the plot to. Including a file extension is
-            optional (e.g., .html). File paths must include forward slashes if
-            they aren't passed as a path object (pathlib.Path).
-            by default pathlib.Path(os.path.join('outputs', 'gtfs'))
+        out_dir : Union[pathlib.Path, str], optional
+            The directory to save the plot into. If a file extension is added
+            to this directory, it won't be cleaned. Whatever is passed as the
+            out dir will be used as the parent directory of the save, leaving
+            the responsibility on the user to specify the correct path.,
+            by default os.path.join("outputs", "gtfs")
+        img_type : str, optional
+            The type of the image to be saved. E.g, .svg or .jpeg.,
+            by defauly "png"
 
         Returns
         -------
@@ -963,8 +966,9 @@ class GtfsInstance:
             xlabel=xlabel,
             ylabel=ylabel,
             save_html=save_html,
-            save_pth=save_pth,
+            out_dir=out_dir,
             save_image=save_image,
+            img_type=img_type,
         )
         return plot
 
@@ -979,10 +983,10 @@ class GtfsInstance:
         xlabel: str = None,
         ylabel: str = None,
         save_html: bool = False,
-        save_image: bool = False,
-        save_pth: Union[pathlib.Path, str] = pathlib.Path(
+        out_dir: Union[pathlib.Path, str] = pathlib.Path(
             os.path.join("outputs", "gtfs")
         ),
+        img_type: str = "png",
     ):
         """Plot the summarised trip data of a GTFS file.
 
@@ -1021,11 +1025,15 @@ class GtfsInstance:
         save_image : bool, optional
             Whether or not to save the plot as a PNG,
             by default False
-        save_pth : Union[pathlib.Path, str], optional
-            The filepath to save the plot to. Including a file extension is
-            optional (e.g., .html). File paths must include forward slashes if
-            they aren't passed as a path object (pathlib.Path).
-            by default pathlib.Path(os.path.join('outputs', 'gtfs'))
+        out_dir : Union[pathlib.Path, str], optional
+            The directory to save the plot into. If a file extension is added
+            to this directory, it won't be cleaned. Whatever is passed as the
+            out dir will be used as the parent directory of the save, leaving
+            the responsibility on the user to specify the correct path.,
+            by default os.path.join("outputs", "gtfs")
+        img_type : str, optional
+            The type of the image to be saved. E.g, .svg or .jpeg.,
+            by defauly "png"
 
         Returns
         -------
@@ -1060,8 +1068,8 @@ class GtfsInstance:
             xlabel=xlabel,
             ylabel=ylabel,
             save_html=save_html,
-            save_pth=save_pth,
-            save_image=save_image,
+            out_dir=out_dir,
+            img_type=img_type,
         )
         return plot
 
