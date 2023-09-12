@@ -112,10 +112,6 @@ def clean_consecutive_stop_fast_travel_warnings(
     return None
 
 
-# def clean_multiple_stop_fast_travel_warnings(gtfs):
-#     pass
-
-
 def clean_multiple_stop_fast_travel_warnings(
     gtfs, validate: bool = False
 ) -> None:

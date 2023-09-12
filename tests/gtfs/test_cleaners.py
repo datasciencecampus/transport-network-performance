@@ -8,6 +8,8 @@ import numpy as np
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.cleaners import (
     drop_trips,
+    clean_consecutive_stop_fast_travel_warnings,
+    clean_multiple_stop_fast_travel_warnings,
 )
 
 
@@ -99,4 +101,170 @@ class Test_DropTrips(object):
             "Test data summary does not "
             "match expected summary after "
             "dropping trips. "
+        )
+
+
+class Test_CleanConsecutiveStopFastTravelWarnings(object):
+    """Tests for clean_consecutive_stop_fast_travel_warnings()."""
+
+    def test_clean_consecutive_stop_fast_travel_warnings_defence(
+        self, gtfs_fixture
+    ):
+        """Defensive tests forclean_consecutive_stop_fast_travel_warnings()."""
+        with pytest.raises(
+            AttributeError,
+            match=re.escape(
+                "The gtfs has not been validated, therefore no"
+                "warnings can be identified. You can pass "
+                "validate=True to this function to validate the "
+                "gtfs."
+            ),
+        ):
+            clean_consecutive_stop_fast_travel_warnings(
+                gtfs=gtfs_fixture, validate=False
+            )
+
+    def test_clean_consecutive_stop_fast_travel_warnings_on_pass(
+        self, gtfs_fixture
+    ):
+        """General tests for clean_consecutive_stop_fast_travel_warnings()."""
+        gtfs_fixture.is_valid(far_stops=True)
+        original_validation = {
+            "type": {
+                0: "warning",
+                1: "warning",
+                2: "warning",
+                3: "warning",
+                4: "warning",
+            },
+            "message": {
+                0: "Unrecognized column agency_noc",
+                1: "Unrecognized column platform_code",
+                2: "Unrecognized column vehicle_journey_code",
+                3: "Fast Travel Between Consecutive Stops",
+                4: "Fast Travel Over Multiple Stops",
+            },
+            "table": {
+                0: "agency",
+                1: "stops",
+                2: "trips",
+                3: "full_stop_schedule",
+                4: "multiple_stops_invalid",
+            },
+            "rows": {
+                0: [],
+                1: [],
+                2: [],
+                3: [457, 458, 4596, 4597, 5788, 5789],
+                4: [0, 1, 2],
+            },
+        }
+        expected_validation = {
+            "type": {0: "warning", 1: "warning", 2: "warning"},
+            "message": {
+                0: "Unrecognized column agency_noc",
+                1: "Unrecognized column platform_code",
+                2: "Unrecognized column vehicle_journey_code",
+            },
+            "table": {0: "agency", 1: "stops", 2: "trips"},
+            "rows": {0: [], 1: [], 2: []},
+        }
+
+        assert (
+            original_validation == gtfs_fixture.validity_df.to_dict()
+        ), "Original validity df is not as expected"
+        clean_consecutive_stop_fast_travel_warnings(
+            gtfs=gtfs_fixture, validate=False
+        )
+        gtfs_fixture.is_valid()
+        assert expected_validation == gtfs_fixture.validity_df.to_dict(), (
+            "Validation table is not as expected after cleaning consecutive "
+            "stop fast travel warnings"
+        )
+        # test validation; test gtfs with no warnings
+        clean_consecutive_stop_fast_travel_warnings(
+            gtfs=gtfs_fixture, validate=True
+        )
+
+
+class Test_CleanMultipleStopFastTravelWarnings(object):
+    """Tests for clean_multiple_stop_fast_travel_warnings()."""
+
+    def test_clean_multiple_stop_fast_travel_warnings_defence(
+        self, gtfs_fixture
+    ):
+        """Defensive tests for clean_multiple_stop_fast_travel_warnings()."""
+        with pytest.raises(
+            AttributeError,
+            match=re.escape(
+                "The gtfs has not been validated, therefore no"
+                "warnings can be identified. You can pass "
+                "validate=True to this function to validate the "
+                "gtfs."
+            ),
+        ):
+            clean_multiple_stop_fast_travel_warnings(
+                gtfs=gtfs_fixture, validate=False
+            )
+
+    def test_clean_multiple_stop_fast_travel_warnings_on_pass(
+        self, gtfs_fixture
+    ):
+        """General tests for clean_multiple_stop_fast_travel_warnings()."""
+        gtfs_fixture.is_valid(far_stops=True)
+        original_validation = {
+            "type": {
+                0: "warning",
+                1: "warning",
+                2: "warning",
+                3: "warning",
+                4: "warning",
+            },
+            "message": {
+                0: "Unrecognized column agency_noc",
+                1: "Unrecognized column platform_code",
+                2: "Unrecognized column vehicle_journey_code",
+                3: "Fast Travel Between Consecutive Stops",
+                4: "Fast Travel Over Multiple Stops",
+            },
+            "table": {
+                0: "agency",
+                1: "stops",
+                2: "trips",
+                3: "full_stop_schedule",
+                4: "multiple_stops_invalid",
+            },
+            "rows": {
+                0: [],
+                1: [],
+                2: [],
+                3: [457, 458, 4596, 4597, 5788, 5789],
+                4: [0, 1, 2],
+            },
+        }
+        expected_validation = {
+            "type": {0: "warning", 1: "warning", 2: "warning"},
+            "message": {
+                0: "Unrecognized column agency_noc",
+                1: "Unrecognized column platform_code",
+                2: "Unrecognized column vehicle_journey_code",
+            },
+            "table": {0: "agency", 1: "stops", 2: "trips"},
+            "rows": {0: [], 1: [], 2: []},
+        }
+
+        assert (
+            original_validation == gtfs_fixture.validity_df.to_dict()
+        ), "Original validity df is not as expected"
+        clean_multiple_stop_fast_travel_warnings(
+            gtfs=gtfs_fixture, validate=False
+        )
+        gtfs_fixture.is_valid()
+        assert expected_validation == gtfs_fixture.validity_df.to_dict(), (
+            "Validation table is not as expected after cleaning consecutive "
+            "stop fast travel warnings"
+        )
+        # test validation; test gtfs with no warnings
+        clean_multiple_stop_fast_travel_warnings(
+            gtfs=gtfs_fixture, validate=True
         )
