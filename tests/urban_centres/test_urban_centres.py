@@ -292,12 +292,12 @@ class TestCellPop:
 
 # test diagonal boolean
 @pytest.mark.parametrize(
-    "diagonal, expected, cluster",
+    "diagonal, expected, cluster, num_clusters",
     [
-        (True, does_not_raise(), 1),
-        (False, does_not_raise(), 3),
-        (1, pytest.raises(TypeError), 0),
-        ("True", pytest.raises(TypeError), 0),
+        (True, does_not_raise(), 1, 3),
+        (False, does_not_raise(), 3, 4),
+        (1, pytest.raises(TypeError), 0, 0),
+        ("True", pytest.raises(TypeError), 0, 0),
     ],
 )
 class TestDiag:
@@ -311,6 +311,7 @@ class TestDiag:
         diagonal,
         expected,
         cluster,
+        num_clusters,
     ):
         """Test diag parameter."""
         with expected:
@@ -329,6 +330,7 @@ class TestDiag:
         diagonal,
         expected,
         cluster,
+        num_clusters,
     ):
         """Test diag parameter output."""
         if cluster != 0:
@@ -336,6 +338,7 @@ class TestDiag:
             uc.get_urban_centre(bbox, cluster_centre, diag=diagonal)
             # checks if diagonal cell is clustered with main blob or separate
             assert uc._UrbanCentre__cluster_array[1, 5] == cluster
+            assert uc._UrbanCentre__num_clusters == num_clusters
 
 
 # test cluster population threshold
@@ -392,6 +395,7 @@ class TestClusterPop:
             assert uc._UrbanCentre__urban_centres_array[6, 6] == clusters[2]
 
 
+# test adjacent cells threshold to fill
 @pytest.mark.parametrize(
     "cell_fill_t, expected, fills",
     [
@@ -448,6 +452,7 @@ class TestFill:
             assert uc._UrbanCentre__filled_array[4, 0] == fills[2]
 
 
+# test nodata parameter
 @pytest.mark.parametrize(
     "v_nodata, expected",
     [
@@ -467,6 +472,7 @@ def test_v_nodata(dummy_pop_array, bbox, cluster_centre, v_nodata, expected):
         )
 
 
+# test buffer parameter
 @pytest.mark.parametrize(
     "buffer, expected",
     [
@@ -487,6 +493,7 @@ def test_buffer(dummy_pop_array, bbox, cluster_centre, buffer, expected):
         )
 
 
+# test output types
 @pytest.mark.parametrize(
     "output, expected",
     [
@@ -511,6 +518,7 @@ def test_output_types(dummy_pop_array, bbox, cluster_centre, output, expected):
     assert type(getattr(obj, output)) == expected
 
 
+# test final output characteristics
 def test_final_output(dummy_pop_array, bbox, cluster_centre):
     """Test final output."""
     out = ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
