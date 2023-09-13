@@ -29,7 +29,7 @@ def dummy_pop_array(tmp_path: str):
     dummy = np.array(
         [
             [5000, 5000, 5000, 1500, 1500, 0, 0, 0, 5000, 5000],
-            [5000, 5000, 5000, 0, 0, 0, 0, 0, 0, 0],
+            [5000, 5000, 5000, 0, 0, 1500, 0, 0, 0, 0],
             [5000, 5000, 5000, 1500, 1500, 0, 0, 0, 0, 0],
             [5000, 1500, 1500, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -234,7 +234,7 @@ def test_band_n(dummy_pop_array, bbox, cluster_centre, band, expected):
         )
 
 
-# test exceptions for cell population threshold
+# test cell population threshold
 @pytest.mark.parametrize(
     "cell_pop_t, expected, flags",
     [
@@ -290,23 +290,52 @@ class TestCellPop:
             assert uc._UrbanCentre__pop_filt_array[6, 0] == flags[2]
 
 
+# test diagonal boolean
 @pytest.mark.parametrize(
-    "diagonal, expected",
+    "diagonal, expected, cluster",
     [
-        (True, does_not_raise()),
-        (False, does_not_raise()),
-        ("True", pytest.raises(TypeError)),
+        (True, does_not_raise(), 1),
+        (False, does_not_raise(), 3),
+        (1, pytest.raises(TypeError), 0),
+        ("True", pytest.raises(TypeError), 0),
     ],
 )
-def test_diag(dummy_pop_array, bbox, cluster_centre, diagonal, expected):
-    """Test diag parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
-                bbox, cluster_centre, diag=diagonal
+class TestDiag:
+    """Class to test effect of diagonal boolean on output."""
+
+    def test_diag(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        diagonal,
+        expected,
+        cluster,
+    ):
+        """Test diag parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, diag=diagonal
+                )
+                is not None
             )
-            is not None
-        )
+
+    def test_diag_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        diagonal,
+        expected,
+        cluster,
+    ):
+        """Test diag parameter output."""
+        if cluster != 0:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(bbox, cluster_centre, diag=diagonal)
+            # checks if diagonal cell is clustered with main blob or separate
+            assert uc._UrbanCentre__cluster_array[1, 5] == cluster
 
 
 @pytest.mark.parametrize(
