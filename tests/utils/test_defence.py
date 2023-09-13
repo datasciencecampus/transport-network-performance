@@ -4,11 +4,13 @@ import os
 import pathlib
 
 import pytest
+import pandas as pd
 
 from transport_performance.utils.defence import (
     _check_list,
     _check_parent_dir_exists,
     _type_defence,
+    _check_column_in_df,
 )
 
 
@@ -242,3 +244,28 @@ class Test_TypeDefence(object):
         _type_defence(list(), "empty_list", (type(None), list))
         _type_defence(tuple(), "empty_tuple", (tuple, dict))
         _type_defence(None, "None", (list, dict, type(None)))
+
+
+@pytest.fixture(scope="function")
+def test_df():
+    """A test fixture for an example dataframe."""
+    test_df = pd.DataFrame(
+        {"test_col_1": [1, 2, 3, 4], "test_col_2": [True, True, False, True]}
+    )
+    return test_df
+
+
+class Test_CheckColumnInDf(object):
+    """Tests for _check_column_in_df()."""
+
+    def test__check_column_in_df_defence(self, test_df):
+        """Defensive tests for _check_colum_in_df()."""
+        with pytest.raises(
+            IndexError, match="'test' is not a column in the dataframe."
+        ):
+            _check_column_in_df(df=test_df, column_name="test")
+
+    def test__check_column_in_df_on_pass(self, test_df):
+        """General tests for _check_colum_in_df()."""
+        _check_column_in_df(test_df, "test_col_1")
+        _check_column_in_df(test_df, "test_col_2")
