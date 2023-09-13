@@ -295,27 +295,59 @@ def test_cluster_pop_t(
 
 
 @pytest.mark.parametrize(
-    "cell_fill_t, expected",
+    "cell_fill_t, expected, fills",
     [
-        (5, does_not_raise()),
-        (5.5, pytest.raises(TypeError)),
-        ("5", pytest.raises(TypeError)),
+        (5, does_not_raise(), [1, 1, 0]),
+        (7, does_not_raise(), [1, 0, 0]),
+        (5.5, pytest.raises(TypeError), []),
+        ("5", pytest.raises(TypeError), []),
         # test values outside boundaries
-        (11, pytest.raises(ValueError)),
-        (0, pytest.raises(ValueError)),
+        (11, pytest.raises(ValueError), []),
+        (0, pytest.raises(ValueError), []),
     ],
 )
-def test_cell_fill_t(
-    dummy_pop_array, bbox, cluster_centre, cell_fill_t, expected
-):
-    """Test cell_fill_threshold parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+class TestFill:
+    """Class to test effect of fill threshold on output."""
+
+    def test_cell_fill_t(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_fill_t,
+        expected,
+        fills,
+    ):
+        """Test cell_fill_threshold parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, cell_fill_treshold=cell_fill_t
+                )
+                is not None
+            )
+
+    def test_cell_fill_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_fill_t,
+        expected,
+        fills,
+    ):
+        """Test fill output."""
+        if fills != []:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(
                 bbox, cluster_centre, cell_fill_treshold=cell_fill_t
             )
-            is not None
-        )
+            # fills with 5 and 7
+            assert uc._UrbanCentre__filled_array[1, 3] == fills[0]
+            # fills with 5 but not 7
+            assert uc._UrbanCentre__filled_array[1, 4] == fills[1]
+            # doesn't fill (checks if outside bounds are 0)
+            assert uc._UrbanCentre__filled_array[4, 0] == fills[2]
 
 
 @pytest.mark.parametrize(
