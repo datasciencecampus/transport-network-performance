@@ -91,7 +91,15 @@ class TestSetUpReportDir(object):
 
     def test_set_up_report_dir_on_pass(self, tmp_path):
         """Test set_up_report_dir() when defences are passed."""
+        # create original report
+        set_up_report_dir(
+            pathlib.Path(os.path.join(tmp_path)), overwrite=False
+        )
+        assert os.path.exists(
+            os.path.join(tmp_path, "gtfs_report")
+        ), "Failed to create report in temporary directory"
+        # attempt to overwrite the previous report
         set_up_report_dir(pathlib.Path(os.path.join(tmp_path)), overwrite=True)
         assert os.path.exists(
             os.path.join(tmp_path, "gtfs_report")
-        ), "Failed to replace report in tests/data/gtfs/report/"
+        ), "Failed to create report in temporary directory"
