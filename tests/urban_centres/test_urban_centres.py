@@ -20,6 +20,7 @@ from shapely.geometry import Polygon
 import transport_performance.urban_centres.raster_uc as ucc
 
 
+# fixtures
 @pytest.fixture
 def dummy_pop_array(tmp_path: str):
     """Create dummy population array."""
@@ -30,7 +31,7 @@ def dummy_pop_array(tmp_path: str):
             [5000, 5000, 5000, 1500, 1500, 0, 0, 0, 5000, 5000],
             [5000, 5000, 5000, 0, 0, 0, 0, 0, 0, 0],
             [5000, 5000, 5000, 1500, 1500, 0, 0, 0, 0, 0],
-            [1500, 1500, 1500, 0, 0, 0, 0, 0, 0, 0],
+            [5000, 1500, 1500, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 500, 500, 100, 0, 0, 0],
             [1000, 0, 0, 0, 100, 40, 5000, 0, 0, 0],
@@ -140,7 +141,8 @@ def outside_cluster_centre():
     return (41.74, -13.25)
 
 
-# test exceptions for input parameters
+# tests
+# test exceptions for file path
 @pytest.mark.parametrize(
     "filepath, func, expected",
     [
@@ -162,6 +164,7 @@ def test_file(filepath, func, bbox, cluster_centre, expected):
         )
 
 
+# test exceptions for bounding box
 @pytest.mark.parametrize(
     "window, expected",
     [
@@ -187,6 +190,7 @@ def test_bbox(dummy_pop_array, window, cluster_centre, expected):
         )
 
 
+# test exceptions for area centre
 @pytest.mark.parametrize(
     "centre_coords, expected",
     [
@@ -209,6 +213,7 @@ def test_centre(dummy_pop_array, bbox, centre_coords, expected):
         )
 
 
+# test exceptions for band
 @pytest.mark.parametrize(
     "band, expected",
     [
@@ -229,27 +234,60 @@ def test_band_n(dummy_pop_array, bbox, cluster_centre, band, expected):
         )
 
 
+# test exceptions for cell population threshold
 @pytest.mark.parametrize(
-    "cell_pop_t, expected",
+    "cell_pop_t, expected, flags",
     [
-        (1500, does_not_raise()),
-        (1500.5, pytest.raises(TypeError)),
-        ("1500", pytest.raises(TypeError)),
+        (1500, does_not_raise(), [True, True, False]),
+        (5000, does_not_raise(), [True, False, False]),
+        (1500.5, pytest.raises(TypeError), []),
+        ("1500", pytest.raises(TypeError), []),
         # tests value that would not create any cluster
-        (150000, pytest.raises(ValueError)),
+        (150000, pytest.raises(ValueError), []),
     ],
 )
-def test_cell_pop_t(
-    dummy_pop_array, bbox, cluster_centre, cell_pop_t, expected
-):
-    """Test cell_pop_threshold parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+class TestCellPop:
+    """Class to test effect of cell pop threshold on output."""
+
+    def test_cell_pop_t(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_pop_t,
+        expected,
+        flags,
+    ):
+        """Test cell_pop_threshold parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, cell_pop_threshold=cell_pop_t
+                )
+                is not None
+            )
+
+    def test_cell_pop_t_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_pop_t,
+        expected,
+        flags,
+    ):
+        """Test cell_pop_threshold output."""
+        if flags != []:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(
                 bbox, cluster_centre, cell_pop_threshold=cell_pop_t
             )
-            is not None
-        )
+            # fills with 5 and 7
+            assert uc._UrbanCentre__pop_filt_array[0, 2] == flags[0]
+            # fills with 5 but not 7
+            assert uc._UrbanCentre__pop_filt_array[0, 3] == flags[1]
+            # doesn't fill (checks if outside bounds are 0)
+            assert uc._UrbanCentre__pop_filt_array[6, 0] == flags[2]
 
 
 @pytest.mark.parametrize(
