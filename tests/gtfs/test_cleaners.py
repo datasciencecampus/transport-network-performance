@@ -56,6 +56,13 @@ class Test_DropTrips(object):
             ),
         ):
             drop_trips(gtfs_fixture, trip_id=["test", False, "test2"])
+        # test a string gets converted to an array
+        example_id = "VJ48dbdedf89131f2468c4a8d750d45c06dcd3cbf9"
+        drop_trips(gtfs_fixture, trip_id=example_id)
+        found_df = gtfs_fixture.feed.trips[
+            gtfs_fixture.feed.trips.trip_id == example_id
+        ]
+        assert len(found_df) == 0, "Failed to drop trip in format 'string'"
 
     def test_drop_trips_on_pass(self, gtfs_fixture):
         """General tests for drop_trips()."""
