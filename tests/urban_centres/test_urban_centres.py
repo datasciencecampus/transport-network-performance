@@ -338,27 +338,58 @@ class TestDiag:
             assert uc._UrbanCentre__cluster_array[1, 5] == cluster
 
 
+# test cluster population threshold
 @pytest.mark.parametrize(
-    "cluster_pop_t, expected",
+    "cluster_pop_t, expected, clusters",
     [
-        (50000, does_not_raise()),
-        (50000.5, pytest.raises(TypeError)),
-        ("50000", pytest.raises(TypeError)),
+        (50000, does_not_raise(), [1, 0, 0]),
+        (10000, does_not_raise(), [1, 2, 0]),
+        (50000.5, pytest.raises(TypeError), []),
+        ("50000", pytest.raises(TypeError), []),
         # test value that would filter out all clusters
-        (1000000, pytest.raises(ValueError)),
+        (1000000, pytest.raises(ValueError), []),
     ],
 )
-def test_cluster_pop_t(
-    dummy_pop_array, bbox, cluster_centre, cluster_pop_t, expected
-):
-    """Test pop_threshold parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+class TestClusterPop:
+    """Class to test effect of diagonal boolean on output."""
+
+    def test_cluster_pop_t(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cluster_pop_t,
+        expected,
+        clusters,
+    ):
+        """Test pop_threshold parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, cluster_pop_threshold=cluster_pop_t
+                )
+                is not None
+            )
+
+    def test_cluster_pop_t_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cluster_pop_t,
+        expected,
+        clusters,
+    ):
+        """Test pop_threshold outputs."""
+        if clusters != []:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(
                 bbox, cluster_centre, cluster_pop_threshold=cluster_pop_t
             )
-            is not None
-        )
+            # checks if diagonal cell is clustered with main blob or separate
+            assert uc._UrbanCentre__urban_centres_array[0, 0] == clusters[0]
+            assert uc._UrbanCentre__urban_centres_array[0, 9] == clusters[1]
+            assert uc._UrbanCentre__urban_centres_array[6, 6] == clusters[2]
 
 
 @pytest.mark.parametrize(
