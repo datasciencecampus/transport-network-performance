@@ -752,6 +752,8 @@ class GtfsInstance:
         _type_defence(save_image, "save_iamge", bool)
         _type_defence(img_type, "img_type", str)
 
+        # lower orientation
+        orientation = orientation.lower()
         raw_pth = os.path.join(
             out_dir,
             "summary_" + datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S"),
@@ -759,7 +761,7 @@ class GtfsInstance:
         _check_parent_dir_exists(raw_pth, "save_pth", create=True)
 
         # orientation input defences
-        if orientation.lower() not in ["v", "h"]:
+        if orientation not in ["v", "h"]:
             raise ValueError(
                 "'orientation expected 'v' or 'h'"
                 " (non case sensitive)."
@@ -773,7 +775,6 @@ class GtfsInstance:
         # convert column type for better graph plotting
         summary_df["route_type"] = summary_df["route_type"].astype("object")
 
-        orientation = orientation.lower()
         xlabel = (
             xlabel
             if xlabel
