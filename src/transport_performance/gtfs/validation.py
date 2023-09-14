@@ -27,7 +27,7 @@ from transport_performance.utils.defence import (
 
 from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
-    set_up_report_dir,
+    _set_up_report_dir,
     GTFS_UNNEEDED_COLUMNS,
 )
 
@@ -1274,7 +1274,7 @@ class GtfsInstance:
         """
         _type_defence(overwrite, "overwrite", bool)
         _type_defence(summary_type, "summary_type", str)
-        set_up_report_dir(path=report_dir, overwrite=overwrite)
+        _set_up_report_dir(path=report_dir, overwrite=overwrite)
         summary_type = summary_type.lower()
         if summary_type not in ["mean", "min", "max", "median"]:
             raise ValueError("'summary type' must be mean, median, min or max")
@@ -1310,7 +1310,7 @@ class GtfsInstance:
                 "html_templates/evaluation_template.html"
             )
         )
-        eval_temp.insert(
+        eval_temp._insert(
             "eval_placeholder_1",
             build_table(
                 validation_dataframe,
@@ -1319,43 +1319,47 @@ class GtfsInstance:
                 escape=False,
             ),
         )
-        eval_temp.insert("eval_title_1", "GTFS Feed Warnings and Errors")
+        eval_temp._insert("eval_title_1", "GTFS Feed Warnings and Errors")
 
-        eval_temp.insert(
+        eval_temp._insert(
             "eval_placeholder_2",
             build_table(self.feed.agency, "green_dark", padding="10px"),
         )
-        eval_temp.insert("eval_title_2", "GTFS Agency Information")
+        eval_temp._insert("eval_title_2", "GTFS Agency Information")
 
-        eval_temp.insert(
+        eval_temp._insert(
             "name_placeholder", self.feed.feed_info["feed_publisher_name"][0]
         )
-        eval_temp.insert(
+        eval_temp._insert(
             "url_placeholder",
             self.feed.feed_info["feed_publisher_url"][0],
             replace_multiple=True,
         )
-        eval_temp.insert(
+        eval_temp._insert(
             "lang_placeholder", self.feed.feed_info["feed_lang"][0]
         )
-        eval_temp.insert(
+        eval_temp._insert(
             "start_placeholder", self.feed.feed_info["feed_start_date"][0]
         )
-        eval_temp.insert(
+        eval_temp._insert(
             "end_placeholder", self.feed.feed_info["feed_end_date"][0]
         )
-        eval_temp.insert(
+        eval_temp._insert(
             "version_placeholder", self.feed.feed_info["feed_version"][0]
         )
 
         count_lookup = dict(self.feed.describe().to_numpy())
-        eval_temp.insert(
+        eval_temp._insert(
             "agency_placeholder", str(len(count_lookup["agencies"]))
         )
-        eval_temp.insert("routes_placeholder", str(count_lookup["num_routes"]))
-        eval_temp.insert("trips_placeholder", str(count_lookup["num_trips"]))
-        eval_temp.insert("stops_placeholder", str(count_lookup["num_stops"]))
-        eval_temp.insert("shapes_placeholder", str(count_lookup["num_shapes"]))
+        eval_temp._insert(
+            "routes_placeholder", str(count_lookup["num_routes"])
+        )
+        eval_temp._insert("trips_placeholder", str(count_lookup["num_trips"]))
+        eval_temp._insert("stops_placeholder", str(count_lookup["num_stops"]))
+        eval_temp._insert(
+            "shapes_placeholder", str(count_lookup["num_shapes"])
+        )
 
         self.get_gtfs_files()
         file_list_html = ""
@@ -1369,15 +1373,15 @@ class GtfsInstance:
                     </div>"""
             )
 
-        eval_temp.insert("eval_placeholder_3", file_list_html)
-        eval_temp.insert("eval_title_3", "GTFS Files Included")
+        eval_temp._insert("eval_placeholder_3", file_list_html)
+        eval_temp._insert("eval_title_3", "GTFS Files Included")
 
-        eval_temp.insert("date", date)
+        eval_temp._insert("date", date)
 
         with open(
             f"{report_dir}/gtfs_report/index.html", "w", encoding="utf8"
         ) as eval_f:
-            eval_f.writelines(eval_temp.get_template())
+            eval_f.writelines(eval_temp._get_template())
 
         # stops
         self.viz_stops(
@@ -1396,17 +1400,17 @@ class GtfsInstance:
                 "html_templates/stops_template.html"
             )
         )
-        stops_temp.insert("stops_placeholder_1", "stop_locations.html")
-        stops_temp.insert("stops_placeholder_2", "convex_hull.html")
-        stops_temp.insert("stops_title_1", "Stops from GTFS data")
-        stops_temp.insert(
+        stops_temp._insert("stops_placeholder_1", "stop_locations.html")
+        stops_temp._insert("stops_placeholder_2", "convex_hull.html")
+        stops_temp._insert("stops_title_1", "Stops from GTFS data")
+        stops_temp._insert(
             "stops_title_2", "Convex Hull Generated from GTFS Data"
         )
-        stops_temp.insert("date", date)
+        stops_temp._insert("date", date)
         with open(
             f"{report_dir}/gtfs_report/stops.html", "w", encoding="utf8"
         ) as stops_f:
-            stops_f.writelines(stops_temp.get_template())
+            stops_f.writelines(stops_temp._get_template())
 
         # summaries
         self.summarise_routes()
@@ -1433,21 +1437,21 @@ class GtfsInstance:
                 "html_templates/summary_template.html"
             )
         )
-        summ_temp.insert("plotly_placeholder_1", route_html)
-        summ_temp.insert(
+        summ_temp._insert("plotly_placeholder_1", route_html)
+        summ_temp._insert(
             "plotly_title_1",
             f"Route Summary by Day and Route Type ({summary_type})",
         )
-        summ_temp.insert("plotly_placeholder_2", trip_html)
-        summ_temp.insert(
+        summ_temp._insert("plotly_placeholder_2", trip_html)
+        summ_temp._insert(
             "plotly_title_2",
             f"Trip Summary by Day and Route Type ({summary_type})",
         )
-        summ_temp.insert("date", date)
+        summ_temp._insert("date", date)
         with open(
             f"{report_dir}/gtfs_report/summaries.html", "w", encoding="utf8"
         ) as summ_f:
-            summ_f.writelines(summ_temp.get_template())
+            summ_f.writelines(summ_temp._get_template())
 
         print(
             f"GTFS Report Created at {report_dir}\n"

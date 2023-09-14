@@ -46,7 +46,7 @@ GTFS_UNNEEDED_COLUMNS = {
 
 
 class TemplateHTML:
-    """A class for inserting HTML string into a docstring.
+    """A class for inserting HTML string into a template.
 
     Attributes
     ----------
@@ -80,7 +80,7 @@ class TemplateHTML:
             self.template = f.read()
         return None
 
-    def insert(
+    def _insert(
         self, placeholder: str, value: str, replace_multiple: bool = False
     ) -> None:
         """Insert values into the html template.
@@ -123,7 +123,7 @@ class TemplateHTML:
 
         self.template = self.template.replace(f"[{placeholder}]", value)
 
-    def get_template(self) -> str:
+    def _get_template(self) -> str:
         """Get the template attribute of the TemplateHTML object.
 
         Returns
@@ -135,7 +135,7 @@ class TemplateHTML:
         return self.template
 
 
-def set_up_report_dir(
+def _set_up_report_dir(
     path: Union[str, pathlib.Path] = "outputs", overwrite: bool = False
 ) -> None:
     """Set up the directory that will hold the report.

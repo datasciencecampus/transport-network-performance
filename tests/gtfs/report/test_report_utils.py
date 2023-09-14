@@ -9,7 +9,7 @@ from pyprojroot import here
 
 from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
-    set_up_report_dir,
+    _set_up_report_dir,
 )
 
 
@@ -35,7 +35,7 @@ class TestTemplateHTML(object):
 </body>
 """
         assert (
-            expected_template == template_fixture.get_template()
+            expected_template == template_fixture._get_template()
         ), "Test template not as expected"
 
     def test_insert_defence(self, template_fixture):
@@ -50,7 +50,7 @@ class TestTemplateHTML(object):
                 "replace_multiple param to True"
             ),
         ):
-            template_fixture.insert("test_placeholder", "test_value")
+            template_fixture._insert("test_placeholder", "test_value")
 
     def test_insert_on_pass(self, template_fixture):
         """Test functionality for .insert() when defences are passed."""
@@ -61,13 +61,13 @@ class TestTemplateHTML(object):
     <div>test_value Tester test_value</div>
 </body>
 """
-        template_fixture.insert(
+        template_fixture._insert(
             placeholder="test_placeholder",
             value="test_value",
             replace_multiple=True,
         )
         assert (
-            expected_template == template_fixture.get_template()
+            expected_template == template_fixture._get_template()
         ), "Test placeholder replacement not acting as expected"
 
 
@@ -87,19 +87,21 @@ class TestSetUpReportDir(object):
                 )
             ),
         ):
-            set_up_report_dir("tests/data/gtfs/report")
+            _set_up_report_dir("tests/data/gtfs/report")
 
     def test_set_up_report_dir_on_pass(self, tmp_path):
         """Test set_up_report_dir() when defences are passed."""
         # create original report
-        set_up_report_dir(
+        _set_up_report_dir(
             pathlib.Path(os.path.join(tmp_path)), overwrite=False
         )
         assert os.path.exists(
             os.path.join(tmp_path, "gtfs_report")
         ), "Failed to create report in temporary directory"
         # attempt to overwrite the previous report
-        set_up_report_dir(pathlib.Path(os.path.join(tmp_path)), overwrite=True)
+        _set_up_report_dir(
+            pathlib.Path(os.path.join(tmp_path)), overwrite=True
+        )
         assert os.path.exists(
             os.path.join(tmp_path, "gtfs_report")
         ), "Failed to create report in temporary directory"
