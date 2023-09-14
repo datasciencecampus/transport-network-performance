@@ -493,7 +493,7 @@ def test_buffer(dummy_pop_array, bbox, cluster_centre, buffer, expected):
         )
 
 
-# test output types
+# test intermediate output types
 @pytest.mark.parametrize(
     "output, expected",
     [
@@ -518,12 +518,37 @@ def test_output_types(dummy_pop_array, bbox, cluster_centre, output, expected):
     assert type(getattr(obj, output)) == expected
 
 
-# test final output characteristics
+# test final output characteristics using defaults
 def test_final_output(dummy_pop_array, bbox, cluster_centre):
     """Test final output."""
     out = ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
         bbox, cluster_centre
     )
+
+    # uc expected coordinates
+    # coordinates will need to be recalculated if array fixture changes
+    # you can just do list(Polygon.exterior.coords) to get coordinates
+    uc_coords = [
+        (-243000.0, 6056000.0),
+        (-243000.0, 6052000.0),
+        (-240000.0, 6052000.0),
+        (-240000.0, 6053000.0),
+        (-238000.0, 6053000.0),
+        (-238000.0, 6056000.0),
+        (-243000.0, 6056000.0),
+    ]
+    assert out.loc[0][1] == Polygon(uc_coords)
+
+    # bbox expected coordinates
+    bbox_coords = [
+        (-253000.0, 6042000.0),
+        (-228000.0, 6042000.0),
+        (-228000.0, 6066000.0),
+        (-253000.0, 6066000.0),
+        (-253000.0, 6042000.0),
+    ]
+    assert out.loc[2][1] == Polygon(bbox_coords)
+
     # type of output
     assert type(out) == gpd.GeoDataFrame
 
