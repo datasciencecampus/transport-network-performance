@@ -338,18 +338,17 @@ travel_time_matrix_computer = TravelTimeMatrixComputer(
 travel_times = travel_time_matrix_computer.compute_travel_times()
 
 # %%
-# caution - no control flow, uncomment/commnet as needed TODO: fix this
-# leave this line uncommented
-pd.__version__
+# a qa stage, checking the travel time results are the same as the accetped
+if analyse_net_config["qa_travel_times"]:
+    travel_time_qa_path = here(analyse_net_config["qa_path"])
+    travel_times_test = pd.read_pickle(travel_time_qa_path)
+    pd.testing.assert_frame_equal(travel_times, travel_times_test)
 
-# travel time output path
-# travel_time_out_path = here("outputs/e2e/analyse_network/travel_times.pkl")
-
-# save as pickle object
-# travel_times.to_pickle(travel_time_out_path)
-
-# read pickle object
-# travel_times_test = pd.read_pickle(travel_time_out_path)
+# %%
+# alternatively, can save results to use for qa-ing at a later date
+if analyse_net_config["save_travel_times_for_qa"]:
+    travel_time_out_path = here(analyse_net_config["save_qa_path"])
+    travel_times.to_pickle(travel_time_out_path)
 
 # %%
 

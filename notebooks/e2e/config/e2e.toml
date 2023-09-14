@@ -49,3 +49,7 @@ departure_minute = 0
 departure_time_window = 1  # this is in hours
 max_time = 45  # this is in minutes
 write_outputs = false
+qa_travel_times = true
+qa_path = "outputs/e2e/analyse_network/travel_times.pkl"
+save_travel_times_for_qa = false
+save_qa_path = "outputs/e2e/analyse_network/travel_times_qa.pkl"
