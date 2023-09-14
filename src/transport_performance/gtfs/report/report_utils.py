@@ -123,6 +123,9 @@ class TemplateHTML:
     def _get_template(self) -> str:
         """Get the template attribute of the TemplateHTML object.
 
+        This is an internal method.
+        This method also allows for better testing with pytest.
+
         Returns
         -------
         str
@@ -157,10 +160,12 @@ def _set_up_report_dir(
         given path and overwrite=False
 
     """
+    # create report_dir var
+    report_dir = os.path.join(path, "gtfs_report")
     # defences
-    _check_parent_dir_exists(path, "path", create=True)
+    _check_parent_dir_exists(report_dir, "path", create=True)
 
-    if os.path.exists(f"{path}/gtfs_report") and not overwrite:
+    if os.path.exists(report_dir) and not overwrite:
         raise FileExistsError(
             "Report already exists at path: "
             f"[{path}]."
@@ -170,11 +175,11 @@ def _set_up_report_dir(
 
     # make gtfs_report dir
     try:
-        os.mkdir(f"{path}/gtfs_report")
+        os.mkdir(report_dir)
     except FileExistsError:
         pass
     shutil.copy(
         src="src/transport_performance/gtfs/report/css_styles/styles.css",
-        dst=f"{path}/gtfs_report",
+        dst=report_dir,
     )
     return None
