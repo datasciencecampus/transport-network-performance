@@ -16,6 +16,7 @@ from transport_performance.gtfs.validation import (
     GtfsInstance,
     _get_intermediate_dates,
     _create_map_title_text,
+    _convert_multi_index_to_single,
 )
 
 
@@ -24,6 +25,25 @@ def gtfs_fixture():
     """Fixture for test funcs expecting a valid feed object."""
     gtfs = GtfsInstance()
     return gtfs
+
+
+def test__convert_multi_index_to_single():
+    """Light testing got _convert_multi_index_to_single()."""
+    test_df = pd.DataFrame({"test": [1, 2, 3, 4], "id": ["E", "E", "C", "D"]})
+    test_df = test_df.groupby("id").agg({"test": ["min", "mean", "max"]})
+    expected_cols = pd.Index(
+        ["test_min", "test_mean", "test_max"], dtype="object"
+    )
+    output_cols = _convert_multi_index_to_single(df=test_df).columns
+    assert isinstance(
+        output_cols, pd.Index
+    ), "_convert_multi_index_to_single() not behaving as expected"
+    expected_cols = list(expected_cols)
+    output_cols = list(output_cols)
+    for col in output_cols:
+        assert col in expected_cols, f"{col} not an expected column"
+        expected_cols.remove(col)
+    assert len(expected_cols) == 0, "Not all expected cols in output cols"
 
 
 class TestGtfsInstance(object):

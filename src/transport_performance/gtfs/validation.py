@@ -108,6 +108,35 @@ def _create_map_title_text(gdf, units, geom_crs):
     return txt
 
 
+def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert a dataframes index from MultiIndex to a singular index.
+
+    This function also removes any differing names generated from numpy
+    function
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe to adjust index (columns) of.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Pandas dataframe with a modified index (columns)
+
+    """
+    df.columns = df.columns = [
+        "_".join(value) if "" not in value else "".join(value)
+        for value in df.columns.values
+    ]
+    df.columns = [
+        column.replace("amin", "min").replace("amax", "max")
+        for column in df.columns.values
+    ]
+
+    return df
+
+
 class GtfsInstance:
     """Create a feed instance for validation, cleaning & visualisation."""
 
@@ -471,6 +500,34 @@ class GtfsInstance:
                 f" functions. Found {type(summ_ops)}"
             )
 
+    def _convert_multi_index_to_single(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Convert a dataframes index from MultiIndex to a singular index.
+
+        This function also removes any differing names generated from numpy
+        function
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Pandas dataframe to adjust index (columns) of.
+
+        Returns
+        -------
+        df : pd.DataFrame
+            Pandas dataframe with a modified index (columns)
+
+        """
+        df.columns = df.columns = [
+            "_".join(value) if "" not in value else "".join(value)
+            for value in df.columns.values
+        ]
+        df.columns = [
+            column.replace("amin", "min").replace("amax", "max")
+            for column in df.columns.values
+        ]
+
+        return df
+
     def summarise_trips(
         self,
         summ_ops: list = [np.min, np.max, np.mean, np.median],
@@ -533,14 +590,7 @@ class GtfsInstance:
         # reformat columns
         # including normalsing min and max between different
         # numpy versions (amin/min, amax/max)
-        day_trip_counts.columns = day_trip_counts.columns = [
-            "_".join(value) if "" not in value else "".join(value)
-            for value in day_trip_counts.columns.values
-        ]
-        day_trip_counts.columns = [
-            column.replace("amin", "min").replace("amax", "max")
-            for column in day_trip_counts.columns.values
-        ]
+        day_trip_counts = _convert_multi_index_to_single(df=day_trip_counts)
 
         self.daily_trip_summary = day_trip_counts.copy()
         return self.daily_trip_summary
@@ -613,14 +663,7 @@ class GtfsInstance:
         # reformat columns
         # including normalsing min and max between different
         # numpy versions (amin/min, amax/max)
-        day_route_count.columns = day_route_count.columns = [
-            "_".join(value) if "" not in value else "".join(value)
-            for value in day_route_count.columns.values
-        ]
-        day_route_count.columns = [
-            column.replace("amin", "min").replace("amax", "max")
-            for column in day_route_count.columns.values
-        ]
+        day_route_count = _convert_multi_index_to_single(day_route_count)
 
         self.daily_route_summary = day_route_count.copy()
         return self.daily_route_summary
@@ -754,6 +797,7 @@ class GtfsInstance:
 
         # lower orientation
         orientation = orientation.lower()
+
         raw_pth = os.path.join(
             out_dir,
             "summary_" + datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S"),
