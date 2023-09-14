@@ -249,17 +249,15 @@ class GtfsInstance:
 
                 title_pre = "<h3 align='center' style='font-size:16px'><b>"
                 title_html = f"{title_pre}{txt}</b></h3>"
-
-                gtfs_centroid = self.feed.compute_centroid()
-                m = folium.Map(
-                    location=[gtfs_centroid.y, gtfs_centroid.x], zoom_start=5
-                )
                 geo_j = gdf.to_json()
                 geo_j = folium.GeoJson(
                     data=geo_j, style_function=lambda x: {"fillColor": "red"}
                 )
+                m = folium.Map()
                 geo_j.add_to(m)
                 m.get_root().html.add_child(folium.Element(title_html))
+                # format map zoom and center
+                m.fit_bounds(m.get_bounds())
             m.save(out_pth)
         except KeyError:
             print("Key Error. Map was not written.")
