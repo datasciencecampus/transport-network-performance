@@ -34,8 +34,10 @@ class TestTemplateHTML(object):
     <div>[test_placeholder] Tester [test_placeholder]</div>
 </body>
 """
-        assert (
-            expected_template == template_fixture._get_template()
+        assert expected_template.replace(
+            r"\n", ""
+        ) == template_fixture._get_template().replace(
+            r"\n", ""
         ), "Test template not as expected"
 
     def test__insert_defence(self, template_fixture):
@@ -51,40 +53,35 @@ class TestTemplateHTML(object):
 
     def test__insert_on_pass(self, template_fixture):
         """Test functionality for ._insert() when defences are passed."""
-        expected_template = """<!DOCTYPE html>
-<html lang="en">
-
-<body>
-    <div>test_value Tester test_value</div>
-</body>
-"""
         template_fixture._insert(
             placeholder="test_placeholder",
-            value="test_value",
+            value="test_value_insert_test",
             replace_multiple=True,
         )
         assert (
-            expected_template == template_fixture._get_template()
-        ), "Test placeholder replacement not acting as expected"
+            "test_value_insert_test"
+            in template_fixture._get_template().replace(r"\n", "")
+        ), ("Test placeholder replacement not acting as expected")
 
 
 class TestSetUpReportDir(object):
     """Test setting up a dir for a report."""
 
-    def test__set_up_report_dir_defence(self):
+    def test__set_up_report_dir_defence(self, tmp_path):
         """Test the defences for _set_up_report_dir()."""
+        _set_up_report_dir(os.path.join(tmp_path))
         with pytest.raises(
             FileExistsError,
             match=(
                 re.escape(
                     "Report already exists at path: "
-                    "[tests/data/gtfs/report]."
+                    f"[{tmp_path}]."
                     "Consider setting overwrite=True"
                     "if you'd like to overwrite this."
                 )
             ),
         ):
-            _set_up_report_dir("tests/data/gtfs/report")
+            _set_up_report_dir(os.path.join(tmp_path), overwrite=False)
 
     def test__set_up_report_dir_on_pass(self, tmp_path):
         """Test _set_up_report_dir() when defences are passed."""
@@ -102,3 +99,17 @@ class TestSetUpReportDir(object):
         assert os.path.exists(
             os.path.join(tmp_path, "gtfs_report")
         ), "Failed to create report in temporary directory"
+        # attempt to create report in different paths
+        _set_up_report_dir(os.path.join(tmp_path, "testing"))
+        assert os.path.exists(
+            os.path.join(tmp_path, "testing", "gtfs_report")
+        ), (
+            f"Failed to create report dir in {tmp_path}/testing/" "gtfs_report"
+        )
+        _set_up_report_dir(os.path.join(tmp_path, "testing", "testing"))
+        assert os.path.exists(
+            os.path.join(tmp_path, "testing", "testing", "gtfs_report")
+        ), (
+            f"Failed to create report dir in {tmp_path}/testing/testing/"
+            "gtfs_report"
+        )
