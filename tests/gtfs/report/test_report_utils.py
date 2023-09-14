@@ -43,11 +43,8 @@ class TestTemplateHTML(object):
         with pytest.raises(
             ValueError,
             match=(
-                "You have selected not to replace multiple"
-                "placeholders of the same value, however"
-                "placeholders occur more than once. \n"
-                "If you would like to allow this, set the"
-                "replace_multiple param to True"
+                "`replace multiple` requires True as found \n"
+                "multiple placeholder matches in template."
             ),
         ):
             template_fixture._insert("test_placeholder", "test_value")
