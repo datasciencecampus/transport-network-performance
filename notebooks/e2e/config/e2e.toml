@@ -1,7 +1,7 @@
 title = "Config for an E2E example around the Newport area"
 
 [urban_centre]  # configuration section for urban centre
-override = true
+override = false
 input_dir = "data/external/urban_centre/"
 merged_path = "data/processed/urban_centre/uc_merged.tif"
 bbox = [
@@ -12,30 +12,30 @@ bbox = [
 ]  # must in in 'ESRI:54009', this represents a BBOX around Wales
 centre = [51.5773597, -2.9660008]
 buffer_size = 12000
-write_outputs = true
+write_outputs = false
 output_map_path = "outputs/e2e/urban_centre/urban_centre_map.html"
 
 [population]  # configuration section for population
-override = true
+override = false
 input_dir = "data/external/population/"
 merged_path = "data/interim/population/pop_merged.tif"
 merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
 threshold = 1  # set small and positive, to remove 0 pop cells
-write_outputs = true
+write_outputs = false
 output_map_path = "outputs/e2e/population/population_map.html"
 
 [gtfs] # configuration section for gtfs
-override = true
+override = false
 input_path = "data/external/gtfs/itm_wales_gtfs.zip"
 filtered_path = "data/interim/gtfs/itm_wales_filtered_gtfs.zip"
 units = "km"
-write_outputs = true
+write_outputs = false
 cleaned_path = "data/processed/gtfs/itm_wales_filtered_cleaned_gtfs.zip"
 stops_map_path = "outputs/e2e/gtfs/stops_map.html"
 hull_map_path = "outputs/e2e/gtfs/hull_map.html"
 used_stops_map_path = "outputs/e2e/gtfs/used_stops_map.html"
 
 [osm] # configuration section for osm clipping
-override = true
+override = false
 input_path = "data/external/osm/wales-latest.osm.pbf"
 filtered_path = "data/processed/osm/wales_latest_filtered.osm.pbf"
