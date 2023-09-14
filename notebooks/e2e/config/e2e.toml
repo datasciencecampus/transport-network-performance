@@ -48,3 +48,4 @@ departure_hour = 8
 departure_minute = 0
 departure_time_window = 1  # this is in hours
 max_time = 45  # this is in minutes
+write_outputs = false

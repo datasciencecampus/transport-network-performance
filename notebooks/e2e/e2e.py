@@ -549,6 +549,11 @@ assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
 
+if analyse_net_config["write_outputs"]:
+    save_path = here(f"outputs/e2e/analyse_network/{UC_ID}_cental_uc.html")
+else:
+    save_path = None
+
 plot(
     snippet_id,
     uc_gdf=uc_gdf[0:1],
@@ -557,7 +562,7 @@ plot(
     column_control_name="Travel Time",
     point_control_name="Destination Centroid",
     caption="Median Travel Time (mins)",
-    save=here(f"outputs/e2e/analyse_network/{UC_ID}_cental_uc.html"),
+    save=save_path,
 )
 
 # %%
@@ -567,6 +572,11 @@ assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
 
+if analyse_net_config["write_outputs"]:
+    save_path = here(f"outputs/e2e/analyse_network/{UC_ID}_sw_uc.html")
+else:
+    save_path = None
+
 plot(
     snippet_id,
     uc_gdf=uc_gdf[0:1],
@@ -575,7 +585,7 @@ plot(
     column_control_name="Travel Time",
     point_control_name="Destination Centroid",
     caption="Median Travel Time (mins)",
-    save=here(f"outputs/e2e/analyse_network/{UC_ID}_sw_uc.html"),
+    save=save_path,
 )
 
 # %%
@@ -585,6 +595,11 @@ assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
 
+if analyse_net_config["write_outputs"]:
+    save_path = here(f"outputs/e2e/analyse_network/{UC_ID}_e_uc.html")
+else:
+    save_path = None
+
 plot(
     snippet_id,
     uc_gdf=uc_gdf[0:1],
@@ -593,7 +608,7 @@ plot(
     column_control_name="Travel Time",
     point_control_name="Destination Centroid",
     caption="Median Travel Time (mins)",
-    save=here(f"outputs/e2e/analyse_network/{UC_ID}_e_uc.html"),
+    save=save_path,
 )
 
 # %% [markdown] noqa: D212, D400, D415
