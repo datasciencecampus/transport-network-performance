@@ -623,7 +623,7 @@ class TestGtfsInstance(object):
             "Expected {expected_size}"
         )
 
-    def test__plot_summary_defences(self, gtfs_fixture):
+    def test__plot_summary_defences(self, tmp_path, gtfs_fixture):
         """Test defences for _plot_summary()."""
         current_fixture = gtfs_fixture
         current_fixture.summarise_routes()
@@ -641,6 +641,23 @@ class TestGtfsInstance(object):
                 current_fixture.daily_route_summary,
                 "route_count_mean",
                 orientation="l",
+            )
+
+        # save test for an image with invalid file extension
+        valid_img_formats = ["png", "pdf", "jpg", "jpeg", "webp", "svg"]
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Please specify a valid image format. Valid formats "
+                f"include {valid_img_formats}"
+            ),
+        ):
+            gtfs_fixture._plot_summary(
+                gtfs_fixture.daily_route_summary,
+                "route_count_mean",
+                save_image=True,
+                out_dir=os.path.join(tmp_path, "outputs"),
+                img_type="test",
             )
 
     @pytest.mark.filterwarnings("ignore::UserWarning")
@@ -694,23 +711,6 @@ class TestGtfsInstance(object):
         ), "'save_test' dir could not be created'"
         assert counts["html"] == 1, "Failed to save plot as HTML"
         assert counts["png"] == 1, "Failed to save plot as png"
-
-        # save test for an image with invalid file extension
-        valid_img_formats = ["png", "pdf", "jpg", "jpeg", "webp", "svg"]
-        with pytest.raises(
-            ValueError,
-            match=re.escape(
-                "Please specify a valid image format. Valid formats "
-                f"include {valid_img_formats}"
-            ),
-        ):
-            gtfs_fixture._plot_summary(
-                gtfs_fixture.daily_route_summary,
-                "route_count_mean",
-                save_image=True,
-                out_dir=os.path.join(tmp_path, "outputs"),
-                img_type="test",
-            )
 
     def test__plot_route_summary_defences(self, gtfs_fixture):
         """Test the defences for the small wrapper plot_route_summary()."""
