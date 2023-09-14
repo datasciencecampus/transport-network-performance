@@ -56,6 +56,7 @@ uc_config = config["urban_centre"]
 pop_config = config["population"]
 gtfs_config = config["gtfs"]
 osm_config = config["osm"]
+analyse_net_config = config["analyse_network"]
 
 # %% [markdown] noqa: D212, D400, D415
 """
@@ -312,9 +313,19 @@ travel_time_matrix_computer = TravelTimeMatrixComputer(
     trans_net,
     origins=centroid_gdf,
     destinations=centroid_gdf[centroid_gdf.within_urban_centre],
-    departure=datetime.datetime(2023, 8, 8, 8, 00),
-    departure_time_window=datetime.timedelta(hours=1),
-    max_time=datetime.timedelta(minutes=45),
+    departure=datetime.datetime(
+        analyse_net_config["departure_year"],
+        analyse_net_config["departure_month"],
+        analyse_net_config["departure_day"],
+        analyse_net_config["departure_hour"],
+        analyse_net_config["departure_minute"],
+    ),
+    departure_time_window=datetime.timedelta(
+        hours=analyse_net_config["departure_time_window"],
+    ),
+    max_time=datetime.timedelta(
+        minutes=analyse_net_config["max_time"],
+    ),
     transport_modes=[TransportMode.TRANSIT],
 )
 
