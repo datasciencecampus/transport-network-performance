@@ -38,8 +38,8 @@ class TestTemplateHTML(object):
             expected_template == template_fixture._get_template()
         ), "Test template not as expected"
 
-    def test_insert_defence(self, template_fixture):
-        """Test defences for .insert()."""
+    def test__insert_defence(self, template_fixture):
+        """Test defences for ._insert()."""
         with pytest.raises(
             ValueError,
             match=(
@@ -49,8 +49,8 @@ class TestTemplateHTML(object):
         ):
             template_fixture._insert("test_placeholder", "test_value")
 
-    def test_insert_on_pass(self, template_fixture):
-        """Test functionality for .insert() when defences are passed."""
+    def test__insert_on_pass(self, template_fixture):
+        """Test functionality for ._insert() when defences are passed."""
         expected_template = """<!DOCTYPE html>
 <html lang="en">
 
@@ -71,8 +71,8 @@ class TestTemplateHTML(object):
 class TestSetUpReportDir(object):
     """Test setting up a dir for a report."""
 
-    def test_set_up_report_dir_defence(self):
-        """Test the defences for set_up_report_dir()."""
+    def test__set_up_report_dir_defence(self):
+        """Test the defences for _set_up_report_dir()."""
         with pytest.raises(
             FileExistsError,
             match=(
@@ -86,8 +86,8 @@ class TestSetUpReportDir(object):
         ):
             _set_up_report_dir("tests/data/gtfs/report")
 
-    def test_set_up_report_dir_on_pass(self, tmp_path):
-        """Test set_up_report_dir() when defences are passed."""
+    def test__set_up_report_dir_on_pass(self, tmp_path):
+        """Test _set_up_report_dir() when defences are passed."""
         # create original report
         _set_up_report_dir(
             pathlib.Path(os.path.join(tmp_path)), overwrite=False
