@@ -67,7 +67,7 @@ def bbox_filter_gtfs(
 
 # NOTE: Possibly move to a more generalised utils file
 def convert_pandas_to_plotly(
-    df: pd.DataFrame, return_html=False, scheme: str = "dsc"
+    df: pd.DataFrame, return_html: bool = False
 ) -> go.Figure:
     """Convert a pandas dataframe to a visual plotly figure.
 
@@ -79,9 +79,6 @@ def convert_pandas_to_plotly(
     return_html : bool, optional
         Whether or not to return the html element,
           by default False
-    scheme : str, optional
-        The colour scheme of the dataframe,
-        by default "dsc"
 
     Returns
     -------
@@ -110,16 +107,16 @@ def convert_pandas_to_plotly(
     # defences
     _type_defence(df, "df", pd.DataFrame)
     _type_defence(return_html, "return_html", bool)
-    if scheme not in list(schemes.keys()):
-        raise LookupError(
-            f"{scheme} is not a valid colour scheme."
-            f"Valid colour schemes include {list(schemes.keys())}"
-        )
-    if isinstance(df.columns, pd.MultiIndex):
+    if isinstance(df.columns, pd.MultiIndex) or isinstance(
+        df.index, pd.MultiIndex
+    ):
         raise TypeError(
-            "Pandas dataframe must have a single index," "not MultiIndex"
+            "Pandas dataframe must have a singular index, not MultiIndex. "
+            "This means that 'df.columns' or 'df.index' does not return a "
+            "MultiIndex."
         )
-
+    # harcoding scheme for now. Could be changed to param if more are added
+    scheme = "dsc"
     # create plotly df
     fig = go.Figure(
         data=go.Table(

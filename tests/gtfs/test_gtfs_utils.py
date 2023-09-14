@@ -49,46 +49,38 @@ class TestBboxFilterGtfs(object):
         ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
 
 
+@pytest.fixture(scope="function")
+def test_df():
+    """A test fixture."""
+    test_df = pd.DataFrame(
+        {
+            "ID": [1, 2, 3, 4, 1],
+            "score": [45, 34, 23, 12, 23],
+            "grade": ["A", "B", "C", "D", "C"],
+        }
+    )
+    return test_df
+
+
 class TestConvertPandasToPlotly(object):
     """Test convert_pandas_to_plotly()."""
 
-    def test_convert_pandas_to_plotly_defences(self):
+    def test_convert_pandas_to_plotly_defences(self, test_df):
         """Test convert_pandas_to_plotly defences."""
-        test_df = pd.DataFrame(
-            {
-                "ID": [1, 2, 3, 4, 1],
-                "score": [45, 34, 23, 12, 23],
-                "grade": ["A", "B", "C", "D", "C"],
-            }
-        )
-        with pytest.raises(
-            LookupError,
-            match=re.escape(
-                "dark is not a valid colour scheme."
-                "Valid colour schemes include ['dsc']"
-            ),
-        ):
-            convert_pandas_to_plotly(test_df, scheme="dark")
-
         multi_index_df = test_df.groupby(["ID", "grade"]).agg(
             {"score": ["mean", "min", "max"]}
         )
         with pytest.raises(
             TypeError,
-            match="Pandas dataframe must have a single index,"
-            "not MultiIndex",
+            match="Pandas dataframe must have a singular index, not "
+            "MultiIndex. "
+            "This means that 'df.columns' or 'df.index' does not return a "
+            "MultiIndex.",
         ):
             convert_pandas_to_plotly(multi_index_df)
 
-    def test_convert_pandas_to_plotly_on_pass(self):
+    def test_convert_pandas_to_plotly_on_pass(self, test_df):
         """Test convert_pandas_to_plotly() when defences pass."""
-        test_df = pd.DataFrame(
-            {
-                "ID": [1, 2, 3, 4, 1],
-                "score": [45, 34, 23, 12, 23],
-                "grade": ["A", "B", "C", "D", "C"],
-            }
-        )
         # return_html
         html_return = convert_pandas_to_plotly(test_df, return_html=True)
         assert isinstance(html_return, str), re.escape(
