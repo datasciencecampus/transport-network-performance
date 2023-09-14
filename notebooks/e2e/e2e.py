@@ -537,6 +537,9 @@ def plot(
 
     # write to file if requested
     if save is not None:
+        dir_name = os.path.dirname(save)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
         m.save(save)
 
     return m
@@ -550,7 +553,9 @@ snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
 
 if analyse_net_config["write_outputs"]:
-    save_path = here(f"outputs/e2e/analyse_network/{UC_ID}_cental_uc.html")
+    save_path = here(
+        analyse_net_config["outputs_dir"] + f"{UC_ID}_cental_uc.html"
+    )
 else:
     save_path = None
 
@@ -573,7 +578,7 @@ snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
 
 if analyse_net_config["write_outputs"]:
-    save_path = here(f"outputs/e2e/analyse_network/{UC_ID}_sw_uc.html")
+    save_path = here(analyse_net_config["outputs_dir"] + f"{UC_ID}_sw_uc.html")
 else:
     save_path = None
 
@@ -596,7 +601,7 @@ snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
 
 if analyse_net_config["write_outputs"]:
-    save_path = here(f"outputs/e2e/analyse_network/{UC_ID}_e_uc.html")
+    save_path = here(analyse_net_config["outputs_dir"] + f"{UC_ID}_e_uc.html")
 else:
     save_path = None
 
@@ -713,7 +718,9 @@ perf_gdf["transport_performance"] = (
 # %%
 # visualise the transport performance
 if metrics_config["write_outputs"]:
-    save_path = here("outputs/e2e/metrics/transport_performance.html")
+    save_path = here(
+        metrics_config["outputs_dir"] + "transport_performance.html"
+    )
 else:
     save_path = None
 
@@ -757,7 +764,7 @@ snippet_gdf = gpd.GeoDataFrame(
 # %%
 # plot the travel time of cells that can reach this ID
 if metrics_config["write_outputs"]:
-    save_path = here(f"outputs/e2e/metrics/{ID}_travel_time.html")
+    save_path = here(metrics_config["outputs_dir"] + f"{ID}_travel_time.html")
 else:
     save_path = None
 
@@ -778,7 +785,9 @@ plot(
 # %%
 # plot population of only cells that can reach this ID
 if metrics_config["write_outputs"]:
-    save_path = here(f"outputs/e2e/metrics/{ID}_reachable_population.html")
+    save_path = here(
+        metrics_config["outputs_dir"] + f"{ID}_reachable_population.html"
+    )
 else:
     save_path = None
 
@@ -800,7 +809,9 @@ plot(
 # %%
 # plot all population cells within MAX_DISTANCE of this ID
 if metrics_config["write_outputs"]:
-    save_path = here(f"outputs/e2e/metrics/{ID}_nearby_population.html")
+    save_path = here(
+        metrics_config["outputs_dir"] + f"{ID}_nearby_population.html"
+    )
 else:
     save_path = None
 
@@ -819,7 +830,9 @@ plot(
 # %%
 # plot the acceible cells ontop of the proximity cells
 if metrics_config["write_outputs"]:
-    save_path = here(f"outputs/e2e/metrics/{ID}_population_overlays.html")
+    save_path = here(
+        metrics_config["outputs_dir"] + f"{ID}_population_overlays.html"
+    )
 else:
     save_path = None
 
