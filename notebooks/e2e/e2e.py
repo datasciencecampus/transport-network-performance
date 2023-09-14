@@ -57,6 +57,7 @@ pop_config = config["population"]
 gtfs_config = config["gtfs"]
 osm_config = config["osm"]
 analyse_net_config = config["analyse_network"]
+metrics_config = config["metrics"]
 
 # %% [markdown] noqa: D212, D400, D415
 """
@@ -664,8 +665,8 @@ distance_df.head()
 
 # %%
 # set the maximum distance and time threshold for calculating performance
-MAX_DISTANCE = 11250
-MAX_TIME = 45
+MAX_DISTANCE = metrics_config["cut_off_distance"]
+MAX_TIME = metrics_config["cut_off_time"]
 
 # %%
 # calculate total population reach a destination within the time and distance
@@ -710,11 +711,12 @@ perf_gdf["transport_performance"] = (
 ) * 100
 
 # %%
-m = perf_gdf.explore("transport_performance")
-m = uc_gdf[0:1].explore(m=m, color="red", style_kwds={"fill": None}, vmin=0)
-m
+# visualise the transport performance
+if metrics_config["write_outputs"]:
+    save_path = here("outputs/e2e/metrics/transport_performance.html")
+else:
+    save_path = None
 
-# %%
 plot(
     perf_gdf,
     column="transport_performance",
@@ -725,7 +727,7 @@ plot(
     uc_gdf=uc_gdf[0:1],
     max_labels=6,
     cmap="viridis",
-    save=here("outputs/e2e/metrics/transport_performance.html"),
+    save=save_path,
 )
 
 # %%
@@ -754,6 +756,11 @@ snippet_gdf = gpd.GeoDataFrame(
 
 # %%
 # plot the travel time of cells that can reach this ID
+if metrics_config["write_outputs"]:
+    save_path = here(f"outputs/e2e/metrics/{ID}_travel_time.html")
+else:
+    save_path = None
+
 plot(
     snippet_gdf[
         (snippet_gdf.travel_time <= MAX_TIME)
@@ -765,11 +772,16 @@ plot(
     column_control_name="Travel Time",
     point=centroid_gdf[centroid_gdf.id == ID],
     point_control_name="Destination Centroid",
-    save=here(f"outputs/e2e/metrics/{ID}_travel_time.html"),
+    save=save_path,
 )
 
 # %%
 # plot population of only cells that can reach this ID
+if metrics_config["write_outputs"]:
+    save_path = here(f"outputs/e2e/metrics/{ID}_reachable_population.html")
+else:
+    save_path = None
+
 plot(
     snippet_gdf[
         (snippet_gdf.travel_time <= MAX_TIME)
@@ -782,11 +794,16 @@ plot(
     point=centroid_gdf[centroid_gdf.id == ID],
     point_control_name="Destination Centroid",
     cmap="viridis",
-    save=here(f"outputs/e2e/metrics/{ID}_reachable_population.html"),
+    save=save_path,
 )
 
 # %%
 # plot all population cells within MAX_DISTANCE of this ID
+if metrics_config["write_outputs"]:
+    save_path = here(f"outputs/e2e/metrics/{ID}_nearby_population.html")
+else:
+    save_path = None
+
 plot(
     snippet_gdf[(snippet_gdf.centroid_distance <= MAX_DISTANCE)],
     column="from_population",
@@ -796,10 +813,16 @@ plot(
     point=centroid_gdf[centroid_gdf.id == ID],
     point_control_name="Destination Centroid",
     cmap="viridis",
-    save=here(f"outputs/e2e/metrics/{ID}_nearby_population.html"),
+    save=save_path,
 )
 
 # %%
+# plot the acceible cells ontop of the proximity cells
+if metrics_config["write_outputs"]:
+    save_path = here(f"outputs/e2e/metrics/{ID}_population_overlays.html")
+else:
+    save_path = None
+
 plot(
     snippet_gdf[(snippet_gdf.centroid_distance <= MAX_DISTANCE)],
     column=None,
@@ -823,7 +846,7 @@ plot(
     overlay_control_name="Reachable Population",
     cmap=None,
     color="#12436D",
-    save=here(f"outputs/e2e/metrics/{ID}_population_overlays.html"),
+    save=save_path,
 )
 
 # %%
