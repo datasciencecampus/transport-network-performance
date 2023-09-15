@@ -283,11 +283,28 @@ def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
 
 
 def _check_attribute(obj, attr: str, message: str = None):
-    err_msg = (
-        message
-        if message
-        else (f"{obj.__class__.__name__} has no attribute {attr}")
+    """A test to check if an attribute exists in an object.
+
+    Parameters
+    ----------
+    obj : any
+        The object to check that the attr exists in
+    attr : str
+        The attribute to check exists in an object
+    message : str, optional
+        The error message to display, by default None
+
+    Raises
+    ------
+    AttributeError
+        An error raised if the attr does not exist
+        
+    """
+    err_msg = message if message else (
+        f"{obj.__class__.__name__} has no attribute {attr}"
     )
 
     if attr not in obj.__dir__():
-        raise AttributeError(err_msg)
+        raise AttributeError(
+                    err_msg
+                )
