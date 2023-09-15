@@ -1,5 +1,5 @@
 <!--- Badges start --->
-<img src="https://img.shields.io/badge/repo%20status-in%20development%20(caution)-red" alt="Repository status is still in development (caution required)"/> <img src="https://github.com/datasciencecampus/transport-network-performance/actions/workflows/python-package.yml/badge.svg" alt="Build status badge"/> <a href="https://codecov.io/gh/datasciencecampus/transport-network-performance" > <img src="https://codecov.io/gh/datasciencecampus/transport-network-performance/branch/dev/graph/badge.svg?token=ZKJFT321CN"/></a>
+<img src="https://img.shields.io/badge/repo%20status-in%20development%20(caution)-red" alt="Repository status is still in development (caution required)"/> <img src="https://github.com/datasciencecampus/transport-network-performance/actions/workflows/python-package.yml/badge.svg" alt="Build status badge"/> <img src="https://github.com/datasciencecampus/transport-network-performance/actions/workflows/sphinx-render.yml/badge.svg" alt="Docs status badge"/> <a href="https://codecov.io/gh/datasciencecampus/transport-network-performance" > <img src="https://codecov.io/gh/datasciencecampus/transport-network-performance/branch/dev/graph/badge.svg?token=ZKJFT321CN"/></a>
 
 <!--- Badges end --->
 
