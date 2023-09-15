@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 import warnings
 
-from transport_performance.utils.defence import _url_defence, _bool_defence
+from transport_performance.utils.defence import _url_defence, _type_defence
 
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"
@@ -98,7 +98,7 @@ def scrape_route_type_lookup(
     for url in [gtfs_url, ext_spec_url]:
         _url_defence(url)
 
-    _bool_defence(extended_schema, "extended_schema")
+    _type_defence(extended_schema, "extended_schema", bool)
     # Get the basic scheme lookup
     resp_txt = _get_response_text(gtfs_url)
     soup = BeautifulSoup(resp_txt, "html.parser")
