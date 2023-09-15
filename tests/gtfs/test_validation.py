@@ -689,7 +689,6 @@ class TestGtfsInstance(object):
         ):
             gtfs_fixture._plot_summary(which="tester", target_column="tester")
 
-    @pytest.mark.filterwarnings("ignore::UserWarning")
     def test__plot_summary_on_pass(self, gtfs_fixture, tmp_path):
         """Test plotting a summary when defences are passed."""
         current_fixture = gtfs_fixture
