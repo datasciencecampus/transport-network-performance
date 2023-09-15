@@ -3,6 +3,7 @@ import pathlib
 import numpy as np
 import os
 from typing import Union
+import pandas as pd
 
 
 def _handle_path_like(pth, param_nm):
@@ -149,19 +150,35 @@ def _check_namespace_export(pkg=np, func=np.min):
 
 def _url_defence(url):
     """Defence checking. Not exported."""
-    if not isinstance(url, str):
-        raise TypeError(f"url {url} expected string, instead got {type(url)}")
-    elif not url.startswith((r"http://", r"https://")):
+    _type_defence(url, "url", str)
+    if not url.startswith((r"http://", r"https://")):
         raise ValueError(f"url string expected protocol, instead found {url}")
 
     return None
 
 
-def _bool_defence(some_bool, param_nm):
-    """Defence checking. Not exported."""
-    if not isinstance(some_bool, bool):
+def _type_defence(some_object, param_nm, types) -> None:
+    """Defence checking utility. Can handle NoneType.
+
+    Parameters
+    ----------
+    some_object : Any
+        Object to test with isinstance.
+    param_nm : str
+        A name for the parameter. Useful when this utility is used in a wrapper
+        to inherit the parent's parameter name and present in error message.
+    types : type or tuple
+        A type or a tuple of types to test `some_object` against.
+
+    Raises
+    ------
+    TypeError
+        `some_object` is not of type `types`.
+
+    """
+    if not isinstance(some_object, types):
         raise TypeError(
-            f"`{param_nm}` expected boolean. Got {type(some_bool)}"
+            f"`{param_nm}` expected {types}. Got {type(some_object)}"
         )
 
     return None
@@ -206,3 +223,88 @@ def _check_list(ls, param_nm, check_elements=True, exp_type=str):
                 )
 
     return None
+
+
+def _check_column_in_df(df: pd.DataFrame, column_name: str) -> None:
+    """Defences to check that a column exists in a df.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A pandas dataframe to check if the specified column exists in.
+    column_name : str
+        The name of the column to check for
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    IndexError
+        Raises an error if the column (column_name) does not exist in the
+        dataframe
+
+    """
+    if column_name not in df.columns:
+        raise IndexError(f"'{column_name}' is not a column in the dataframe.")
+
+    return None
+
+
+def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
+    """Defence to check if an item is present in a list.
+
+    Parameters
+    ----------
+    item : str
+        THe item to check the list for
+    _list : list
+        The list to check that the item is in
+    param_nm : str
+        The name of the param that the item has been passed to
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        Error raised when item not in the list.
+
+    """
+    if item not in _list:
+        raise ValueError(
+            f"'{param_nm}' expected one of the following:"
+            f"{_list} Got {item}"
+        )
+    return None
+
+
+def _check_attribute(obj, attr: str, message: str = None):
+    """Test to check if an attribute exists in an object.
+
+    Parameters
+    ----------
+    obj : any
+        The object to check that the attr exists in
+    attr : str
+        The attribute to check exists in an object
+    message : str, optional
+        The error message to display, by default None
+
+    Raises
+    ------
+    AttributeError
+        An error raised if the attr does not exist
+
+    """
+    err_msg = (
+        message
+        if message
+        else (f"{obj.__class__.__name__} has no attribute {attr}")
+    )
+
+    if attr not in obj.__dir__():
+        raise AttributeError(err_msg)

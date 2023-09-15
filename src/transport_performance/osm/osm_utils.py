@@ -3,7 +3,7 @@ import subprocess
 from pyprojroot import here
 
 from transport_performance.utils.defence import (
-    _bool_defence,
+    _type_defence,
     _check_list,
     _check_parent_dir_exists,
     _is_expected_filetype,
@@ -54,7 +54,7 @@ def filter_osm(
         "tag_filter": tag_filter,
         "install_osmosis": install_osmosis,
     }.items():
-        _bool_defence(val, param_nm=nm)
+        _type_defence(val, nm, bool)
     # check bbox values makes sense, else osmosis will error
     if not bbox[0] < bbox[2]:
         raise ValueError(

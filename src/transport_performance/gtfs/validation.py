@@ -8,12 +8,29 @@ import datetime
 import numpy as np
 import os
 import inspect
+import plotly.express as px
+import plotly.io as plotly_io
+from pretty_html_table import build_table
+import zipfile
+import pathlib
+from typing import Union
+from plotly.graph_objects import Figure as PlotlyFigure
 
 from transport_performance.gtfs.routes import scrape_route_type_lookup
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_namespace_export,
     _check_parent_dir_exists,
+    _check_column_in_df,
+    _type_defence,
+    _check_item_in_list,
+    _check_attribute,
+)
+
+from transport_performance.gtfs.report.report_utils import (
+    TemplateHTML,
+    _set_up_report_dir,
+    GTFS_UNNEEDED_COLUMNS,
 )
 
 
@@ -93,6 +110,35 @@ def _create_map_title_text(gdf, units, geom_crs):
     return txt
 
 
+def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert a dataframes index from MultiIndex to a singular index.
+
+    This function also removes any differing names generated from numpy
+    function
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe to adjust index (columns) of.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Pandas dataframe with a modified index (columns)
+
+    """
+    df.columns = df.columns = [
+        "_".join(value) if "" not in value else "".join(value)
+        for value in df.columns.values
+    ]
+    df.columns = [
+        column.replace("amin", "min").replace("amax", "max")
+        for column in df.columns.values
+    ]
+
+    return df
+
+
 class GtfsInstance:
     """Create a feed instance for validation, cleaning & visualisation."""
 
@@ -116,6 +162,20 @@ class GtfsInstance:
             raise ValueError(f"`units` accepts metric only. Found: {units}")
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
+        self.gtfs_path = gtfs_pth
+
+    def get_gtfs_files(self) -> list:
+        """Return a list of files making up the GTFS file.
+
+        Returns
+        -------
+        list
+            A list of files that create the GTFS file
+
+        """
+        file_list = zipfile.ZipFile(self.gtfs_path).namelist()
+        self.file_list = file_list
+        return self.file_list
 
     def is_valid(self):
         """Check a feed is valid with `gtfs_kit`.
@@ -488,16 +548,22 @@ class GtfsInstance:
 
         # aggregate to mean/median/min/max (default) trips on each day
         # of the week
-        day_trip_counts = trip_counts.groupby(["day", "route_type"]).agg(
-            {"trip_count": summ_ops}
+        day_trip_counts = (
+            trip_counts.groupby(["day", "route_type"])
+            .agg({"trip_count": summ_ops})
+            .reset_index()
         )
-        day_trip_counts.reset_index(inplace=True)
-        day_trip_counts = day_trip_counts.round(0)
 
         # order the days (for plotting future purposes)
-        # order the days (for plotting future purposes)
         day_trip_counts = self._order_dataframe_by_day(df=day_trip_counts)
+        day_trip_counts = day_trip_counts.round(0)
         day_trip_counts.reset_index(drop=True, inplace=True)
+
+        # reformat columns
+        # including normalsing min and max between different
+        # numpy versions (amin/min, amax/max)
+        day_trip_counts = _convert_multi_index_to_single(df=day_trip_counts)
+
         self.daily_trip_summary = day_trip_counts.copy()
         return self.daily_trip_summary
 
@@ -565,8 +631,13 @@ class GtfsInstance:
         day_route_count = self._order_dataframe_by_day(df=day_route_count)
         day_route_count = day_route_count.round(0)
         day_route_count.reset_index(drop=True, inplace=True)
-        self.daily_route_summary = day_route_count.copy()
 
+        # reformat columns
+        # including normalsing min and max between different
+        # numpy versions (amin/min, amax/max)
+        day_route_count = _convert_multi_index_to_single(day_route_count)
+
+        self.daily_route_summary = day_route_count.copy()
         return self.daily_route_summary
 
     def get_route_modes(self):
@@ -599,3 +670,646 @@ class GtfsInstance:
         )
         self.route_mode_summary_df = out_tab
         return self.route_mode_summary_df
+
+    def _plot_summary(
+        self,
+        target_column: str,
+        which: str = "trip",
+        orientation: str = "v",
+        day_column: str = "day",
+        width: int = 2000,
+        height: int = 800,
+        xlabel: str = None,
+        ylabel: str = None,
+        plotly_kwargs: dict = {},
+        return_html: bool = False,
+        save_html: bool = False,
+        save_image: bool = False,
+        out_dir: Union[pathlib.Path, str] = pathlib.Path(
+            os.path.join("outputs", "gtfs")
+        ),
+        img_type: str = "png",
+    ) -> Union[PlotlyFigure, str]:
+        """Plot (and save) a summary table using plotly.
+
+        Parameters
+        ----------
+        target_column : str
+            The name of the column contianing the
+            target data (counts)
+        which : str, optional
+            Which summary to plot. Options include 'trip' and 'route',
+            by default "trip"
+        orientation : str, optional
+            The orientation of the bar plot ("v" or "h"),
+            by default "v"
+        day_column : str, optional
+            The name of the column containing the day,
+            by default "day"
+        width : int, optional
+            The width of the plot (in pixels), by default 2000
+        height : int, optional
+            The height of the plot (in pixels), by default 800
+        xlabel : str, optional
+            The label for the x axis.
+            If left empty, the column name will be used,
+            by default None
+        ylabel : str, optional
+            The label for the y axis.
+            If left empty, the column name will be used,
+            by default None
+        plotly_kwargs : dict, optional
+            Kwargs to pass to fig.update_layout() for
+            additional plot customisation,
+            by default {}
+        return_html : bool, optional
+            Whether or not to return a html string,
+            by default False
+        save_html : bool, optional
+            Whether or not to save the plot as a html file,
+            by default False
+        save_image : bool, optional
+            Whether or not to save the plot as a PNG,
+            by default False
+        out_dir : Union[pathlib.Path, str], optional
+            The directory to save the plot into. If a file extension is added
+            to this directory, it won't be cleaned. Whatever is passed as the
+            out dir will be used as the parent directory of the save, leaving
+            the responsibility on the user to specify the correct path.,
+            by default os.path.join("outputs", "gtfs")
+        img_type : str, optional
+            The type of the image to be saved. E.g, .svg or .jpeg.,
+            by defauly "png"
+
+        Returns
+        -------
+        Union[PlotlyFigure, str]
+            Returns either a HTML string or the plotly figure
+
+        Raises
+        ------
+        ValueError
+            An error is raised if orientation is not 'v' or 'h'.
+        ValueError
+            An error is raised if an invalid iamge type is passed.
+
+        """
+        # parameter type defences
+        _type_defence(which, "which", str)
+        _type_defence(day_column, "day_column", str)
+        _type_defence(target_column, "target_column", str)
+        _type_defence(plotly_kwargs, "plotly_kwargs", dict)
+        _type_defence(return_html, "return_html", bool)
+        _type_defence(width, "width", int)
+        _type_defence(height, "height", int)
+        _type_defence(xlabel, "xlabel", (str, type(None)))
+        _type_defence(ylabel, "ylabel", (str, type(None)))
+        _type_defence(save_html, "save_html", bool)
+        _type_defence(save_image, "save_iamge", bool)
+        _type_defence(img_type, "img_type", str)
+
+        # lower params
+        orientation = orientation.lower()
+        which = which.lower()
+
+        # ensure 'which' is valid
+        _check_item_in_list(
+            item=which, _list=["trip", "route"], param_nm="which"
+        )
+
+        raw_pth = os.path.join(
+            out_dir,
+            "summary_" + datetime.datetime.now().strftime("%d_%m_%Y-%H_%M_%S"),
+        )
+        _check_parent_dir_exists(raw_pth, "save_pth", create=True)
+
+        # orientation input defences
+        _check_item_in_list(
+            item=orientation, _list=["v", "h"], param_nm="orientation"
+        )
+
+        # assign the correct values depending on which breakdown has been
+        # chosen
+        if which == "trip":
+            _check_attribute(
+                obj=self,
+                attr="daily_trip_summary",
+                message=(
+                    "The daily_trip_summary table could not be found."
+                    " Did you forget to call '.summarise_trips()' first?"
+                ),
+            )
+            summary_df = self.daily_trip_summary
+            target_column = (
+                f"trip_count_{target_column}"
+                if "trip_count" not in target_column
+                else target_column
+            )
+
+        if which == "route":
+            _check_attribute(
+                obj=self,
+                attr="daily_route_summary",
+                message=(
+                    "The daily_route_summary table could not be found."
+                    " Did you forget to call '.summarise_routes()' first?"
+                ),
+            )
+            summary_df = self.daily_route_summary
+            target_column = (
+                f"route_count_{target_column}"
+                if "route_count" not in target_column
+                else target_column
+            )
+
+        # dataframe column defences
+        _check_column_in_df(df=summary_df, column_name=target_column)
+        _check_column_in_df(df=summary_df, column_name=day_column)
+
+        # convert column type for better graph plotting
+        summary_df["route_type"] = summary_df["route_type"].astype("object")
+
+        xlabel = (
+            xlabel
+            if xlabel
+            else (target_column if orientation == "h" else day_column)
+        )
+        ylabel = (
+            ylabel
+            if ylabel
+            else (target_column if orientation == "v" else day_column)
+        )
+
+        # plot summary using plotly express
+        fig = px.bar(
+            summary_df,
+            x=day_column if orientation == "v" else target_column,
+            y=target_column if orientation == "v" else day_column,
+            color="route_type",
+            barmode="group",
+            text_auto=True,
+            height=height,
+            width=width,
+            orientation=orientation,
+        )
+
+        # format plotly figure
+        fig.update_layout(
+            plot_bgcolor="white",
+            yaxis=dict(
+                tickfont=dict(size=18),
+                gridcolor="black",
+                showline=True,
+                showgrid=False if orientation == "h" else True,
+                linecolor="black",
+                linewidth=2,
+                title=ylabel,
+            ),
+            xaxis=dict(
+                tickfont=dict(size=18),
+                gridcolor="black",
+                showline=True,
+                showgrid=False if orientation == "v" else True,
+                linecolor="black",
+                linewidth=2,
+                title=xlabel,
+            ),
+            font=dict(size=18),
+            legend=dict(
+                xanchor="right",
+                x=0.99,
+                yanchor="top",
+                y=0.99,
+                title="Route Type",
+                traceorder="normal",
+                bgcolor="white",
+                bordercolor="black",
+                borderwidth=2,
+            ),
+        )
+
+        # apply custom arguments if passed
+        if plotly_kwargs:
+            fig.update_layout(**plotly_kwargs)
+
+        # save the plot if specified (with correct file type)
+        if save_html:
+            plotly_io.write_html(
+                fig=fig,
+                file=os.path.normpath(raw_pth + ".html"),
+                full_html=False,
+            )
+
+        if save_image:
+            valid_img_formats = [
+                "png",
+                "pdf",
+                "jpg",
+                "jpeg",
+                "webp",
+                "svg",
+            ]
+            if img_type.lower().replace(".", "") not in valid_img_formats:
+                raise ValueError(
+                    "Please specify a valid image format. Valid formats "
+                    f"include {valid_img_formats}"
+                )
+            plotly_io.write_image(
+                fig=fig,
+                file=os.path.normpath(
+                    raw_pth + f".{img_type.replace('.', '')}"
+                ),
+            )
+        if return_html:
+            return plotly_io.to_html(fig, full_html=False)
+        return fig
+
+    def _create_extended_repeated_pair_table(
+        self,
+        table: pd.DataFrame,
+        join_vars: Union[str, list],
+        original_rows: list[int],
+    ) -> pd.DataFrame:
+        """Generate an extended table for repeated pair warnings.
+
+        Parameters
+        ----------
+        table : pd.DataFrame
+            The dataframe with the repeated pair warnings
+        join_vars : Union[str, list]
+            The variables that have repeated pairs
+        original_rows : list[int]
+            The original duplicate rows, contained in
+            the GTFS validation table (rows column)
+
+        Returns
+        -------
+        pd.DataFrame
+            An extended dataframe containing repeated pairs
+
+        """
+        error_table = table.copy().iloc[original_rows]
+        remaining = table.copy().loc[~table.index.isin(original_rows)]
+        joined_rows = error_table.merge(
+            remaining,
+            how="left",
+            on=join_vars,
+            suffixes=["_original", "_duplicate"],
+        )
+        return joined_rows
+
+    def _extended_validation(
+        self, output_path: Union[str, pathlib.Path], scheme: str = "green_dark"
+    ) -> None:
+        """Generate HTML outputs of impacted rows from GTFS errors/warnings.
+
+        Parameters
+        ----------
+        output_path : Union[str, pathlib.Path]
+            The path to save the HTML output to
+        scheme : str, optional
+            Colour scheme from pretty_html_table, by default "green_dark".
+            Colour schemes can be found here:
+            https://pypi.org/project/pretty-html-table/
+
+        Returns
+        -------
+        None
+
+        """
+        table_map = {
+            "agency": self.feed.agency,
+            "routes": self.feed.routes,
+            "stop_times": self.feed.stop_times,
+            "stops": self.feed.stops,
+            "trips": self.feed.trips,
+            "calendar": self.feed.calendar,
+        }
+
+        # determine which errors/warnings have rows that can be located
+        validation_table = self.is_valid()
+        validation_table["valid_row"] = validation_table["rows"].apply(
+            lambda x: 1 if len(x) > 0 else 0
+        )
+        ext_validation_table = validation_table.copy()[
+            validation_table["valid_row"] == 1
+        ]
+        # locate the impacted rows for each error
+        for table, rows, message, msg_type in zip(
+            ext_validation_table["table"],
+            ext_validation_table["rows"],
+            ext_validation_table["message"],
+            ext_validation_table["type"],
+        ):
+            # create a more informative table for repeated pairs
+            if "Repeated pair" in message:
+                join_vars = (
+                    message.split("(")[1]
+                    .replace(")", "")
+                    .replace(" ", "")
+                    .split(",")
+                )
+                drop_cols = [
+                    col
+                    for col in GTFS_UNNEEDED_COLUMNS[table]
+                    if col not in join_vars
+                ]
+                filtered_tbl = table_map[table].copy().drop(drop_cols, axis=1)
+                impacted_rows = self._create_extended_repeated_pair_table(
+                    table=filtered_tbl,
+                    join_vars=join_vars,
+                    original_rows=rows,
+                )
+                base_columns = [
+                    item
+                    for item in list(filtered_tbl.columns)
+                    if item not in join_vars
+                ]
+                duplicate_counts = {}
+                for col in base_columns:
+                    duplicate_counts[col] = impacted_rows[
+                        impacted_rows[f"{col}_original"]
+                        == impacted_rows[f"{col}_duplicate"]
+                    ].shape[0]
+            else:
+                impacted_rows = table_map[table].copy().iloc[rows]
+
+            # create the html to display the impacted rows (clean possibly)
+            table_html = f"""
+            <head>
+                <link rel="stylesheet" href="styles.css">
+            </head>
+            <body>
+            <h1 style="font-family: 'Poppins', sans-serif;margin: 10px;">
+                Table:{table}<br>Message: {message}<br>
+                Type: <span style="color:{'red' if msg_type == 'error' else
+                        'orange'};font-family: 'Poppins', sans-serif;">
+                        {msg_type}</span>
+            </h1>"""
+
+            # Add additional information for repeated pairs
+            # to the HTML report
+            try:
+                for counter, var in enumerate(duplicate_counts):
+                    if counter == 0:
+                        table_html = (
+                            table_html
+                            + """<br><div
+                        style="margin:10px;">
+                        <span style="font-weight:bold;font-size:large">
+                        Duplicate Counts</span>"""
+                        )
+                    table_html = table_html + (
+                        f"""
+                    <div style="display: block;">
+                            <dd style="font-weight: bold;
+                                margin-inline-start: 0;
+                                display: inline-block;
+                                min-width: 160px;">{var}: </dd>
+                            <dt style="display: inline-block;">
+                            {duplicate_counts[var]}</dt>
+                    </div>"""
+                    )
+                table_html = table_html + "</div>"
+            except NameError:
+                pass
+
+            table_html = table_html + build_table(
+                impacted_rows, scheme, padding="10px", escape=False
+            )
+
+            table_html = table_html + "</body>"
+
+            # save the output
+            save_name = f"{'_'.join(message.split(' '))}_{table}"
+            with open(f"{output_path}/gtfs_report/{save_name}.html", "w") as f:
+                f.write(table_html)
+
+        return None
+
+    def html_report(
+        self,
+        report_dir: Union[str, pathlib.Path] = "outputs",
+        overwrite: bool = False,
+        summary_type: str = "mean",
+        extended_validation: bool = True,
+    ) -> None:
+        """Generate a HTML report describing the GTFS data.
+
+        Parameters
+        ----------
+        report_dir : Union[str, pathlib.Path], optional
+            The directory to save the report to,
+            by default "outputs"
+        overwrite : bool, optional
+            Whether or not to overwrite the existing report
+            if it already exists in the report_dir,
+            by default False
+        summary_type : str, optional
+            The type of summary to show on the
+            summaries on the gtfs report.,
+            by default "mean"
+        extended_validation : bool, optional
+            Whether or not to create extended reports
+            for gtfs validation errors/warnings.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ValueError
+            An error raised if the type of summary passed is invalid
+
+        """
+        _type_defence(overwrite, "overwrite", bool)
+        _type_defence(summary_type, "summary_type", str)
+        _set_up_report_dir(path=report_dir, overwrite=overwrite)
+        summary_type = summary_type.lower()
+        if summary_type not in ["mean", "min", "max", "median"]:
+            raise ValueError("'summary type' must be mean, median, min or max")
+
+        # store todays date
+        date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
+
+        # feed evaluation
+        self.clean_feed()
+        validation_dataframe = self.is_valid()
+
+        # create extended reports if requested
+        if extended_validation:
+            self._extended_validation(output_path=report_dir)
+            info_href = (
+                validation_dataframe["message"].apply(
+                    lambda x: "_".join(x.split(" "))
+                )
+                + "_"
+                + validation_dataframe["table"]
+                + ".html"
+            )
+            validation_dataframe["info"] = [
+                f"""<a href="{href}"> Further Info</a>"""
+                if len(rows) > 1
+                else "Unavailable"
+                for href, rows in zip(info_href, validation_dataframe["rows"])
+            ]
+
+        eval_temp = TemplateHTML(
+            path=(
+                "src/transport_performance/gtfs/report/"
+                "html_templates/evaluation_template.html"
+            )
+        )
+        eval_temp._insert(
+            "eval_placeholder_1",
+            build_table(
+                validation_dataframe,
+                "green_dark",
+                padding="10px",
+                escape=False,
+            ),
+        )
+        eval_temp._insert("eval_title_1", "GTFS Feed Warnings and Errors")
+
+        eval_temp._insert(
+            "eval_placeholder_2",
+            build_table(self.feed.agency, "green_dark", padding="10px"),
+        )
+        eval_temp._insert("eval_title_2", "GTFS Agency Information")
+
+        eval_temp._insert(
+            "name_placeholder", self.feed.feed_info["feed_publisher_name"][0]
+        )
+        eval_temp._insert(
+            "url_placeholder",
+            self.feed.feed_info["feed_publisher_url"][0],
+            replace_multiple=True,
+        )
+        eval_temp._insert(
+            "lang_placeholder", self.feed.feed_info["feed_lang"][0]
+        )
+        eval_temp._insert(
+            "start_placeholder", self.feed.feed_info["feed_start_date"][0]
+        )
+        eval_temp._insert(
+            "end_placeholder", self.feed.feed_info["feed_end_date"][0]
+        )
+        eval_temp._insert(
+            "version_placeholder", self.feed.feed_info["feed_version"][0]
+        )
+
+        count_lookup = dict(self.feed.describe().to_numpy())
+        eval_temp._insert(
+            "agency_placeholder", str(len(count_lookup["agencies"]))
+        )
+        eval_temp._insert(
+            "routes_placeholder", str(count_lookup["num_routes"])
+        )
+        eval_temp._insert("trips_placeholder", str(count_lookup["num_trips"]))
+        eval_temp._insert("stops_placeholder", str(count_lookup["num_stops"]))
+        eval_temp._insert(
+            "shapes_placeholder", str(count_lookup["num_shapes"])
+        )
+
+        self.get_gtfs_files()
+        file_list_html = ""
+        for num, file in enumerate(self.file_list, start=1):
+            file_list_html = (
+                file_list_html
+                + f"""
+                    <div>
+                        <dd>{num}. </dd>
+                        <dt>{file}</dt>
+                    </div>"""
+            )
+
+        eval_temp._insert("eval_placeholder_3", file_list_html)
+        eval_temp._insert("eval_title_3", "GTFS Files Included")
+
+        eval_temp._insert("date", date)
+
+        with open(
+            f"{report_dir}/gtfs_report/index.html", "w", encoding="utf8"
+        ) as eval_f:
+            eval_f.writelines(eval_temp._get_template())
+
+        # stops
+        self.viz_stops(
+            out_pth=(
+                pathlib.Path(f"{report_dir}/gtfs_report/stop_locations.html")
+            )
+        )
+        self.viz_stops(
+            out_pth=pathlib.Path(f"{report_dir}/gtfs_report/convex_hull.html"),
+            geoms="hull",
+            geom_crs=27700,
+        )
+        stops_temp = TemplateHTML(
+            (
+                "src/transport_performance/gtfs/report/"
+                "html_templates/stops_template.html"
+            )
+        )
+        stops_temp._insert("stops_placeholder_1", "stop_locations.html")
+        stops_temp._insert("stops_placeholder_2", "convex_hull.html")
+        stops_temp._insert("stops_title_1", "Stops from GTFS data")
+        stops_temp._insert(
+            "stops_title_2", "Convex Hull Generated from GTFS Data"
+        )
+        stops_temp._insert("date", date)
+        with open(
+            f"{report_dir}/gtfs_report/stops.html", "w", encoding="utf8"
+        ) as stops_f:
+            stops_f.writelines(stops_temp._get_template())
+
+        # summaries
+        self.summarise_routes()
+        self.summarise_trips()
+        route_html = self._plot_summary(
+            which="route",
+            target_column=summary_type,
+            return_html=True,
+            width=1200,
+            height=800,
+            ylabel="Route Count",
+            xlabel="Day",
+        )
+        trip_html = self._plot_summary(
+            which="trip",
+            target_column=summary_type,
+            return_html=True,
+            width=1200,
+            height=800,
+            ylabel="Trip Count",
+            xlabel="Day",
+        )
+
+        summ_temp = TemplateHTML(
+            path=(
+                "src/transport_performance/gtfs/report/"
+                "html_templates/summary_template.html"
+            )
+        )
+        summ_temp._insert("plotly_placeholder_1", route_html)
+        summ_temp._insert(
+            "plotly_title_1",
+            f"Route Summary by Day and Route Type ({summary_type})",
+        )
+        summ_temp._insert("plotly_placeholder_2", trip_html)
+        summ_temp._insert(
+            "plotly_title_2",
+            f"Trip Summary by Day and Route Type ({summary_type})",
+        )
+        summ_temp._insert("date", date)
+        with open(
+            f"{report_dir}/gtfs_report/summaries.html", "w", encoding="utf8"
+        ) as summ_f:
+            summ_f.writelines(summ_temp._get_template())
+
+        print(
+            f"GTFS Report Created at {report_dir}\n"
+            f"View your report here: {report_dir}/gtfs_report"
+        )
+
+        return None
