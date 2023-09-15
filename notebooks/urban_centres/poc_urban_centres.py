@@ -53,7 +53,8 @@ MERGED_DIR = os.path.join(here(), "data", "processed", "GHSL_2020_merged.tif")
 
 # build merge file directories
 merge_dirs = [
-    os.path.join(here(), "data", "raw", name) for name in MERGE_FILE_LIST
+    os.path.join(here(), "data", "external", "urban_centre", name)
+    for name in MERGE_FILE_LIST
 ]
 
 # build merge dataset list
@@ -94,7 +95,7 @@ coords = (bbox_npt_centroid.y[0], bbox_npt_centroid.x[0])
 
 # pop only criteria
 npt = ucc.UrbanCentre(file=(MERGED_DIR))
-npt_uc = npt.get_urban_centre(bbox_npt_r, coords)
+npt_uc = npt.get_urban_centre(bbox_npt_r, coords, "epsg: 4326")
 
 fig = plt.figure
 m = npt_uc[npt_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -119,7 +120,7 @@ coords = (bbox_lds_centroid.y[0], bbox_lds_centroid.x[0])
 
 # pop only criteria
 lds = ucc.UrbanCentre(file=(MERGED_DIR))
-lds_uc = npt.get_urban_centre(bbox_lds_r, coords)
+lds_uc = npt.get_urban_centre(bbox_lds_r, coords, "epsg: 4326")
 
 fig = plt.figure
 m = lds_uc[lds_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -144,7 +145,7 @@ coords = (bbox_lnd_centroid.y[0], bbox_lnd_centroid.x[0])
 
 # pop only criteria
 lnd = ucc.UrbanCentre(file=(MERGED_DIR))
-lnd_uc = npt.get_urban_centre(bbox_lnd_r, coords)
+lnd_uc = npt.get_urban_centre(bbox_lnd_r, coords, "epsg: 4326")
 
 fig = plt.figure
 m = lnd_uc[lnd_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -168,7 +169,7 @@ coords = (bbox_mrs_centroid.y[0], bbox_mrs_centroid.x[0])
 
 # pop only criteria
 mrs = ucc.UrbanCentre(file=(MERGED_DIR))
-mrs_uc = npt.get_urban_centre(bbox_mrs_r, coords)
+mrs_uc = npt.get_urban_centre(bbox_mrs_r, coords, "epsg: 4326")
 
 fig = plt.figure
 m = mrs_uc[mrs_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -188,3 +189,5 @@ m = mrs_uc[mrs_uc["label"] == "vectorized_uc"].explore(color="red", m=m)
 m = mrs_uc[mrs_uc["label"] == "buffer"].explore(m=m)
 folium.LayerControl().add_to(m)
 m
+
+# %%
