@@ -55,9 +55,9 @@ class TemplateHTML:
 
     Methods
     -------
-    insert(placeholder: str, value: str, replace_multiple: bool = False)
+    _insert(placeholder: str, value: str, replace_multiple: bool = False)
         Insert values into the HTML template
-    get_template()
+    _get_template()
         Returns the template attribute
 
     """
