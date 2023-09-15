@@ -20,6 +20,7 @@ transport\_performance.gtfs.gtfs\_utils
                 :template: autosummary/base.rst
                 
                     bbox_filter_gtfs
+                    convert_pandas_to_plotly
         
     
 

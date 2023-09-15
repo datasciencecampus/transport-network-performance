@@ -1,0 +1,9 @@
+..
+  base.rst
+
+convert\_pandas\_to\_plotly
+===========================
+
+.. currentmodule:: transport_performance.gtfs.gtfs_utils
+
+.. autofunction:: convert_pandas_to_plotly

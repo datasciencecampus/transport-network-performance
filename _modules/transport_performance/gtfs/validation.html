@@ -95,12 +95,29 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
+<span class="kn">import</span> <span class="nn">plotly.io</span> <span class="k">as</span> <span class="nn">plotly_io</span>
+<span class="kn">from</span> <span class="nn">pretty_html_table</span> <span class="kn">import</span> <span class="n">build_table</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">plotly.graph_objects</span> <span class="kn">import</span> <span class="n">Figure</span> <span class="k">as</span> <span class="n">PlotlyFigure</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.gtfs.routes</span> <span class="kn">import</span> <span class="n">scrape_route_type_lookup</span>
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_is_expected_filetype</span><span class="p">,</span>
     <span class="n">_check_namespace_export</span><span class="p">,</span>
     <span class="n">_check_parent_dir_exists</span><span class="p">,</span>
+    <span class="n">_check_column_in_df</span><span class="p">,</span>
+    <span class="n">_type_defence</span><span class="p">,</span>
+    <span class="n">_check_item_in_list</span><span class="p">,</span>
+    <span class="n">_check_attribute</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.report.report_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TemplateHTML</span><span class="p">,</span>
+    <span class="n">_set_up_report_dir</span><span class="p">,</span>
+    <span class="n">GTFS_UNNEEDED_COLUMNS</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -180,6 +197,35 @@
     <span class="k">return</span> <span class="n">txt</span>
 
 
+<span class="k">def</span> <span class="nf">_convert_multi_index_to_single</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a dataframes index from MultiIndex to a singular index.</span>
+
+<span class="sd">    This function also removes any differing names generated from numpy</span>
+<span class="sd">    function</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Pandas dataframe to adjust index (columns) of.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        Pandas dataframe with a modified index (columns)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+    <span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">column</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;amin&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;amax&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">df</span>
+
+
 <div class="viewcode-block" id="GtfsInstance">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance">[docs]</a>
 <span class="k">class</span> <span class="nc">GtfsInstance</span><span class="p">:</span>
@@ -205,6 +251,23 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`units` accepts metric only. Found: </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">read_feed</span><span class="p">(</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">dist_units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gtfs_path</span> <span class="o">=</span> <span class="n">gtfs_pth</span>
+
+<div class="viewcode-block" id="GtfsInstance.get_gtfs_files">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.get_gtfs_files">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_gtfs_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of files making up the GTFS file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            A list of files that create the GTFS file</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gtfs_path</span><span class="p">)</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span> <span class="o">=</span> <span class="n">file_list</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span></div>
+
 
 <div class="viewcode-block" id="GtfsInstance.is_valid">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.is_valid">[docs]</a>
@@ -591,16 +654,22 @@
 
         <span class="c1"># aggregate to mean/median/min/max (default) trips on each day</span>
         <span class="c1"># of the week</span>
-        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-            <span class="p">{</span><span class="s2">&quot;trip_count&quot;</span><span class="p">:</span> <span class="n">summ_ops</span><span class="p">}</span>
+        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">trip_counts</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s2">&quot;trip_count&quot;</span><span class="p">:</span> <span class="n">summ_ops</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
         <span class="p">)</span>
-        <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># order the days (for plotting future purposes)</span>
-        <span class="c1"># order the days (for plotting future purposes)</span>
         <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_dataframe_by_day</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">day_trip_counts</span><span class="p">)</span>
+        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># reformat columns</span>
+        <span class="c1"># including normalsing min and max between different</span>
+        <span class="c1"># numpy versions (amin/min, amax/max)</span>
+        <span class="n">day_trip_counts</span> <span class="o">=</span> <span class="n">_convert_multi_index_to_single</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">day_trip_counts</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span> <span class="o">=</span> <span class="n">day_trip_counts</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span></div>
 
@@ -671,8 +740,13 @@
         <span class="n">day_route_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_dataframe_by_day</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">day_route_count</span><span class="p">)</span>
         <span class="n">day_route_count</span> <span class="o">=</span> <span class="n">day_route_count</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">day_route_count</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span> <span class="o">=</span> <span class="n">day_route_count</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
+        <span class="c1"># reformat columns</span>
+        <span class="c1"># including normalsing min and max between different</span>
+        <span class="c1"># numpy versions (amin/min, amax/max)</span>
+        <span class="n">day_route_count</span> <span class="o">=</span> <span class="n">_convert_multi_index_to_single</span><span class="p">(</span><span class="n">day_route_count</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span> <span class="o">=</span> <span class="n">day_route_count</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span></div>
 
 
@@ -708,6 +782,652 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">route_mode_summary_df</span> <span class="o">=</span> <span class="n">out_tab</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">route_mode_summary_df</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_plot_summary</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">which</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trip&quot;</span><span class="p">,</span>
+        <span class="n">orientation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span>
+        <span class="n">day_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;day&quot;</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">800</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">plotly_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="n">return_html</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">save_html</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">save_image</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">out_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">img_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">PlotlyFigure</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot (and save) a summary table using plotly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target_column : str</span>
+<span class="sd">            The name of the column contianing the</span>
+<span class="sd">            target data (counts)</span>
+<span class="sd">        which : str, optional</span>
+<span class="sd">            Which summary to plot. Options include &#39;trip&#39; and &#39;route&#39;,</span>
+<span class="sd">            by default &quot;trip&quot;</span>
+<span class="sd">        orientation : str, optional</span>
+<span class="sd">            The orientation of the bar plot (&quot;v&quot; or &quot;h&quot;),</span>
+<span class="sd">            by default &quot;v&quot;</span>
+<span class="sd">        day_column : str, optional</span>
+<span class="sd">            The name of the column containing the day,</span>
+<span class="sd">            by default &quot;day&quot;</span>
+<span class="sd">        width : int, optional</span>
+<span class="sd">            The width of the plot (in pixels), by default 2000</span>
+<span class="sd">        height : int, optional</span>
+<span class="sd">            The height of the plot (in pixels), by default 800</span>
+<span class="sd">        xlabel : str, optional</span>
+<span class="sd">            The label for the x axis.</span>
+<span class="sd">            If left empty, the column name will be used,</span>
+<span class="sd">            by default None</span>
+<span class="sd">        ylabel : str, optional</span>
+<span class="sd">            The label for the y axis.</span>
+<span class="sd">            If left empty, the column name will be used,</span>
+<span class="sd">            by default None</span>
+<span class="sd">        plotly_kwargs : dict, optional</span>
+<span class="sd">            Kwargs to pass to fig.update_layout() for</span>
+<span class="sd">            additional plot customisation,</span>
+<span class="sd">            by default {}</span>
+<span class="sd">        return_html : bool, optional</span>
+<span class="sd">            Whether or not to return a html string,</span>
+<span class="sd">            by default False</span>
+<span class="sd">        save_html : bool, optional</span>
+<span class="sd">            Whether or not to save the plot as a html file,</span>
+<span class="sd">            by default False</span>
+<span class="sd">        save_image : bool, optional</span>
+<span class="sd">            Whether or not to save the plot as a PNG,</span>
+<span class="sd">            by default False</span>
+<span class="sd">        out_dir : Union[pathlib.Path, str], optional</span>
+<span class="sd">            The directory to save the plot into. If a file extension is added</span>
+<span class="sd">            to this directory, it won&#39;t be cleaned. Whatever is passed as the</span>
+<span class="sd">            out dir will be used as the parent directory of the save, leaving</span>
+<span class="sd">            the responsibility on the user to specify the correct path.,</span>
+<span class="sd">            by default os.path.join(&quot;outputs&quot;, &quot;gtfs&quot;)</span>
+<span class="sd">        img_type : str, optional</span>
+<span class="sd">            The type of the image to be saved. E.g, .svg or .jpeg.,</span>
+<span class="sd">            by defauly &quot;png&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[PlotlyFigure, str]</span>
+<span class="sd">            Returns either a HTML string or the plotly figure</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            An error is raised if orientation is not &#39;v&#39; or &#39;h&#39;.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            An error is raised if an invalid iamge type is passed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># parameter type defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">which</span><span class="p">,</span> <span class="s2">&quot;which&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">day_column</span><span class="p">,</span> <span class="s2">&quot;day_column&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">target_column</span><span class="p">,</span> <span class="s2">&quot;target_column&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">plotly_kwargs</span><span class="p">,</span> <span class="s2">&quot;plotly_kwargs&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">return_html</span><span class="p">,</span> <span class="s2">&quot;return_html&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">xlabel</span><span class="p">,</span> <span class="s2">&quot;xlabel&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">ylabel</span><span class="p">,</span> <span class="s2">&quot;ylabel&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">save_html</span><span class="p">,</span> <span class="s2">&quot;save_html&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">save_image</span><span class="p">,</span> <span class="s2">&quot;save_iamge&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">img_type</span><span class="p">,</span> <span class="s2">&quot;img_type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+        <span class="c1"># lower params</span>
+        <span class="n">orientation</span> <span class="o">=</span> <span class="n">orientation</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">which</span> <span class="o">=</span> <span class="n">which</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># ensure &#39;which&#39; is valid</span>
+        <span class="n">_check_item_in_list</span><span class="p">(</span>
+            <span class="n">item</span><span class="o">=</span><span class="n">which</span><span class="p">,</span> <span class="n">_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;trip&quot;</span><span class="p">,</span> <span class="s2">&quot;route&quot;</span><span class="p">],</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;which&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">raw_pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">out_dir</span><span class="p">,</span>
+            <span class="s2">&quot;summary_&quot;</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_%m_%Y-%H_%M_%S&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">raw_pth</span><span class="p">,</span> <span class="s2">&quot;save_pth&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># orientation input defences</span>
+        <span class="n">_check_item_in_list</span><span class="p">(</span>
+            <span class="n">item</span><span class="o">=</span><span class="n">orientation</span><span class="p">,</span> <span class="n">_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;orientation&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># assign the correct values depending on which breakdown has been</span>
+        <span class="c1"># chosen</span>
+        <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;trip&quot;</span><span class="p">:</span>
+            <span class="n">_check_attribute</span><span class="p">(</span>
+                <span class="n">obj</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;daily_trip_summary&quot;</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                    <span class="s2">&quot;The daily_trip_summary table could not be found.&quot;</span>
+                    <span class="s2">&quot; Did you forget to call &#39;.summarise_trips()&#39; first?&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">summary_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span>
+            <span class="n">target_column</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;trip_count_</span><span class="si">{</span><span class="n">target_column</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;trip_count&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">target_column</span>
+                <span class="k">else</span> <span class="n">target_column</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;route&quot;</span><span class="p">:</span>
+            <span class="n">_check_attribute</span><span class="p">(</span>
+                <span class="n">obj</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">attr</span><span class="o">=</span><span class="s2">&quot;daily_route_summary&quot;</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                    <span class="s2">&quot;The daily_route_summary table could not be found.&quot;</span>
+                    <span class="s2">&quot; Did you forget to call &#39;.summarise_routes()&#39; first?&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">summary_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span>
+            <span class="n">target_column</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;route_count_</span><span class="si">{</span><span class="n">target_column</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;route_count&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">target_column</span>
+                <span class="k">else</span> <span class="n">target_column</span>
+            <span class="p">)</span>
+
+        <span class="c1"># dataframe column defences</span>
+        <span class="n">_check_column_in_df</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">summary_df</span><span class="p">,</span> <span class="n">column_name</span><span class="o">=</span><span class="n">target_column</span><span class="p">)</span>
+        <span class="n">_check_column_in_df</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">summary_df</span><span class="p">,</span> <span class="n">column_name</span><span class="o">=</span><span class="n">day_column</span><span class="p">)</span>
+
+        <span class="c1"># convert column type for better graph plotting</span>
+        <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">)</span>
+
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xlabel</span>
+            <span class="k">if</span> <span class="n">xlabel</span>
+            <span class="k">else</span> <span class="p">(</span><span class="n">target_column</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;h&quot;</span> <span class="k">else</span> <span class="n">day_column</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ylabel</span>
+            <span class="k">if</span> <span class="n">ylabel</span>
+            <span class="k">else</span> <span class="p">(</span><span class="n">target_column</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="k">else</span> <span class="n">day_column</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># plot summary using plotly express</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span>
+            <span class="n">summary_df</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">day_column</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="k">else</span> <span class="n">target_column</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">target_column</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="k">else</span> <span class="n">day_column</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;route_type&quot;</span><span class="p">,</span>
+            <span class="n">barmode</span><span class="o">=</span><span class="s2">&quot;group&quot;</span><span class="p">,</span>
+            <span class="n">text_auto</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">orientation</span><span class="o">=</span><span class="n">orientation</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># format plotly figure</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+            <span class="n">plot_bgcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+            <span class="n">yaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">tickfont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">18</span><span class="p">),</span>
+                <span class="n">gridcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">showline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">showgrid</span><span class="o">=</span><span class="kc">False</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;h&quot;</span> <span class="k">else</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">linecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">xaxis</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">tickfont</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">18</span><span class="p">),</span>
+                <span class="n">gridcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">showline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">showgrid</span><span class="o">=</span><span class="kc">False</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="k">else</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">linecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">18</span><span class="p">),</span>
+            <span class="n">legend</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">xanchor</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
+                <span class="n">x</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+                <span class="n">yanchor</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+                <span class="n">y</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Route Type&quot;</span><span class="p">,</span>
+                <span class="n">traceorder</span><span class="o">=</span><span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+                <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+                <span class="n">bordercolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="n">borderwidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># apply custom arguments if passed</span>
+        <span class="k">if</span> <span class="n">plotly_kwargs</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="o">**</span><span class="n">plotly_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># save the plot if specified (with correct file type)</span>
+        <span class="k">if</span> <span class="n">save_html</span><span class="p">:</span>
+            <span class="n">plotly_io</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span>
+                <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">raw_pth</span> <span class="o">+</span> <span class="s2">&quot;.html&quot;</span><span class="p">),</span>
+                <span class="n">full_html</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save_image</span><span class="p">:</span>
+            <span class="n">valid_img_formats</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;png&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pdf&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;jpg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;webp&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;svg&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">img_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_img_formats</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Please specify a valid image format. Valid formats &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;include </span><span class="si">{</span><span class="n">valid_img_formats</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">plotly_io</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span>
+                <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span>
+                    <span class="n">raw_pth</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">img_type</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_html</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotly_io</span><span class="o">.</span><span class="n">to_html</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">full_html</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fig</span>
+
+    <span class="k">def</span> <span class="nf">_create_extended_repeated_pair_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">join_vars</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
+        <span class="n">original_rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate an extended table for repeated pair warnings.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        table : pd.DataFrame</span>
+<span class="sd">            The dataframe with the repeated pair warnings</span>
+<span class="sd">        join_vars : Union[str, list]</span>
+<span class="sd">            The variables that have repeated pairs</span>
+<span class="sd">        original_rows : list[int]</span>
+<span class="sd">            The original duplicate rows, contained in</span>
+<span class="sd">            the GTFS validation table (rows column)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            An extended dataframe containing repeated pairs</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">error_table</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">original_rows</span><span class="p">]</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">original_rows</span><span class="p">)]</span>
+        <span class="n">joined_rows</span> <span class="o">=</span> <span class="n">error_table</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">remaining</span><span class="p">,</span>
+            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="n">on</span><span class="o">=</span><span class="n">join_vars</span><span class="p">,</span>
+            <span class="n">suffixes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;_original&quot;</span><span class="p">,</span> <span class="s2">&quot;_duplicate&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">joined_rows</span>
+
+    <span class="k">def</span> <span class="nf">_extended_validation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span> <span class="n">scheme</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;green_dark&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate HTML outputs of impacted rows from GTFS errors/warnings.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_path : Union[str, pathlib.Path]</span>
+<span class="sd">            The path to save the HTML output to</span>
+<span class="sd">        scheme : str, optional</span>
+<span class="sd">            Colour scheme from pretty_html_table, by default &quot;green_dark&quot;.</span>
+<span class="sd">            Colour schemes can be found here:</span>
+<span class="sd">            https://pypi.org/project/pretty-html-table/</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;agency&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">agency</span><span class="p">,</span>
+            <span class="s2">&quot;routes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">routes</span><span class="p">,</span>
+            <span class="s2">&quot;stop_times&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="p">,</span>
+            <span class="s2">&quot;stops&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">,</span>
+            <span class="s2">&quot;trips&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="p">,</span>
+            <span class="s2">&quot;calendar&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">calendar</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># determine which errors/warnings have rows that can be located</span>
+        <span class="n">validation_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+        <span class="n">validation_table</span><span class="p">[</span><span class="s2">&quot;valid_row&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">validation_table</span><span class="p">[</span><span class="s2">&quot;rows&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">ext_validation_table</span> <span class="o">=</span> <span class="n">validation_table</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span>
+            <span class="n">validation_table</span><span class="p">[</span><span class="s2">&quot;valid_row&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">]</span>
+        <span class="c1"># locate the impacted rows for each error</span>
+        <span class="k">for</span> <span class="n">table</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">msg_type</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">ext_validation_table</span><span class="p">[</span><span class="s2">&quot;table&quot;</span><span class="p">],</span>
+            <span class="n">ext_validation_table</span><span class="p">[</span><span class="s2">&quot;rows&quot;</span><span class="p">],</span>
+            <span class="n">ext_validation_table</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">],</span>
+            <span class="n">ext_validation_table</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
+        <span class="p">):</span>
+            <span class="c1"># create a more informative table for repeated pairs</span>
+            <span class="k">if</span> <span class="s2">&quot;Repeated pair&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="n">join_vars</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">drop_cols</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">col</span>
+                    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">GTFS_UNNEEDED_COLUMNS</span><span class="p">[</span><span class="n">table</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">join_vars</span>
+                <span class="p">]</span>
+                <span class="n">filtered_tbl</span> <span class="o">=</span> <span class="n">table_map</span><span class="p">[</span><span class="n">table</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drop_cols</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">impacted_rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_extended_repeated_pair_table</span><span class="p">(</span>
+                    <span class="n">table</span><span class="o">=</span><span class="n">filtered_tbl</span><span class="p">,</span>
+                    <span class="n">join_vars</span><span class="o">=</span><span class="n">join_vars</span><span class="p">,</span>
+                    <span class="n">original_rows</span><span class="o">=</span><span class="n">rows</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">base_columns</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">item</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">filtered_tbl</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">item</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">join_vars</span>
+                <span class="p">]</span>
+                <span class="n">duplicate_counts</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">base_columns</span><span class="p">:</span>
+                    <span class="n">duplicate_counts</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">impacted_rows</span><span class="p">[</span>
+                        <span class="n">impacted_rows</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_original&quot;</span><span class="p">]</span>
+                        <span class="o">==</span> <span class="n">impacted_rows</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_duplicate&quot;</span><span class="p">]</span>
+                    <span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">impacted_rows</span> <span class="o">=</span> <span class="n">table_map</span><span class="p">[</span><span class="n">table</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">rows</span><span class="p">]</span>
+
+            <span class="c1"># create the html to display the impacted rows (clean possibly)</span>
+            <span class="n">table_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            &lt;head&gt;</span>
+<span class="s2">                &lt;link rel=&quot;stylesheet&quot; href=&quot;styles.css&quot;&gt;</span>
+<span class="s2">            &lt;/head&gt;</span>
+<span class="s2">            &lt;body&gt;</span>
+<span class="s2">            &lt;h1 style=&quot;font-family: &#39;Poppins&#39;, sans-serif;margin: 10px;&quot;&gt;</span>
+<span class="s2">                Table:</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&lt;br&gt;Message: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&lt;br&gt;</span>
+<span class="s2">                Type: &lt;span style=&quot;color:</span><span class="si">{</span><span class="s1">&#39;red&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">msg_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;error&#39;</span><span class="w"> </span><span class="k">else</span>
+<span class="w">                        </span><span class="s1">&#39;orange&#39;</span><span class="si">}</span><span class="s2">;font-family: &#39;Poppins&#39;, sans-serif;&quot;&gt;</span>
+<span class="s2">                        </span><span class="si">{</span><span class="n">msg_type</span><span class="si">}</span><span class="s2">&lt;/span&gt;</span>
+<span class="s2">            &lt;/h1&gt;&quot;&quot;&quot;</span>
+
+            <span class="c1"># Add additional information for repeated pairs</span>
+            <span class="c1"># to the HTML report</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">counter</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">duplicate_counts</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">counter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">table_html</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">table_html</span>
+                            <span class="o">+</span> <span class="s2">&quot;&quot;&quot;&lt;br&gt;&lt;div</span>
+<span class="s2">                        style=&quot;margin:10px;&quot;&gt;</span>
+<span class="s2">                        &lt;span style=&quot;font-weight:bold;font-size:large&quot;&gt;</span>
+<span class="s2">                        Duplicate Counts&lt;/span&gt;&quot;&quot;&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">table_html</span> <span class="o">=</span> <span class="n">table_html</span> <span class="o">+</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    &lt;div style=&quot;display: block;&quot;&gt;</span>
+<span class="s2">                            &lt;dd style=&quot;font-weight: bold;</span>
+<span class="s2">                                margin-inline-start: 0;</span>
+<span class="s2">                                display: inline-block;</span>
+<span class="s2">                                min-width: 160px;&quot;&gt;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">: &lt;/dd&gt;</span>
+<span class="s2">                            &lt;dt style=&quot;display: inline-block;&quot;&gt;</span>
+<span class="s2">                            </span><span class="si">{</span><span class="n">duplicate_counts</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/dt&gt;</span>
+<span class="s2">                    &lt;/div&gt;&quot;&quot;&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">table_html</span> <span class="o">=</span> <span class="n">table_html</span> <span class="o">+</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+            <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+            <span class="n">table_html</span> <span class="o">=</span> <span class="n">table_html</span> <span class="o">+</span> <span class="n">build_table</span><span class="p">(</span>
+                <span class="n">impacted_rows</span><span class="p">,</span> <span class="n">scheme</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;10px&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+            <span class="n">table_html</span> <span class="o">=</span> <span class="n">table_html</span> <span class="o">+</span> <span class="s2">&quot;&lt;/body&gt;&quot;</span>
+
+            <span class="c1"># save the output</span>
+            <span class="n">save_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">))</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">/gtfs_report/</span><span class="si">{</span><span class="n">save_name</span><span class="si">}</span><span class="s2">.html&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">table_html</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="GtfsInstance.html_report">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.html_report">[docs]</a>
+    <span class="k">def</span> <span class="nf">html_report</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">report_dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;outputs&quot;</span><span class="p">,</span>
+        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">summary_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="n">extended_validation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a HTML report describing the GTFS data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        report_dir : Union[str, pathlib.Path], optional</span>
+<span class="sd">            The directory to save the report to,</span>
+<span class="sd">            by default &quot;outputs&quot;</span>
+<span class="sd">        overwrite : bool, optional</span>
+<span class="sd">            Whether or not to overwrite the existing report</span>
+<span class="sd">            if it already exists in the report_dir,</span>
+<span class="sd">            by default False</span>
+<span class="sd">        summary_type : str, optional</span>
+<span class="sd">            The type of summary to show on the</span>
+<span class="sd">            summaries on the gtfs report.,</span>
+<span class="sd">            by default &quot;mean&quot;</span>
+<span class="sd">        extended_validation : bool, optional</span>
+<span class="sd">            Whether or not to create extended reports</span>
+<span class="sd">            for gtfs validation errors/warnings.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            An error raised if the type of summary passed is invalid</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">overwrite</span><span class="p">,</span> <span class="s2">&quot;overwrite&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">summary_type</span><span class="p">,</span> <span class="s2">&quot;summary_type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_set_up_report_dir</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">report_dir</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+        <span class="n">summary_type</span> <span class="o">=</span> <span class="n">summary_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">summary_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;summary type&#39; must be mean, median, min or max&quot;</span><span class="p">)</span>
+
+        <span class="c1"># store todays date</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-%m-%Y&quot;</span><span class="p">)</span>
+
+        <span class="c1"># feed evaluation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clean_feed</span><span class="p">()</span>
+        <span class="n">validation_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+
+        <span class="c1"># create extended reports if requested</span>
+        <span class="k">if</span> <span class="n">extended_validation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_extended_validation</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="n">report_dir</span><span class="p">)</span>
+            <span class="n">info_href</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">validation_dataframe</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">))</span>
+                <span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+                <span class="o">+</span> <span class="n">validation_dataframe</span><span class="p">[</span><span class="s2">&quot;table&quot;</span><span class="p">]</span>
+                <span class="o">+</span> <span class="s2">&quot;.html&quot;</span>
+            <span class="p">)</span>
+            <span class="n">validation_dataframe</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;a href=&quot;</span><span class="si">{</span><span class="n">href</span><span class="si">}</span><span class="s2">&quot;&gt; Further Info&lt;/a&gt;&quot;&quot;&quot;</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                <span class="k">else</span> <span class="s2">&quot;Unavailable&quot;</span>
+                <span class="k">for</span> <span class="n">href</span><span class="p">,</span> <span class="n">rows</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">info_href</span><span class="p">,</span> <span class="n">validation_dataframe</span><span class="p">[</span><span class="s2">&quot;rows&quot;</span><span class="p">])</span>
+            <span class="p">]</span>
+
+        <span class="n">eval_temp</span> <span class="o">=</span> <span class="n">TemplateHTML</span><span class="p">(</span>
+            <span class="n">path</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;src/transport_performance/gtfs/report/&quot;</span>
+                <span class="s2">&quot;html_templates/evaluation_template.html&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;eval_placeholder_1&quot;</span><span class="p">,</span>
+            <span class="n">build_table</span><span class="p">(</span>
+                <span class="n">validation_dataframe</span><span class="p">,</span>
+                <span class="s2">&quot;green_dark&quot;</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;10px&quot;</span><span class="p">,</span>
+                <span class="n">escape</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;eval_title_1&quot;</span><span class="p">,</span> <span class="s2">&quot;GTFS Feed Warnings and Errors&quot;</span><span class="p">)</span>
+
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;eval_placeholder_2&quot;</span><span class="p">,</span>
+            <span class="n">build_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">agency</span><span class="p">,</span> <span class="s2">&quot;green_dark&quot;</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;10px&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;eval_title_2&quot;</span><span class="p">,</span> <span class="s2">&quot;GTFS Agency Information&quot;</span><span class="p">)</span>
+
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;name_placeholder&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">feed_info</span><span class="p">[</span><span class="s2">&quot;feed_publisher_name&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;url_placeholder&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">feed_info</span><span class="p">[</span><span class="s2">&quot;feed_publisher_url&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">replace_multiple</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;lang_placeholder&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">feed_info</span><span class="p">[</span><span class="s2">&quot;feed_lang&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;start_placeholder&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">feed_info</span><span class="p">[</span><span class="s2">&quot;feed_start_date&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;end_placeholder&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">feed_info</span><span class="p">[</span><span class="s2">&quot;feed_end_date&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;version_placeholder&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">feed_info</span><span class="p">[</span><span class="s2">&quot;feed_version&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">count_lookup</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;agency_placeholder&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">count_lookup</span><span class="p">[</span><span class="s2">&quot;agencies&quot;</span><span class="p">]))</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;routes_placeholder&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">count_lookup</span><span class="p">[</span><span class="s2">&quot;num_routes&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;trips_placeholder&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">count_lookup</span><span class="p">[</span><span class="s2">&quot;num_trips&quot;</span><span class="p">]))</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;stops_placeholder&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">count_lookup</span><span class="p">[</span><span class="s2">&quot;num_stops&quot;</span><span class="p">]))</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;shapes_placeholder&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">count_lookup</span><span class="p">[</span><span class="s2">&quot;num_shapes&quot;</span><span class="p">])</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_gtfs_files</span><span class="p">()</span>
+        <span class="n">file_list_html</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">file_list_html</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">file_list_html</span>
+                <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                    &lt;div&gt;</span>
+<span class="s2">                        &lt;dd&gt;</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s2">. &lt;/dd&gt;</span>
+<span class="s2">                        &lt;dt&gt;</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&lt;/dt&gt;</span>
+<span class="s2">                    &lt;/div&gt;&quot;&quot;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;eval_placeholder_3&quot;</span><span class="p">,</span> <span class="n">file_list_html</span><span class="p">)</span>
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;eval_title_3&quot;</span><span class="p">,</span> <span class="s2">&quot;GTFS Files Included&quot;</span><span class="p">)</span>
+
+        <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="s2">/gtfs_report/index.html&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">eval_f</span><span class="p">:</span>
+            <span class="n">eval_f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">eval_temp</span><span class="o">.</span><span class="n">_get_template</span><span class="p">())</span>
+
+        <span class="c1"># stops</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz_stops</span><span class="p">(</span>
+            <span class="n">out_pth</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="s2">/gtfs_report/stop_locations.html&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">viz_stops</span><span class="p">(</span>
+            <span class="n">out_pth</span><span class="o">=</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="s2">/gtfs_report/convex_hull.html&quot;</span><span class="p">),</span>
+            <span class="n">geoms</span><span class="o">=</span><span class="s2">&quot;hull&quot;</span><span class="p">,</span>
+            <span class="n">geom_crs</span><span class="o">=</span><span class="mi">27700</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">stops_temp</span> <span class="o">=</span> <span class="n">TemplateHTML</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;src/transport_performance/gtfs/report/&quot;</span>
+                <span class="s2">&quot;html_templates/stops_template.html&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">stops_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;stops_placeholder_1&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_locations.html&quot;</span><span class="p">)</span>
+        <span class="n">stops_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;stops_placeholder_2&quot;</span><span class="p">,</span> <span class="s2">&quot;convex_hull.html&quot;</span><span class="p">)</span>
+        <span class="n">stops_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;stops_title_1&quot;</span><span class="p">,</span> <span class="s2">&quot;Stops from GTFS data&quot;</span><span class="p">)</span>
+        <span class="n">stops_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;stops_title_2&quot;</span><span class="p">,</span> <span class="s2">&quot;Convex Hull Generated from GTFS Data&quot;</span>
+        <span class="p">)</span>
+        <span class="n">stops_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="s2">/gtfs_report/stops.html&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">stops_f</span><span class="p">:</span>
+            <span class="n">stops_f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">stops_temp</span><span class="o">.</span><span class="n">_get_template</span><span class="p">())</span>
+
+        <span class="c1"># summaries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summarise_routes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summarise_trips</span><span class="p">()</span>
+        <span class="n">route_html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_summary</span><span class="p">(</span>
+            <span class="n">which</span><span class="o">=</span><span class="s2">&quot;route&quot;</span><span class="p">,</span>
+            <span class="n">target_column</span><span class="o">=</span><span class="n">summary_type</span><span class="p">,</span>
+            <span class="n">return_html</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Route Count&quot;</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Day&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">trip_html</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_summary</span><span class="p">(</span>
+            <span class="n">which</span><span class="o">=</span><span class="s2">&quot;trip&quot;</span><span class="p">,</span>
+            <span class="n">target_column</span><span class="o">=</span><span class="n">summary_type</span><span class="p">,</span>
+            <span class="n">return_html</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Trip Count&quot;</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Day&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">summ_temp</span> <span class="o">=</span> <span class="n">TemplateHTML</span><span class="p">(</span>
+            <span class="n">path</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;src/transport_performance/gtfs/report/&quot;</span>
+                <span class="s2">&quot;html_templates/summary_template.html&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">summ_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;plotly_placeholder_1&quot;</span><span class="p">,</span> <span class="n">route_html</span><span class="p">)</span>
+        <span class="n">summ_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;plotly_title_1&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Route Summary by Day and Route Type (</span><span class="si">{</span><span class="n">summary_type</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">summ_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;plotly_placeholder_2&quot;</span><span class="p">,</span> <span class="n">trip_html</span><span class="p">)</span>
+        <span class="n">summ_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
+            <span class="s2">&quot;plotly_title_2&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Trip Summary by Day and Route Type (</span><span class="si">{</span><span class="n">summary_type</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">summ_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="s2">/gtfs_report/summaries.html&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">summ_f</span><span class="p">:</span>
+            <span class="n">summ_f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">summ_temp</span><span class="o">.</span><span class="n">_get_template</span><span class="p">())</span>
+
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;GTFS Report Created at </span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;View your report here: </span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="s2">/gtfs_report&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
 </pre></div>

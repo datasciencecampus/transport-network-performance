@@ -20,7 +20,9 @@ GtfsInstance
                 
                     ~GtfsInstance.__init__
                     ~GtfsInstance.clean_feed
+                    ~GtfsInstance.get_gtfs_files
                     ~GtfsInstance.get_route_modes
+                    ~GtfsInstance.html_report
                     ~GtfsInstance.is_valid
                     ~GtfsInstance.print_alerts
                     ~GtfsInstance.summarise_routes

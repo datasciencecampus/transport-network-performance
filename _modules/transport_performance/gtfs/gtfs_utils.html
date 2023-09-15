@@ -90,10 +90,13 @@
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
 <span class="kn">from</span> <span class="nn">pyprojroot</span> <span class="kn">import</span> <span class="n">here</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_is_expected_filetype</span><span class="p">,</span>
     <span class="n">_check_list</span><span class="p">,</span>
+    <span class="n">_type_defence</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -149,6 +152,91 @@
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtered feed written to </span><span class="si">{</span><span class="n">out_pth</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># NOTE: Possibly move to a more generalised utils file</span>
+<div class="viewcode-block" id="convert_pandas_to_plotly">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly.html#transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly">[docs]</a>
+<span class="k">def</span> <span class="nf">convert_pandas_to_plotly</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">return_html</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a pandas dataframe to a visual plotly figure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        A pandas dataframe to convert to plotly</span>
+<span class="sd">        (single index only)</span>
+<span class="sd">    return_html : bool, optional</span>
+<span class="sd">        Whether or not to return the html element,</span>
+<span class="sd">          by default False</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    go.Figure</span>
+<span class="sd">        A plotly figure containing the drawn dataframe</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    LookupError</span>
+<span class="sd">        An error raised if an invalid colour scheme is passed</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        An error raised if the given pandas dataframe is MultiIndex</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pre-defined colour schemes</span>
+    <span class="n">schemes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;dsc&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;header_fill&quot;</span><span class="p">:</span> <span class="s2">&quot;#12436D&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;header_font_colour&quot;</span><span class="p">:</span> <span class="s2">&quot;white&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cell_fill&quot;</span><span class="p">:</span> <span class="s2">&quot;#A285D1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cell_font_colour&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;font_family&quot;</span><span class="p">:</span> <span class="s2">&quot;sans-serif&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;line_colour&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1"># defences</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;df&quot;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">return_html</span><span class="p">,</span> <span class="s2">&quot;return_html&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;Pandas dataframe must have a singular index, not MultiIndex. &quot;</span>
+            <span class="s2">&quot;This means that &#39;df.columns&#39; or &#39;df.index&#39; does not return a &quot;</span>
+            <span class="s2">&quot;MultiIndex.&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># harcoding scheme for now. Could be changed to param if more are added</span>
+    <span class="n">scheme</span> <span class="o">=</span> <span class="s2">&quot;dsc&quot;</span>
+    <span class="c1"># create plotly df</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">go</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+            <span class="n">header</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">fill_color</span><span class="o">=</span><span class="n">schemes</span><span class="p">[</span><span class="n">scheme</span><span class="p">][</span><span class="s2">&quot;header_fill&quot;</span><span class="p">],</span>
+                <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">schemes</span><span class="p">[</span><span class="n">scheme</span><span class="p">][</span><span class="s2">&quot;header_font_colour&quot;</span><span class="p">],</span>
+                    <span class="n">family</span><span class="o">=</span><span class="n">schemes</span><span class="p">[</span><span class="n">scheme</span><span class="p">][</span><span class="s2">&quot;font_family&quot;</span><span class="p">],</span>
+                <span class="p">),</span>
+                <span class="n">line_color</span><span class="o">=</span><span class="n">schemes</span><span class="p">[</span><span class="n">scheme</span><span class="p">][</span><span class="s2">&quot;line_colour&quot;</span><span class="p">],</span>
+            <span class="p">),</span>
+            <span class="n">cells</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">col_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">],</span>
+                <span class="n">fill_color</span><span class="o">=</span><span class="s2">&quot;#A285D1&quot;</span><span class="p">,</span>
+                <span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">schemes</span><span class="p">[</span><span class="n">scheme</span><span class="p">][</span><span class="s2">&quot;cell_font_colour&quot;</span><span class="p">],</span>
+                    <span class="n">family</span><span class="o">=</span><span class="n">schemes</span><span class="p">[</span><span class="n">scheme</span><span class="p">][</span><span class="s2">&quot;font_family&quot;</span><span class="p">],</span>
+                <span class="p">),</span>
+                <span class="n">align</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+                <span class="n">line_color</span><span class="o">=</span><span class="n">schemes</span><span class="p">[</span><span class="n">scheme</span><span class="p">][</span><span class="s2">&quot;line_colour&quot;</span><span class="p">],</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_html</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fig</span><span class="o">.</span><span class="n">to_html</span><span class="p">(</span><span class="n">full_html</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
 
 </pre></div>
 
