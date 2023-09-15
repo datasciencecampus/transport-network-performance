@@ -28,4 +28,6 @@ seaborn
 pretty_html_table
 kaleido
 numpy>=1.25.0 # test suite will fail if user installed lower than this
+sphinx
+sphinx-rtd-theme
 -e .
