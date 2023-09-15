@@ -1,6 +1,13 @@
 """Unit tests for transport_performance/urban_centres/urban_centres_class.
 
 TODO: add docs.
+
+Note: in the class parameterised tests below there are some arguments that are
+not used across all tests within them. This is a deliberate design choice,
+since pytest expects all parameterised arguments to be passed - removing or
+excluding from a signle test triggers errors. The alternative would be to
+separate the tests and reparameterise each separetly, but this would lead to a
+larger codebase that is more difficult to maintain.
 """
 
 import os
@@ -354,7 +361,7 @@ class TestDiag:
     ],
 )
 class TestClusterPop:
-    """Class to test effect of diagonal boolean on output."""
+    """Class to test effect of clustering pop threshold on output."""
 
     def test_cluster_pop_t(
         self,
