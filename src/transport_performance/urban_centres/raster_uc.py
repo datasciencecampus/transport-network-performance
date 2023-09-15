@@ -159,7 +159,7 @@ class UrbanCentre:
             return (rst, affine, src.crs)
 
     def _flag_cells(
-        self, masked_rst: np.ndarray, cell_pop_thres: int = 1500
+        self, masked_rst: np.ndarray, cell_pop_threshold: int = 1500
     ) -> np.ndarray:
         """Flag cells that are over the threshold.
 
@@ -167,7 +167,7 @@ class UrbanCentre:
         ----------
         masked_rst : np.ndarray
             Clipped (and potentially masked) array.
-        cell_pop_thres: int
+        cell_pop_threshold: int
             A cell is flagged if its value is equal or
             higher than the threshold.
 
@@ -182,13 +182,13 @@ class UrbanCentre:
                 "`masked_rst` expected numpy array, "
                 f"got {type(masked_rst).__name__}."
             )
-        if not isinstance(cell_pop_thres, int):
+        if not isinstance(cell_pop_threshold, int):
             raise TypeError(
                 "`cell_pop_threshold` expected integer, "
-                f"got {type(cell_pop_thres).__name__}."
+                f"got {type(cell_pop_threshold).__name__}."
             )
 
-        flag_array = masked_rst >= cell_pop_thres
+        flag_array = masked_rst >= cell_pop_threshold
 
         if np.sum(flag_array) == 0:
             raise ValueError(
@@ -218,7 +218,7 @@ class UrbanCentre:
         """
         if not isinstance(flag_array, np.ndarray):
             raise TypeError(
-                "`masked_rst` expected numpy array, "
+                "`flag_array` expected numpy array, "
                 f"got {type(flag_array).__name__}."
             )
         if not isinstance(diag, bool):
@@ -266,8 +266,7 @@ class UrbanCentre:
         """
         if not isinstance(band, np.ndarray):
             raise TypeError(
-                "`masked_rst` expected numpy array, "
-                f"got {type(band).__name__}."
+                "`band` expected numpy array, " f"got {type(band).__name__}."
             )
         if not isinstance(labelled_array, np.ndarray):
             raise TypeError(
@@ -281,7 +280,7 @@ class UrbanCentre:
             )
         if not isinstance(cluster_pop_threshold, int):
             raise TypeError(
-                "`pop_threshold` expected integer, "
+                "`cluster_pop_threshold` expected integer, "
                 f"got {type(cluster_pop_threshold).__name__}"
             )
 
@@ -331,7 +330,7 @@ class UrbanCentre:
         return r
 
     def _fill_gaps(
-        self, urban_centres: np.ndarray, threshold: int = 5
+        self, urban_centres: np.ndarray, cell_fill_threshold: int = 5
     ) -> np.ndarray:
         """Fill gaps in urban clusters.
 
@@ -343,7 +342,7 @@ class UrbanCentre:
         urban_centres : np.ndarray
             Array including urban centres, i.e. clusters over the population
             threshold.
-        threshold: int
+        cell_fill_threshold: int
             If the number of cells adjacent to any empty cell belonging to
             a cluster is higher than the threshold, the cell is filled with
             the cluster value.  Needs to be between 5 and 8.
@@ -358,12 +357,12 @@ class UrbanCentre:
                 "`urban_centres` expected numpy array, "
                 f"got {type(urban_centres).__name__}."
             )
-        if not isinstance(threshold, int):
+        if not isinstance(cell_fill_threshold, int):
             raise TypeError(
                 "`threshold` expected integer, "
-                f"got {type(threshold).__name__}"
+                f"got {type(cell_fill_threshold).__name__}"
             )
-        if not (5 <= threshold <= 8):
+        if not (5 <= cell_fill_threshold <= 8):
             raise ValueError(
                 "Wrong value for `threshold`, "
                 "please enter value between 5 and 8"
@@ -379,7 +378,7 @@ class UrbanCentre:
                 function=self._custom_filter,
                 size=3,
                 mode="constant",
-                extra_keywords={"threshold": threshold},
+                extra_keywords={"threshold": cell_fill_threshold},
             )
             if np.array_equal(filled, check):
                 break
