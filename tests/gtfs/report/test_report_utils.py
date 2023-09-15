@@ -34,10 +34,8 @@ class TestTemplateHTML(object):
     <div>[test_placeholder] Tester [test_placeholder]</div>
 </body>
 """
-        assert expected_template.replace(
-            r"\n", ""
-        ) == template_fixture._get_template().replace(
-            r"\n", ""
+        assert (
+            expected_template == template_fixture._get_template()
         ), "Test template not as expected"
 
     def test__insert_defence(self, template_fixture):
