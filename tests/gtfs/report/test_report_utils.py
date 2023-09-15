@@ -45,7 +45,7 @@ class TestTemplateHTML(object):
         with pytest.raises(
             ValueError,
             match=(
-                "`replace multiple` requires True as found \n"
+                "`replace_multiple` requires True as found \n"
                 "multiple placeholder matches in template."
             ),
         ):

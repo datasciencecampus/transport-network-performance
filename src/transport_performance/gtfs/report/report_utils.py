@@ -114,7 +114,7 @@ class TemplateHTML:
         occurences = len(self.template.split(f"[{placeholder}]")) - 1
         if occurences > 1 and not replace_multiple:
             raise ValueError(
-                "`replace multiple` requires True as found \n"
+                "`replace_multiple` requires True as found \n"
                 "multiple placeholder matches in template."
             )
 
