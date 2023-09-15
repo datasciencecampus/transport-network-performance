@@ -23,6 +23,8 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
     _check_column_in_df,
     _type_defence,
+    _check_item_in_list,
+    _check_attribute,
 )
 
 from transport_performance.gtfs.report.report_utils import (
@@ -500,34 +502,6 @@ class GtfsInstance:
                 f" functions. Found {type(summ_ops)}"
             )
 
-    def _convert_multi_index_to_single(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Convert a dataframes index from MultiIndex to a singular index.
-
-        This function also removes any differing names generated from numpy
-        function
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            Pandas dataframe to adjust index (columns) of.
-
-        Returns
-        -------
-        df : pd.DataFrame
-            Pandas dataframe with a modified index (columns)
-
-        """
-        df.columns = df.columns = [
-            "_".join(value) if "" not in value else "".join(value)
-            for value in df.columns.values
-        ]
-        df.columns = [
-            column.replace("amin", "min").replace("amax", "max")
-            for column in df.columns.values
-        ]
-
-        return df
-
     def summarise_trips(
         self,
         summ_ops: list = [np.min, np.max, np.mean, np.median],
@@ -701,8 +675,8 @@ class GtfsInstance:
 
     def _plot_summary(
         self,
-        summary_df: pd.DataFrame,
         target_column: str,
+        which: str = "trip",
         orientation: str = "v",
         day_column: str = "day",
         width: int = 2000,
@@ -722,11 +696,12 @@ class GtfsInstance:
 
         Parameters
         ----------
-        summary_df : pd.DataFrame
-            The dataframe containing the summarised data
         target_column : str
             The name of the column contianing the
             target data (counts)
+        which : str, optional
+            Which summary to plot. Options include 'trip' and 'route',
+            by default "trip"
         orientation : str, optional
             The orientation of the bar plot ("v" or "h"),
             by default "v"
@@ -782,7 +757,7 @@ class GtfsInstance:
 
         """
         # parameter type defences
-        _type_defence(summary_df, "summary_df", pd.DataFrame)
+        _type_defence(which, "which", str)
         _type_defence(day_column, "day_column", str)
         _type_defence(target_column, "target_column", str)
         _type_defence(plotly_kwargs, "plotly_kwargs", dict)
@@ -795,8 +770,14 @@ class GtfsInstance:
         _type_defence(save_image, "save_iamge", bool)
         _type_defence(img_type, "img_type", str)
 
-        # lower orientation
+        # lower params
         orientation = orientation.lower()
+        which = which.lower()
+
+        # ensure 'which' is valid
+        _check_item_in_list(
+            item=which, _list=["trip", "route"], param_nm="which"
+        )
 
         raw_pth = os.path.join(
             out_dir,
@@ -805,11 +786,42 @@ class GtfsInstance:
         _check_parent_dir_exists(raw_pth, "save_pth", create=True)
 
         # orientation input defences
-        if orientation not in ["v", "h"]:
-            raise ValueError(
-                "'orientation expected 'v' or 'h'"
-                " (non case sensitive)."
-                f" Found {orientation} of type {type(orientation)}."
+        _check_item_in_list(
+            item=orientation, _list=["v", "h"], param_nm="orientation"
+        )
+
+        # assign the correct values depending on which breakdown has been
+        # chosen
+        if which == "trip":
+            _check_attribute(
+                obj=self,
+                attr="daily_trip_summary",
+                message=(
+                    "The daily_trip_summary table could not be found."
+                    " Did you forget to call '.summarise_trips()' first?"
+                ),
+            )
+            summary_df = self.daily_trip_summary
+            target_column = (
+                f"trip_count_{target_column}"
+                if "trip_count" not in target_column
+                else target_column
+            )
+
+        if which == "route":
+            _check_attribute(
+                obj=self,
+                attr="daily_route_summary",
+                message=(
+                    "The daily_route_summary table could not be found."
+                    " Did you forget to call '.summarise_routes()' first?"
+                ),
+            )
+            summary_df = self.daily_route_summary
+            target_column = (
+                f"route_count_{target_column}"
+                if "route_count" not in target_column
+                else target_column
             )
 
         # dataframe column defences
@@ -913,210 +925,6 @@ class GtfsInstance:
         if return_html:
             return plotly_io.to_html(fig, full_html=False)
         return fig
-
-    def plot_route_summary(
-        self,
-        target_summary: str,
-        orientation: str = "v",
-        plotly_kwargs: dict = {},
-        return_html: bool = False,
-        width: int = 2000,
-        height: int = 800,
-        xlabel: str = None,
-        ylabel: str = None,
-        save_html: bool = False,
-        save_image: bool = False,
-        out_dir: Union[pathlib.Path, str] = pathlib.Path(
-            os.path.join("outputs", "gtfs")
-        ),
-        img_type: str = "png",
-    ) -> Union[PlotlyFigure, str]:
-        """Plot the summarised route data of a GTFS file.
-
-        This is a thin wrapper around _plot_summary()
-
-        Parameters
-        ----------
-        target_summary : str
-            The name of the summary to plot
-            (e.g., mean, max, min, median)
-        orientation : str, optional
-            The orientation of the bar plot ("v" or "h"),
-            by default "v"
-        plotly_kwargs : dict, optional
-            Kwargs to pass to fig.update_layout() for
-            additional plot customisation,
-            by default {}
-        return_html : bool, optional
-            Whether or not to return a html string,
-            by default False
-        width : int, optional
-            The width of the plot (in pixels), by default 2000
-        height : int, optional
-            The height of the plot (in pixels), by default 800
-        xlabel : str, optional
-            he label for the x axis.
-            If left empty, the column name will be used,
-            by default None
-        ylabel : str, optional
-            he label for the y axis.
-            If left empty, the column name will be used,
-            by default None
-        save_html : bool, optional
-            Whether or not to save the plot as a html file,
-            by default False
-        save_image : bool, optional
-            Whether or not to save the plot as a PNG,
-            by default False
-        out_dir : Union[pathlib.Path, str], optional
-            The directory to save the plot into. If a file extension is added
-            to this directory, it won't be cleaned. Whatever is passed as the
-            out dir will be used as the parent directory of the save, leaving
-            the responsibility on the user to specify the correct path.,
-            by default os.path.join("outputs", "gtfs")
-        img_type : str, optional
-            The type of the image to be saved. E.g, .svg or .jpeg.,
-            by defauly "png"
-
-        Returns
-        -------
-        Union[PlotlyFigure, str]
-            Returns either a HTML string or the plotly figure
-
-        Raises
-        ------
-        AttributeError
-            Raise an error if the daily_route_summary table is yet to be #
-            created.
-
-        """
-        # defensive checks
-        if "daily_route_summary" not in self.__dir__():
-            raise AttributeError(
-                "The daily_route_summary table could not be found."
-                " Did you forget to call '.summarise_routes()' first?"
-            )
-
-        # plot the summary
-        target_col = f"route_count_{target_summary}"
-        plot = self._plot_summary(
-            summary_df=self.daily_route_summary,
-            target_column=target_col,
-            day_column="day",
-            orientation=orientation,
-            plotly_kwargs=plotly_kwargs,
-            return_html=return_html,
-            width=width,
-            height=height,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            save_html=save_html,
-            out_dir=out_dir,
-            save_image=save_image,
-            img_type=img_type,
-        )
-        return plot
-
-    def plot_trip_summary(
-        self,
-        target_summary: str,
-        orientation: str = "v",
-        plotly_kwargs: dict = {},
-        return_html: bool = False,
-        width: int = 2000,
-        height: int = 800,
-        xlabel: str = None,
-        ylabel: str = None,
-        save_html: bool = False,
-        out_dir: Union[pathlib.Path, str] = pathlib.Path(
-            os.path.join("outputs", "gtfs")
-        ),
-        img_type: str = "png",
-    ):
-        """Plot the summarised trip data of a GTFS file.
-
-        This is a thin wrapper around _plot_summary()
-
-        Parameters
-        ----------
-        target_summary : str
-            The name of the summary to plot
-            (e.g., mean, max, min, median)
-        orientation : str, optional
-            The orientation of the bar plot ("v" or "h"),
-            by default "v"
-        plotly_kwargs : dict, optional
-            Kwargs to pass to fig.update_layout() for
-            additional plot customisation,
-            by default {}
-        return_html : bool, optional
-            Whether or not to return a html string,
-            by default False
-        width : int, optional
-            The width of the plot (in pixels), by default 2000
-        height : int, optional
-            The height of the plot (in pixels), by default 800
-        xlabel : str, optional
-            he label for the x axis.
-            If left empty, the column name will be used,
-            by default None
-        ylabel : str, optional
-            he label for the y axis.
-            If left empty, the column name will be used,
-            by default None
-        save_html : bool, optional
-            Whether or not to save the plot as a html file,
-            by default False
-        save_image : bool, optional
-            Whether or not to save the plot as a PNG,
-            by default False
-        out_dir : Union[pathlib.Path, str], optional
-            The directory to save the plot into. If a file extension is added
-            to this directory, it won't be cleaned. Whatever is passed as the
-            out dir will be used as the parent directory of the save, leaving
-            the responsibility on the user to specify the correct path.,
-            by default os.path.join("outputs", "gtfs")
-        img_type : str, optional
-            The type of the image to be saved. E.g, .svg or .jpeg.,
-            by defauly "png"
-
-        Returns
-        -------
-        Union[PlotlyFigure, str]
-            Returns either a HTML string or the plotly figure
-
-        Raises
-        ------
-        AttributeError
-            Raise an error if the daily_trip_summary table is yet to be
-            created.
-
-        """
-        # defensive checks
-        if "daily_trip_summary" not in self.__dir__():
-            raise AttributeError(
-                "The daily_trip_summary table could not be found."
-                " Did you forget to call '.summarise_trips()' first?"
-            )
-
-        # plot the summary
-        target_col = f"trip_count_{target_summary}"
-        plot = self._plot_summary(
-            summary_df=self.daily_trip_summary,
-            target_column=target_col,
-            day_column="day",
-            orientation=orientation,
-            plotly_kwargs=plotly_kwargs,
-            return_html=return_html,
-            width=width,
-            height=height,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            save_html=save_html,
-            out_dir=out_dir,
-            img_type=img_type,
-        )
-        return plot
 
     def _create_extended_repeated_pair_table(
         self,
@@ -1460,22 +1268,25 @@ class GtfsInstance:
         # summaries
         self.summarise_routes()
         self.summarise_trips()
-        route_html = self.plot_route_summary(
-            target_summary=summary_type,
+        route_html = self._plot_summary(
+            which="route",
+            target_column=summary_type,
             return_html=True,
             width=1200,
             height=800,
             ylabel="Route Count",
             xlabel="Day",
         )
-        trip_html = self.plot_trip_summary(
-            target_summary=summary_type,
+        trip_html = self._plot_summary(
+            which="trip",
+            target_column=summary_type,
             return_html=True,
             width=1200,
             height=800,
             ylabel="Trip Count",
             xlabel="Day",
         )
+
         summ_temp = TemplateHTML(
             path=(
                 "src/transport_performance/gtfs/report/"

@@ -7,13 +7,13 @@
 *.pkl
 *.html
 
-# except test fixtures
+# exception for test fixtures
 !tests/data/newport-2023-06-13.osm.pbf
 !tests/data/newport-20230613_gtfs.zip
 !tests/data/gtfs/route_lookup.pkl
 !tests/data/gtfs/report/html_template.html
 
-# except html templates
+# exception for html templates
 !src/transport_performance/gtfs/report/html_templates/evaluation_template.html
 !src/transport_performance/gtfs/report/html_templates/stops_template.html
 !src/transport_performance/gtfs/report/html_templates/summary_template.html

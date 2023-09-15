@@ -250,3 +250,44 @@ def _check_column_in_df(df: pd.DataFrame, column_name: str) -> None:
         raise IndexError(f"'{column_name}' is not a column in the dataframe.")
 
     return None
+
+
+def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
+    """Defence to check if an item is present in a list.
+
+    Parameters
+    ----------
+    item : str
+        THe item to check the list for
+    _list : list
+        The list to check that the item is in
+    param_nm : str
+        The name of the param that the item has been passed to
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        Error raised when item not in the list.
+
+    """
+    if item not in _list:
+        raise ValueError(
+            f"'{param_nm}' expected one of the following:"
+            f"{_list} Got {item}"
+        )
+    return None
+
+
+def _check_attribute(obj, attr: str, message: str = None):
+    err_msg = (
+        message
+        if message
+        else (f"{obj.__class__.__name__} has no attribute {attr}")
+    )
+
+    if attr not in obj.__dir__():
+        raise AttributeError(err_msg)

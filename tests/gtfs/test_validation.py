@@ -27,25 +27,6 @@ def gtfs_fixture():
     return gtfs
 
 
-def test__convert_multi_index_to_single():
-    """Light testing got _convert_multi_index_to_single()."""
-    test_df = pd.DataFrame({"test": [1, 2, 3, 4], "id": ["E", "E", "C", "D"]})
-    test_df = test_df.groupby("id").agg({"test": ["min", "mean", "max"]})
-    expected_cols = pd.Index(
-        ["test_min", "test_mean", "test_max"], dtype="object"
-    )
-    output_cols = _convert_multi_index_to_single(df=test_df).columns
-    assert isinstance(
-        output_cols, pd.Index
-    ), "_convert_multi_index_to_single() not behaving as expected"
-    expected_cols = list(expected_cols)
-    output_cols = list(output_cols)
-    for col in output_cols:
-        assert col in expected_cols, f"{col} not an expected column"
-        expected_cols.remove(col)
-    assert len(expected_cols) == 0, "Not all expected cols in output cols"
-
-
 class TestGtfsInstance(object):
     """Tests related to the GtfsInstance class."""
 
@@ -303,6 +284,26 @@ class TestGtfsInstance(object):
             pd.Timestamp("2023-05-07"),
             pd.Timestamp("2023-05-08"),
         ]
+
+    def test__convert_multi_index_to_single(self):
+        """Light testing got _convert_multi_index_to_single()."""
+        test_df = pd.DataFrame(
+            {"test": [1, 2, 3, 4], "id": ["E", "E", "C", "D"]}
+        )
+        test_df = test_df.groupby("id").agg({"test": ["min", "mean", "max"]})
+        expected_cols = pd.Index(
+            ["test_min", "test_mean", "test_max"], dtype="object"
+        )
+        output_cols = _convert_multi_index_to_single(df=test_df).columns
+        assert isinstance(
+            output_cols, pd.Index
+        ), "_convert_multi_index_to_single() not behaving as expected"
+        expected_cols = list(expected_cols)
+        output_cols = list(output_cols)
+        for col in output_cols:
+            assert col in expected_cols, f"{col} not an expected column"
+            expected_cols.remove(col)
+        assert len(expected_cols) == 0, "Not all expected cols in output cols"
 
     def test__order_dataframe_by_day_defence(self, gtfs_fixture):
         """Test __order_dataframe_by_day defences."""
@@ -625,22 +626,40 @@ class TestGtfsInstance(object):
 
     def test__plot_summary_defences(self, tmp_path, gtfs_fixture):
         """Test defences for _plot_summary()."""
-        current_fixture = gtfs_fixture
-        current_fixture.summarise_routes()
+        # test defences for checks summaries exist
+        with pytest.raises(
+            AttributeError,
+            match=re.escape(
+                "The daily_trip_summary table could not be found."
+                " Did you forget to call '.summarise_trips()' first?"
+            ),
+        ):
+            gtfs_fixture._plot_summary(which="trip", target_column="mean")
+
+        with pytest.raises(
+            AttributeError,
+            match=re.escape(
+                "The daily_route_summary table could not be found."
+                " Did you forget to call '.summarise_routes()' first?"
+            ),
+        ):
+            gtfs_fixture._plot_summary(which="route", target_column="mean")
+
+        gtfs_fixture.summarise_routes()
 
         # test parameters that are yet to be tested
+        options = ["v", "h"]
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'orientation expected 'v' or 'h'"
-                " (non case sensitive)."
-                " Found l of type <class 'str'>."
+                "'orientation' expected one of the following:"
+                f"{options} Got i"
             ),
         ):
-            current_fixture._plot_summary(
-                current_fixture.daily_route_summary,
-                "route_count_mean",
-                orientation="l",
+            gtfs_fixture._plot_summary(
+                which="route",
+                target_column="route_count_mean",
+                orientation="i",
             )
 
         # save test for an image with invalid file extension
@@ -653,12 +672,22 @@ class TestGtfsInstance(object):
             ),
         ):
             gtfs_fixture._plot_summary(
-                gtfs_fixture.daily_route_summary,
-                "route_count_mean",
+                which="route",
+                target_column="route_count_mean",
                 save_image=True,
                 out_dir=os.path.join(tmp_path, "outputs"),
                 img_type="test",
             )
+
+        # test choosing an invalid value for 'which'
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "'which' expected one of the following:"
+                "['trip', 'route'] Got tester"
+            ),
+        ):
+            gtfs_fixture._plot_summary(which="tester", target_column="tester")
 
     @pytest.mark.filterwarnings("ignore::UserWarning")
     def test__plot_summary_on_pass(self, gtfs_fixture, tmp_path):
@@ -668,15 +697,24 @@ class TestGtfsInstance(object):
 
         # test returning a html string
         test_html = gtfs_fixture._plot_summary(
-            gtfs_fixture.daily_route_summary,
-            "route_count_mean",
+            which="route",
+            target_column="route_count_mean",
             return_html=True,
         )
         assert type(test_html) == str, "Failed to return HTML for the plot"
 
         # test returning a plotly figure
         test_image = gtfs_fixture._plot_summary(
-            gtfs_fixture.daily_route_summary, "route_count_mean"
+            which="route", target_column="route_count_mean"
+        )
+        assert (
+            type(test_image) == PlotlyFigure
+        ), "Failed to return plotly.graph_objects.Figure type"
+
+        # test returning a plotly for trips
+        gtfs_fixture.summarise_trips()
+        test_image = gtfs_fixture._plot_summary(
+            which="trip", target_column="trip_count_mean"
         )
         assert (
             type(test_image) == PlotlyFigure
@@ -684,8 +722,8 @@ class TestGtfsInstance(object):
 
         # test saving plots in html and png format
         gtfs_fixture._plot_summary(
-            gtfs_fixture.daily_route_summary,
-            "route_count_mean",
+            which="route",
+            target_column="mean",
             width=1200,
             height=800,
             save_html=True,
@@ -711,49 +749,6 @@ class TestGtfsInstance(object):
         ), "'save_test' dir could not be created'"
         assert counts["html"] == 1, "Failed to save plot as HTML"
         assert counts["png"] == 1, "Failed to save plot as png"
-
-    def test__plot_route_summary_defences(self, gtfs_fixture):
-        """Test the defences for the small wrapper plot_route_summary()."""
-        # test attribute checks
-        with pytest.raises(
-            AttributeError,
-            match=(
-                re.escape(
-                    "The daily_route_summary table could not be found."
-                    " Did you forget to call '.summarise_routes()' first?"
-                )
-            ),
-        ):
-            gtfs_fixture.plot_route_summary(target_summary="mean")
-
-    def test__plot_trip_summary_defences(self, gtfs_fixture):
-        """Test the defences for the small wrapper plot_trip_summary()."""
-        # test attribute checks
-        with pytest.raises(
-            AttributeError,
-            match=(
-                re.escape(
-                    "The daily_trip_summary table could not be found."
-                    " Did you forget to call '.summarise_trips()' first?"
-                )
-            ),
-        ):
-            gtfs_fixture.plot_trip_summary(target_summary="mean")
-
-    def test__plot_route_summary_on_pass(self, gtfs_fixture):
-        """Test plot_route_summary() calls _plot_summary() succesfully."""
-        gtfs_fixture.summarise_routes()
-        assert isinstance(
-            gtfs_fixture.plot_route_summary(target_summary="mean"),
-            PlotlyFigure,
-        ), "plot_route_summary() failed to return plotly figure"
-
-    def test__plot_trip_summary_on_pass(self, gtfs_fixture):
-        """Test plot_trip_summary() calls _plot_summary() succesfully."""
-        gtfs_fixture.summarise_trips()
-        assert isinstance(
-            gtfs_fixture.plot_trip_summary(target_summary="mean"), PlotlyFigure
-        ), "plot_trip_summary() failed to return plotly figure"
 
     def test__create_extended_repeated_pair_table(self, gtfs_fixture):
         """Test _create_extended_repeated_pair_table()."""

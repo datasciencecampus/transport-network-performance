@@ -11,6 +11,8 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
     _type_defence,
     _check_column_in_df,
+    _check_item_in_list,
+    _check_attribute,
 )
 
 
@@ -269,3 +271,62 @@ class Test_CheckColumnInDf(object):
         """General tests for _check_colum_in_df()."""
         _check_column_in_df(test_df, "test_col_1")
         _check_column_in_df(test_df, "test_col_2")
+
+
+@pytest.fixture(scope="function")
+def test_list():
+    """Test fixture."""
+    my_list = ["test", "test2", "tester", "definitely_testing"]
+    return my_list
+
+
+class TestCheckItemInList(object):
+    """Tests for _check_item_in_list()."""
+
+    def test_check_item_in_list_defence(self, test_list):
+        """Defensive tests for check_item_in_list()."""
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "'test' expected one of the following:"
+                f"{test_list} Got not_in_test"
+            ),
+        ):
+            _check_item_in_list(
+                item="not_in_test", _list=test_list, param_nm="test"
+            )
+
+    def test_check_item_in_list_on_pass(self, test_list):
+        """General tests for check_item_in_list()."""
+        _check_item_in_list(item="test", _list=test_list, param_nm="test")
+
+
+@pytest.fixture(scope="function")
+def dummy_obj():
+    """Fixture to assist with tests."""
+
+    class dummy:
+        """Dummy class for testing."""
+
+        def __init__(self) -> None:
+            """Intialise dummy object."""
+            self.tester = "test"
+            self.tester_also = "also_test"
+
+    new_dummy = dummy()
+    return new_dummy
+
+
+class TestCheckAttribute(object):
+    """Tests for _check_item_in_list()."""
+
+    def test_check_attribute_defence(self, dummy_obj):
+        """Defensive tests for check_attribute."""
+        with pytest.raises(AttributeError, match="dummy test msg"):
+            _check_attribute(
+                obj=dummy_obj, attr="not_in_test", message="dummy test msg"
+            )
+
+    def test_check_attribute_on_pass(self, dummy_obj):
+        """General tests for check_attribute()."""
+        _check_attribute(dummy_obj, "tester")
