@@ -35,7 +35,7 @@ class UrbanCentre:
         cell_pop_threshold: int = 1500,
         diag: bool = False,
         cluster_pop_threshold: int = 50000,
-        cell_fill_treshold: int = 5,
+        cell_fill_threshold: int = 5,
         vector_nodata: int = -200,
         buffer_size: int = 10000,
     ):
@@ -68,7 +68,7 @@ class UrbanCentre:
 
         # smoothed clusters
         self.__filled_array = self._fill_gaps(
-            self.__urban_centres_array, cell_fill_treshold
+            self.__urban_centres_array, cell_fill_threshold
         )
 
         # vectorized urban centre
