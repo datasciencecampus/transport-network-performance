@@ -283,7 +283,7 @@ def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
 
 
 def _check_attribute(obj, attr: str, message: str = None):
-    """A test to check if an attribute exists in an object.
+    ""Test to check if an attribute exists in an object.
 
     Parameters
     ----------
