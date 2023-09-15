@@ -30,6 +30,7 @@ class UrbanCentre:
         self,
         bbox: gpd.GeoDataFrame,
         centre: tuple,
+        centre_crs: str = None,
         band_n: int = 1,
         cell_pop_threshold: int = 1500,
         diag: bool = False,
@@ -72,7 +73,12 @@ class UrbanCentre:
 
         # vectorized urban centre
         self.__vectorized_uc = self._vectorize_uc(
-            self.__filled_array, self.aff, self.crs, centre, vector_nodata
+            self.__filled_array,
+            self.aff,
+            self.crs,
+            centre,
+            centre_crs,
+            vector_nodata,
         )
 
         # buffer
@@ -380,7 +386,11 @@ class UrbanCentre:
         return filled
 
     def _get_x_y(
-        self, coords: tuple, aff: affine.Affine, crs: rasterio.crs.CRS
+        self,
+        coords: tuple,
+        aff: affine.Affine,
+        raster_crs: rasterio.crs.CRS,
+        coords_crs: str,
     ) -> tuple:
         """Get array index for given coordinates.
 
@@ -391,12 +401,14 @@ class UrbanCentre:
             Must be in format (lat, long) and EPSG: 4326.
         aff: affine.Affine
             Affine transform.
-        crs: rasterio.crs.CRS
+        raster_crs: rasterio.crs.CRS
             valid rasterio crs string.
+        coords_crs: str
+            CRS code for coordinates provided.
 
         Returns
         -------
-            tuple: (x, y) coordinates in provided crs.
+            tuple: (row, col) position for provided parameters.
 
         """
         if len(coords) != 2:
@@ -407,7 +419,7 @@ class UrbanCentre:
         ):
             raise TypeError("Elements of `coords` need to be float.")
 
-        transformer = Transformer.from_crs("EPSG:4326", crs)
+        transformer = Transformer.from_crs(coords_crs, raster_crs)
         x, y = transformer.transform(*coords)
         row, col = rowcol(aff, x, y)
 
@@ -417,8 +429,9 @@ class UrbanCentre:
         self,
         uc_array: np.ndarray,
         aff: affine.Affine,
-        crs: rasterio.crs.CRS,
+        raster_crs: rasterio.crs.CRS,
         centre: tuple,
+        centre_crs: str = None,
         nodata: int = -200,
     ) -> gpd.GeoDataFrame:
         """Vectorize raster with urban centre polygon.
@@ -429,11 +442,13 @@ class UrbanCentre:
             Array including filled urban centres.
         aff: affine.Affine
             Affine transform of the masked raster.
-        crs: rasterio.crs.CRS
+        raster_crs: rasterio.crs.CRS
             crs string of the masked raster.
         centre: tuple
             Tuple with coordinates for city centre, used to filter cluster.
-            Must be in format (lat, long) and EPSG: 4326.
+        centre_crs: str
+            crs string of the centre coordinates. If None, it will default
+            to raster_crs.
         nodata: int
             Value to fill empty cells.
 
@@ -453,24 +468,28 @@ class UrbanCentre:
             )
         if not isinstance(aff, affine.Affine):
             raise TypeError("`aff` must be a valid Affine object")
-        if not isinstance(crs, rasterio.crs.CRS):
+        if not isinstance(raster_crs, rasterio.crs.CRS):
             raise TypeError("`crs` must be a valid rasterio.crs.CRS object")
         if not isinstance(nodata, int):
             raise TypeError(
                 "`nodata` expected integer, " f"got {type(nodata).__name__}"
             )
 
-        row, col = self._get_x_y(centre, aff, crs)
+        if centre_crs is None:
+            centre_crs = raster_crs
+
+        row, col = self._get_x_y(centre, aff, raster_crs, centre_crs)
         if row > uc_array.shape[0] or col > uc_array.shape[1]:
             raise IndexError(
                 "Coordinates fall outside of raster window. "
-                "Did you use the correct y, x order?"
+                "Did you use the correct x, y order?"
             )
 
         cluster_num = uc_array[row, col]
         if cluster_num == 0:
             raise ValueError(
                 "Coordinates provided are not included within any cluster."
+                "Did you use the correct x, y order?"
             )
 
         filt_array = uc_array == cluster_num
@@ -480,7 +499,7 @@ class UrbanCentre:
             .astype("int32")
             .rio.write_nodata(nodata)
             .rio.write_transform(aff)
-            .rio.set_crs(crs, inplace=True)
+            .rio.set_crs(raster_crs, inplace=True)
         )
 
         gdf = vectorize(x_array)
