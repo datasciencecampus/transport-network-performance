@@ -77,6 +77,7 @@ def merge_raster_files(
 
     """
     # defend against case where the provided input dir does not exist
+    # note: not able to use `_check_parent_dir_exists()` here since its a dir
     if not os.path.exists(input_dir):
         raise FileNotFoundError(f"{input_dir} can not be found")
 
@@ -105,12 +106,9 @@ def merge_raster_files(
     # merge the datasets together
     xds_merged = merge_arrays(arrays)
 
-    # make output_dir if it does not exist
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
-
     # create full filepath for merged tif file and write to disk
     MERGED_DIR = os.path.join(output_dir, output_filename)
+    _check_parent_dir_exists(MERGED_DIR, "MERGED_DIR", create=True)
     xds_merged.rio.to_raster(MERGED_DIR)
 
     # get boundaries of inputs and output raster
