@@ -21,6 +21,7 @@ from shapely.geometry import Polygon, Point
 from numpy.dtypes import Float64DType
 from pytest_lazyfixture import lazy_fixture
 from _pytest.python_api import RaisesContext
+from contextlib import nullcontext as does_not_raise
 
 from transport_performance.population.rasterpop import RasterPop
 from transport_performance.utils.test_utils import _np_to_rioxarray
@@ -601,3 +602,25 @@ class TestRasterPop:
             ),
         ):
             rp.plot(which=unknown_plot_backend)
+
+    def test_plot_foliumn_no_uc(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+    ) -> None:
+        """Test folium plotting backend with no urban centre.
+
+        Unit test written to capture fix for issue 52.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            file path to dummy data.
+        xarr_1_aoi : tuple
+            area of interest polygon for dummy data.
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0])
+        with does_not_raise():
+            rp.plot(which="folium")
