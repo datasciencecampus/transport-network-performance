@@ -88,8 +88,15 @@ def filter_osm(
         "completeRelations=yes",
     ]
     if tag_filter:  # optionaly filter ways
-        print("Rejecting ways:  waterway, landuse & natural.")
-        cmd.extend(["--tf", "reject-ways", "waterway=* landuse=* natural=*"])
+        print("Rejecting ways: buildings, waterway, landuse & natural.")
+        cmd.extend(
+            [
+                "--tf",
+                "reject-ways",
+                "building=*",
+                "waterway=* landuse=* natural=*",
+            ]
+        )
 
     cmd.extend(["--used-node", "--write-pbf", out_pth])
 
