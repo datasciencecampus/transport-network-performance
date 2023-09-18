@@ -83,6 +83,9 @@ def filter_osm(
         f"bottom={bbox[1]}",
         f"right={bbox[2]}",
         f"top={bbox[3]}",
+        # https://github.com/conveyal/r5/issues/276#issuecomment-306638448
+        "completeWays=yes",
+        "completeRelations=yes",
     ]
     if tag_filter:  # optionaly filter ways
         print("Rejecting ways:  waterway, landuse & natural.")
