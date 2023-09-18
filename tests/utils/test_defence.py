@@ -5,6 +5,7 @@ import pathlib
 
 import pytest
 import pandas as pd
+from pyprojroot import here
 
 from transport_performance.utils.defence import (
     _check_list,
@@ -13,6 +14,7 @@ from transport_performance.utils.defence import (
     _check_column_in_df,
     _check_item_in_list,
     _check_attribute,
+    _is_expected_filetype,
 )
 
 
@@ -330,3 +332,30 @@ class TestCheckAttribute(object):
     def test_check_attribute_on_pass(self, dummy_obj):
         """General tests for check_attribute()."""
         _check_attribute(dummy_obj, "tester")
+
+
+class Test_IsExpectedFiletype(object):
+    """Tests for _is_expected_filetype."""
+
+    def test_is_expected_filetype_raises_single(self):
+        """Test when `exp_ext` is a single string."""
+        with pytest.raises(
+            ValueError,
+            match="`raster` expected file extension .gif. Found .tiff",
+        ):
+            _is_expected_filetype(
+                "some-raster.tiff",
+                "raster",
+                check_existing=False,
+                exp_ext=".gif",
+            )
+        with pytest.raises(
+            ValueError,
+            match="`gtfs.zip` expected file extension .tiff. Found .zip",
+        ):
+            _is_expected_filetype(
+                here("tests/data/newport-20230613_gtfs.zip"),
+                param_nm="gtfs.zip",
+                check_existing=True,
+                exp_ext=".tiff",
+            )
