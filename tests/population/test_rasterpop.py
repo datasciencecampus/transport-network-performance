@@ -508,3 +508,50 @@ class TestRasterPop:
         assert np.array_equal(
             pop_gdf.within_urban_centre, xarr_1_uc[1]["within_uc"]
         )
+
+    @pytest.mark.parametrize(
+        "which, save_folder, save_filename",
+        [
+            ("folium", "outputs", "folium.html"),
+            ("cartopy", "outputs", "cartopy.png"),
+            ("matplotlib", "outputs", "matplotlib.png"),
+        ],
+    )
+    def test_plot_on_pass(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+        xarr_1_uc: tuple,
+        tmp_path: str,
+        which: str,
+        save_folder: str,
+        save_filename: str,
+    ) -> None:
+        """Test plotting methods.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            filepath to dummy raster data
+        xarr_1_aoi : tuple
+            aoi polygon for dummy input
+        xarr_1_uc : tuple
+            urban centre polugon for dummy input
+        tmp_path : str
+            temporary path to save output within
+        which : str
+            plotting backend to use
+        save_folder: str
+            folder to save output within
+        save_filename : str
+            filename to use when saving the file within the temp directory
+
+        """
+        # create the full output path
+        output_path = os.path.join(tmp_path, save_folder, save_filename)
+
+        # run raster pop and assert that the file is generated
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        rp.plot(which=which, save=output_path)
+        assert os.path.exists(output_path)
