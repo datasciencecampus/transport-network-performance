@@ -13,6 +13,10 @@ import rioxarray
 
 from rioxarray.merge import merge_arrays
 from rasterio.warp import Resampling
+from transport_performance.utils.defence import (
+    _check_parent_dir_exists,
+    _is_expected_filetype,
+)
 
 
 def merge_raster_files(
@@ -146,8 +150,7 @@ def sum_resample_file(
 
     """
     # defend against case where the provided input dir does not exist
-    if not os.path.exists(input_filepath):
-        raise FileNotFoundError(f"{input_filepath} can not be found")
+    _is_expected_filetype(input_filepath, "input_filepath", exp_ext=".tif")
 
     xds = rioxarray.open_rasterio(input_filepath, masked=True)
 
@@ -161,7 +164,6 @@ def sum_resample_file(
     )
 
     # make output_filepath's directory if it does not exist
-    if not os.path.exists(os.path.dirname(output_filepath)):
-        os.mkdir(output_filepath)
+    _check_parent_dir_exists(output_filepath, "output_filepath", create=True)
 
     xds_resampled.rio.to_raster(output_filepath)
