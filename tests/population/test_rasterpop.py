@@ -624,3 +624,33 @@ class TestRasterPop:
         rp.get_pop(xarr_1_aoi[0])
         with does_not_raise():
             rp.plot(which="folium")
+
+    def test_plot_cartopy_unknown_attr_location(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+    ) -> None:
+        """Test cartopy plotting backend with an unknown attribute location.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            Filepath to dummy data.
+        xarr_1_aoi : tuple
+            Area of interest for dummy data.
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0])
+        test_attr_location = "unknown"
+        with pytest.raises(
+            ValueError,
+            match=(
+                f"Unrecognised value for `attr_location` {test_attr_location}."
+                "Expecting one of "
+            ),
+        ):
+            rp.plot(
+                which="cartopy",
+                attr_location=test_attr_location,
+            )
