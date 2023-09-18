@@ -90,7 +90,12 @@ def _check_parent_dir_exists(
     return None
 
 
-def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
+def _is_expected_filetype(
+    pth: Union[pathlib.Path, str],
+    param_nm: str,
+    check_existing: bool = True,
+    exp_ext: Union[str, list] = ".zip",
+) -> None:
     """Handle file paths that should be existing filetypes.
 
     Parameters
