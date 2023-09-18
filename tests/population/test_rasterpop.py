@@ -555,3 +555,19 @@ class TestRasterPop:
         rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
         rp.plot(which=which, save=output_path)
         assert os.path.exists(output_path)
+
+    def test_plot_before_get_data(self, xarr_1_fpath: str):
+        """Test case where plot is called before getting data.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            file path to dummy data
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        with pytest.raises(
+            NotImplementedError,
+            match="Unable to call `plot` without calling `get_pop`.",
+        ):
+            rp.plot()
