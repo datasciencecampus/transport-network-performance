@@ -84,7 +84,7 @@ class TestFilterOsm(object):
         # collect print statements
         func_out = mock_print.mock_calls
         assert func_out == [
-            call("Rejecting ways:  waterway, landuse & natural.")
+            call("Rejecting ways: buildings, waterway, landuse & natural.")
         ], f"Expected print statement not encountered. Got: {func_out}"
 
     @pytest.mark.runinteg
