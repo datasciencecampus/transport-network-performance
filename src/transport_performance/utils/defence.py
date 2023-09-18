@@ -101,14 +101,15 @@ def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
         The name of the parameter being tested. Helps with debugging.
     check_existing : bool
         Whether to check if the filetype file already exists. Defaults to True.
-    exp_ext: str
-        The expected filetype.
+    exp_ext: (str, list)
+        The expected filetype as a string, including the full stop. Or a list
+        of file extension strings to check.
 
     Raises
     ------
     TypeError: `pth` is not either of string or pathlib.PosixPath.
     FileExistsError: `pth` does not exist on disk.
-    ValueError: `pth` does not have the expected file extension.
+    ValueError: `pth` does not have the expected file extension(s).
 
     Returns
     -------
@@ -120,7 +121,12 @@ def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
     _, ext = os.path.splitext(pth)
     if check_existing and not os.path.exists(pth):
         raise FileExistsError(f"{pth} not found on file.")
-    if ext != exp_ext:
+    if isinstance(exp_ext, list):
+        is_correct = ext in exp_ext
+    elif isinstance(exp_ext, str):
+        is_correct = ext == exp_ext
+
+    if not is_correct:
         raise ValueError(
             f"`{param_nm}` expected file extension {exp_ext}. Found {ext}"
         )
