@@ -556,13 +556,13 @@ class TestRasterPop:
         rp.plot(which=which, save=output_path)
         assert os.path.exists(output_path)
 
-    def test_plot_before_get_data(self, xarr_1_fpath: str):
+    def test_plot_before_get_data(self, xarr_1_fpath: str) -> None:
         """Test case where plot is called before getting data.
 
         Parameters
         ----------
         xarr_1_fpath : str
-            file path to dummy data
+            file path to dummy data.
 
         """
         rp = RasterPop(xarr_1_fpath)
@@ -571,3 +571,33 @@ class TestRasterPop:
             match="Unable to call `plot` without calling `get_pop`.",
         ):
             rp.plot()
+
+    def test_plot_unknown_which(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+        xarr_1_uc: tuple,
+    ) -> None:
+        """Test a plot call with an unknown backend plot type.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            file path to dummy data.
+        xarr_1_aoi : tuple
+            area of interest polygon for dummy data.
+        xarr_1_uc : tuple
+            urban centre polygon for dummy data.
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        unknown_plot_backend = "unknown"
+        with pytest.raises(
+            ValueError,
+            match=(
+                f"Unrecognised value for `which` {unknown_plot_backend}. "
+                "Must be one of "
+            ),
+        ):
+            rp.plot(which=unknown_plot_backend)
