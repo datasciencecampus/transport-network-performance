@@ -179,6 +179,12 @@ class TestGtfsInstance(object):
             match="`geom_crs`.*string or integer. Found <class 'float'>",
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
+        # check that an invalid file extension raises a warning
+        with pytest.warns(
+            UserWarning,
+            match=re.escape(".svg format not implemented. Saving as .html"),
+        ):
+            gtfs_fixture.viz_stops(out_pth=tmp + ".svg")
         # check missing stop_id results in an informative error message
         gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
         with pytest.raises(
@@ -188,16 +194,6 @@ class TestGtfsInstance(object):
             "raises an error through the gtfs-kit package.",
         ):
             gtfs_fixture.viz_stops(out_pth=tmp)
-
-        with pytest.raises(
-            ValueError,
-            match=re.escape(
-                ".svg format not implemented. Accepted "
-                "formats include ['.html'] . Try out_pth="
-                f"'{tmp+'.html'}"
-            ),
-        ):
-            gtfs_fixture.viz_stops(out_pth=tmp + ".svg")
 
     @patch("builtins.print")
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):

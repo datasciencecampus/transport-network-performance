@@ -277,11 +277,10 @@ class GtfsInstance:
 
         pre, ext = os.path.splitext(out_pth)
         if ext != ".html":
-            raise ValueError(
-                f"{ext} format not implemented. Accepted "
-                "formats include ['.html'] . Try out_pth="
-                f"'{pre+'.html'}"
+            warnings.warn(
+                f"{ext} format not implemented. Saving as .html", UserWarning
             )
+            out_pth = os.path.normpath(pre + ".html")
 
         # geoms defence
         if not isinstance(geoms, str):
