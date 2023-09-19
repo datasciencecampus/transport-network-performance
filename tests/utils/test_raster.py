@@ -283,6 +283,12 @@ class TestUtilsRaster:
                 "test.tif",
                 pytest.raises(FileExistsError, match="not found on file."),
             ),
+            # test directory and file that does not exist
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                os.path.join("test", "test.tif"),
+                pytest.raises(FileExistsError, match="not found on file."),
+            ),
             # test file with an invalid file extension
             (
                 lazy_fixture("resample_xarr_fpath"),
