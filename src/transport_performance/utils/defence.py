@@ -9,7 +9,7 @@ import pandas as pd
 
 def _handle_path_like(
     pth: Union[str, pathlib.Path, pathlib.PosixPath], param_nm: str
-) -> pathlib.PosixPath:
+) -> pathlib.Path:
     """Handle path-like parameter values.
 
     Checks a path for symlinks and relative paths. Converts to realpath &
@@ -30,7 +30,9 @@ def _handle_path_like(
     Returns
     -------
     pathlib.Path
-        Platform agnostic representation of pth.
+        Platform agnostic representation of pth. On unix-like a PosixPath is
+        returned. On windows a WindowsPath is returned. Both are children of
+        pathlib.Path.
 
     """
     if not isinstance(pth, (str, pathlib.Path, pathlib.PosixPath)):
