@@ -396,6 +396,8 @@ class Test_HandlePathLike(object):
     )
     def test__handle_path_like_with_strings(self, param_nm, path, expected):
         """For all keys in pth_str, test the path against the expected path."""
+        if os.name == "nt":
+            expected = expected.replace("/", "\\")
         pth = _handle_path_like(path, param_nm).__str__()
         assert pth.endswith(expected), f"Expected: {expected}, Found: {pth}"
 
@@ -405,6 +407,9 @@ class Test_HandlePathLike(object):
     )
     def test__handle_path_like_with_posix_pths(self, param_nm, path, expected):
         """For all keys in posix_pth, test path against expected."""
+        # when all is said and done, on Windows you'll get backward slashes
+        if os.name == "nt":
+            expected = expected.replace("/", "\\")
         pth = _handle_path_like(path, param_nm).__str__()
         assert pth.endswith(expected), f"Expected: {expected}, Found: {pth}"
 
