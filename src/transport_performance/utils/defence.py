@@ -40,7 +40,8 @@ def _handle_path_like(
     pth_str = str(pth).replace("\\", "/")
 
     # Ensure returned path is not relative or contains symbolic links
-    pth = pathlib.Path(pth_str).resolve(strict=False)  # True checks exists
+    pth = os.path.realpath(pth_str)
+    pth = pathlib.Path(pth)
 
     return pth
 
