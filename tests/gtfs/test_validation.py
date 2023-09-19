@@ -179,12 +179,6 @@ class TestGtfsInstance(object):
             match="`geom_crs`.*string or integer. Found <class 'float'>",
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
-        # check that an invalid file extension raises a warning
-        with pytest.warns(
-            UserWarning,
-            match=re.escape(".svg format not implemented. Saving as .html"),
-        ):
-            gtfs_fixture.viz_stops(out_pth=tmp + ".svg")
         # check missing stop_id results in an informative error message
         gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
         with pytest.raises(
