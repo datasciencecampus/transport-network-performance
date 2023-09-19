@@ -107,7 +107,11 @@ def merge_raster_files(
     xds_merged = merge_arrays(arrays)
 
     # create full filepath for merged tif file and write to disk
+    # check expected file type and parent dir exists
     MERGED_DIR = os.path.join(output_dir, output_filename)
+    _is_expected_filetype(
+        MERGED_DIR, "MERGED_DIR", check_existing=False, exp_ext=".tif"
+    )
     _check_parent_dir_exists(MERGED_DIR, "MERGED_DIR", create=True)
     xds_merged.rio.to_raster(MERGED_DIR)
 
