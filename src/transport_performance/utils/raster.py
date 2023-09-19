@@ -77,9 +77,9 @@ def merge_raster_files(
 
     """
     # defend against case where the provided input dir does not exist
-    # note: not able to use `_check_parent_dir_exists()` here since its a dir
-    if not os.path.exists(input_dir):
-        raise FileNotFoundError(f"{input_dir} can not be found")
+    # add a dummy file to purely check if provided parent directory exists
+    dummy_path = os.path.join(input_dir, "dummy.txt")
+    _check_parent_dir_exists(dummy_path, "input_dir", create=False)
 
     # get tif files in directory, ensure some exist and select subset via regex
     tif_filepaths = glob.glob(f"{input_dir}/*.tif")
