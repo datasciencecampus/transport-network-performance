@@ -12,6 +12,7 @@ import plotly.express as px
 import plotly.io as plotly_io
 from pretty_html_table import build_table
 import zipfile
+import warnings
 import pathlib
 from typing import Union
 from plotly.graph_objects import Figure as PlotlyFigure
@@ -224,7 +225,9 @@ class GtfsInstance:
             elif isinstance(msgs, str):
                 print(msgs)
         except KeyError:
-            print(f"No alerts of type {alert_type} were found.")
+            warnings.warn(
+                f"No alerts of type {alert_type} were found.", UserWarning
+            )
 
         return None
 
@@ -236,6 +239,7 @@ class GtfsInstance:
             # shows that shapes.txt is optional file.
             self.feed = self.feed.clean()
         except KeyError:
+            # TODO: Issue 74 - Improve this to clean feed when KeyError raised
             print("KeyError. Feed was not cleaned.")
 
     def viz_stops(
@@ -273,7 +277,9 @@ class GtfsInstance:
 
         pre, ext = os.path.splitext(out_pth)
         if ext != ".html":
-            print(f"{ext} format not implemented. Writing to .html")
+            warnings.warn(
+                f"{ext} format not implemented. Saving as .html", UserWarning
+            )
             out_pth = os.path.normpath(pre + ".html")
 
         # geoms defence
@@ -320,7 +326,13 @@ class GtfsInstance:
                 m.fit_bounds(m.get_bounds())
             m.save(out_pth)
         except KeyError:
-            print("Key Error. Map was not written.")
+            # KeyError inside of an except KeyError here. This is to provide
+            # a more detaailed error message on why a KeyError is being raised.
+            raise KeyError(
+                "The stops table has no 'stop_code' column. While "
+                "this is an optional field in a GTFS file, it "
+                "raises an error through the gtfs-kit package."
+            )
 
     def _order_dataframe_by_day(
         self, df: pd.DataFrame, day_column_name: str = "day"
