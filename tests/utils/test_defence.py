@@ -394,7 +394,7 @@ class Test_HandlePathLike(object):
         "param_nm, path, expected",
         [(k, v[0], v[1]) for k, v in pth_str.items()],
     )
-    def test_handle_path_like_with_strings(self, param_nm, path, expected):
+    def test__handle_path_like_with_strings(self, param_nm, path, expected):
         """For all keys in pth_str, test the path against the expected path."""
         pth = _handle_path_like(path, param_nm).__str__()
         assert pth.endswith(expected), f"Expected: {expected}, Found: {pth}"
@@ -403,7 +403,15 @@ class Test_HandlePathLike(object):
         "param_nm, path, expected",
         [(k, v[0], v[1]) for k, v in pth_posix.items()],
     )
-    def test_handle_path_like_with_posix_pths(self, param_nm, path, expected):
+    def test__handle_path_like_with_posix_pths(self, param_nm, path, expected):
         """For all keys in posix_pth, test path against expected."""
         pth = _handle_path_like(path, param_nm).__str__()
         assert pth.endswith(expected), f"Expected: {expected}, Found: {pth}"
+
+    def test__handle_path_like_raises(self):
+        """Func raises if pth is not a path-like or str."""
+        with pytest.raises(
+            TypeError,
+            match="`empty_tuple` expected path-like, found <class 'tuple'>",
+        ):
+            _handle_path_like(tuple(), "empty_tuple")
