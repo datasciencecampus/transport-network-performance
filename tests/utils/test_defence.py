@@ -408,16 +408,18 @@ class Test_HandlePathLike(object):
     def test__handle_path_like_with_posix_pths(self, param_nm, path, expected):
         """For all keys in posix_pth, test path against expected."""
         # when all is said and done, on Windows you'll get backward slashes
+        exp_return_class = pathlib.PosixPath
         if os.name == "nt":
             expected = expected.replace("/", "\\")
+            exp_return_class = pathlib.WindowsPath
         pth = _handle_path_like(path, param_nm)
         pth_str = pth.__str__()
         assert pth_str.endswith(
             expected
         ), f"Expected: {expected}, Found: {pth}"
         assert isinstance(
-            pth, pathlib.PosixPath
-        ), f"Expected pathlib.PosixPath, found: {type(pth)}"
+            pth, exp_return_class
+        ), f"Expected {exp_return_class}, found: {type(pth)}"
 
     def test__handle_path_like_raises(self):
         """Func raises if pth is not a path-like or str."""
