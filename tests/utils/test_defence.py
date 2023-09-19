@@ -410,8 +410,14 @@ class Test_HandlePathLike(object):
         # when all is said and done, on Windows you'll get backward slashes
         if os.name == "nt":
             expected = expected.replace("/", "\\")
-        pth = _handle_path_like(path, param_nm).__str__()
-        assert pth.endswith(expected), f"Expected: {expected}, Found: {pth}"
+        pth = _handle_path_like(path, param_nm)
+        pth_str = pth.__str__()
+        assert pth_str.endswith(
+            expected
+        ), f"Expected: {expected}, Found: {pth}"
+        assert isinstance(
+            pth, pathlib.PosixPath
+        ), f"Expected pathlib.PosixPath, found: {type(pth)}"
 
     def test__handle_path_like_raises(self):
         """Func raises if pth is not a path-like or str."""
