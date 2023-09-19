@@ -211,6 +211,24 @@ class TestGtfsInstance(object):
         assert os.path.exists(
             no_parent_pth
         ), f"{no_parent_pth} was expected to exist but it was not found."
+        # check behaviour when not implemented fileext used
+        tmp1 = os.path.join(tmpdir, "points2.svg")
+        with pytest.warns(
+            UserWarning,
+            match=".svg format not implemented. Saving as .html",
+        ):
+            gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
+        # need to use regex for the first print statement, as tmpdir will
+        # change.
+        start_pat = re.compile(r"Creating parent directory:.*")
+        out = mock_print.mock_calls[0].__str__()
+        assert bool(
+            start_pat.search(out)
+        ), f"Print statement about directory creation expected. Found: {out}"
+        write_pth = os.path.join(tmpdir, "points2.html")
+        assert os.path.exists(
+            write_pth
+        ), f"Map should have been written to {write_pth} but was not found."
 
     def test_viz_stops_hull(self, tmpdir, gtfs_fixture):
         """Check viz_stops behaviour when plotting hull geom."""
