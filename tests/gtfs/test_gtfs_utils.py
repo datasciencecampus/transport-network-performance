@@ -29,7 +29,8 @@ class TestBboxFilterGtfs(object):
     def test_bbox_filter_gtfs_defence(self):
         """Check defensive behaviour for bbox_filter_gtfs."""
         with pytest.raises(
-            TypeError, match="Expected string. Found <class 'bool'> : False"
+            TypeError,
+            match="`units` expected <class 'str'>. Got <class 'bool'>",
         ):
             bbox_filter_gtfs(units=False)
 
