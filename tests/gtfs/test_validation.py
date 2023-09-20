@@ -259,8 +259,7 @@ class TestGtfsInstance(object):
             len(new_valid[new_valid.message == "Undefined service_id"]) == 1
         ), "gtfs-kit failed to identify missing service_id"
 
-    @patch("builtins.print")
-    def test_print_alerts_defence(self, mocked_print, gtfs_fixture):
+    def test_print_alerts_defence(self, gtfs_fixture):
         """Check defensive behaviour of print_alerts()."""
         with pytest.raises(
             AttributeError,
@@ -269,11 +268,10 @@ class TestGtfsInstance(object):
             gtfs_fixture.print_alerts()
 
         gtfs_fixture.is_valid()
-        gtfs_fixture.print_alerts(alert_type="doesnt_exist")
-        fun_out = mocked_print.mock_calls
-        assert fun_out == [
-            call("No alerts of type doesnt_exist were found.")
-        ], f"Expected a print about alert_type but found: {fun_out}"
+        with pytest.warns(
+            UserWarning, match="No alerts of type doesnt_exist were found."
+        ):
+            gtfs_fixture.print_alerts(alert_type="doesnt_exist")
 
     @patch("builtins.print")  # testing print statements
     def test_print_alerts_single_case(self, mocked_print, gtfs_fixture):
@@ -302,8 +300,7 @@ class TestGtfsInstance(object):
             call("Unrecognized column vehicle_journey_code"),
         ], f"Expected print statements about GTFS warnings. Found: {fun_out}"
 
-    @patch("builtins.print")
-    def test_viz_stops_defence(self, mocked_print, tmpdir, gtfs_fixture):
+    def test_viz_stops_defence(self, tmpdir, gtfs_fixture):
         """Check defensive behaviours of viz_stops()."""
         tmp = os.path.join(tmpdir, "somefile.html")
         with pytest.raises(
@@ -324,13 +321,15 @@ class TestGtfsInstance(object):
             match="`geom_crs`.*string or integer. Found <class 'float'>",
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
-        # check missing stop_id results in print instead of exception
+        # check missing stop_id results in an informative error message
         gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
-        gtfs_fixture.viz_stops(out_pth=tmp)
-        fun_out = mocked_print.mock_calls
-        assert fun_out == [
-            call("Key Error. Map was not written.")
-        ], f"Expected confirmation that map was not written. Found: {fun_out}"
+        with pytest.raises(
+            KeyError,
+            match="The stops table has no 'stop_code' column. While "
+            "this is an optional field in a GTFS file, it "
+            "raises an error through the gtfs-kit package.",
+        ):
+            gtfs_fixture.viz_stops(out_pth=tmp)
 
     @patch("builtins.print")
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
@@ -350,7 +349,11 @@ class TestGtfsInstance(object):
         ), f"{no_parent_pth} was expected to exist but it was not found."
         # check behaviour when not implemented fileext used
         tmp1 = os.path.join(tmpdir, "points2.svg")
-        gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
+        with pytest.warns(
+            UserWarning,
+            match=".svg format not implemented. Saving as .html",
+        ):
+            gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
         # need to use regex for the first print statement, as tmpdir will
         # change.
         start_pat = re.compile(r"Creating parent directory:.*")
@@ -358,10 +361,6 @@ class TestGtfsInstance(object):
         assert bool(
             start_pat.search(out)
         ), f"Print statement about directory creation expected. Found: {out}"
-        out_last = mock_print.mock_calls[-1]
-        assert out_last == call(
-            ".svg format not implemented. Writing to .html"
-        ), f"Expected print statement about .svg. Found: {out_last}"
         write_pth = os.path.join(tmpdir, "points2.html")
         assert os.path.exists(
             write_pth
