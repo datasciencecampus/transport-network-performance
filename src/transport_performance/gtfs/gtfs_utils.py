@@ -20,8 +20,8 @@ def bbox_filter_gtfs(
     in_pth: Union[pathlib.Path, str] = here(
         "tests/data/newport-20230613_gtfs.zip"
     ),
-    out_pth: Union[pathlib.Path, str] = here(
-        "data/external/filtered_gtfs.zip"
+    out_pth: Union[pathlib.Path, str] = pathlib.Path(
+        here("data/external/filtered_gtfs.zip")
     ),
     bbox: Union[GeoDataFrame, list] = [
         -3.077081,
@@ -56,17 +56,21 @@ def bbox_filter_gtfs(
     None
 
     """
-    _is_expected_filetype(pth=in_pth, param_nm="in_pth")
-    _is_expected_filetype(
-        pth=out_pth, param_nm="out_pth", check_existing=False
-    )
     typing_dict = {
         "bbox": [bbox, (list, GeoDataFrame)],
         "units": [units, str],
         "crs": [crs, str],
+        "out_pth": [out_pth, (str, pathlib.Path)],
+        "in_pth": [in_pth, (str, pathlib.Path)],
     }
     for k, v in typing_dict.items():
         _type_defence(v[0], k, v[-1])
+
+    # check paths have valid zip extensions
+    _is_expected_filetype(pth=in_pth, param_nm="in_pth")
+    _is_expected_filetype(
+        pth=out_pth, param_nm="out_pth", check_existing=False
+    )
 
     if isinstance(bbox, list):
         _check_list(ls=bbox, param_nm="bbox_list", exp_type=float)
