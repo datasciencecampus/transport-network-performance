@@ -117,6 +117,149 @@ class TestGtfsInstance(object):
             found_cols == exp_cols
         ).all(), f"Expected columns {exp_cols}. Found: {found_cols}"
 
+    @pytest.mark.runinteg
+    def test_trips_unmatched_ids(self, gtfs_fixture):
+        """Tests to evaluate gtfs-klt's reaction to invalid IDs in trips.
+
+        Parameters
+        ----------
+        gtfs_fixture : GtfsInstance
+            a GtfsInstance test fixure
+
+        """
+        feed = gtfs_fixture.feed
+
+        # add row to tripas table with invald trip_id, route_id, service_id
+        feed.trips = pd.concat(
+            [
+                feed.trips,
+                pd.DataFrame(
+                    {
+                        "service_id": ["101023"],
+                        "route_id": ["2030445"],
+                        "trip_id": [
+                            "VJbedb4cfd0673348e017d42435abbdff3ddacbf89"
+                        ],
+                        "trip_headsign": ["Newport"],
+                        "block_id": [np.nan],
+                        "shape_id": [
+                            "RPSPc4c99ac6aff7e4648cbbef785f88427a48efa80f"
+                        ],
+                        "wheelchair_accessible": [0],
+                        "trip_direction_name": [np.nan],
+                        "vehicle_journey_code": ["VJ109"],
+                    }
+                ),
+            ],
+            axis=0,
+        )
+
+        # assert different errors/warnings haave been raised
+        new_valid = feed.validate()
+        assert (
+            len(new_valid[new_valid.message == "Undefined route_id"]) == 1
+        ), "gtfs-kit failed to recognise invalid route_id"
+        assert (
+            len(new_valid[new_valid.message == "Undefined service_id"]) == 1
+        ), "gtfs-kit failed to recognise invalid service_id"
+        assert (
+            len(new_valid[new_valid.message == "Trip has no stop times"]) == 1
+        ), "gtfs-kit failed to recognise invalid service_id"
+        assert len(new_valid) == 10, "Validation table not expected size"
+
+    @pytest.mark.runinteg
+    def test_routes_unmatched_ids(self, gtfs_fixture):
+        """Tests to evaluate gtfs-klt's reaction to invalid IDs in routes.
+
+        Parameters
+        ----------
+        gtfs_fixture : GtfsInstance
+            a GtfsInstance test fixure
+
+        """
+        feed = gtfs_fixture.feed
+
+        # add row to tripas table with invald trip_id, route_id, service_id
+        feed.routes = pd.concat(
+            [
+                feed.routes,
+                pd.DataFrame(
+                    {
+                        "route_id": ["20304"],
+                        "agency_id": ["OL5060"],
+                        "route_short_name": ["X145"],
+                        "route_long_name": [np.nan],
+                        "route_type": [200],
+                    }
+                ),
+            ],
+            axis=0,
+        )
+
+        # assert different errors/warnings haave been raised
+        new_valid = feed.validate()
+        assert (
+            len(new_valid[new_valid.message == "Undefined agency_id"]) == 1
+        ), "gtfs-kit failed to recognise invalid agency_id"
+        assert (
+            len(new_valid[new_valid.message == "Route has no trips"]) == 1
+        ), "gtfs-kit failed to recognise that there are routes with no trips"
+        assert len(new_valid) == 9, "Validation table not expected size"
+
+    @pytest.mark.runinteg
+    def test_unmatched_service_id_behaviour(self, gtfs_fixture):
+        """Tests to evaluate gtfs-klt's reaction to invalid IDs in calendar.
+
+        Parameters
+        ----------
+        gtfs_fixture : GtfsInstance
+            a GtfsInstance test fixure
+
+        Notes
+        -----
+        'gtfs-kit' does not care about invalid service IDs in the calendar #
+        table. The Calendar table can have data with any service_id as long as
+        the datatypes are correct.
+        This is can be seen in this unit tests as the test is testing this
+        functionality.
+
+        """
+        feed = gtfs_fixture.feed
+        original_error_count = len(feed.validate())
+
+        # introduce a dummy row with a non matching service_id
+        feed.calendar = pd.concat(
+            [
+                feed.calendar,
+                pd.DataFrame(
+                    {
+                        "service_id": ["1018872"],
+                        "monday": [0],
+                        "tuesday": [0],
+                        "wednesday": [0],
+                        "thursday": [0],
+                        "friday": [0],
+                        "saturday": [0],
+                        "sunday": [0],
+                        "start_date": ["20200104"],
+                        "end_date": ["20230301"],
+                    }
+                ),
+            ],
+            axis=0,
+        )
+        new_error_count = len(feed.validate())
+        assert (
+            new_error_count == original_error_count
+        ), "Unrecognised error in validaation table"
+
+        # drop a row from the calendar table
+        feed.calendar.drop(3, inplace=True)
+        new_valid = feed.validate()
+        assert (
+            len(new_valid[new_valid.message == "Undefined service_id"]) == 1
+        ), "gtfs-kit failed to identify missing service_id"
+
     @patch("builtins.print")
     def test_print_alerts_defence(self, mocked_print, gtfs_fixture):
         """Check defensive behaviour of print_alerts()."""
