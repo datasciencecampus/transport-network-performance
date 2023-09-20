@@ -117,7 +117,7 @@ class TestGtfsInstance(object):
             found_cols == exp_cols
         ).all(), f"Expected columns {exp_cols}. Found: {found_cols}"
 
-    @pytest.mark.runinteg
+    @pytest.mark.sanitycheck
     def test_trips_unmatched_ids(self, gtfs_fixture):
         """Tests to evaluate gtfs-klt's reaction to invalid IDs in trips.
 
@@ -167,7 +167,7 @@ class TestGtfsInstance(object):
         ), "gtfs-kit failed to recognise invalid service_id"
         assert len(new_valid) == 10, "Validation table not expected size"
 
-    @pytest.mark.runinteg
+    @pytest.mark.sanitycheck
     def test_routes_unmatched_ids(self, gtfs_fixture):
         """Tests to evaluate gtfs-klt's reaction to invalid IDs in routes.
 
@@ -206,7 +206,7 @@ class TestGtfsInstance(object):
         ), "gtfs-kit failed to recognise that there are routes with no trips"
         assert len(new_valid) == 9, "Validation table not expected size"
 
-    @pytest.mark.runinteg
+    @pytest.mark.sanitycheck
     def test_unmatched_service_id_behaviour(self, gtfs_fixture):
         """Tests to evaluate gtfs-klt's reaction to invalid IDs in calendar.
 
