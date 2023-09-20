@@ -41,28 +41,37 @@ def pytest_configure(config):
     )
 
 
-def pytest_collection_modifyitems(config, items):  # noqa C901
+def pytest_collection_modifyitems(config, items):  # noqa:C901
     """Handle switching based on cli args."""
-    if config.getoption("--runsetup"):
-        # --runsetup given in cli: do not skip slow tests
+    if (
+        config.getoption("--runsetup")
+        & config.getoption("--runinteg")
+        & config.getoption("--runexpensive")
+    ):
+        # do full test suite when all flags are given
         return
-    skip_setup = pytest.mark.skip(reason="need --runsetup option to run")
-    for item in items:
-        if "setup" in item.keywords:
-            item.add_marker(skip_setup)
 
-    if config.getoption("--runinteg"):
-        return
-    skip_runinteg = pytest.mark.skip(reason="need --runinteg option to run")
-    for item in items:
-        if "runinteg" in item.keywords:
-            item.add_marker(skip_runinteg)
+    # do not add setup marks when the runsetup flag is given
+    if not config.getoption("--runsetup"):
+        skip_setup = pytest.mark.skip(reason="need --runsetup option to run")
+        for item in items:
+            if "setup" in item.keywords:
+                item.add_marker(skip_setup)
 
-    if config.getoption("--runexpensive"):
-        return
-    skip_runexpensive = pytest.mark.skip(
-        reason="need --runexpensive option to run"
-    )
-    for item in items:
-        if "runexpensive" in item.keywords:
-            item.add_marker(skip_runexpensive)
+    # do not add integ marks when the runinteg flag is given
+    if not config.getoption("--runinteg"):
+        skip_runinteg = pytest.mark.skip(
+            reason="need --runinteg option to run"
+        )
+        for item in items:
+            if "runinteg" in item.keywords:
+                item.add_marker(skip_runinteg)
+
+    # do not add expensive marks when the runexpensive flag is given
+    if not config.getoption("--runexpensive"):
+        skip_runexpensive = pytest.mark.skip(
+            reason="need --runexpensive option to run"
+        )
+        for item in items:
+            if "runexpensive" in item.keywords:
+                item.add_marker(skip_runexpensive)

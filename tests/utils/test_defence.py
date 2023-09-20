@@ -4,10 +4,15 @@ import os
 import pathlib
 
 import pytest
+import pandas as pd
 
 from transport_performance.utils.defence import (
     _check_list,
     _check_parent_dir_exists,
+    _type_defence,
+    _check_column_in_df,
+    _check_item_in_list,
+    _check_attribute,
 )
 
 
@@ -63,21 +68,6 @@ class Test_CheckParentDirExists(object):
         ):
             _check_parent_dir_exists(
                 pth="missing/file.someext", param_nm="not_found", create=False
-            )
-
-        error_pth = "test_folder\\test_file.py"
-        with pytest.raises(
-            ValueError,
-            match=re.escape(
-                "Please specify string paths with single forward"
-                " slashes only."
-                f" Got {repr(error_pth)}"
-            ),
-        ):
-            _check_parent_dir_exists(
-                pth="test_folder\\test_file.py",
-                param_nm="test_prm",
-                create=False,
             )
 
     def test_check_parents_dir_exists(self, tmp_path):
@@ -136,3 +126,207 @@ class Test_CheckParentDirExists(object):
             "_check_parent_dir_exists did not make parent dir"
             " when 'create=True' (multiple levels)"
         )
+
+
+class Test_TypeDefence(object):
+    """Assertions for _type_defence()."""
+
+    def test_type_defence_raises_on_single_types(self):
+        """Assert func raises for single values to the `types` parameter."""
+        with pytest.raises(
+            TypeError,
+            match="`empty_list` expected <class 'str'>. Got <class 'list'>",
+        ):
+            _type_defence(list(), "empty_list", str)
+        with pytest.raises(
+            TypeError,
+            match="`int_1` expected <class 'list'>. Got <class 'int'>",
+        ):
+            _type_defence(1, "int_1", list)
+        with pytest.raises(
+            TypeError,
+            match="`string_1` expected <class 'int'>. Got <class 'str'>",
+        ):
+            _type_defence("1", "string_1", int)
+        with pytest.raises(
+            TypeError,
+            match="`float_1` expected <class 'int'>. Got <class 'float'>",
+        ):
+            _type_defence(1.0, "float_1", int)
+        with pytest.raises(
+            TypeError,
+            match="`empty_dict` expected <class 'tuple'>. Got <class 'dict'>",
+        ):
+            _type_defence(dict(), "empty_dict", tuple)
+        with pytest.raises(
+            TypeError,
+            match="`empty_tuple` expected <class 'dict'>. Got <class 'tuple'>",
+        ):
+            _type_defence(tuple(), "empty_tuple", dict)
+        with pytest.raises(
+            TypeError,
+            match="`None` expected <class 'int'>. Got <class 'NoneType'>",
+        ):
+            _type_defence(None, "None", int)
+
+    def test_type_defence_raises_on_multiple_types(object):
+        """Assert func raises for multiple values to the `types` parameter."""
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "pected (<class 'str'>, <class 'NoneType'>). Got <class 'int'>"
+            ),
+        ):
+            _type_defence(1, "int_1", (str, type(None)))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`str_1` expected (<class 'int'>, <class 'float'>, <class 'Non"
+            ),
+        ):
+            _type_defence("1", "str_1", (int, float, type(None)))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`float_1` expected (<class 'int'>, <class 'str'>, <class 'Non"
+            ),
+        ):
+            _type_defence(1.0, "float_1", (int, str, type(None)))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`empty_dict` expected (<class 'NoneType'>, <class 'str'>, <cl"
+            ),
+        ):
+            _type_defence(
+                dict(), "empty_dict", (type(None), str, bool, list, tuple)
+            )
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`empty_list` expected (<class 'NoneType'>, <class 'str'>, <cl"
+            ),
+        ):
+            _type_defence(list(), "empty_list", (type(None), str, dict, tuple))
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`empty_tuple` expected (<class 'NoneType'>, <class 'list'>, <"
+            ),
+        ):
+            _type_defence(
+                tuple(),
+                "empty_tuple",
+                (type(None), list, dict, str, int, float),
+            )
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "`None` expected (<class 'int'>, <class 'str'>, <class 'float'"
+            ),
+        ):
+            _type_defence(None, "None", (int, str, float))
+
+    def test_type_defence_passes_on_single_types(self):
+        """Assert func passes on single values to the `types` parameter."""
+        _type_defence(1, "int_1", int)
+        _type_defence(1.0, "float_1", float)
+        _type_defence("1", "str_1", str)
+        _type_defence(dict(), "empty_dict", dict)
+        _type_defence(tuple(), "empty_tuple", tuple)
+        _type_defence(list(), "empty_list", list)
+        _type_defence(None, "None", type(None))
+
+    def test_type_defence_passes_on_multiple_types(self):
+        """Assert func passes on multiple values to the `types` parameter."""
+        _type_defence(1, "int_1", (tuple, int))
+        _type_defence("1", "str_1", (int, float, str))
+        _type_defence(1.0, "float_1", (float, type(None)))
+        _type_defence(dict(), "empty_dict", (tuple, dict))
+        _type_defence(list(), "empty_list", (type(None), list))
+        _type_defence(tuple(), "empty_tuple", (tuple, dict))
+        _type_defence(None, "None", (list, dict, type(None)))
+
+
+@pytest.fixture(scope="function")
+def test_df():
+    """A test fixture for an example dataframe."""
+    test_df = pd.DataFrame(
+        {"test_col_1": [1, 2, 3, 4], "test_col_2": [True, True, False, True]}
+    )
+    return test_df
+
+
+class Test_CheckColumnInDf(object):
+    """Tests for _check_column_in_df()."""
+
+    def test__check_column_in_df_defence(self, test_df):
+        """Defensive tests for _check_colum_in_df()."""
+        with pytest.raises(
+            IndexError, match="'test' is not a column in the dataframe."
+        ):
+            _check_column_in_df(df=test_df, column_name="test")
+
+    def test__check_column_in_df_on_pass(self, test_df):
+        """General tests for _check_colum_in_df()."""
+        _check_column_in_df(test_df, "test_col_1")
+        _check_column_in_df(test_df, "test_col_2")
+
+
+@pytest.fixture(scope="function")
+def test_list():
+    """Test fixture."""
+    my_list = ["test", "test2", "tester", "definitely_testing"]
+    return my_list
+
+
+class TestCheckItemInList(object):
+    """Tests for _check_item_in_list()."""
+
+    def test_check_item_in_list_defence(self, test_list):
+        """Defensive tests for check_item_in_list()."""
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "'test' expected one of the following:"
+                f"{test_list} Got not_in_test"
+            ),
+        ):
+            _check_item_in_list(
+                item="not_in_test", _list=test_list, param_nm="test"
+            )
+
+    def test_check_item_in_list_on_pass(self, test_list):
+        """General tests for check_item_in_list()."""
+        _check_item_in_list(item="test", _list=test_list, param_nm="test")
+
+
+@pytest.fixture(scope="function")
+def dummy_obj():
+    """Fixture to assist with tests."""
+
+    class dummy:
+        """Dummy class for testing."""
+
+        def __init__(self) -> None:
+            """Intialise dummy object."""
+            self.tester = "test"
+            self.tester_also = "also_test"
+
+    new_dummy = dummy()
+    return new_dummy
+
+
+class TestCheckAttribute(object):
+    """Tests for _check_item_in_list()."""
+
+    def test_check_attribute_defence(self, dummy_obj):
+        """Defensive tests for check_attribute."""
+        with pytest.raises(AttributeError, match="dummy test msg"):
+            _check_attribute(
+                obj=dummy_obj, attr="not_in_test", message="dummy test msg"
+            )
+
+    def test_check_attribute_on_pass(self, dummy_obj):
+        """General tests for check_attribute()."""
+        _check_attribute(dummy_obj, "tester")

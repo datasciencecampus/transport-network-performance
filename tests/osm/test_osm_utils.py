@@ -30,13 +30,14 @@ class TestFilterOsm(object):
             # out_pth is not a path_like
             filter_osm(out_pth=False)
         with pytest.raises(
-            TypeError, match="`tag_filter` expected boolean. Got <class 'int'>"
+            TypeError,
+            match="`tag_filter` expected <class 'bool'>. Got <class 'int'>",
         ):
             # check for boolean defense
             filter_osm(tag_filter=1)
         with pytest.raises(
             TypeError,
-            match="`install_osmosis` expected boolean. Got <class 'str'>",
+            match="`install_osmosis` .* <class 'bool'>. Got <class 'str'>",
         ):
             # check for boolean defense
             filter_osm(install_osmosis="False")

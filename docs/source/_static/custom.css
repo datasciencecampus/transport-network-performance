@@ -1,0 +1,6 @@
+/* Provision for custom css */
+
+/* wraps text in toctree to fit into sidebar width */
+li[class^="toctree"] {
+    word-break: break-all;
+}

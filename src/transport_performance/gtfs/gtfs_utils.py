@@ -3,10 +3,13 @@ import gtfs_kit as gk
 import geopandas as gpd
 from shapely.geometry import box
 from pyprojroot import here
+import plotly.graph_objects as go
+import pandas as pd
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_list,
+    _type_defence,
 )
 
 
@@ -60,3 +63,85 @@ def bbox_filter_gtfs(
     print(f"Filtered feed written to {out_pth}.")
 
     return None
+
+
+# NOTE: Possibly move to a more generalised utils file
+def convert_pandas_to_plotly(
+    df: pd.DataFrame, return_html: bool = False
+) -> go.Figure:
+    """Convert a pandas dataframe to a visual plotly figure.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A pandas dataframe to convert to plotly
+        (single index only)
+    return_html : bool, optional
+        Whether or not to return the html element,
+          by default False
+
+    Returns
+    -------
+    go.Figure
+        A plotly figure containing the drawn dataframe
+
+    Raises
+    ------
+    LookupError
+        An error raised if an invalid colour scheme is passed
+    TypeError
+        An error raised if the given pandas dataframe is MultiIndex
+
+    """
+    # pre-defined colour schemes
+    schemes = {
+        "dsc": {
+            "header_fill": "#12436D",
+            "header_font_colour": "white",
+            "cell_fill": "#A285D1",
+            "cell_font_colour": "black",
+            "font_family": "sans-serif",
+            "line_colour": "black",
+        }
+    }
+    # defences
+    _type_defence(df, "df", pd.DataFrame)
+    _type_defence(return_html, "return_html", bool)
+    if isinstance(df.columns, pd.MultiIndex) or isinstance(
+        df.index, pd.MultiIndex
+    ):
+        raise TypeError(
+            "Pandas dataframe must have a singular index, not MultiIndex. "
+            "This means that 'df.columns' or 'df.index' does not return a "
+            "MultiIndex."
+        )
+    # harcoding scheme for now. Could be changed to param if more are added
+    scheme = "dsc"
+    # create plotly df
+    fig = go.Figure(
+        data=go.Table(
+            header=dict(
+                values=df.columns.values,
+                fill_color=schemes[scheme]["header_fill"],
+                font=dict(
+                    color=schemes[scheme]["header_font_colour"],
+                    family=schemes[scheme]["font_family"],
+                ),
+                line_color=schemes[scheme]["line_colour"],
+            ),
+            cells=dict(
+                values=[df[col_name] for col_name in df.columns],
+                fill_color="#A285D1",
+                font=dict(
+                    color=schemes[scheme]["cell_font_colour"],
+                    family=schemes[scheme]["font_family"],
+                ),
+                align="left",
+                line_color=schemes[scheme]["line_colour"],
+            ),
+        )
+    )
+
+    if return_html:
+        return fig.to_html(full_html=False)
+    return fig
