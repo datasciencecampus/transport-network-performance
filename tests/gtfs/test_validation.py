@@ -217,11 +217,10 @@ class TestGtfsInstance(object):
 
         Notes
         -----
-        'gtfs-kit' does not care about invalid service IDs in the calendar #
+        'gtfs-kit' does not care about unmatched service IDs in the calendar
         table. The Calendar table can have data with any service_id as long as
-        the datatypes are correct.
-        This is can be seen in this unit tests as the test is testing this
-        functionality.
+        the datatypes are string. However, gtfs_kit will state an error if the
+        calendar table contains duplicate service_ids.
 
         """
         feed = gtfs_fixture.feed
