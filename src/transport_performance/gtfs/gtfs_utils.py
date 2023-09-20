@@ -6,7 +6,7 @@ from pyprojroot import here
 import plotly.graph_objects as go
 import pandas as pd
 from typing import Union
-from pathlib import PosixPath
+import pathlib
 from geopandas import GeoDataFrame
 
 from transport_performance.utils.defence import (
@@ -17,10 +17,12 @@ from transport_performance.utils.defence import (
 
 
 def bbox_filter_gtfs(
-    in_pth: Union[PosixPath, str] = here(
+    in_pth: Union[pathlib.Path, str] = here(
         "tests/data/newport-20230613_gtfs.zip"
     ),
-    out_pth: Union[PosixPath, str] = here("data/external/filtered_gtfs.zip"),
+    out_pth: Union[pathlib.Path, str] = here(
+        "data/external/filtered_gtfs.zip"
+    ),
     bbox: Union[GeoDataFrame, list] = [
         -3.077081,
         51.52222,
@@ -29,7 +31,7 @@ def bbox_filter_gtfs(
     ],
     units: str = "km",
     crs: str = "epsg:4326",
-):
+) -> None:
     """Filter a GTFS feed to any routes intersecting with a bounding box.
 
     Parameters
@@ -58,10 +60,13 @@ def bbox_filter_gtfs(
     _is_expected_filetype(
         pth=out_pth, param_nm="out_pth", check_existing=False
     )
-    _type_defence(bbox, "bbox", (list, GeoDataFrame))
-    for param in [units, crs]:
-        if not isinstance(param, str):
-            raise TypeError(f"Expected string. Found {type(param)} : {param}")
+    typing_dict = {
+        "bbox": [bbox, (list, GeoDataFrame)],
+        "units": [units, str],
+        "crs": [crs, str],
+    }
+    for k, v in typing_dict.items():
+        _type_defence(v[0], k, v[-1])
 
     if isinstance(bbox, list):
         _check_list(ls=bbox, param_nm="bbox_list", exp_type=float)
