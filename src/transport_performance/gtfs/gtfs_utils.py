@@ -5,6 +5,9 @@ from shapely.geometry import box
 from pyprojroot import here
 import plotly.graph_objects as go
 import pandas as pd
+from typing import Union
+from pathlib import PosixPath
+from geopandas import GeoDataFrame
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
@@ -14,11 +17,18 @@ from transport_performance.utils.defence import (
 
 
 def bbox_filter_gtfs(
-    in_pth=here("tests/data/newport-20230613_gtfs.zip"),
-    out_pth=here("data/external/filtered_gtfs.zip"),
-    bbox_list=[-3.077081, 51.52222, -2.925075, 51.593596],
-    units="m",
-    crs="epsg:4326",
+    in_pth: Union[PosixPath, str] = here(
+        "tests/data/newport-20230613_gtfs.zip"
+    ),
+    out_pth: Union[PosixPath, str] = here("data/external/filtered_gtfs.zip"),
+    bbox: Union[GeoDataFrame, list] = [
+        -3.077081,
+        51.52222,
+        -2.925075,
+        51.593596,
+    ],
+    units: str = "km",
+    crs: str = "epsg:4326",
 ):
     """Filter a GTFS feed to any routes intersecting with a bounding box.
 
@@ -30,7 +40,7 @@ def bbox_filter_gtfs(
     out_pth : (str, pathlib.PosixPath)
         Path to write the filtered feed to. Defaults to
         here("data/external/filtered_gtfs.zip").
-    bbox_list : list(float)
+    bbox : (gpd.GeoDataFrame, list(float))
         A list of x and y values in the order of minx, miny, maxx, maxy.
         Defaults to [-3.077081, 51.52222, -2.925075, 51.593596].
     units : str
@@ -48,17 +58,20 @@ def bbox_filter_gtfs(
     _is_expected_filetype(
         pth=out_pth, param_nm="out_pth", check_existing=False
     )
-    _check_list(ls=bbox_list, param_nm="bbox_list", exp_type=float)
+    _type_defence(bbox, "bbox", (list, GeoDataFrame))
     for param in [units, crs]:
         if not isinstance(param, str):
             raise TypeError(f"Expected string. Found {type(param)} : {param}")
 
-    # create box polygon around provided coords, need to splat
-    box_poly = box(*bbox_list)
-    # gtfs_kit expects gdf
-    gdf = gpd.GeoDataFrame(index=[0], crs=crs, geometry=[box_poly])
+    if isinstance(bbox, list):
+        _check_list(ls=bbox, param_nm="bbox_list", exp_type=float)
+        # create box polygon around provided coords, need to splat
+        bbox = box(*bbox)
+        # gtfs_kit expects gdf
+        bbox = gpd.GeoDataFrame(index=[0], crs=crs, geometry=[bbox])
+
     feed = gk.read_feed(in_pth, dist_units=units)
-    newport_feed = gk.miscellany.restrict_to_area(feed=feed, area=gdf)
+    newport_feed = gk.miscellany.restrict_to_area(feed=feed, area=bbox)
     newport_feed.write(out_pth)
     print(f"Filtered feed written to {out_pth}.")
 
