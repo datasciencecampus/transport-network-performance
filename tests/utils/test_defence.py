@@ -405,3 +405,23 @@ class Test_IsExpectedFiletype(object):
             exp_ext=[".zip", ".gif", ".pbf"],
         )
         assert result is None
+
+    def test_is_expected_filetype_defence(self):
+        """Test defensive behaviour."""
+        with pytest.raises(
+            ValueError, match="No file extension was found in .*noextension"
+        ):
+            _is_expected_filetype(
+                pth="noextension", param_nm="noextension", check_existing=False
+            )
+        # check warnings for adding '.' to exp_ext if forgotten
+        with pytest.warns(
+            UserWarning, match="'.' was prepended to the `exp_ext`."
+        ):
+            _is_expected_filetype("foo.bar", "foobar", False, exp_ext="BaR")
+        with pytest.warns(
+            UserWarning, match="'.' was prepended to `exp_ext` value 'pbf'."
+        ):
+            _is_expected_filetype(
+                "bar.baZ", "barbaz", False, exp_ext=["PBF", ".BAz"]
+            )
