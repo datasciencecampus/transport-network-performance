@@ -338,7 +338,7 @@ class Test_IsExpectedFiletype(object):
     """Tests for _is_expected_filetype."""
 
     def test_is_expected_filetype_raises_single(self):
-        """Test when `exp_ext` is a single string."""
+        """Test raises when `exp_ext` is a single string."""
         with pytest.raises(
             ValueError,
             match="`raster` expected file extension .gif. Found .tiff",
@@ -366,6 +366,7 @@ class Test_IsExpectedFiletype(object):
             ValueError,
             match=re.escape(
                 "`raster` expected file extension ['.gif', '.jiff']. Found .ti"
+                "ff"
             ),
         ):
             _is_expected_filetype(
@@ -378,6 +379,7 @@ class Test_IsExpectedFiletype(object):
             ValueError,
             match=re.escape(
                 "`osm.pbf` expected file extension ['.zip', '.gif', '.pdf']. F"
+                "ound .pbf"
             ),
         ):
             _is_expected_filetype(
