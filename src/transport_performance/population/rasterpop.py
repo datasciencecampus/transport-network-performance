@@ -125,6 +125,7 @@ class RasterPop:
         self._read_and_clip(aoi_bounds, aoi_crs, var_name)
 
         # round population estimates, if requested
+        _type_defence(round, "round", bool)
         if round:
             self._round_population()
 
