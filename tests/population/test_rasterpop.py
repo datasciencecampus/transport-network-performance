@@ -737,11 +737,49 @@ class TestRasterPop:
         ):
             rp.plot()
 
+    @pytest.mark.parametrize(
+        "which, save, expected",
+        [
+            # test an unknown which argument incorrect type
+            (
+                "unknown",
+                None,
+                pytest.raises(
+                    ValueError,
+                    match=(
+                        "Unrecognised value for `which` unknown. "
+                        "Must be one of "
+                    ),
+                ),
+            ),
+            # test which argument incorrect type
+            (
+                1.0,
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="^`which` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test save argument incorrect type
+            (
+                "folium",
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`save` expected .*path-like.*, found .*float.*",
+                ),
+            ),
+        ],
+    )
     def test_plot_unknown_which(
         self,
         xarr_1_fpath: str,
         xarr_1_aoi: tuple,
         xarr_1_uc: tuple,
+        which,
+        save,
+        expected: Type[RaisesContext],
     ) -> None:
         """Test a plot call with an unknown backend plot type.
 
@@ -753,19 +791,24 @@ class TestRasterPop:
             area of interest polygon for dummy data.
         xarr_1_uc : tuple
             urban centre polygon for dummy data.
+        which
+            see `RasterPop.plot()` docstring
+        save
+            see `RasterPop.plot()` docstring
+        expected : Type[RaisesContext]
+            Expected raise result.
+
+        Note
+        ----
+        1. For more information on the other parameters used in this test see
+        the `plot()` docstring. Avoiding duplication by not describing or type
+        hinting them here.
 
         """
         rp = RasterPop(xarr_1_fpath)
         rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
-        unknown_plot_backend = "unknown"
-        with pytest.raises(
-            ValueError,
-            match=(
-                f"Unrecognised value for `which` {unknown_plot_backend}. "
-                "Must be one of "
-            ),
-        ):
-            rp.plot(which=unknown_plot_backend)
+        with expected:
+            rp.plot(which=which, save=save)
 
     def test_plot_foliumn_no_uc(
         self,
