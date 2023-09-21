@@ -19,6 +19,7 @@ from cartopy.mpl.geoaxes import GeoAxes
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _type_defence,
+    _handle_path_like,
 )
 
 
@@ -187,6 +188,11 @@ class RasterPop:
         - Cartopy backend: `help(RasterPop._plot_cartopy)`
 
         """
+        # input type defence
+        _type_defence(which, "which", str)
+        if save is not None:
+            save = _handle_path_like(save, "save")
+
         # record of valid which values
         WHICH_VALUES = {"matplotlib", "catropy", "folium"}
 
