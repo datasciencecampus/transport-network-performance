@@ -366,6 +366,7 @@ class Test_IsExpectedFiletype(object):
             ValueError,
             match=re.escape(
                 "`raster` expected file extension ['.gif', '.jiff']. Found .ti"
+                "ff"
             ),
         ):
             _is_expected_filetype(
@@ -378,6 +379,7 @@ class Test_IsExpectedFiletype(object):
             ValueError,
             match=re.escape(
                 "`osm.pbf` expected file extension ['.zip', '.gif', '.pdf']. F"
+                "ound .pbf"
             ),
         ):
             _is_expected_filetype(
