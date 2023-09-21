@@ -34,16 +34,19 @@ class TestGtfsInstance(object):
         """Testing parameter validation on class initialisation."""
         with pytest.raises(
             TypeError,
-            match=r"`gtfs_pth` expected path-like, found <class 'int'>.",
+            match=re.escape(
+                "`pth` expected (<class 'str'>, <class 'pathlib.Path'>). Got <"
+                "class 'int'>"
+            ),
         ):
             GtfsInstance(gtfs_pth=1)
         with pytest.raises(
             # match refactored to work on windows & mac
             # see https://regex101.com/r/i1C4I4/1
-            FileExistsError,
-            match=r"doesnt(/|\\)exist not found on file.",
+            FileNotFoundError,
+            match=r"doesnt.exist not found on file.",
         ):
-            GtfsInstance(gtfs_pth="doesnt/exist")
+            GtfsInstance(gtfs_pth="doesnt.exist")
         #  a case where file is found but not a zip directory
         with pytest.raises(
             ValueError,
@@ -117,8 +120,149 @@ class TestGtfsInstance(object):
             found_cols == exp_cols
         ).all(), f"Expected columns {exp_cols}. Found: {found_cols}"
 
-    @patch("builtins.print")
-    def test_print_alerts_defence(self, mocked_print, gtfs_fixture):
+    @pytest.mark.sanitycheck
+    def test_trips_unmatched_ids(self, gtfs_fixture):
+        """Tests to evaluate gtfs-klt's reaction to invalid IDs in trips.
+
+        Parameters
+        ----------
+        gtfs_fixture : GtfsInstance
+            a GtfsInstance test fixure
+
+        """
+        feed = gtfs_fixture.feed
+
+        # add row to tripas table with invald trip_id, route_id, service_id
+        feed.trips = pd.concat(
+            [
+                feed.trips,
+                pd.DataFrame(
+                    {
+                        "service_id": ["101023"],
+                        "route_id": ["2030445"],
+                        "trip_id": [
+                            "VJbedb4cfd0673348e017d42435abbdff3ddacbf89"
+                        ],
+                        "trip_headsign": ["Newport"],
+                        "block_id": [np.nan],
+                        "shape_id": [
+                            "RPSPc4c99ac6aff7e4648cbbef785f88427a48efa80f"
+                        ],
+                        "wheelchair_accessible": [0],
+                        "trip_direction_name": [np.nan],
+                        "vehicle_journey_code": ["VJ109"],
+                    }
+                ),
+            ],
+            axis=0,
+        )
+
+        # assert different errors/warnings haave been raised
+        new_valid = feed.validate()
+        assert (
+            len(new_valid[new_valid.message == "Undefined route_id"]) == 1
+        ), "gtfs-kit failed to recognise invalid route_id"
+        assert (
+            len(new_valid[new_valid.message == "Undefined service_id"]) == 1
+        ), "gtfs-kit failed to recognise invalid service_id"
+        assert (
+            len(new_valid[new_valid.message == "Trip has no stop times"]) == 1
+        ), "gtfs-kit failed to recognise invalid service_id"
+        assert len(new_valid) == 10, "Validation table not expected size"
+
+    @pytest.mark.sanitycheck
+    def test_routes_unmatched_ids(self, gtfs_fixture):
+        """Tests to evaluate gtfs-klt's reaction to invalid IDs in routes.
+
+        Parameters
+        ----------
+        gtfs_fixture : GtfsInstance
+            a GtfsInstance test fixure
+
+        """
+        feed = gtfs_fixture.feed
+
+        # add row to tripas table with invald trip_id, route_id, service_id
+        feed.routes = pd.concat(
+            [
+                feed.routes,
+                pd.DataFrame(
+                    {
+                        "route_id": ["20304"],
+                        "agency_id": ["OL5060"],
+                        "route_short_name": ["X145"],
+                        "route_long_name": [np.nan],
+                        "route_type": [200],
+                    }
+                ),
+            ],
+            axis=0,
+        )
+
+        # assert different errors/warnings haave been raised
+        new_valid = feed.validate()
+        assert (
+            len(new_valid[new_valid.message == "Undefined agency_id"]) == 1
+        ), "gtfs-kit failed to recognise invalid agency_id"
+        assert (
+            len(new_valid[new_valid.message == "Route has no trips"]) == 1
+        ), "gtfs-kit failed to recognise that there are routes with no trips"
+        assert len(new_valid) == 9, "Validation table not expected size"
+
+    @pytest.mark.sanitycheck
+    def test_unmatched_service_id_behaviour(self, gtfs_fixture):
+        """Tests to evaluate gtfs-klt's reaction to invalid IDs in calendar.
+
+        Parameters
+        ----------
+        gtfs_fixture : GtfsInstance
+            a GtfsInstance test fixure
+
+        Notes
+        -----
+        'gtfs-kit' does not care about unmatched service IDs in the calendar
+        table. The Calendar table can have data with any service_id as long as
+        the datatypes are string. However, gtfs_kit will state an error if the
+        calendar table contains duplicate service_ids.
+
+        """
+        feed = gtfs_fixture.feed
+        original_error_count = len(feed.validate())
+
+        # introduce a dummy row with a non matching service_id
+        feed.calendar = pd.concat(
+            [
+                feed.calendar,
+                pd.DataFrame(
+                    {
+                        "service_id": ["1018872"],
+                        "monday": [0],
+                        "tuesday": [0],
+                        "wednesday": [0],
+                        "thursday": [0],
+                        "friday": [0],
+                        "saturday": [0],
+                        "sunday": [0],
+                        "start_date": ["20200104"],
+                        "end_date": ["20230301"],
+                    }
+                ),
+            ],
+            axis=0,
+        )
+        new_error_count = len(feed.validate())
+        assert (
+            new_error_count == original_error_count
+        ), "Unrecognised error in validaation table"
+
+        # drop a row from the calendar table
+        feed.calendar.drop(3, inplace=True)
+        new_valid = feed.validate()
+        assert (
+            len(new_valid[new_valid.message == "Undefined service_id"]) == 1
+        ), "gtfs-kit failed to identify missing service_id"
+
+    def test_print_alerts_defence(self, gtfs_fixture):
         """Check defensive behaviour of print_alerts()."""
         with pytest.raises(
             AttributeError,
@@ -127,11 +271,10 @@ class TestGtfsInstance(object):
             gtfs_fixture.print_alerts()
 
         gtfs_fixture.is_valid()
-        gtfs_fixture.print_alerts(alert_type="doesnt_exist")
-        fun_out = mocked_print.mock_calls
-        assert fun_out == [
-            call("No alerts of type doesnt_exist were found.")
-        ], f"Expected a print about alert_type but found: {fun_out}"
+        with pytest.warns(
+            UserWarning, match="No alerts of type doesnt_exist were found."
+        ):
+            gtfs_fixture.print_alerts(alert_type="doesnt_exist")
 
     @patch("builtins.print")  # testing print statements
     def test_print_alerts_single_case(self, mocked_print, gtfs_fixture):
@@ -160,8 +303,7 @@ class TestGtfsInstance(object):
             call("Unrecognized column vehicle_journey_code"),
         ], f"Expected print statements about GTFS warnings. Found: {fun_out}"
 
-    @patch("builtins.print")
-    def test_viz_stops_defence(self, mocked_print, tmpdir, gtfs_fixture):
+    def test_viz_stops_defence(self, tmpdir, gtfs_fixture):
         """Check defensive behaviours of viz_stops()."""
         tmp = os.path.join(tmpdir, "somefile.html")
         with pytest.raises(
@@ -182,13 +324,15 @@ class TestGtfsInstance(object):
             match="`geom_crs`.*string or integer. Found <class 'float'>",
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
-        # check missing stop_id results in print instead of exception
+        # check missing stop_id results in an informative error message
         gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
-        gtfs_fixture.viz_stops(out_pth=tmp)
-        fun_out = mocked_print.mock_calls
-        assert fun_out == [
-            call("Key Error. Map was not written.")
-        ], f"Expected confirmation that map was not written. Found: {fun_out}"
+        with pytest.raises(
+            KeyError,
+            match="The stops table has no 'stop_code' column. While "
+            "this is an optional field in a GTFS file, it "
+            "raises an error through the gtfs-kit package.",
+        ):
+            gtfs_fixture.viz_stops(out_pth=tmp)
 
     @patch("builtins.print")
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
@@ -208,7 +352,11 @@ class TestGtfsInstance(object):
         ), f"{no_parent_pth} was expected to exist but it was not found."
         # check behaviour when not implemented fileext used
         tmp1 = os.path.join(tmpdir, "points2.svg")
-        gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
+        with pytest.warns(
+            UserWarning,
+            match=".svg format not implemented. Saving as .html",
+        ):
+            gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
         # need to use regex for the first print statement, as tmpdir will
         # change.
         start_pat = re.compile(r"Creating parent directory:.*")
@@ -216,10 +364,6 @@ class TestGtfsInstance(object):
         assert bool(
             start_pat.search(out)
         ), f"Print statement about directory creation expected. Found: {out}"
-        out_last = mock_print.mock_calls[-1]
-        assert out_last == call(
-            ".svg format not implemented. Writing to .html"
-        ), f"Expected print statement about .svg. Found: {out_last}"
         write_pth = os.path.join(tmpdir, "points2.html")
         assert os.path.exists(
             write_pth

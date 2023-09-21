@@ -5,6 +5,7 @@ import pathlib
 import numpy as np
 import os
 import pandas as pd
+import warnings
 
 
 def _handle_path_like(
@@ -96,7 +97,12 @@ def _check_parent_dir_exists(
     return None
 
 
-def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
+def _is_expected_filetype(
+    pth: Union[pathlib.Path, str],
+    param_nm: str,
+    check_existing: bool = True,
+    exp_ext: Union[str, list] = ".zip",
+) -> None:
     """Handle file paths that should be existing filetypes.
 
     Parameters
@@ -107,26 +113,62 @@ def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
         The name of the parameter being tested. Helps with debugging.
     check_existing : bool
         Whether to check if the filetype file already exists. Defaults to True.
-    exp_ext: str
-        The expected filetype.
+    exp_ext: (str, list)
+        The expected filetype as a string. Or a list of file extension strings
+        to check. If the user forgets to include the "." in `exp_ext`, one will
+        be added.
 
     Raises
     ------
     TypeError: `pth` is not either of string or pathlib.PosixPath.
     FileExistsError: `pth` does not exist on disk.
-    ValueError: `pth` does not have the expected file extension.
+    ValueError: `pth` does not have the expected file extension(s).
 
     Returns
     -------
     None
 
     """
+    typing_dict = {
+        "pth": [pth, (str, pathlib.Path)],
+        "param_nm": [param_nm, str],
+        "check_existing": [check_existing, bool],
+        "exp_ext": [exp_ext, (str, list)],
+    }
+    for k, v in typing_dict.items():
+        _type_defence(v[0], k, v[-1])
     pth = _handle_path_like(pth=pth, param_nm=param_nm)
-
     _, ext = os.path.splitext(pth)
+    # lower for consistency
+    ext = ext.lower()
+    # catch cases where directories are passed. eg no file stem.
+    if ext == "":
+        raise ValueError(f"No file extension was found in {pth}.")
+    # treat cases where user forgot to include '.'
+    if isinstance(exp_ext, list):
+        # lower everything for consistency
+        exp_ext = [ext.lower() for ext in exp_ext]
+        for i, e in enumerate(exp_ext):
+            if not e.startswith(r"."):
+                warnings.warn(
+                    UserWarning(
+                        f"'.' was prepended to `exp_ext` value '{exp_ext[i]}'."
+                    )
+                )
+                exp_ext[i] = "." + e
+        is_correct = ext in exp_ext
+
+    else:
+        exp_ext = exp_ext.lower()
+        if not exp_ext.startswith(r"."):
+            warnings.warn(UserWarning("'.' was prepended to the `exp_ext`."))
+            exp_ext = "." + exp_ext
+        is_correct = ext == exp_ext
+
     if check_existing and not os.path.exists(pth):
-        raise FileExistsError(f"{pth} not found on file.")
-    if ext != exp_ext:
+        raise FileNotFoundError(f"{pth} not found on file.")
+
+    if not is_correct:
         raise ValueError(
             f"`{param_nm}` expected file extension {exp_ext}. Found {ext}"
         )

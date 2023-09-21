@@ -15,6 +15,7 @@ from transport_performance.utils.defence import (
     _check_item_in_list,
     _check_attribute,
     _handle_path_like,
+    _is_expected_filetype,
 )
 
 
@@ -428,3 +429,96 @@ class Test_HandlePathLike(object):
             match="`empty_tuple` expected path-like, found <class 'tuple'>",
         ):
             _handle_path_like(tuple(), "empty_tuple")
+
+
+class Test_IsExpectedFiletype(object):
+    """Tests for _is_expected_filetype."""
+
+    def test_is_expected_filetype_raises_single(self):
+        """Test raises when `exp_ext` is a single string."""
+        with pytest.raises(
+            ValueError,
+            match="`raster` expected file extension .gif. Found .tiff",
+        ):
+            _is_expected_filetype(
+                "some-raster.tiff",
+                "raster",
+                check_existing=False,
+                exp_ext=".gif",
+            )
+        with pytest.raises(
+            ValueError,
+            match="`gtfs.zip` expected file extension .tiff. Found .zip",
+        ):
+            _is_expected_filetype(
+                here("tests/data/newport-20230613_gtfs.zip"),
+                param_nm="gtfs.zip",
+                check_existing=True,
+                exp_ext=".tiff",
+            )
+
+    def test_is_expected_filetype_raises_multiple(self):
+        """Test raises when `exp_ext` is a list of multiple file extensions."""
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "`raster` expected file extension ['.gif', '.jiff']. Found .ti"
+                "ff"
+            ),
+        ):
+            _is_expected_filetype(
+                "some_raster.tiff",
+                "raster",
+                check_existing=False,
+                exp_ext=[".gif", ".jiff"],
+            )
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "`osm.pbf` expected file extension ['.zip', '.gif', '.pdf']. F"
+                "ound .pbf"
+            ),
+        ):
+            _is_expected_filetype(
+                "tests/data/newport-2023-06-13.osm.pbf",
+                "osm.pbf",
+                check_existing=True,
+                exp_ext=[".zip", ".gif", ".pdf"],
+            )
+
+    def test_is_expected_filetype_on_pass(self):
+        """Test when `exp_ext` passes."""
+        result = _is_expected_filetype(
+            "some_raster.tiff",
+            "raster",
+            check_existing=False,
+            exp_ext=[".gif", ".tiff"],
+        )
+        assert result is None
+        result = _is_expected_filetype(
+            "tests/data/newport-2023-06-13.osm.pbf",
+            "osm.pbf",
+            check_existing=True,
+            exp_ext=[".zip", ".gif", ".pbf"],
+        )
+        assert result is None
+
+    def test_is_expected_filetype_defence(self):
+        """Test defensive behaviour."""
+        with pytest.raises(
+            ValueError, match="No file extension was found in .*noextension"
+        ):
+            _is_expected_filetype(
+                pth="noextension", param_nm="noextension", check_existing=False
+            )
+        # check warnings for adding '.' to exp_ext if forgotten
+        with pytest.warns(
+            UserWarning, match="'.' was prepended to the `exp_ext`."
+        ):
+            _is_expected_filetype("foo.bar", "foobar", False, exp_ext="BaR")
+        with pytest.warns(
+            UserWarning, match="'.' was prepended to `exp_ext` value 'pbf'."
+        ):
+            _is_expected_filetype(
+                "bar.baZ", "barbaz", False, exp_ext=["PBF", ".BAz"]
+            )

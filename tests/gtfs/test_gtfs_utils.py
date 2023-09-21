@@ -7,6 +7,8 @@ import pathlib
 import re
 
 import pandas as pd
+import geopandas as gpd
+from shapely.geometry import box
 from plotly.graph_objects import Figure as PlotlyFigure
 
 from transport_performance.gtfs.gtfs_utils import (
@@ -19,26 +21,54 @@ from transport_performance.gtfs.validation import GtfsInstance
 class TestBboxFilterGtfs(object):
     """Test bbox_filter_gtfs."""
 
+    @pytest.fixture(scope="function")
+    def bbox_list(self):
+        """Tiny bounding box over newport train station."""
+        return [-3.0017783334, 51.5874718209, -2.9964692194, 51.5907034241]
+
     def test_bbox_filter_gtfs_defence(self):
         """Check defensive behaviour for bbox_filter_gtfs."""
         with pytest.raises(
-            TypeError, match="Expected string. Found <class 'bool'> : False"
+            TypeError,
+            match="`units` expected <class 'str'>. Got <class 'bool'>",
         ):
             bbox_filter_gtfs(units=False)
 
-    def test_bbox_filter_gtfs_writes_as_expected(self, tmpdir):
-        """Test bbox_filter_gtfs writes out a filtered GTFS archive."""
-        tmp_out = os.path.join(tmpdir, "newport-train-station_gtfs.zip")
+    def test_bbox_filter_gtfs_writes_with_bbox_list(self, bbox_list, tmpdir):
+        """Test bbox_filter_gtfs writes when a bbox list is passed."""
+        tmp_out = os.path.join(
+            tmpdir, "newport-train-station-bboxlist_gtfs.zip"
+        )
         bbox_filter_gtfs(
             in_pth=here("tests/data/newport-20230613_gtfs.zip"),
             out_pth=pathlib.Path(tmp_out),
-            bbox_list=[
-                -3.0017783334,
-                51.5874718209,
-                -2.9964692194,
-                51.5907034241,
-            ],  # tiny bounding box over newport train station
+            bbox=bbox_list,
         )
+        assert os.path.exists(
+            tmp_out
+        ), f"Expected {tmp_out} to exist but it did not."
+        # check the output gtfs can be read
+        feed = GtfsInstance(gtfs_pth=pathlib.Path(tmp_out))
+        assert isinstance(
+            feed, GtfsInstance
+        ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
+
+    def test_bbox_filter_gtfs_writes_with_bbox_gdf(self, bbox_list, tmpdir):
+        """Test bbox_filter_gtfs writes when a bbox GDF is passed."""
+        # convert bbox list to gdf
+        bbox_gdf = gpd.GeoDataFrame(
+            index=[0], crs="epsg:4326", geometry=[box(*bbox_list)]
+        )
+        tmp_out = os.path.join(
+            tmpdir, "newport-train-station-bboxgdf_gtfs.zip"
+        )
+
+        bbox_filter_gtfs(
+            in_pth=here("tests/data/newport-20230613_gtfs.zip"),
+            out_pth=pathlib.Path(tmp_out),
+            bbox=bbox_gdf,
+        )
+
         assert os.path.exists(
             tmp_out
         ), f"Expected {tmp_out} to exist but it did not."
