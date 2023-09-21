@@ -13,6 +13,10 @@ import rioxarray
 
 from rioxarray.merge import merge_arrays
 from rasterio.warp import Resampling
+from transport_performance.utils.defence import (
+    _check_parent_dir_exists,
+    _is_expected_filetype,
+)
 
 
 def merge_raster_files(
@@ -73,8 +77,9 @@ def merge_raster_files(
 
     """
     # defend against case where the provided input dir does not exist
-    if not os.path.exists(input_dir):
-        raise FileNotFoundError(f"{input_dir} can not be found")
+    # add a dummy file to purely check if provided parent directory exists
+    dummy_path = os.path.join(input_dir, "dummy.txt")
+    _check_parent_dir_exists(dummy_path, "input_dir", create=False)
 
     # get tif files in directory, ensure some exist and select subset via regex
     tif_filepaths = glob.glob(f"{input_dir}/*.tif")
@@ -101,12 +106,13 @@ def merge_raster_files(
     # merge the datasets together
     xds_merged = merge_arrays(arrays)
 
-    # make output_dir if it does not exist
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
-
     # create full filepath for merged tif file and write to disk
+    # check expected file type and parent dir exists
     MERGED_DIR = os.path.join(output_dir, output_filename)
+    _is_expected_filetype(
+        MERGED_DIR, "MERGED_DIR", check_existing=False, exp_ext=".tif"
+    )
+    _check_parent_dir_exists(MERGED_DIR, "MERGED_DIR", create=True)
     xds_merged.rio.to_raster(MERGED_DIR)
 
     # get boundaries of inputs and output raster
@@ -146,8 +152,7 @@ def sum_resample_file(
 
     """
     # defend against case where the provided input dir does not exist
-    if not os.path.exists(input_filepath):
-        raise FileNotFoundError(f"{input_filepath} can not be found")
+    _is_expected_filetype(input_filepath, "input_filepath", exp_ext=".tif")
 
     xds = rioxarray.open_rasterio(input_filepath, masked=True)
 
@@ -161,7 +166,6 @@ def sum_resample_file(
     )
 
     # make output_filepath's directory if it does not exist
-    if not os.path.exists(os.path.dirname(output_filepath)):
-        os.mkdir(output_filepath)
+    _check_parent_dir_exists(output_filepath, "output_filepath", create=True)
 
     xds_resampled.rio.to_raster(output_filepath)

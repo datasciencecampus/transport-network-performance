@@ -28,6 +28,12 @@ def pytest_addoption(parser):
         default=False,
         help="run expensive tests",
     )
+    parser.addoption(
+        "--sanitycheck",
+        action="store_true",
+        default=False,
+        help="run sanity checks",
+    )
 
 
 def pytest_configure(config):
@@ -39,6 +45,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "runexpensive: mark test to run expensive tests"
     )
+    config.addinivalue_line(
+        "markers",
+        "sanitycheck: mark test to run checks in dependencies' code.",
+    )
 
 
 def pytest_collection_modifyitems(config, items):  # noqa:C901
@@ -47,6 +57,7 @@ def pytest_collection_modifyitems(config, items):  # noqa:C901
         config.getoption("--runsetup")
         & config.getoption("--runinteg")
         & config.getoption("--runexpensive")
+        & config.getoption("--sanitycheck")
     ):
         # do full test suite when all flags are given
         return
@@ -75,3 +86,12 @@ def pytest_collection_modifyitems(config, items):  # noqa:C901
         for item in items:
             if "runexpensive" in item.keywords:
                 item.add_marker(skip_runexpensive)
+
+    # do not add sanitycheck marks when the sanitycheck flag is given
+    if not config.getoption("--sanitycheck"):
+        skip_sanitycheck = pytest.mark.skip(
+            reason="need --sanitycheck option to run"
+        )
+        for item in items:
+            if "sanitycheck" in item.keywords:
+                item.add_marker(skip_sanitycheck)

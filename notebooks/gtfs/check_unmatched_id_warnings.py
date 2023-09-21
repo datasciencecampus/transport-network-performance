@@ -46,8 +46,8 @@ feed.trips = pd.concat(
         feed.trips,
         pd.DataFrame(
             {
-                "service_id": [101],
-                "route_id": [20304],
+                "service_id": ["101023"],
+                "route_id": ["2030445"],
                 "trip_id": ["VJbedb4cfd0673348e017d42435abbdff3ddacbf89"],
                 "trip_headsign": ["Newport"],
                 "block_id": [np.nan],
@@ -70,8 +70,7 @@ feed.routes = pd.concat(
         feed.routes,
         pd.DataFrame(
             {
-                "service_id": [101],
-                "route_id": [20304],
+                "route_id": ["20304"],
                 "agency_id": ["OL5060"],
                 "route_short_name": ["X145"],
                 "route_long_name": [np.nan],
@@ -91,3 +90,5 @@ feed.validate()
 # the pipeline and therefore the user will be made aware. It is also flagged
 # as an error which means that 'the GTFS is violated'
 # (https://mrcagney.github.io/gtfs_kit_docs/).
+
+# %%
