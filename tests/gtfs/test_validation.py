@@ -34,16 +34,19 @@ class TestGtfsInstance(object):
         """Testing parameter validation on class initialisation."""
         with pytest.raises(
             TypeError,
-            match=r"`gtfs_pth` expected path-like, found <class 'int'>.",
+            match=re.escape(
+                "`pth` expected (<class 'str'>, <class 'pathlib.Path'>). Got <"
+                "class 'int'>"
+            ),
         ):
             GtfsInstance(gtfs_pth=1)
         with pytest.raises(
             # match refactored to work on windows & mac
             # see https://regex101.com/r/i1C4I4/1
-            FileExistsError,
-            match=r"doesnt(/|\\)exist not found on file.",
+            FileNotFoundError,
+            match=r"doesnt.exist not found on file.",
         ):
-            GtfsInstance(gtfs_pth="doesnt/exist")
+            GtfsInstance(gtfs_pth="doesnt.exist")
         #  a case where file is found but not a zip directory
         with pytest.raises(
             ValueError,
