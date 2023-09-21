@@ -77,7 +77,7 @@ class RasterPop:
         aoi_bounds: Type[Polygon],
         aoi_crs: str = None,
         round: bool = False,
-        threshold: int = None,
+        threshold: Union[int, float] = None,
         var_name: str = "population",
         urban_centre_bounds: Type[Polygon] = None,
         urban_centre_crs: str = None,
@@ -96,7 +96,7 @@ class RasterPop:
             data.
         round : bool, optional
             Round population estimates to the nearest whole integer.
-        threshold : int, optional
+        threshold : Union[int, float], optional
             Threshold population estimates, where values below the set
             threshold will be set to nan, by default None which means no
             thresholding will occur.
@@ -262,10 +262,11 @@ class RasterPop:
         """Round population data."""
         self._xds = np.rint(self._xds)
 
-    def _threshold_population(self, threshold: int) -> None:
+    def _threshold_population(self, threshold: Union[int, float]) -> None:
         """Threshold population data."""
         # `where()` is working differently to expectation here - it keeps
         # values above the threshold and otherwise sets them to nan.
+        _type_defence(threshold, "threshold", (int, float))
         self._xds = self._xds.where(self._xds >= threshold)
 
     def _to_geopandas(self, round: bool = False) -> None:
