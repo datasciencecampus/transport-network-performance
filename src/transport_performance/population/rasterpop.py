@@ -18,6 +18,7 @@ from matplotlib import colormaps
 from cartopy.mpl.geoaxes import GeoAxes
 from transport_performance.utils.defence import (
     _is_expected_filetype,
+    _type_defence,
 )
 
 
@@ -232,12 +233,10 @@ class RasterPop:
             The variable name, by default "population".
 
         """
-        # defend against case where aoi_bounds is not a shapely polygon
-        if not isinstance(aoi_bounds, Polygon):
-            raise TypeError(
-                f"Expected type {Polygon.__name__} for `aoi_bounds`, "
-                f"got {type(aoi_bounds).__name__}."
-            )
+        # input type defence checks
+        _type_defence(aoi_bounds, "aoi_bounds", Polygon)
+        _type_defence(aoi_crs, "aoi_crs", (str, type(None)))
+        _type_defence(var_name, "var_name", str)
 
         # convert aoi bounds CRS if needed
         if aoi_crs is not None:
