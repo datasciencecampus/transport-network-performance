@@ -326,12 +326,9 @@ class RasterPop:
             When `urban_centre_bounds` is not a shapely Polygon.
 
         """
-        # defend against case where urban_centre_bounds is not a polygon
-        if not isinstance(urban_centre_bounds, Polygon):
-            raise TypeError(
-                f"Expected type {Polygon.__name__} for `urban_centre_bounds`, "
-                f"got {type(urban_centre_bounds).__name__}."
-            )
+        # input type defences
+        _type_defence(urban_centre_bounds, "urban_centre_bounds", Polygon)
+        _type_defence(urban_centre_crs, "urban_centre_crs", (str, type(None)))
 
         # match the crs if is one isn't provided - default assumption if this
         # arg is not set, and a CRS is needed when building the gdf below
