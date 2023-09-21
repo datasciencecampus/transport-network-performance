@@ -16,6 +16,9 @@ from typing import Union, Type, Tuple
 from shapely.geometry.polygon import Polygon
 from matplotlib import colormaps
 from cartopy.mpl.geoaxes import GeoAxes
+from transport_performance.utils.defence import (
+    _is_expected_filetype,
+)
 
 
 class RasterPop:
@@ -56,8 +59,7 @@ class RasterPop:
     def __init__(self, filepath: Union[str, bytes, os.PathLike]) -> None:
 
         # defend against cases where input is not a file and does not exist
-        if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"{filepath} is not a file.")
+        _is_expected_filetype(filepath, "filepath", exp_ext=".tif")
 
         self.__filepath = filepath
 

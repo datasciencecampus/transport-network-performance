@@ -413,7 +413,14 @@ class TestRasterPop:
     @pytest.mark.parametrize(
         "fpath, aoi_bounds, urban_centre_bounds, expected",
         [
-            ("test.tif", None, None, pytest.raises(FileNotFoundError)),
+            (
+                "test.tif",
+                None,
+                None,
+                pytest.raises(
+                    FileExistsError, match="test.tif not found on file."
+                ),
+            ),
             (
                 lazy_fixture("xarr_1_fpath"),
                 ("test"),
