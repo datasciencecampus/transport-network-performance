@@ -20,6 +20,7 @@ from transport_performance.utils.defence import (
     _is_expected_filetype,
     _type_defence,
     _handle_path_like,
+    _check_parent_dir_exists,
 )
 
 
@@ -503,9 +504,7 @@ class RasterPop:
 
         # write to file if filepath is given
         if save is not None:
-            out_df = os.path.dirname(save)
-            if not os.path.exists(out_df):
-                os.mkdir(out_df)
+            _check_parent_dir_exists(save, "save", create=True)
             m.save(save)
             m = None
 
@@ -676,9 +675,7 @@ class RasterPop:
         # write to file if filepath is given, since there is no figure, need to
         # get the current figure and resize it to match the axis before saving
         if save is not None:
-            out_df = os.path.dirname(save)
-            if not os.path.exists(out_df):
-                os.mkdir(out_df)
+            _check_parent_dir_exists(save, "save", create=True)
             fig = plt.gcf()
             fig.set_size_inches(*figsize)
             fig.savefig(save)
@@ -717,9 +714,7 @@ class RasterPop:
 
         # write to file if filepath is given
         if save is not None:
-            out_df = os.path.dirname(save)
-            if not os.path.exists(out_df):
-                os.mkdir(out_df)
+            _check_parent_dir_exists(save, "save", create=True)
             fig.savefig(save)
             ax = None
 
