@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def _handle_path_like(
-    pth: Union[str, pathlib.Path, pathlib.PosixPath], param_nm: str
+    pth: Union[str, pathlib.Path], param_nm: str
 ) -> pathlib.Path:
     """Handle path-like parameter values.
 
@@ -17,7 +17,7 @@ def _handle_path_like(
 
     Parameters
     ----------
-    pth : (str, pathlib.Path, pathlib.PosixPath)
+    pth : (str, pathlib.Path)
         The path to check.
 
     param_nm : str
@@ -35,7 +35,7 @@ def _handle_path_like(
         pathlib.Path.
 
     """
-    if not isinstance(pth, (str, pathlib.Path, pathlib.PosixPath)):
+    if not isinstance(pth, (str, pathlib.Path)):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
     # Convert backslashes to forward slashes for Windows paths
