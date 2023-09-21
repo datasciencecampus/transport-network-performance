@@ -13,7 +13,8 @@ def _handle_path_like(
     """Handle path-like parameter values.
 
     Checks a path for symlinks and relative paths. Converts to realpath &
-    outputs pathlib.PosixPath object (platform agnostic).
+    outputs pathlib.PosixPath or pathlib.WindowsPath object
+    (platform agnostic).
 
     Parameters
     ----------
