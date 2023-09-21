@@ -417,7 +417,7 @@ class TestRasterPop:
             (
                 "test.tif",
                 pytest.raises(
-                    FileExistsError, match="test.tif not found on file."
+                    FileNotFoundError, match="test.tif not found on file."
                 ),
             ),
             # existing file but an incorrect file type
