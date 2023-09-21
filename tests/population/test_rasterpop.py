@@ -426,7 +426,7 @@ class TestRasterPop:
                 pytest.raises(
                     ValueError,
                     match=(
-                        "`filepath` expected file extension .tif. Found .pbf",
+                        "`filepath` expected file extension .tif. Found .pbf"
                     ),
                 ),
             ),
