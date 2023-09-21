@@ -4,6 +4,7 @@ import numpy as np
 import os
 from typing import Union
 import pandas as pd
+import warnings
 
 
 def _handle_path_like(pth, param_nm):
@@ -107,8 +108,9 @@ def _is_expected_filetype(
     check_existing : bool
         Whether to check if the filetype file already exists. Defaults to True.
     exp_ext: (str, list)
-        The expected filetype as a string, including the full stop. Or a list
-        of file extension strings to check.
+        The expected filetype as a string. Or a list of file extension strings
+        to check. If the user forgets to include the "." in `exp_ext`, one will
+        be added.
 
     Raises
     ------
@@ -121,15 +123,46 @@ def _is_expected_filetype(
     None
 
     """
+    typing_dict = {
+        "pth": [pth, (str, pathlib.Path)],
+        "param_nm": [param_nm, str],
+        "check_existing": [check_existing, bool],
+        "exp_ext": [exp_ext, (str, list)],
+    }
+    for k, v in typing_dict.items():
+        _type_defence(v[0], k, v[-1])
     pth = _handle_path_like(pth=pth, param_nm=param_nm)
-
     _, ext = os.path.splitext(pth)
-    if check_existing and not os.path.exists(pth):
-        raise FileExistsError(f"{pth} not found on file.")
+    # lower for consistency
+    ext = ext.lower()
+    # catch cases where directories are passed. eg no file stem.
+    if ext == "":
+        raise ValueError(f"No file extension was found in {pth}.")
+    # treat cases where user forgot to include '.'
     if isinstance(exp_ext, list):
+        # lower everything for consistency
+        exp_ext = [ext.lower() for ext in exp_ext]
+        for i, e in enumerate(exp_ext):
+            if not e.startswith(r"."):
+                warnings.warn(
+                    f"'.' was prepended to `exp_ext` value '{exp_ext[i]}'."
+                )
+                exp_ext[i] = "." + e
         is_correct = ext in exp_ext
-    elif isinstance(exp_ext, str):
+
+    else:
+        exp_ext = exp_ext.lower()
+        if not exp_ext.startswith(r"."):
+            warnings.warn("'.' was prepended to the `exp_ext`.")
+            exp_ext = "." + exp_ext
         is_correct = ext == exp_ext
+
+    if check_existing and not os.path.exists(pth):
+        raise FileNotFoundError(f"{pth} not found on file.")
+    # if isinstance(exp_ext, list):
+    #     is_correct = ext in exp_ext
+    # elif isinstance(exp_ext, str):
+    #     is_correct = ext == exp_ext
 
     if not is_correct:
         raise ValueError(
