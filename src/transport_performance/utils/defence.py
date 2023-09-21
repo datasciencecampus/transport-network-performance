@@ -145,7 +145,9 @@ def _is_expected_filetype(
         for i, e in enumerate(exp_ext):
             if not e.startswith(r"."):
                 warnings.warn(
-                    f"'.' was prepended to `exp_ext` value '{exp_ext[i]}'."
+                    UserWarning(
+                        f"'.' was prepended to `exp_ext` value '{exp_ext[i]}'."
+                    )
                 )
                 exp_ext[i] = "." + e
         is_correct = ext in exp_ext
@@ -153,16 +155,12 @@ def _is_expected_filetype(
     else:
         exp_ext = exp_ext.lower()
         if not exp_ext.startswith(r"."):
-            warnings.warn("'.' was prepended to the `exp_ext`.")
+            warnings.warn(UserWarning("'.' was prepended to the `exp_ext`."))
             exp_ext = "." + exp_ext
         is_correct = ext == exp_ext
 
     if check_existing and not os.path.exists(pth):
         raise FileNotFoundError(f"{pth} not found on file.")
-    # if isinstance(exp_ext, list):
-    #     is_correct = ext in exp_ext
-    # elif isinstance(exp_ext, str):
-    #     is_correct = ext == exp_ext
 
     if not is_correct:
         raise ValueError(
