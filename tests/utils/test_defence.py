@@ -14,6 +14,7 @@ from transport_performance.utils.defence import (
     _check_column_in_df,
     _check_item_in_list,
     _check_attribute,
+    _handle_path_like,
     _is_expected_filetype,
 )
 
@@ -332,6 +333,102 @@ class TestCheckAttribute(object):
     def test_check_attribute_on_pass(self, dummy_obj):
         """General tests for check_attribute()."""
         _check_attribute(dummy_obj, "tester")
+
+
+class Test_HandlePathLike(object):
+    """Tests for _handle_path_like()."""
+
+    # Paremetrize tests. First dictionary contains string like paths.
+    pth_str = {
+        "unix_pth": ["foo/bar", "/transport-network-performance/foo/bar"],
+        "unix_symlink": [
+            "foo/bar/../baz",
+            "/transport-network-performance/foo/baz",
+        ],
+        "windows_single": [
+            r"foo\bar",
+            "/transport-network-performance/foo/bar",
+        ],
+        "windows_double": [
+            "foo\\bar",
+            "/transport-network-performance/foo/bar",
+        ],
+        "windows_mixed": [
+            r"foo\\bar\baz",
+            "transport-network-performance/foo/bar/baz",
+        ],
+        "windows_symlink": [
+            r"foo\\bar\\..\baz",
+            "/transport-network-performance/foo/baz",
+        ],
+    }
+    # second dict contains unix like, representing the user passing
+    # pyprojroot.here values to _handle_path_like()
+    pth_posix = {
+        "unix_here": [
+            here(pth_str["unix_pth"][0]),
+            "/transport-network-performance/foo/bar",
+        ],
+        "unix_here_symlink": [
+            here(pth_str["unix_symlink"][0]),
+            "/transport-network-performance/foo/baz",
+        ],
+        "windows_single_here": [
+            here(rf"{pth_str['windows_single'][0]}"),
+            "/transport-network-performance/foo/bar",
+        ],
+        "windows_double_here": [
+            here(pth_str["windows_double"][0]),
+            "/transport-network-performance/foo/bar",
+        ],
+        "windows_mixed_here": [
+            here(rf"{pth_str['windows_mixed'][0]}"),
+            "/transport-network-performance/foo/bar/baz",
+        ],
+        "windows_here_symlink": [
+            here(pth_str["windows_symlink"][0]),
+            "/transport-network-performance/foo/baz",
+        ],
+    }
+
+    @pytest.mark.parametrize(
+        "param_nm, path, expected",
+        [(k, v[0], v[1]) for k, v in pth_str.items()],
+    )
+    def test__handle_path_like_with_strings(self, param_nm, path, expected):
+        """For all keys in pth_str, test the path against the expected path."""
+        if os.name == "nt":
+            expected = expected.replace("/", "\\")
+        pth = _handle_path_like(path, param_nm).__str__()
+        assert pth.endswith(expected), f"Expected: {expected}, Found: {pth}"
+
+    @pytest.mark.parametrize(
+        "param_nm, path, expected",
+        [(k, v[0], v[1]) for k, v in pth_posix.items()],
+    )
+    def test__handle_path_like_with_posix_pths(self, param_nm, path, expected):
+        """For all keys in posix_pth, test path against expected."""
+        # when all is said and done, on Windows you'll get backward slashes
+        exp_return_class = pathlib.PosixPath
+        if os.name == "nt":
+            expected = expected.replace("/", "\\")
+            exp_return_class = pathlib.WindowsPath
+        pth = _handle_path_like(path, param_nm)
+        pth_str = pth.__str__()
+        assert pth_str.endswith(
+            expected
+        ), f"Expected: {expected}, Found: {pth}"
+        assert isinstance(
+            pth, exp_return_class
+        ), f"Expected {exp_return_class}, found: {type(pth)}"
+
+    def test__handle_path_like_raises(self):
+        """Func raises if pth is not a path-like or str."""
+        with pytest.raises(
+            TypeError,
+            match="`empty_tuple` expected path-like, found <class 'tuple'>",
+        ):
+            _handle_path_like(tuple(), "empty_tuple")
 
 
 class Test_IsExpectedFiletype(object):

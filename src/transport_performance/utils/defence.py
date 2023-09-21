@@ -1,21 +1,25 @@
 """Defensive check utility funcs. Internals only."""
+from typing import Union
+
 import pathlib
 import numpy as np
 import os
-from typing import Union
 import pandas as pd
 import warnings
 
 
-def _handle_path_like(pth, param_nm):
+def _handle_path_like(
+    pth: Union[str, pathlib.Path], param_nm: str
+) -> pathlib.Path:
     """Handle path-like parameter values.
 
     Checks a path for symlinks and relative paths. Converts to realpath &
-    outputs pathlib.Path object (platform agnostic).
+    outputs pathlib.PosixPath or pathlib.WindowsPath object
+    (platform agnostic).
 
     Parameters
     ----------
-    pth : (str, pathlib.PosixPath)
+    pth : (str, pathlib.Path)
         The path to check.
 
     param_nm : str
@@ -28,18 +32,20 @@ def _handle_path_like(pth, param_nm):
     Returns
     -------
     pathlib.Path
-        Platform agnostic representation of pth.
+        Platform agnostic representation of pth. On unix-like a PosixPath is
+        returned. On windows a WindowsPath is returned. Both are children of
+        pathlib.Path.
 
     """
     if not isinstance(pth, (str, pathlib.Path)):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
-    # ensure returned path is not relative or contains symbolic links
-    pth = os.path.realpath(pth)
+    # Convert backslashes to forward slashes for Windows paths
+    pth_str = str(pth).replace("\\", "/")
 
-    if not isinstance(pth, pathlib.Path):
-        # coerce to Path even if user passes string
-        pth = pathlib.Path(pth)
+    # Ensure returned path is not relative or contains symbolic links
+    pth = os.path.realpath(pth_str)
+    pth = pathlib.Path(pth)
 
     return pth
 
