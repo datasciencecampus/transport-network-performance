@@ -142,6 +142,7 @@ if pop_config["override"]:
 
 # %%
 # resample 100m grids to 200m grids (default resample factor used)
+# Can take a couple of minutes...
 if pop_config["override"]:
     sum_resample_file(
         here(pop_config["merged_path"]),
