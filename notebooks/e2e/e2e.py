@@ -195,7 +195,7 @@ if gtfs_config["override"]:
     bbox_filter_gtfs(
         in_pth=here(gtfs_config["input_path"]),
         out_pth=here(gtfs_config["filtered_path"]),
-        bbox_list=gtfs_bbox,
+        bbox=gtfs_bbox,
         units=gtfs_config["units"],
         crs=uc_gdf.crs.to_string(),
     )
