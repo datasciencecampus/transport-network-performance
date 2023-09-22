@@ -15,6 +15,9 @@ import rasterio as rio
 import xarray as xr
 import rioxarray  # noqa: F401 - import required for xarray but not needed here
 
+from typing import Type
+from pytest_lazyfixture import lazy_fixture
+from _pytest.python_api import RaisesContext
 from transport_performance.utils.raster import (
     merge_raster_files,
     sum_resample_file,
@@ -159,6 +162,31 @@ def resample_xarr_fpath(
     return out_filepath
 
 
+@pytest.fixture
+def save_empty_text_file(resample_xarr_fpath: str) -> str:
+    """Save an empty text file.
+
+    Parameters
+    ----------
+    resample_xarr_fpath : str
+        File path to dummy raster data, used to make sure file is in the same
+        directory.
+
+    Returns
+    -------
+    str
+        Dummy text file name.
+
+    """
+    # save an empty text file to the same directory
+    working_dir = os.path.dirname(resample_xarr_fpath)
+    test_file_name = "text.txt"
+    with open(os.path.join(working_dir, test_file_name), "w") as f:
+        f.write("")
+
+    return test_file_name
+
+
 class TestUtilsRaster:
     """A class to test utils/raster functions."""
 
@@ -222,9 +250,13 @@ class TestUtilsRaster:
         # useful when using -rP flag in pytest to see directory
         print(f"Temp filepath for resampling test: {resample_xarr_fpath}")
 
-        # resample to input and set the output location
+        # set the output location to sub dir in a different folder
+        # adding different sub dir to test resolution of issue 121
         output_fpath = os.path.join(
-            os.path.dirname(resample_xarr_fpath), "output.tif"
+            os.path.dirname(os.path.dirname(resample_xarr_fpath)),
+            "resample_outputs",
+            "outputs",
+            "output.tif",
         )
         sum_resample_file(resample_xarr_fpath, output_fpath)
 
@@ -241,3 +273,49 @@ class TestUtilsRaster:
         # assert correct resampling values (summing consitiuent grids)
         expected_result = np.array([[[14, 22], [46, 54]]])
         assert np.array_equal(expected_result, xds_out.to_numpy())
+
+    @pytest.mark.parametrize(
+        "input_path, file_name, expected",
+        [
+            # test file that does not exist
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                "test.tif",
+                pytest.raises(FileNotFoundError, match="not found on file."),
+            ),
+            # test directory and file that does not exist
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                os.path.join("test", "test.tif"),
+                pytest.raises(FileNotFoundError, match="not found on file."),
+            ),
+            # test file with an invalid file extension
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                lazy_fixture("save_empty_text_file"),
+                pytest.raises(
+                    ValueError,
+                    match="expected file extension .tif. Found .txt",
+                ),
+            ),
+        ],
+    )
+    def test_sum_resample_on_fail(
+        self, input_path: str, file_name: str, expected: Type[RaisesContext]
+    ) -> None:
+        """Test sum_resample_file in failing cases.
+
+        Parameters
+        ----------
+        input_path : str
+            path to input dummy raster data
+        file_name : str
+            name of file to be tested
+        expected : Type[RaisesContext]
+            exception to test with
+
+        """
+        with expected:
+            input_folder = os.path.dirname(input_path)
+            fpath = os.path.join(input_folder, file_name)
+            sum_resample_file(fpath, "")
