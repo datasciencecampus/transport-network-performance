@@ -6,15 +6,6 @@ Am end to end example to run through urban centre detection, population
 retrieval, gtfs manipulation and validation, OSM clipping , analysing the
 transport network using `r5py` and calculating a performance metric.
 
-> Note: Some bugs have be raised as a result of developing this script. Be
-> sure to check out the follow issues on GitHub to ensure they are closed or
-> to see temporary workarounds if any of the cells herein do not run:
->
-> - [#121](
-https://github.com/datasciencecampus/transport-network-performance/issues/121)
-> for an issue with `utils/raster/sum_resample_file()` writing to new
-> directories
-
 ## Preamble
 Call in script wide imports and the configuration information.
 """
