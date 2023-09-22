@@ -61,7 +61,8 @@ Merge 1Km gridded data together. Then detect the urban centre.
 Using [GHS-POP 1Km gridded](https://ghsl.jrc.ec.europa.eu/download.php?ds=pop)
 population estimaes, in a **Mollweide CRS**. The following tiles are expected
 in `config["urban_centre"]["input_dir"]`(which include the British isles and
-France):
+France). Must use 2020 Epoch or update the `subset_regex` pattern to match your
+files in the cell below:
 
 - R3-C18
 - R3-C19
