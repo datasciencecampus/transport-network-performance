@@ -118,9 +118,10 @@ buffered urban centre boundary detected in the step above.
 ### Data Sources
 
 Using [GHS-POP 100m gridded](https://ghsl.jrc.ec.europa.eu/download.php?ds=pop)
-population estimaes, in a **Mollweide CRS**. The following tiles are expected
+population estimates, in a **Mollweide CRS**. The following tiles are expected
 in `config["population"]["input_dir"]`(which include the British isles and
-France):
+France). Must use 2020 Epoch or update the `subset_regex` pattern to match your
+files in the cell below:
 
 - R3-C18
 - R3-C19
