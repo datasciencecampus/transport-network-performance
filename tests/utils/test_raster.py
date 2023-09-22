@@ -393,47 +393,88 @@ class TestUtilsRaster:
         assert np.array_equal(expected_result, xds_out.to_numpy())
 
     @pytest.mark.parametrize(
-        "input_path, file_name, expected",
+        "input_filepath, output_filepath, resample_factor, expected",
         [
-            # test file that does not exist
+            # test input_filepath that has an incorrect type
             (
-                lazy_fixture("resample_xarr_fpath"),
+                1.0,
+                None,
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="expected (.*str.*pathlib.Path.*). Got .*float.*",
+                ),
+            ),
+            # test input_filepath that does not exist
+            (
                 "test.tif",
+                None,
+                None,
                 pytest.raises(FileNotFoundError, match="not found on file."),
             ),
-            # test directory and file that does not exist
+            # test input_filepath that does not have correct file extension
             (
-                lazy_fixture("resample_xarr_fpath"),
-                os.path.join("test", "test.tif"),
-                pytest.raises(FileNotFoundError, match="not found on file."),
-            ),
-            # test file with an invalid file extension
-            (
-                lazy_fixture("resample_xarr_fpath"),
-                lazy_fixture("save_empty_text_file"),
+                os.path.join("tests", "data", "newport-2023-06-13.osm.pbf"),
+                None,
+                None,
                 pytest.raises(
                     ValueError,
-                    match="expected file extension .tif. Found .txt",
+                    match=(
+                        "`input_filepath` expected file extension .tif. Found"
+                        " .pbf*"
+                    ),
+                ),
+            ),
+            # test output_filepath correct type
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                1.0,
+                2,
+                pytest.raises(
+                    TypeError, match="expected path-like, found .*float.*"
+                ),
+            ),
+            # test output_filepath correct type
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match=("^`resample_factor` expected .*int.*. Got .*str.*"),
                 ),
             ),
         ],
     )
     def test_sum_resample_on_fail(
-        self, input_path: str, file_name: str, expected: Type[RaisesContext]
+        self,
+        input_filepath,
+        output_filepath,
+        resample_factor,
+        expected: Type[RaisesContext],
     ) -> None:
         """Test sum_resample_file in failing cases.
 
         Parameters
         ----------
-        input_path : str
-            path to input dummy raster data
-        file_name : str
-            name of file to be tested
+        input_filepath
+            input filepath for test
+        output_filepath
+            output filepath for test
+        resample_factor
+            resample factor to pass to `sum_resample_file`
         expected : Type[RaisesContext]
             exception to test with
 
+        Notes
+        -----
+        1. Arguments are type hinted here to make unit tests more maintable.
+        See `merge_raster_files()` docstring for more details.
+
         """
         with expected:
-            input_folder = os.path.dirname(input_path)
-            fpath = os.path.join(input_folder, file_name)
-            sum_resample_file(fpath, "")
+            sum_resample_file(
+                input_filepath=input_filepath,
+                output_filepath=output_filepath,
+                resample_factor=resample_factor,
+            )

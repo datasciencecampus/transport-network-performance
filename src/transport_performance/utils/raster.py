@@ -36,9 +36,9 @@ def merge_raster_files(
 
     Parameters
     ----------
-    input_dir : str
+    input_dir : Union[str, pathlib.Path]
         Directory containing input raster files.
-    output_dir : str
+    output_dir : Union[str, pathlib.Path]
         Directory to write output, merged raster file.
     output_filename : str
         Filename of merged raster file (.tif extension required).
@@ -135,8 +135,8 @@ def merge_raster_files(
 
 
 def sum_resample_file(
-    input_filepath: str,
-    output_filepath: str,
+    input_filepath: Union[str, pathlib.Path],
+    output_filepath: Union[str, pathlib.Path],
     resample_factor: int = 2,
 ) -> None:
     """Resample raster file (change grid resolution) by summing.
@@ -146,9 +146,9 @@ def sum_resample_file(
 
     Parameters
     ----------
-    input_filepath : str
+    input_filepath : Union[str, pathlib.Path]
         Input filpath of GeoTIFF file
-    output_filepath : str
+    output_filepath : Union[str, pathlib.Path]
         Output filepath for resampled GeoTIFF file
     resample_factor : int, optional
         Factor to resample input raster by, by default 2 which means the
@@ -167,6 +167,7 @@ def sum_resample_file(
     xds = rioxarray.open_rasterio(input_filepath, masked=True)
 
     # resample based on scaling factor and using sum resampling
+    _type_defence(resample_factor, "resample_factor", int)
     xds_resampled = xds.rio.reproject(
         xds.rio.crs,
         resolution=tuple(
@@ -175,7 +176,14 @@ def sum_resample_file(
         resampling=Resampling.sum,
     )
 
-    # make output_filepath's directory if it does not exist
+    # make output_filepath's directory if it does not exist and check the
+    # output file extension
     _check_parent_dir_exists(output_filepath, "output_filepath", create=True)
+    _is_expected_filetype(
+        output_filepath,
+        "output_filepath",
+        exp_ext=".tif",
+        check_existing=False,
+    )
 
     xds_resampled.rio.to_raster(output_filepath)
