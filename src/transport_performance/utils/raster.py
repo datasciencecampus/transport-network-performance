@@ -10,18 +10,22 @@ import os
 import glob
 import re
 import rioxarray
+import pathlib
 
+from typing import Union
 from rioxarray.merge import merge_arrays
 from rasterio.warp import Resampling
 from transport_performance.utils.defence import (
+    _handle_path_like,
     _check_parent_dir_exists,
     _is_expected_filetype,
+    _type_defence,
 )
 
 
 def merge_raster_files(
-    input_dir: str,
-    output_dir: str,
+    input_dir: Union[str, pathlib.Path],
+    output_dir: Union[str, pathlib.Path],
     output_filename: str,
     subset_regex: str = None,
 ) -> dict:
@@ -77,7 +81,9 @@ def merge_raster_files(
 
     """
     # defend against case where the provided input dir does not exist
-    # add a dummy file to purely check if provided parent directory exists
+    # handle path like first to capture input dir type errors before os.join
+    input_dir = _handle_path_like(input_dir, "input_dir")
+    # then add a dummy file to purely check if provided parent directory exists
     dummy_path = os.path.join(input_dir, "dummy.txt")
     _check_parent_dir_exists(dummy_path, "input_dir", create=False)
 
@@ -88,6 +94,7 @@ def merge_raster_files(
 
     # apply regex and ensure tif files exist after applying it
     # raise a unique FileNotFoundError to aid debugging
+    _type_defence(subset_regex, "subset_regex", (str, type(None)))
     if subset_regex is not None:
         tif_filepaths = [
             fpath for fpath in tif_filepaths if re.search(subset_regex, fpath)
@@ -107,13 +114,16 @@ def merge_raster_files(
     xds_merged = merge_arrays(arrays)
 
     # create full filepath for merged tif file and write to disk
-    # check expected file type and parent dir exists
-    MERGED_DIR = os.path.join(output_dir, output_filename)
+    # check expected file type and parent dir exists (creating if not)
+    # need to _handle_path_like before os.path.join
+    output_dir = _handle_path_like(output_dir, "output_dir")
+    merged_dir = os.path.join(output_dir, output_filename)
+    _check_parent_dir_exists(merged_dir, "merged_dir", create=True)
     _is_expected_filetype(
-        MERGED_DIR, "MERGED_DIR", check_existing=False, exp_ext=".tif"
+        merged_dir, "merged_dir", check_existing=False, exp_ext=".tif"
     )
-    _check_parent_dir_exists(MERGED_DIR, "MERGED_DIR", create=True)
-    xds_merged.rio.to_raster(MERGED_DIR)
+
+    xds_merged.rio.to_raster(merged_dir)
 
     # get boundaries of inputs and output raster
     bounds = {
