@@ -271,6 +271,19 @@ class TestUtilsRaster:
                 None,
                 pytest.raises(TypeError, match="expected path-like"),
             ),
+            # test output filename not correct type
+            (
+                lazy_fixture("merge_xarrs_fpath"),
+                "",
+                1.0,
+                None,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "^`output_filename` expected .*str.*. Got .*float.*"
+                    ),
+                ),
+            ),
             # test output filename not correct file extension
             (
                 lazy_fixture("merge_xarrs_fpath"),

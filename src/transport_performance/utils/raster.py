@@ -117,6 +117,7 @@ def merge_raster_files(
     # check expected file type and parent dir exists (creating if not)
     # need to _handle_path_like before os.path.join
     output_dir = _handle_path_like(output_dir, "output_dir")
+    _type_defence(output_filename, "output_filename", str)
     merged_dir = os.path.join(output_dir, output_filename)
     _check_parent_dir_exists(merged_dir, "merged_dir", create=True)
     _is_expected_filetype(
