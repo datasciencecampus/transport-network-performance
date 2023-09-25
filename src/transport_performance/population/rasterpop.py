@@ -189,8 +189,9 @@ class RasterPop:
         - Cartopy backend: `help(RasterPop._plot_cartopy)`
 
         """
-        # input type defence
+        # input type defence - setting which to lower case to improve usability
         _type_defence(which, "which", str)
+        which = which.lower()
         if save is not None:
             save = _handle_path_like(save, "save")
 

@@ -680,6 +680,7 @@ class TestRasterPop:
             ("folium", "outputs", "folium.html"),
             ("cartopy", "outputs", "cartopy.png"),
             ("matplotlib", "outputs", "matplotlib.png"),
+            ("MaTpLoTlIb", "outputs", "matplotlib.png"),  # test .lower()
         ],
     )
     def test_plot_on_pass(
