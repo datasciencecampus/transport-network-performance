@@ -80,8 +80,8 @@ def bbox_filter_gtfs(
         bbox = gpd.GeoDataFrame(index=[0], crs=crs, geometry=[bbox])
 
     feed = gk.read_feed(in_pth, dist_units=units)
-    newport_feed = gk.miscellany.restrict_to_area(feed=feed, area=bbox)
-    newport_feed.write(out_pth)
+    restricted_feed = gk.miscellany.restrict_to_area(feed=feed, area=bbox)
+    restricted_feed.write(out_pth)
     print(f"Filtered feed written to {out_pth}.")
 
     return None
