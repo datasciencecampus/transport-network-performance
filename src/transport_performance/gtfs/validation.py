@@ -274,7 +274,7 @@ class GtfsInstance:
         filtered_only: bool
             When True, only stops referenced within stop_times.txt will be
             plotted. When False, stops referenced in stops.txt will be plotted.
-            Note that osmosis filtering behaviour removes stops from
+            Note that gtfs_kit filtering behaviour removes stops from
             stop_times.txt but not stops.txt.
 
         Returns
