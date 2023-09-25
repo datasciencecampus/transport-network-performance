@@ -811,6 +811,97 @@ class TestRasterPop:
         with expected:
             rp.plot(which=which, save=save)
 
+    @pytest.mark.parametrize(
+        "tiles, attr, cmap, boundary_color, boundary_weight, expected",
+        [
+            # test tiles incorrect type
+            (
+                1.0,
+                "",
+                "",
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`tiles` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test attr incorrect type
+            (
+                "",
+                1.0,
+                "",
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`attr` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test cmap incorrect type
+            (
+                "",
+                "",
+                1.0,
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cmap` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test boundary_color incorrect type
+            (
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`boundary_color` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test boundary_weight incorrect type
+            (
+                "",
+                "",
+                "",
+                "",
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`boundary_weight` expected .*int.*. Got .*float.*",
+                ),
+            ),
+        ],
+    )
+    def test_plot_folium_type_defence(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+        tiles,
+        attr,
+        cmap,
+        boundary_color,
+        boundary_weight,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Unit test _plot_folium kwargs type raises."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with expected:
+            rp.plot(
+                which="folium",
+                save=None,
+                tiles=tiles,
+                attr=attr,
+                cmap=cmap,
+                boundary_color=boundary_color,
+                boundary_weight=boundary_weight,
+            )
+
     def test_plot_foliumn_no_uc(
         self,
         xarr_1_fpath: str,

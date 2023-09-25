@@ -407,7 +407,7 @@ class RasterPop:
         boundary_color : str, optional
             Color of the boundary lines, by default "red". Could also be a
             hexstring.
-        boundary_weight : float, optional
+        boundary_weight : int, optional
             Weight (in pixels) of the boudary lines, by default 2.
 
         Returns
@@ -429,6 +429,13 @@ class RasterPop:
         .. [3] https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
         """
+        # kwarg type checks
+        _type_defence(tiles, "tiles", str)
+        _type_defence(attr, "attr", str)
+        _type_defence(cmap, "cmap", str)
+        _type_defence(boundary_color, "boundary_color", str)
+        _type_defence(boundary_weight, "boundary_weight", int)
+
         # add a base map with no tile - then is it not on a layer control
         m = folium.Map(tiles=None, control_scale=True, zoom_control=True)
 
