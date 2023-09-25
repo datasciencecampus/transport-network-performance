@@ -459,7 +459,7 @@ class TestRasterPop:
 
     @pytest.mark.parametrize(
         "aoi_bounds, aoi_crs, round, threshold, var_name, urban_centre_bounds,"
-        " , urban_centre_crs, expected",
+        " urban_centre_crs, expected",
         [
             # test aoi_bounds incorrect type
             (

@@ -168,7 +168,7 @@ class RasterPop:
         Union[folium.Map, Type[GeoAxes], plt.Axes, None]
             A folium map is returned when the `folium` backend is used. A
             matplotlib Axes object is returned when the `matplotlib` backend is
-            used. A matplotlib/cartopy GeoAxes object is return when the
+            used. A matplotlib/cartopy GeoAxes object is returned when the
             `cartopy` backend is used. None will be returned when saving to
             file.
 
