@@ -103,6 +103,12 @@
 <span class="kn">from</span> <span class="nn">shapely.geometry.polygon</span> <span class="kn">import</span> <span class="n">Polygon</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">colormaps</span>
 <span class="kn">from</span> <span class="nn">cartopy.mpl.geoaxes</span> <span class="kn">import</span> <span class="n">GeoAxes</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_is_expected_filetype</span><span class="p">,</span>
+    <span class="n">_type_defence</span><span class="p">,</span>
+    <span class="n">_handle_path_like</span><span class="p">,</span>
+    <span class="n">_check_parent_dir_exists</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="RasterPop">
@@ -145,8 +151,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="c1"># defend against cases where input is not a file and does not exist</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2"> is not a file.&quot;</span><span class="p">)</span>
+        <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;filepath&quot;</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.tif&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__filepath</span> <span class="o">=</span> <span class="n">filepath</span>
 
@@ -165,7 +170,7 @@
         <span class="n">aoi_bounds</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Polygon</span><span class="p">],</span>
         <span class="n">aoi_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">round</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">var_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;population&quot;</span><span class="p">,</span>
         <span class="n">urban_centre_bounds</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Polygon</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">urban_centre_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -184,7 +189,7 @@
 <span class="sd">            data.</span>
 <span class="sd">        round : bool, optional</span>
 <span class="sd">            Round population estimates to the nearest whole integer.</span>
-<span class="sd">        threshold : int, optional</span>
+<span class="sd">        threshold : Union[int, float], optional</span>
 <span class="sd">            Threshold population estimates, where values below the set</span>
 <span class="sd">            threshold will be set to nan, by default None which means no</span>
 <span class="sd">            thresholding will occur.</span>
@@ -213,6 +218,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_read_and_clip</span><span class="p">(</span><span class="n">aoi_bounds</span><span class="p">,</span> <span class="n">aoi_crs</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
 
         <span class="c1"># round population estimates, if requested</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="nb">round</span><span class="p">,</span> <span class="s2">&quot;round&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">round</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_round_population</span><span class="p">()</span>
 
@@ -256,7 +262,7 @@
 <span class="sd">        Union[folium.Map, Type[GeoAxes], plt.Axes, None]</span>
 <span class="sd">            A folium map is returned when the `folium` backend is used. A</span>
 <span class="sd">            matplotlib Axes object is returned when the `matplotlib` backend is</span>
-<span class="sd">            used. A matplotlib/cartopy GeoAxes object is return when the</span>
+<span class="sd">            used. A matplotlib/cartopy GeoAxes object is returned when the</span>
 <span class="sd">            `cartopy` backend is used. None will be returned when saving to</span>
 <span class="sd">            file.</span>
 
@@ -277,6 +283,12 @@
 <span class="sd">        - Cartopy backend: `help(RasterPop._plot_cartopy)`</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># input type defence - setting which to lower case to improve usability</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">which</span><span class="p">,</span> <span class="s2">&quot;which&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">which</span> <span class="o">=</span> <span class="n">which</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">save</span> <span class="o">=</span> <span class="n">_handle_path_like</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">)</span>
+
         <span class="c1"># record of valid which values</span>
         <span class="n">WHICH_VALUES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;matplotlib&quot;</span><span class="p">,</span> <span class="s2">&quot;catropy&quot;</span><span class="p">,</span> <span class="s2">&quot;folium&quot;</span><span class="p">}</span>
 
@@ -325,12 +337,10 @@
 <span class="sd">            The variable name, by default &quot;population&quot;.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># defend against case where aoi_bounds is not a shapely polygon</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aoi_bounds</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Expected type </span><span class="si">{</span><span class="n">Polygon</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for `aoi_bounds`, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">aoi_bounds</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># input type defence checks</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">aoi_bounds</span><span class="p">,</span> <span class="s2">&quot;aoi_bounds&quot;</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">aoi_crs</span><span class="p">,</span> <span class="s2">&quot;aoi_crs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="s2">&quot;var_name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
 
         <span class="c1"># convert aoi bounds CRS if needed</span>
         <span class="k">if</span> <span class="n">aoi_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -356,10 +366,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Round population data.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_threshold_population</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_threshold_population</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Threshold population data.&quot;&quot;&quot;</span>
         <span class="c1"># `where()` is working differently to expectation here - it keeps</span>
         <span class="c1"># values above the threshold and otherwise sets them to nan.</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">threshold</span><span class="p">,</span> <span class="s2">&quot;threshold&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xds</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_to_geopandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">round</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -418,12 +429,9 @@
 <span class="sd">            When `urban_centre_bounds` is not a shapely Polygon.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># defend against case where urban_centre_bounds is not a polygon</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urban_centre_bounds</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Expected type </span><span class="si">{</span><span class="n">Polygon</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for `urban_centre_bounds`, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">urban_centre_bounds</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># input type defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">urban_centre_bounds</span><span class="p">,</span> <span class="s2">&quot;urban_centre_bounds&quot;</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">urban_centre_crs</span><span class="p">,</span> <span class="s2">&quot;urban_centre_crs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
 
         <span class="c1"># match the crs if is one isn&#39;t provided - default assumption if this</span>
         <span class="c1"># arg is not set, and a CRS is needed when building the gdf below</span>
@@ -494,7 +502,7 @@
 <span class="sd">        boundary_color : str, optional</span>
 <span class="sd">            Color of the boundary lines, by default &quot;red&quot;. Could also be a</span>
 <span class="sd">            hexstring.</span>
-<span class="sd">        boundary_weight : float, optional</span>
+<span class="sd">        boundary_weight : int, optional</span>
 <span class="sd">            Weight (in pixels) of the boudary lines, by default 2.</span>
 
 <span class="sd">        Returns</span>
@@ -516,6 +524,13 @@
 <span class="sd">        .. [3] https://matplotlib.org/stable/tutorials/colors/colormaps.html</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># kwarg type checks</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">tiles</span><span class="p">,</span> <span class="s2">&quot;tiles&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="s2">&quot;cmap&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">boundary_color</span><span class="p">,</span> <span class="s2">&quot;boundary_color&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">boundary_weight</span><span class="p">,</span> <span class="s2">&quot;boundary_weight&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+
         <span class="c1"># add a base map with no tile - then is it not on a layer control</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">tiles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">control_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">zoom_control</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -592,9 +607,7 @@
 
         <span class="c1"># write to file if filepath is given</span>
         <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">out_df</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_df</span><span class="p">):</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">out_df</span><span class="p">)</span>
+            <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">m</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
             <span class="n">m</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -668,6 +681,18 @@
 <span class="sd">        .. [2] https://matplotlib.org/stable/tutorials/colors/colormaps.html</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># kwarg type checks</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="s2">&quot;figsize&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">map_tile_zoom</span><span class="p">,</span> <span class="s2">&quot;map_tile_zoom&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="s2">&quot;cmap&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">cbar_fraction</span><span class="p">,</span> <span class="s2">&quot;cbar_fraction&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">cbar_pad</span><span class="p">,</span> <span class="s2">&quot;cbar_pad&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">cbar_label</span><span class="p">,</span> <span class="s2">&quot;cbar_label&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">var_attr</span><span class="p">,</span> <span class="s2">&quot;var_attr&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">base_map_attr</span><span class="p">,</span> <span class="s2">&quot;base_map_attr&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">attr_font_size</span><span class="p">,</span> <span class="s2">&quot;attr_font_size&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">attr_location</span><span class="p">,</span> <span class="s2">&quot;attr_location&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
         <span class="c1"># make attribution location dictionary</span>
         <span class="n">ATTR_LOC</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;bottom_left&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -765,9 +790,7 @@
         <span class="c1"># write to file if filepath is given, since there is no figure, need to</span>
         <span class="c1"># get the current figure and resize it to match the axis before saving</span>
         <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">out_df</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_df</span><span class="p">):</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">out_df</span><span class="p">)</span>
+            <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="o">*</span><span class="n">figsize</span><span class="p">)</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
@@ -799,6 +822,9 @@
 <span class="sd">            writing to file, None is return.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># handle kwarg type checks</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">figsize</span><span class="p">,</span> <span class="s2">&quot;figsize&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+
         <span class="c1"># handle matplotlib and rioxarry steps</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
@@ -806,9 +832,7 @@
 
         <span class="c1"># write to file if filepath is given</span>
         <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">out_df</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_df</span><span class="p">):</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">out_df</span><span class="p">)</span>
+            <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span>
 
