@@ -308,11 +308,15 @@ class TestGtfsInstance(object):
         tmp = os.path.join(tmpdir, "somefile.html")
         with pytest.raises(
             TypeError,
-            match="`out_pth` expected path-like, found <class 'bool'>",
+            match=re.escape(
+                "`out_pth` expected (<class 'str'>, <class 'pathlib.Path'>). "
+                "Got <class 'bool'>"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=True)
         with pytest.raises(
-            TypeError, match="`geoms` expects a string. Found <class 'int'>"
+            TypeError,
+            match="`geoms` expected <class 'str'>. Got <class 'int'>",
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms=38)
         with pytest.raises(
@@ -321,7 +325,10 @@ class TestGtfsInstance(object):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
         with pytest.raises(
             TypeError,
-            match="`geom_crs`.*string or integer. Found <class 'float'>",
+            match=re.escape(
+                "`geoms_crs` expected (<class 'str'>, <class 'int'>). Got "
+                "<class 'float'>"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
         # check missing stop_id results in an informative error message
@@ -332,7 +339,7 @@ class TestGtfsInstance(object):
             "this is an optional field in a GTFS file, it "
             "raises an error through the gtfs-kit package.",
         ):
-            gtfs_fixture.viz_stops(out_pth=tmp)
+            gtfs_fixture.viz_stops(out_pth=tmp, filtered_only=False)
 
     @patch("builtins.print")
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
