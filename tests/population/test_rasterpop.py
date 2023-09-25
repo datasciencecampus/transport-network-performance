@@ -1165,3 +1165,34 @@ class TestRasterPop:
                 attr_font_size=attr_font_size,
                 attr_location=attr_location,
             )
+
+    @pytest.mark.parametrize(
+        "figsize, expected",
+        [
+            # test figsize incorrect type
+            (
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`figsize` expected .*tuple.*. Got .*float.*",
+                ),
+            ),
+        ],
+    )
+    def test_plot_matplotlib_type_defence(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+        figsize,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Unit test _plot_folium kwargs type raises."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with expected:
+            rp.plot(
+                which="matplotlib",
+                save=None,
+                figsize=figsize,
+            )

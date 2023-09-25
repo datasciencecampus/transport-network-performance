@@ -727,6 +727,9 @@ class RasterPop:
             writing to file, None is return.
 
         """
+        # handle kwarg type checks
+        _type_defence(figsize, "figsize", tuple)
+
         # handle matplotlib and rioxarry steps
         fig, ax = plt.subplots(figsize=figsize)
         self._xds.plot(ax=ax)
