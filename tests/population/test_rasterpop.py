@@ -811,6 +811,24 @@ class TestRasterPop:
         with expected:
             rp.plot(which=which, save=save)
 
+    def test_plot_unknown_kwarg(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+    ) -> None:
+        """Unit test unknown kwarg in plot."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with pytest.raises(
+            TypeError,
+            match=(
+                r"_plot_folium\(\) got an unexpected keyword argument "
+                r"'unknown_kwarg'"
+            ),
+        ):
+            rp.plot(unknown_kwarg=None)
+
     @pytest.mark.parametrize(
         "tiles, attr, cmap, boundary_color, boundary_weight, expected",
         [
