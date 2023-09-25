@@ -16,6 +16,12 @@ from typing import Union, Type, Tuple
 from shapely.geometry.polygon import Polygon
 from matplotlib import colormaps
 from cartopy.mpl.geoaxes import GeoAxes
+from transport_performance.utils.defence import (
+    _is_expected_filetype,
+    _type_defence,
+    _handle_path_like,
+    _check_parent_dir_exists,
+)
 
 
 class RasterPop:
@@ -56,8 +62,7 @@ class RasterPop:
     def __init__(self, filepath: Union[str, bytes, os.PathLike]) -> None:
 
         # defend against cases where input is not a file and does not exist
-        if not os.path.isfile(filepath):
-            raise FileNotFoundError(f"{filepath} is not a file.")
+        _is_expected_filetype(filepath, "filepath", exp_ext=".tif")
 
         self.__filepath = filepath
 
@@ -74,7 +79,7 @@ class RasterPop:
         aoi_bounds: Type[Polygon],
         aoi_crs: str = None,
         round: bool = False,
-        threshold: int = None,
+        threshold: Union[int, float] = None,
         var_name: str = "population",
         urban_centre_bounds: Type[Polygon] = None,
         urban_centre_crs: str = None,
@@ -93,7 +98,7 @@ class RasterPop:
             data.
         round : bool, optional
             Round population estimates to the nearest whole integer.
-        threshold : int, optional
+        threshold : Union[int, float], optional
             Threshold population estimates, where values below the set
             threshold will be set to nan, by default None which means no
             thresholding will occur.
@@ -122,6 +127,7 @@ class RasterPop:
         self._read_and_clip(aoi_bounds, aoi_crs, var_name)
 
         # round population estimates, if requested
+        _type_defence(round, "round", bool)
         if round:
             self._round_population()
 
@@ -162,7 +168,7 @@ class RasterPop:
         Union[folium.Map, Type[GeoAxes], plt.Axes, None]
             A folium map is returned when the `folium` backend is used. A
             matplotlib Axes object is returned when the `matplotlib` backend is
-            used. A matplotlib/cartopy GeoAxes object is return when the
+            used. A matplotlib/cartopy GeoAxes object is returned when the
             `cartopy` backend is used. None will be returned when saving to
             file.
 
@@ -183,6 +189,12 @@ class RasterPop:
         - Cartopy backend: `help(RasterPop._plot_cartopy)`
 
         """
+        # input type defence - setting which to lower case to improve usability
+        _type_defence(which, "which", str)
+        which = which.lower()
+        if save is not None:
+            save = _handle_path_like(save, "save")
+
         # record of valid which values
         WHICH_VALUES = {"matplotlib", "catropy", "folium"}
 
@@ -230,12 +242,10 @@ class RasterPop:
             The variable name, by default "population".
 
         """
-        # defend against case where aoi_bounds is not a shapely polygon
-        if not isinstance(aoi_bounds, Polygon):
-            raise TypeError(
-                f"Expected type {Polygon.__name__} for `aoi_bounds`, "
-                f"got {type(aoi_bounds).__name__}."
-            )
+        # input type defence checks
+        _type_defence(aoi_bounds, "aoi_bounds", Polygon)
+        _type_defence(aoi_crs, "aoi_crs", (str, type(None)))
+        _type_defence(var_name, "var_name", str)
 
         # convert aoi bounds CRS if needed
         if aoi_crs is not None:
@@ -261,10 +271,11 @@ class RasterPop:
         """Round population data."""
         self._xds = np.rint(self._xds)
 
-    def _threshold_population(self, threshold: int) -> None:
+    def _threshold_population(self, threshold: Union[int, float]) -> None:
         """Threshold population data."""
         # `where()` is working differently to expectation here - it keeps
         # values above the threshold and otherwise sets them to nan.
+        _type_defence(threshold, "threshold", (int, float))
         self._xds = self._xds.where(self._xds >= threshold)
 
     def _to_geopandas(self, round: bool = False) -> None:
@@ -323,12 +334,9 @@ class RasterPop:
             When `urban_centre_bounds` is not a shapely Polygon.
 
         """
-        # defend against case where urban_centre_bounds is not a polygon
-        if not isinstance(urban_centre_bounds, Polygon):
-            raise TypeError(
-                f"Expected type {Polygon.__name__} for `urban_centre_bounds`, "
-                f"got {type(urban_centre_bounds).__name__}."
-            )
+        # input type defences
+        _type_defence(urban_centre_bounds, "urban_centre_bounds", Polygon)
+        _type_defence(urban_centre_crs, "urban_centre_crs", (str, type(None)))
 
         # match the crs if is one isn't provided - default assumption if this
         # arg is not set, and a CRS is needed when building the gdf below
@@ -399,7 +407,7 @@ class RasterPop:
         boundary_color : str, optional
             Color of the boundary lines, by default "red". Could also be a
             hexstring.
-        boundary_weight : float, optional
+        boundary_weight : int, optional
             Weight (in pixels) of the boudary lines, by default 2.
 
         Returns
@@ -421,6 +429,13 @@ class RasterPop:
         .. [3] https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
         """
+        # kwarg type checks
+        _type_defence(tiles, "tiles", str)
+        _type_defence(attr, "attr", str)
+        _type_defence(cmap, "cmap", str)
+        _type_defence(boundary_color, "boundary_color", str)
+        _type_defence(boundary_weight, "boundary_weight", int)
+
         # add a base map with no tile - then is it not on a layer control
         m = folium.Map(tiles=None, control_scale=True, zoom_control=True)
 
@@ -497,9 +512,7 @@ class RasterPop:
 
         # write to file if filepath is given
         if save is not None:
-            out_df = os.path.dirname(save)
-            if not os.path.exists(out_df):
-                os.mkdir(out_df)
+            _check_parent_dir_exists(save, "save", create=True)
             m.save(save)
             m = None
 
@@ -573,6 +586,18 @@ class RasterPop:
         .. [2] https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
         """
+        # kwarg type checks
+        _type_defence(figsize, "figsize", tuple)
+        _type_defence(map_tile_zoom, "map_tile_zoom", int)
+        _type_defence(cmap, "cmap", str)
+        _type_defence(cbar_fraction, "cbar_fraction", float)
+        _type_defence(cbar_pad, "cbar_pad", float)
+        _type_defence(cbar_label, "cbar_label", str)
+        _type_defence(var_attr, "var_attr", str)
+        _type_defence(base_map_attr, "base_map_attr", str)
+        _type_defence(attr_font_size, "attr_font_size", float)
+        _type_defence(attr_location, "attr_location", str)
+
         # make attribution location dictionary
         ATTR_LOC = {
             "bottom_left": {
@@ -670,9 +695,7 @@ class RasterPop:
         # write to file if filepath is given, since there is no figure, need to
         # get the current figure and resize it to match the axis before saving
         if save is not None:
-            out_df = os.path.dirname(save)
-            if not os.path.exists(out_df):
-                os.mkdir(out_df)
+            _check_parent_dir_exists(save, "save", create=True)
             fig = plt.gcf()
             fig.set_size_inches(*figsize)
             fig.savefig(save)
@@ -704,6 +727,9 @@ class RasterPop:
             writing to file, None is return.
 
         """
+        # handle kwarg type checks
+        _type_defence(figsize, "figsize", tuple)
+
         # handle matplotlib and rioxarry steps
         fig, ax = plt.subplots(figsize=figsize)
         self._xds.plot(ax=ax)
@@ -711,9 +737,7 @@ class RasterPop:
 
         # write to file if filepath is given
         if save is not None:
-            out_df = os.path.dirname(save)
-            if not os.path.exists(out_df):
-                os.mkdir(out_df)
+            _check_parent_dir_exists(save, "save", create=True)
             fig.savefig(save)
             ax = None
 
