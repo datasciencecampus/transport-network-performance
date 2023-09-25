@@ -586,6 +586,18 @@ class RasterPop:
         .. [2] https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
         """
+        # kwarg type checks
+        _type_defence(figsize, "figsize", tuple)
+        _type_defence(map_tile_zoom, "map_tile_zoom", int)
+        _type_defence(cmap, "cmap", str)
+        _type_defence(cbar_fraction, "cbar_fraction", float)
+        _type_defence(cbar_pad, "cbar_pad", float)
+        _type_defence(cbar_label, "cbar_label", str)
+        _type_defence(var_attr, "var_attr", str)
+        _type_defence(base_map_attr, "base_map_attr", str)
+        _type_defence(attr_font_size, "attr_font_size", float)
+        _type_defence(attr_location, "attr_location", str)
+
         # make attribution location dictionary
         ATTR_LOC = {
             "bottom_left": {

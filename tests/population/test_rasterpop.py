@@ -953,3 +953,215 @@ class TestRasterPop:
                 which="cartopy",
                 attr_location=test_attr_location,
             )
+
+    @pytest.mark.parametrize(
+        "figsize, map_tile_zoom, cmap, cbar_fraction, cbar_pad, cbar_label, "
+        "var_attr, base_map_attr, attr_font_size, attr_location, expected",
+        [
+            # test figsize incorrect type
+            (
+                1.0,
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`figsize` expected .*tuple.*. Got .*float.*",
+                ),
+            ),
+            # test map_tile_zoom incorrect type
+            (
+                (1.0, 1.0),
+                1.0,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`map_tile_zoom` expected .*int.*. Got .*float.*",
+                ),
+            ),
+            # test cmap incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                1.0,
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cmap` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test cbar_fraction incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                "",
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cbar_fraction` expected .*float.*. Got .*str.*",
+                ),
+            ),
+            # test cbar_pad incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                "",
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cbar_pad` expected .*float.*. Got .*str.*",
+                ),
+            ),
+            # test cbar_label incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                1.0,
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cbar_label` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test var_attr incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                1.0,
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`var_attr` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test base_map_attr incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                1.0,
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`base_map_attr` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test attr_font_size incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                "1.0",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`attr_font_size` expected .*float.*. Got .*str.*",
+                ),
+            ),
+            # test attr_location incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`attr_location` expected .*str.*. Got .*float.*",
+                ),
+            ),
+        ],
+    )
+    def test_plot_cartopy_type_defence(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+        figsize,
+        map_tile_zoom,
+        cmap,
+        cbar_fraction,
+        cbar_pad,
+        cbar_label,
+        var_attr,
+        base_map_attr,
+        attr_font_size,
+        attr_location,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Unit test _plot_cartop() kwargs type raises."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with expected:
+            rp.plot(
+                which="cartopy",
+                save=None,
+                figsize=figsize,
+                map_tile_zoom=map_tile_zoom,
+                cmap=cmap,
+                cbar_fraction=cbar_fraction,
+                cbar_pad=cbar_pad,
+                cbar_label=cbar_label,
+                var_attr=var_attr,
+                base_map_attr=base_map_attr,
+                attr_font_size=attr_font_size,
+                attr_location=attr_location,
+            )
