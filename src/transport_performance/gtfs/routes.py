@@ -175,5 +175,12 @@ def get_saved_route_type_lookup(
         lookup = pd.DataFrame(lookup)
     if len(lookup) < 1:
         warnings.warn("Route type lookup has length of 0", UserWarning)
+    EXPECTED_COLS = ["route_type", "desc"]
+    # check columns
+    for col in lookup.columns.values:
+        if col.lower() not in EXPECTED_COLS:
+            warnings.warn(
+                f"Unexpected column '{col}' in route type lookup", UserWarning
+            )
 
     return lookup
