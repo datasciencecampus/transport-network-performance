@@ -273,13 +273,15 @@ class GtfsInstance:
         elif what_geoms == "hull":
             if is_filtered:
                 # filter the stops table to only those stop_ids present
-                # in stop_times, ensures hull viz agrees with point viz
+                # in stop_times, this ensures hull viz agrees with point viz
                 stop_time_ids = set(self.feed.stop_times["stop_id"])
-                key_search = self.feed.stops["stop_id"].isin(stop_time_ids)
-                self.feed.stops = self.feed.stops[key_search]
-
+                gtfs_hull = self.feed.compute_convex_hull(
+                    stop_ids=stop_time_ids
+                )
+            else:
+                # if not filtering, use gtfs_kit method
+                gtfs_hull = self.feed.compute_convex_hull()
             # visualise feed, output to file with area est, based on stops
-            gtfs_hull = self.feed.compute_convex_hull()
             gdf = gpd.GeoDataFrame(
                 {"geometry": gtfs_hull}, index=[0], crs="epsg:4326"
             )
