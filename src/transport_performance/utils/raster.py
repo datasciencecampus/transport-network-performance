@@ -10,14 +10,22 @@ import os
 import glob
 import re
 import rioxarray
+import pathlib
 
+from typing import Union
 from rioxarray.merge import merge_arrays
 from rasterio.warp import Resampling
+from transport_performance.utils.defence import (
+    _handle_path_like,
+    _check_parent_dir_exists,
+    _is_expected_filetype,
+    _type_defence,
+)
 
 
 def merge_raster_files(
-    input_dir: str,
-    output_dir: str,
+    input_dir: Union[str, pathlib.Path],
+    output_dir: Union[str, pathlib.Path],
     output_filename: str,
     subset_regex: str = None,
 ) -> dict:
@@ -28,9 +36,9 @@ def merge_raster_files(
 
     Parameters
     ----------
-    input_dir : str
+    input_dir : Union[str, pathlib.Path]
         Directory containing input raster files.
-    output_dir : str
+    output_dir : Union[str, pathlib.Path]
         Directory to write output, merged raster file.
     output_filename : str
         Filename of merged raster file (.tif extension required).
@@ -73,8 +81,11 @@ def merge_raster_files(
 
     """
     # defend against case where the provided input dir does not exist
-    if not os.path.exists(input_dir):
-        raise FileNotFoundError(f"{input_dir} can not be found")
+    # handle path like first to capture input dir type errors before os.join
+    input_dir = _handle_path_like(input_dir, "input_dir")
+    # then add a dummy file to purely check if provided parent directory exists
+    dummy_path = os.path.join(input_dir, "dummy.txt")
+    _check_parent_dir_exists(dummy_path, "input_dir", create=False)
 
     # get tif files in directory, ensure some exist and select subset via regex
     tif_filepaths = glob.glob(f"{input_dir}/*.tif")
@@ -83,6 +94,7 @@ def merge_raster_files(
 
     # apply regex and ensure tif files exist after applying it
     # raise a unique FileNotFoundError to aid debugging
+    _type_defence(subset_regex, "subset_regex", (str, type(None)))
     if subset_regex is not None:
         tif_filepaths = [
             fpath for fpath in tif_filepaths if re.search(subset_regex, fpath)
@@ -101,13 +113,18 @@ def merge_raster_files(
     # merge the datasets together
     xds_merged = merge_arrays(arrays)
 
-    # make output_dir if it does not exist
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
-
     # create full filepath for merged tif file and write to disk
-    MERGED_DIR = os.path.join(output_dir, output_filename)
-    xds_merged.rio.to_raster(MERGED_DIR)
+    # check expected file type and parent dir exists (creating if not)
+    # need to _handle_path_like before os.path.join
+    output_dir = _handle_path_like(output_dir, "output_dir")
+    _type_defence(output_filename, "output_filename", str)
+    merged_dir = os.path.join(output_dir, output_filename)
+    _check_parent_dir_exists(merged_dir, "merged_dir", create=True)
+    _is_expected_filetype(
+        merged_dir, "merged_dir", check_existing=False, exp_ext=".tif"
+    )
+
+    xds_merged.rio.to_raster(merged_dir)
 
     # get boundaries of inputs and output raster
     bounds = {
@@ -119,8 +136,8 @@ def merge_raster_files(
 
 
 def sum_resample_file(
-    input_filepath: str,
-    output_filepath: str,
+    input_filepath: Union[str, pathlib.Path],
+    output_filepath: Union[str, pathlib.Path],
     resample_factor: int = 2,
 ) -> None:
     """Resample raster file (change grid resolution) by summing.
@@ -130,9 +147,9 @@ def sum_resample_file(
 
     Parameters
     ----------
-    input_filepath : str
+    input_filepath : Union[str, pathlib.Path]
         Input filpath of GeoTIFF file
-    output_filepath : str
+    output_filepath : Union[str, pathlib.Path]
         Output filepath for resampled GeoTIFF file
     resample_factor : int, optional
         Factor to resample input raster by, by default 2 which means the
@@ -146,12 +163,12 @@ def sum_resample_file(
 
     """
     # defend against case where the provided input dir does not exist
-    if not os.path.exists(input_filepath):
-        raise FileNotFoundError(f"{input_filepath} can not be found")
+    _is_expected_filetype(input_filepath, "input_filepath", exp_ext=".tif")
 
     xds = rioxarray.open_rasterio(input_filepath, masked=True)
 
     # resample based on scaling factor and using sum resampling
+    _type_defence(resample_factor, "resample_factor", int)
     xds_resampled = xds.rio.reproject(
         xds.rio.crs,
         resolution=tuple(
@@ -160,8 +177,14 @@ def sum_resample_file(
         resampling=Resampling.sum,
     )
 
-    # make output_filepath's directory if it does not exist
-    if not os.path.exists(os.path.dirname(output_filepath)):
-        os.mkdir(output_filepath)
+    # make output_filepath's directory if it does not exist and check the
+    # output file extension
+    _check_parent_dir_exists(output_filepath, "output_filepath", create=True)
+    _is_expected_filetype(
+        output_filepath,
+        "output_filepath",
+        exp_ext=".tif",
+        check_existing=False,
+    )
 
     xds_resampled.rio.to_raster(output_filepath)
