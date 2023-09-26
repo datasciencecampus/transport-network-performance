@@ -3,8 +3,14 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import requests
 import warnings
+from typing import Union
+import pathlib
 
-from transport_performance.utils.defence import _url_defence, _type_defence
+from transport_performance.utils.defence import (
+    _url_defence,
+    _type_defence,
+    _is_expected_filetype,
+)
 
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"
@@ -131,3 +137,35 @@ def scrape_route_type_lookup(
     route_lookup = pd.DataFrame(zip(cds, txts), columns=["route_type", "desc"])
 
     return route_lookup
+
+
+def get_saved_route_type_lookup(
+    path: Union[str, pathlib.Path] = pathlib.Path(
+        "tests/data/gtfs/route_lookup.pkl"
+    )
+) -> pd.DataFrame:
+    """Get the lcoally saved route type lookup as a dataframe.
+
+    Parameters
+    ----------
+    path : Union[str, pathlib.Path], optional
+        The path to the route type lookup,
+        by default pathlib.Path("tests/data/gtfs/route_lookup.pkl")
+
+    Returns
+    -------
+    pd.DataFrame
+        The route type lookup
+
+    """
+    _is_expected_filetype(
+        pth=path, param_nm="path", check_existing=True, exp_ext=".pkl"
+    )
+    lookup = pd.read_pickle(path)
+    if len(lookup) < 1:
+        warnings.warn(
+            message="Route type lookup is empty. You may need to "
+            "call 'scrape_route_type_lookup()' first"
+        )
+
+    return lookup
