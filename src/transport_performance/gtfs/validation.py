@@ -111,6 +111,46 @@ def _create_map_title_text(gdf, units, geom_crs):
     return txt
 
 
+def _produce_stops_map(self, what_geoms, is_filtered, crs):
+    if what_geoms == "point":
+        if is_filtered:
+            plot_ids = self.feed.stop_times["stop_id"]
+        else:
+            plot_ids = self.feed.stops["stop_id"]
+        # viz stop locations
+        m = self.feed.map_stops(plot_ids)
+
+    elif what_geoms == "hull":
+        if is_filtered:
+            # filter the stops table to only those stop_ids present
+            # in stop_times, ensures hull viz agrees with point viz
+            stop_time_ids = set(self.feed.stop_times["stop_id"])
+            key_search = self.feed.stops["stop_id"].isin(stop_time_ids)
+            self.feed.stops = self.feed.stops[key_search]
+
+        # visualise feed, output to file with area est, based on stops
+        gtfs_hull = self.feed.compute_convex_hull()
+        gdf = gpd.GeoDataFrame(
+            {"geometry": gtfs_hull}, index=[0], crs="epsg:4326"
+        )
+        units = self.feed.dist_units
+        # prepare the map title
+        txt = _create_map_title_text(gdf, units, crs)
+        title_pre = "<h3 align='center' style='font-size:16px'><b>"
+        title_html = f"{title_pre}{txt}</b></h3>"
+        geo_j = gdf.to_json()
+        geo_j = folium.GeoJson(
+            data=geo_j, style_function=lambda x: {"fillColor": "red"}
+        )
+        m = folium.Map()
+        geo_j.add_to(m)
+        m.get_root().html.add_child(folium.Element(title_html))
+        # format map zoom and center
+        m.fit_bounds(m.get_bounds())
+
+    return m
+
+
 def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
     """Convert a dataframes index from MultiIndex to a singular index.
 
@@ -310,37 +350,12 @@ class GtfsInstance:
             raise ValueError("`geoms` must be either 'point' or 'hull.'")
 
         try:
+            m = _produce_stops_map(
+                self, what_geoms=geoms, is_filtered=filtered_only, crs=geom_crs
+            )
             # map_stops will fail if stop_code not present. According to :
             # https://developers.google.com/transit/gtfs/reference#stopstxt
             # This should be an optional column
-            if geoms == "point":
-                if filtered_only:
-                    plot_ids = self.feed.stop_times["stop_id"]
-                else:
-                    plot_ids = self.feed.stops["stop_id"]
-                # viz stop locations
-                m = self.feed.map_stops(plot_ids)
-            elif geoms == "hull":
-                # visualise feed, output to file with area est, based on stops
-                gtfs_hull = self.feed.compute_convex_hull()
-                gdf = gpd.GeoDataFrame(
-                    {"geometry": gtfs_hull}, index=[0], crs="epsg:4326"
-                )
-                units = self.feed.dist_units
-                # prepare the map title
-                txt = _create_map_title_text(gdf, units, geom_crs)
-
-                title_pre = "<h3 align='center' style='font-size:16px'><b>"
-                title_html = f"{title_pre}{txt}</b></h3>"
-                geo_j = gdf.to_json()
-                geo_j = folium.GeoJson(
-                    data=geo_j, style_function=lambda x: {"fillColor": "red"}
-                )
-                m = folium.Map()
-                geo_j.add_to(m)
-                m.get_root().html.add_child(folium.Element(title_html))
-                # format map zoom and center
-                m.fit_bounds(m.get_bounds())
             m.save(out_pth)
         except KeyError:
             # KeyError inside of an except KeyError here. This is to provide
