@@ -145,6 +145,7 @@ def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
 
 def _get_route_type_desc(lkp, key):
     """Private function to get route type description."""
+    # no defences as private and only intended to be used internally
     try:
         desc = list(lkp[lkp.route_type == str(key)].desc)[0]
         # only take transport method name
@@ -1103,6 +1104,16 @@ class GtfsInstance:
                 table_html = table_html + "</div>"
             except NameError:
                 pass
+
+            # add a more detailed route_type decription
+            if "route_type" in impacted_rows.columns:
+                ROUTE_LKP = get_saved_route_type_lookup()
+                impacted_rows["route_type"] = impacted_rows[
+                    "route_type"
+                ].astype("object")
+                impacted_rows["route_type_desc"] = impacted_rows[
+                    "route_type"
+                ].apply(lambda x: _get_route_type_desc(ROUTE_LKP, x))
 
             table_html = table_html + build_table(
                 impacted_rows, scheme, padding="10px", escape=False
