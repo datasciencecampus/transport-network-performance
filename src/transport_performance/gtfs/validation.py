@@ -1072,7 +1072,9 @@ class GtfsInstance:
             </head>
             <body>
             <h1 style="font-family: 'Poppins', sans-serif;margin: 10px;">
-                Table:{table}<br>Message: {message}<br>
+                <a href="index.html" style="color:grey;weight:bold;">
+                Back to Index</a><hr>
+                Table: {table}<br>Message: {message}<br>
                 Type: <span style="color:{'red' if msg_type == 'error' else
                         'orange'};font-family: 'Poppins', sans-serif;">
                         {msg_type}</span>
