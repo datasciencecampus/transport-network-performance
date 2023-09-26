@@ -17,7 +17,10 @@ import pathlib
 from typing import Union
 from plotly.graph_objects import Figure as PlotlyFigure
 
-from transport_performance.gtfs.routes import scrape_route_type_lookup
+from transport_performance.gtfs.routes import (
+    scrape_route_type_lookup,
+    get_saved_route_type_lookup,
+)
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_namespace_export,
@@ -138,6 +141,17 @@ def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
     ]
 
     return df
+
+
+def _get_route_type_desc(lkp, key):
+    """Private function to get route type description."""
+    try:
+        desc = list(lkp[lkp.route_type == str(key)].desc)[0]
+        # only take transport method name
+        desc = desc.split(".")[0]
+    except IndexError:
+        return key
+    return desc
 
 
 class GtfsInstance:
@@ -838,8 +852,12 @@ class GtfsInstance:
         _check_column_in_df(df=summary_df, column_name=target_column)
         _check_column_in_df(df=summary_df, column_name=day_column)
 
-        # convert column type for better graph plotting
+        # convert column type for better graph plotting, use desc
+        ROUTE_LKP = get_saved_route_type_lookup()
         summary_df["route_type"] = summary_df["route_type"].astype("object")
+        summary_df["route_type"] = summary_df["route_type"].apply(
+            lambda x: _get_route_type_desc(ROUTE_LKP, x)
+        )
 
         xlabel = (
             xlabel
