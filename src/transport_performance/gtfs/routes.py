@@ -158,14 +158,22 @@ def get_saved_route_type_lookup(
         The route type lookup
 
     """
+    # defences
     _is_expected_filetype(
         pth=path, param_nm="path", check_existing=True, exp_ext=".pkl"
     )
     lookup = pd.read_pickle(path)
-    if len(lookup) < 1:
-        warnings.warn(
-            message="Route type lookup is empty. You may need to "
-            "call 'scrape_route_type_lookup()' first"
+    ACCEPTED_TYPES = (dict, pd.DataFrame)
+    # check unserialized .pkl file is of correct type
+    if not isinstance(lookup, ACCEPTED_TYPES):
+        raise TypeError(
+            "Serialized object in specified .pkl file is of type: "
+            f"{type(lookup)}. Expected {ACCEPTED_TYPES}"
         )
+    # convert dicts to pandas df
+    if isinstance(lookup, dict):
+        lookup = pd.DataFrame(lookup)
+    if len(lookup) < 1:
+        warnings.warn("Route type lookup has length of 0", UserWarning)
 
     return lookup

@@ -3,8 +3,16 @@ import pytest
 import pandas as pd
 from pyprojroot import here
 from unittest.mock import call
+from typing import Union, Type
+import pathlib
+from _pytest.python_api import RaisesContext
+import re
 
-from transport_performance.gtfs.routes import scrape_route_type_lookup
+
+from transport_performance.gtfs.routes import (
+    scrape_route_type_lookup,
+    get_saved_route_type_lookup,
+)
 
 
 def mocked__get_response_text(*args):
@@ -125,3 +133,37 @@ class TestScrapeRouteTypeLookup(object):
         lookup_fix = pd.read_pickle(here("tests/data/gtfs/route_lookup.pkl"))
         lookup = scrape_route_type_lookup()
         pd.testing.assert_frame_equal(lookup, lookup_fix)
+
+
+class Test_GetSavedRouteTypeLookup(object):
+    """Tests for get_saved_route_type_lookup()."""
+
+    @pytest.mark.parametrize(
+        "path, expected",
+        [
+            (
+                pathlib.Path("tests/data/newport-20230613_gtfs.zip"),
+                pytest.raises(
+                    ValueError,
+                    match=r"`path` expected file extension .pkl. "
+                    r"Found .zip",
+                ),
+            ),
+            (
+                here("tests/data/test_file.pkl"),
+                pytest.raises(
+                    FileNotFoundError,
+                    match=re.escape(
+                        f"{here('tests/data/test_file.pkl')} not "
+                        "found on file."
+                    ),
+                ),
+            ),
+        ],
+    )
+    def test_get_saved_route_type_lookup_raises(
+        self, path: Union[str, pathlib.Path], expected: Type[RaisesContext]
+    ):
+        """Test raises."""
+        with expected:
+            get_saved_route_type_lookup(path=path)
