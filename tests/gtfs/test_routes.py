@@ -47,12 +47,12 @@ class TestScrapeRouteTypeLookup(object):
         """Test the defensive checks raise as expected."""
         with pytest.raises(
             TypeError,
-            match=r"url 1 expected string, instead got <class 'int'>",
+            match=r"`url` expected <class 'str'>. Got <class 'int'>",
         ):
             scrape_route_type_lookup(gtfs_url=1)
         with pytest.raises(
             TypeError,
-            match=r"url False expected string, instead got <class 'bool'>",
+            match=r"`url` expected <class 'str'>. Got <class 'bool'>",
         ):
             scrape_route_type_lookup(ext_spec_url=False)
         with pytest.raises(
@@ -62,7 +62,7 @@ class TestScrapeRouteTypeLookup(object):
             scrape_route_type_lookup(gtfs_url="foobar")
         with pytest.raises(
             TypeError,
-            match=r"`extended_schema` expected boolean. Got <class 'str'>",
+            match=r"`extended_schema` .* <class 'bool'>. Got <class 'str'>",
         ):
             scrape_route_type_lookup(extended_schema="True")
 

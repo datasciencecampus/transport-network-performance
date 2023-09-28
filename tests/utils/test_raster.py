@@ -15,6 +15,9 @@ import rasterio as rio
 import xarray as xr
 import rioxarray  # noqa: F401 - import required for xarray but not needed here
 
+from typing import Type
+from pytest_lazyfixture import lazy_fixture
+from _pytest.python_api import RaisesContext
 from transport_performance.utils.raster import (
     merge_raster_files,
     sum_resample_file,
@@ -159,6 +162,31 @@ def resample_xarr_fpath(
     return out_filepath
 
 
+@pytest.fixture
+def save_empty_text_file(resample_xarr_fpath: str) -> str:
+    """Save an empty text file.
+
+    Parameters
+    ----------
+    resample_xarr_fpath : str
+        File path to dummy raster data, used to make sure file is in the same
+        directory.
+
+    Returns
+    -------
+    str
+        Dummy text file name.
+
+    """
+    # save an empty text file to the same directory
+    working_dir = os.path.dirname(resample_xarr_fpath)
+    test_file_name = "text.txt"
+    with open(os.path.join(working_dir, test_file_name), "w") as f:
+        f.write("")
+
+    return test_file_name
+
+
 class TestUtilsRaster:
     """A class to test utils/raster functions."""
 
@@ -206,6 +234,137 @@ class TestUtilsRaster:
         maxy = max([coords[3] for coords in bounds["inputs"]])
         assert bounds["output"][0] == (minx, miny, maxx, maxy)
 
+    @pytest.mark.parametrize(
+        "input_dir, output_dir, output_filename, subset_regex, expected",
+        [
+            # test input dir that does not exist
+            (
+                "test",
+                None,
+                None,
+                None,
+                pytest.raises(FileNotFoundError, match="not found on disk."),
+            ),
+            # test input dir not correct type
+            (
+                1.0,
+                None,
+                None,
+                None,
+                pytest.raises(TypeError, match="expected path-like"),
+            ),
+            # test input dir with no tiff files
+            (
+                "tests/data/gtfs",
+                None,
+                None,
+                None,
+                pytest.raises(
+                    FileNotFoundError, match=r"No `\*.tif` files found in .*"
+                ),
+            ),
+            # test output dir not correct type
+            (
+                lazy_fixture("merge_xarrs_fpath"),
+                1.0,
+                None,
+                None,
+                pytest.raises(TypeError, match="expected path-like"),
+            ),
+            # test output filename not correct type
+            (
+                lazy_fixture("merge_xarrs_fpath"),
+                "",
+                1.0,
+                None,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "^`output_filename` expected .*str.*. Got .*float.*"
+                    ),
+                ),
+            ),
+            # test output filename not correct file extension
+            (
+                lazy_fixture("merge_xarrs_fpath"),
+                "",
+                "test.txt",
+                None,
+                pytest.raises(
+                    ValueError,
+                    match=(
+                        "`merged_dir` expected file extension .tif. "
+                        "Found .txt"
+                    ),
+                ),
+            ),
+            # test subset_regex not correct type
+            (
+                lazy_fixture("merge_xarrs_fpath"),
+                None,
+                None,
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "^`subset_regex` expected (.*str.*NoneType.*)."
+                        " Got .*float.*"
+                    ),
+                ),
+            ),
+            # test subset_regex that is too specific for find tif inputs
+            (
+                lazy_fixture("merge_xarrs_fpath"),
+                None,
+                None,
+                "test_regex",
+                pytest.raises(
+                    FileNotFoundError,
+                    match=(
+                        r"No `\*.tif` files found in .* after applying regex "
+                        r"'test_regex'."
+                    ),
+                ),
+            ),
+        ],
+    )
+    def test_merge_raster_files_on_fail(
+        self,
+        input_dir,
+        output_dir,
+        output_filename,
+        subset_regex,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Test `merge_raster_files` when raises occur.
+
+        Parameters
+        ----------
+        input_dir
+            Path to input directory
+        output_dir
+            Merged output directory
+        output_filename
+            Merged output filename
+        subset_regex
+            Regex str to select subset of input files within `input_dir`
+        expected : Type[RaisesContext]
+            exception to test with
+
+        Notes
+        -----
+        1. Arguments are type hinted here to make unit tests more maintable.
+        See `merge_raster_files()` docstring for more details.
+
+        """
+        with expected:
+            merge_raster_files(
+                input_dir=input_dir,
+                output_dir=output_dir,
+                output_filename=output_filename,
+                subset_regex=subset_regex,
+            )
+
     def test_sum_resample_file(self, resample_xarr_fpath: str) -> None:
         """Test `sum_resample_file`.
 
@@ -222,9 +381,13 @@ class TestUtilsRaster:
         # useful when using -rP flag in pytest to see directory
         print(f"Temp filepath for resampling test: {resample_xarr_fpath}")
 
-        # resample to input and set the output location
+        # set the output location to sub dir in a different folder
+        # adding different sub dir to test resolution of issue 121
         output_fpath = os.path.join(
-            os.path.dirname(resample_xarr_fpath), "output.tif"
+            os.path.dirname(os.path.dirname(resample_xarr_fpath)),
+            "resample_outputs",
+            "outputs",
+            "output.tif",
         )
         sum_resample_file(resample_xarr_fpath, output_fpath)
 
@@ -241,3 +404,90 @@ class TestUtilsRaster:
         # assert correct resampling values (summing consitiuent grids)
         expected_result = np.array([[[14, 22], [46, 54]]])
         assert np.array_equal(expected_result, xds_out.to_numpy())
+
+    @pytest.mark.parametrize(
+        "input_filepath, output_filepath, resample_factor, expected",
+        [
+            # test input_filepath that has an incorrect type
+            (
+                1.0,
+                None,
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="expected (.*str.*pathlib.Path.*). Got .*float.*",
+                ),
+            ),
+            # test input_filepath that does not exist
+            (
+                "test.tif",
+                None,
+                None,
+                pytest.raises(FileNotFoundError, match="not found on file."),
+            ),
+            # test input_filepath that does not have correct file extension
+            (
+                os.path.join("tests", "data", "newport-2023-06-13.osm.pbf"),
+                None,
+                None,
+                pytest.raises(
+                    ValueError,
+                    match=(
+                        "`input_filepath` expected file extension .tif. Found"
+                        " .pbf*"
+                    ),
+                ),
+            ),
+            # test output_filepath correct type
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                1.0,
+                2,
+                pytest.raises(
+                    TypeError, match="expected path-like, found .*float.*"
+                ),
+            ),
+            # test output_filepath correct type
+            (
+                lazy_fixture("resample_xarr_fpath"),
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match=("^`resample_factor` expected .*int.*. Got .*str.*"),
+                ),
+            ),
+        ],
+    )
+    def test_sum_resample_on_fail(
+        self,
+        input_filepath,
+        output_filepath,
+        resample_factor,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Test sum_resample_file in failing cases.
+
+        Parameters
+        ----------
+        input_filepath
+            input filepath for test
+        output_filepath
+            output filepath for test
+        resample_factor
+            resample factor to pass to `sum_resample_file`
+        expected : Type[RaisesContext]
+            exception to test with
+
+        Notes
+        -----
+        1. Arguments are type hinted here to make unit tests more maintable.
+        See `merge_raster_files()` docstring for more details.
+
+        """
+        with expected:
+            sum_resample_file(
+                input_filepath=input_filepath,
+                output_filepath=output_filepath,
+                resample_factor=resample_factor,
+            )

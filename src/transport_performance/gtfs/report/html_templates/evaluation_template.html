@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>GTFS Report [date]</title>
+</head>
+
+<body>
+    <div class="side-menu">
+        <div class="side-menu-title">
+            <h1>GTFS Report</h1>
+        </div>
+        <ul>
+            <li><a class="option" href="index.html">Data Evaluation</a> </li>
+            <li><a class="option" href="stops.html">Stops</a> </li>
+            <li><a class="option" href="summaries.html">Data Summaries</a> </li>
+        </ul>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">
+                <span>GTFS Data Evaluation</span>
+            </div>
+        </div>
+        <div class="content" style="margin-top: 10vh;">
+            <div class="analysis-cont">
+                <span class="analysis-title">GTFS Feed Info</span>
+                <hr>
+                <div class="summary" style="width:100%;margin:10px;">
+                    <div>
+                        <dd>Publisher Name:</dd>
+                        <dt>[name_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Publisher URL:</dd>
+                        <dt><a href=[url_placeholder]>[url_placeholder]</a></dt>
+                    </div>
+                    <div>
+                        <dd>Feed Language:</dd>
+                        <dt>[lang_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Feed Start Date:</dd>
+                        <dt>[start_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Feed End Data:</dd>
+                        <dt>[end_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Feed Version:</dd>
+                        <dt>[version_placeholder]</dt>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="analysis-cont">
+                <span class="analysis-title">GTFS Feed Counts</span>
+                <hr>
+                <div class="summary" style="width:100%;margin:10px;">
+                    <div>
+                        <dd>Agencies:</dd>
+                        <dt>[agency_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Routes:</dd>
+                        <dt>[routes_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Trips:</dd>
+                        <dt>[trips_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Stops:</dd>
+                        <dt>[stops_placeholder]</dt>
+                    </div>
+                    <div>
+                        <dd>Shapes:</dd>
+                        <dt>[shapes_placeholder]</dt>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="analysis-cont">
+                <span class="analysis-title">[eval_title_3]</span>
+                <hr>
+                <div class="summary" style="width:100%;margin:10px;">
+                    [eval_placeholder_3]
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="analysis-cont">
+                <span class="analysis-title">[eval_title_1]</span>
+                <hr>
+                <div style="width:100%;margin:10px;">
+                    [eval_placeholder_1]
+                </div>
+            </div>
+        </div>
+            <div class="content">
+                <div class="analysis-cont">
+                    <span class="analysis-title">[eval_title_2]</span>
+                    <hr>
+                    <div style="width:100%;margin:10px">
+                        [eval_placeholder_2]
+                    </div>
+                </div>
+            </div>
+    </div>
+</body>
