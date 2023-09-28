@@ -287,6 +287,7 @@ if osm_config["override"]:
         pbf_pth=here(osm_config["input_path"]),
         out_pth=here(osm_config["filtered_path"]),
         bbox=osm_bbox,
+        tag_filter=osm_config["tag_filter"],
     )
 
 # %% [markdown] noqa: D212, D400, D415
@@ -302,7 +303,7 @@ urban centre destinations; in the centre, south west, and eastern regions.
 # %%
 # build the transport network
 trans_net = TransportNetwork(
-    here(osm_config["input_path"]),
+    here(osm_config["filtered_path"]),
     [here(gtfs_config["cleaned_path"])],
 )
 

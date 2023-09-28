@@ -47,6 +47,7 @@ used_stops_map_path = "outputs/e2e/gtfs/used_stops_map.html"
 override = true
 input_path = "data/external/osm/wales-latest.osm.pbf"
 filtered_path = "data/processed/osm/wales_latest_filtered.osm.pbf"
+tag_filter = false
 
 [analyse_network]  # configuration for the analyse_network stage
 departure_year = 2023
