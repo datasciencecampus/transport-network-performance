@@ -308,20 +308,31 @@ class TestGtfsInstance(object):
         tmp = os.path.join(tmpdir, "somefile.html")
         with pytest.raises(
             TypeError,
-            match="`out_pth` expected path-like, found <class 'bool'>",
+            match=re.escape(
+                "`out_pth` expected (<class 'str'>, <class 'pathlib.Path'>). "
+                "Got <class 'bool'>"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=True)
         with pytest.raises(
-            TypeError, match="`geoms` expects a string. Found <class 'int'>"
+            TypeError,
+            match="`geoms` expected <class 'str'>. Got <class 'int'>",
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms=38)
         with pytest.raises(
-            ValueError, match="`geoms` must be either 'point' or 'hull."
+            ValueError,
+            match=re.escape(
+                "'geoms' expected one of the following:"
+                "['point', 'hull'] Got foobar"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
         with pytest.raises(
             TypeError,
-            match="`geom_crs`.*string or integer. Found <class 'float'>",
+            match=re.escape(
+                "`geoms_crs` expected (<class 'str'>, <class 'int'>). Got "
+                "<class 'float'>"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
         # check missing stop_id results in an informative error message
@@ -332,7 +343,7 @@ class TestGtfsInstance(object):
             "this is an optional field in a GTFS file, it "
             "raises an error through the gtfs-kit package.",
         ):
-            gtfs_fixture.viz_stops(out_pth=tmp)
+            gtfs_fixture.viz_stops(out_pth=tmp, filtered_only=False)
 
     @patch("builtins.print")
     def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
@@ -373,9 +384,11 @@ class TestGtfsInstance(object):
         """Check viz_stops behaviour when plotting hull geom."""
         tmp = os.path.join(tmpdir, "hull.html")
         gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp), geoms="hull")
-        assert os.path.exists(
-            tmp
-        ), f"Map should have been written to {tmp} but was not found."
+        assert os.path.exists(tmp), f"Map file not found at {tmp}."
+        # assert file created when not filtering the hull
+        tmp1 = os.path.join(tmpdir, "filtered_hull.html")
+        gtfs_fixture.viz_stops(out_pth=tmp1, geoms="hull", filtered_only=False)
+        assert os.path.exists(tmp1), f"Map file not found at {tmp1}."
 
     def test__create_map_title_text_defence(self, gtfs_fixture):
         """Test the defences for _create_map_title_text()."""
