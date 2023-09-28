@@ -139,13 +139,7 @@ def wrong_crs_bbox():
 @pytest.fixture
 def cluster_centre():
     """Create dummy cluster centre."""
-    return (51.74, -3.25)
-
-
-@pytest.fixture
-def outside_cluster_centre():
-    """Create dummy cluster centre outside of raster boundaries."""
-    return (41.74, -13.25)
+    return (-242000.0, 6055000.0)
 
 
 # tests
@@ -155,7 +149,10 @@ def outside_cluster_centre():
     [
         (lazy_fixture("dummy_pop_array"), "str", does_not_raise()),
         (lazy_fixture("dummy_pop_array"), "path", does_not_raise()),
-        ("wrongpath", "str", pytest.raises(IOError)),
+        # wrong path
+        ("wrongpath.tif", "str", pytest.raises(IOError)),
+        # wrong extension
+        ("wrongpath", "str", pytest.raises(ValueError)),
     ],
 )
 def test_file(filepath, func, bbox, cluster_centre, expected):
@@ -199,22 +196,28 @@ def test_bbox(dummy_pop_array, window, cluster_centre, expected):
 
 # test exceptions for area centre
 @pytest.mark.parametrize(
-    "centre_coords, expected",
+    "centre_coords, centre_crs, expected",
     [
-        (lazy_fixture("cluster_centre"), does_not_raise()),
-        (lazy_fixture("outside_cluster_centre"), pytest.raises(IndexError)),
-        ((50, 3), pytest.raises(TypeError)),
-        ((50, 3, 3), pytest.raises(ValueError)),
-        (50, pytest.raises(TypeError)),
-        ("(50, 3)", pytest.raises(TypeError)),
+        (lazy_fixture("cluster_centre"), None, does_not_raise()),
+        # different crs
+        ((51.74, -3.25), "EPSG: 4326", does_not_raise()),
+        # outside cluster
+        ((-235000.0, 6055000.0), None, pytest.raises(ValueError)),
+        # outside bbox
+        ((-200000.0, 6055000.0), None, pytest.raises(IndexError)),
+        # check tuple constrains
+        ((50, 3), None, pytest.raises(TypeError)),
+        ((50, 3, 3), None, pytest.raises(ValueError)),
+        (50, None, pytest.raises(TypeError)),
+        ("(50, 3)", None, pytest.raises(TypeError)),
     ],
 )
-def test_centre(dummy_pop_array, bbox, centre_coords, expected):
+def test_centre(dummy_pop_array, bbox, centre_coords, centre_crs, expected):
     """Test centre."""
     with expected:
         assert (
             ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
-                bbox, centre=centre_coords
+                bbox, centre=centre_coords, centre_crs=centre_crs
             )
             is not None
         )
@@ -431,7 +434,7 @@ class TestFill:
         with expected:
             assert (
                 ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
-                    bbox, cluster_centre, cell_fill_treshold=cell_fill_t
+                    bbox, cluster_centre, cell_fill_threshold=cell_fill_t
                 )
                 is not None
             )
@@ -449,7 +452,7 @@ class TestFill:
         if fills != []:
             uc = ucc.UrbanCentre(dummy_pop_array)
             uc.get_urban_centre(
-                bbox, cluster_centre, cell_fill_treshold=cell_fill_t
+                bbox, cluster_centre, cell_fill_threshold=cell_fill_t
             )
             # fills with 5 and 7
             assert uc._UrbanCentre__filled_array[1, 3] == fills[0]
