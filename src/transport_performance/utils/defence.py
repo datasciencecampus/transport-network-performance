@@ -389,12 +389,12 @@ def _enforce_file_extension(
     root, ext = os.path.splitext(path)
     if isinstance(exp_ext, str):
         exp_ext = [exp_ext]
-    if ext.lower not in exp_ext:
+    if ext.lower() not in exp_ext:
         # format warning message
         if not msg:
             msg = (
                 f"Format {ext} provided. Expected {exp_ext} for path given "
-                f"{param_nm}"
+                f"to '{param_nm}'"
             )
         # warn user
         warnings.warn(msg, UserWarning)
