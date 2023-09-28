@@ -21,6 +21,7 @@ from transport_performance.utils.defence import (
     _type_defence,
     _handle_path_like,
     _check_parent_dir_exists,
+    _enforce_file_extension,
 )
 
 
@@ -513,6 +514,18 @@ class RasterPop:
         # write to file if filepath is given
         if save is not None:
             _check_parent_dir_exists(save, "save", create=True)
+            # get file extension for a more detailed error msg
+            root, ext = os.path.splitext(save)
+            save = _enforce_file_extension(
+                save,
+                ".html",
+                ".html",
+                "save",
+                msg=(
+                    f"Format '{ext}' not implemented. Writing folium"
+                    "map as '.html'"
+                ),
+            )
             m.save(save)
             m = None
 
@@ -696,6 +709,18 @@ class RasterPop:
         # get the current figure and resize it to match the axis before saving
         if save is not None:
             _check_parent_dir_exists(save, "save", create=True)
+            # get extension for error messge
+            root, ext = os.path.splitext(save)
+            save = _enforce_file_extension(
+                save,
+                ".png",
+                ".png",
+                "save",
+                msg=(
+                    f"Format '{ext}' not implemented. Writing cartopy plot"
+                    " as '.png'"
+                ),
+            )
             fig = plt.gcf()
             fig.set_size_inches(*figsize)
             fig.savefig(save)
@@ -738,6 +763,18 @@ class RasterPop:
         # write to file if filepath is given
         if save is not None:
             _check_parent_dir_exists(save, "save", create=True)
+            # get extension for error messge
+            root, ext = os.path.splitext(save)
+            save = _enforce_file_extension(
+                save,
+                ".png",
+                ".png",
+                "save",
+                msg=(
+                    f"Format '{ext}' not implemented. Writing matplotlib plot"
+                    " as '.png'"
+                ),
+            )
             fig.savefig(save)
             ax = None
 
