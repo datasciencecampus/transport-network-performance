@@ -153,12 +153,16 @@ def cluster_centre():
         ("wrongpath.tif", "str", pytest.raises(IOError)),
         # wrong extension
         ("wrongpath", "str", pytest.raises(ValueError)),
+        # wrong extension
+        (1234, "num", pytest.raises(TypeError)),
     ],
 )
 def test_file(filepath, func, bbox, cluster_centre, expected):
     """Test filepath."""
     if func == "str":
         filepath = str(filepath)
+    elif func == "num":
+        filepath = filepath
     else:
         filepath = Path(filepath)
     with expected:
