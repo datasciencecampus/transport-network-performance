@@ -36,8 +36,8 @@ def filter_osm(
         Bounding box used to perform the filter, in left, bottom, right top
         order. Defaults to [-3.01, 51.58, -2.99, 51.59].
     tag_filter: (bool, optional)
-        Should non-highway ways be filtered? Excludes waterway, landuse &
-        natural. Defaults to True.
+        Should non-highway ways be filtered? Excludes buildings, waterway,
+        landuse & natural. Defaults to True.
     install_osmosis: (bool, optional)
         Should brew be used to install osmosis if not found. Defaults to False.
 
@@ -89,10 +89,22 @@ def filter_osm(
         f"bottom={bbox[1]}",
         f"right={bbox[2]}",
         f"top={bbox[3]}",
+        # https://github.com/conveyal/r5/issues/276#issuecomment-306638448
+        "completeWays=yes",
+        "completeRelations=yes",
     ]
     if tag_filter:  # optionaly filter ways
-        print("Rejecting ways:  waterway, landuse & natural.")
-        cmd.extend(["--tf", "reject-ways", "waterway=* landuse=* natural=*"])
+        print("Rejecting ways: buildings, waterway, landuse & natural.")
+        cmd.extend(
+            [
+                "--tf",
+                "reject-ways",
+                "building=*",
+                "waterway=*",
+                "landuse=*",
+                "natural=*",
+            ]
+        )
 
     cmd.extend(["--used-node", "--write-pbf", out_pth])
 

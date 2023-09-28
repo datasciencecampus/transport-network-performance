@@ -6,15 +6,6 @@ Am end to end example to run through urban centre detection, population
 retrieval, gtfs manipulation and validation, OSM clipping , analysing the
 transport network using `r5py` and calculating a performance metric.
 
-> Note: Some bugs have be raised as a result of developing this script. Be
-> sure to check out the follow issues on GitHub to ensure they are closed or
-> to see temporary workarounds if any of the cells herein do not run:
->
-> - [#121](
-https://github.com/datasciencecampus/transport-network-performance/issues/121)
-> for an issue with `utils/raster/sum_resample_file()` writing to new
-> directories
-
 ## Preamble
 Call in script wide imports and the configuration information.
 """
@@ -70,7 +61,8 @@ Merge 1Km gridded data together. Then detect the urban centre.
 Using [GHS-POP 1Km gridded](https://ghsl.jrc.ec.europa.eu/download.php?ds=pop)
 population estimaes, in a **Mollweide CRS**. The following tiles are expected
 in `config["urban_centre"]["input_dir"]`(which include the British isles and
-France):
+France). Must use 2020 Epoch or update the `subset_regex` pattern to match your
+files in the cell below:
 
 - R3-C18
 - R3-C19
@@ -127,9 +119,10 @@ buffered urban centre boundary detected in the step above.
 ### Data Sources
 
 Using [GHS-POP 100m gridded](https://ghsl.jrc.ec.europa.eu/download.php?ds=pop)
-population estimaes, in a **Mollweide CRS**. The following tiles are expected
+population estimates, in a **Mollweide CRS**. The following tiles are expected
 in `config["population"]["input_dir"]`(which include the British isles and
-France):
+France). Must use 2020 Epoch or update the `subset_regex` pattern to match your
+files in the cell below:
 
 - R3-C18
 - R3-C19
@@ -150,6 +143,7 @@ if pop_config["override"]:
 
 # %%
 # resample 100m grids to 200m grids (default resample factor used)
+# Can take a couple of minutes...
 if pop_config["override"]:
     sum_resample_file(
         here(pop_config["merged_path"]),
@@ -202,7 +196,7 @@ if gtfs_config["override"]:
     bbox_filter_gtfs(
         in_pth=here(gtfs_config["input_path"]),
         out_pth=here(gtfs_config["filtered_path"]),
-        bbox_list=gtfs_bbox,
+        bbox=gtfs_bbox,
         units=gtfs_config["units"],
         crs=uc_gdf.crs.to_string(),
     )
@@ -293,6 +287,7 @@ if osm_config["override"]:
         pbf_pth=here(osm_config["input_path"]),
         out_pth=here(osm_config["filtered_path"]),
         bbox=osm_bbox,
+        tag_filter=osm_config["tag_filter"],
     )
 
 # %% [markdown] noqa: D212, D400, D415
@@ -308,7 +303,7 @@ urban centre destinations; in the centre, south west, and eastern regions.
 # %%
 # build the transport network
 trans_net = TransportNetwork(
-    here(osm_config["input_path"]),
+    here(osm_config["filtered_path"]),
     [here(gtfs_config["cleaned_path"])],
 )
 

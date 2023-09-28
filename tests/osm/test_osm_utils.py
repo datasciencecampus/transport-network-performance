@@ -90,7 +90,7 @@ class TestFilterOsm(object):
         ), f"Expected command got by mocker changed. Got: {subprocess_cmd} "
         # collect print statements
         func_out = mock_print.mock_calls
-        exp = "Rejecting ways:  waterway, landuse & natural."
+        exp = "Rejecting ways: buildings, waterway, landuse & natural."
         assert func_out == [
             call(exp)
         ], f"Expected print statement {exp} not found. Got: {func_out}"
