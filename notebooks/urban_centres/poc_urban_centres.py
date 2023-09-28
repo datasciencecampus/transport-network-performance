@@ -90,12 +90,12 @@ bbox_npt = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_npt_r = bbox_npt.to_crs("esri:54009")
 
 # bbox centroid
-bbox_npt_centroid = bbox_npt.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
-coords = (bbox_npt_centroid.y[0], bbox_npt_centroid.x[0])
+bbox_npt_centroid = bbox_npt_r.centroid
+coords = (bbox_npt_centroid.x[0], bbox_npt_centroid.y[0])
 
 # pop only criteria
-npt = ucc.UrbanCentre(file=(MERGED_DIR))
-npt_uc = npt.get_urban_centre(bbox_npt_r, coords, "epsg: 4326")
+npt = ucc.UrbanCentre(path=(MERGED_DIR))
+npt_uc = npt.get_urban_centre(bbox_npt_r, coords)
 
 fig = plt.figure
 m = npt_uc[npt_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -115,12 +115,12 @@ bbox_lds = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_lds_r = bbox_lds.to_crs("esri:54009")
 
 # bbox centroid
-bbox_lds_centroid = bbox_lds.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
-coords = (bbox_lds_centroid.y[0], bbox_lds_centroid.x[0])
+bbox_lds_centroid = bbox_lds_r.centroid
+coords = (bbox_lds_centroid.x[0], bbox_lds_centroid.y[0])
 
 # pop only criteria
-lds = ucc.UrbanCentre(file=(MERGED_DIR))
-lds_uc = npt.get_urban_centre(bbox_lds_r, coords, "epsg: 4326")
+lds = ucc.UrbanCentre(path=(MERGED_DIR))
+lds_uc = npt.get_urban_centre(bbox_lds_r, coords)
 
 fig = plt.figure
 m = lds_uc[lds_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -140,12 +140,12 @@ bbox_lnd = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_lnd_r = bbox_lnd.to_crs("esri:54009")
 
 # bbox centroid
-bbox_lnd_centroid = bbox_lnd.to_crs("epsg:27700").centroid.to_crs("epsg:4326")
-coords = (bbox_lnd_centroid.y[0], bbox_lnd_centroid.x[0])
+bbox_lnd_centroid = bbox_lnd_r.centroid
+coords = (bbox_lnd_centroid.x[0], bbox_lnd_centroid.y[0])
 
 # pop only criteria
-lnd = ucc.UrbanCentre(file=(MERGED_DIR))
-lnd_uc = npt.get_urban_centre(bbox_lnd_r, coords, "epsg: 4326")
+lnd = ucc.UrbanCentre(path=(MERGED_DIR))
+lnd_uc = npt.get_urban_centre(bbox_lnd_r, coords)
 
 fig = plt.figure
 m = lnd_uc[lnd_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -164,12 +164,12 @@ bbox_mrs = gpd.GeoDataFrame(index=[0], crs="epsg:4326", geometry=[box(*BBOX)])
 bbox_mrs_r = bbox_mrs.to_crs("esri:54009")
 
 # bbox centroid
-bbox_mrs_centroid = bbox_mrs_r.centroid.to_crs("epsg:4326")
-coords = (bbox_mrs_centroid.y[0], bbox_mrs_centroid.x[0])
+bbox_mrs_centroid = bbox_mrs_r.centroid
+coords = (bbox_mrs_centroid.x[0], bbox_mrs_centroid.y[0])
 
 # pop only criteria
-mrs = ucc.UrbanCentre(file=(MERGED_DIR))
-mrs_uc = npt.get_urban_centre(bbox_mrs_r, coords, "epsg: 4326")
+mrs = ucc.UrbanCentre(path=(MERGED_DIR))
+mrs_uc = npt.get_urban_centre(bbox_mrs_r, coords)
 
 fig = plt.figure
 m = mrs_uc[mrs_uc["label"] == "vectorized_uc"].explore(color="red")
