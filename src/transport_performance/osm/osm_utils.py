@@ -94,7 +94,9 @@ def filter_osm(
                 "--tf",
                 "reject-ways",
                 "building=*",
-                "waterway=* landuse=* natural=*",
+                "waterway=*",
+                "landuse=*",
+                "natural=*",
             ]
         )
 
