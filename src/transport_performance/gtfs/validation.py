@@ -317,20 +317,16 @@ class GtfsInstance:
         out_pth : str
             Path to write the map file html document to, including the file
             name. Must end with '.html' file extension.
-
         geoms : str
             Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`
             to map point locations of available stops. If `geoms=hull`,
             calculates the convex hull & its area. Defaults to "point".
-
         geom_crs : (str, int)
             Geometric CRS to use for the calculation of the convex hull area
             only. Defaults to "27700" (OSGB36, British National Grid).
-
         create_out_parent : bool
             Should the parent directory of `out_pth` be created if not found.
             Defaults to False.
-
         filtered_only: bool
             When True, only stops referenced within stop_times.txt will be
             plotted. When False, stops referenced in stops.txt will be plotted.
