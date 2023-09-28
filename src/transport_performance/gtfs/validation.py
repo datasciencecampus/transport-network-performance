@@ -242,9 +242,74 @@ class GtfsInstance:
             # TODO: Issue 74 - Improve this to clean feed when KeyError raised
             print("KeyError. Feed was not cleaned.")
 
+    def _produce_stops_map(
+        self, what_geoms: str, is_filtered: bool, crs: Union[int, str]
+    ) -> folium.folium.Map:
+        """Avoiding complexity hook. Returns the required map.
+
+        Parameters
+        ----------
+        what_geoms : str
+            Has the user asked to visualise 'hull' or 'points'?
+        is_filtered : bool
+            Has the user specified to plot IDs in stops or stop_times only?
+        crs : (int, str)
+            The crs to use for hull calculation.
+
+        Returns
+        -------
+        folium.folium.Map
+            Folium map object, either points or convex hull.
+
+        """
+        if what_geoms == "point":
+            if is_filtered:
+                plot_ids = self.feed.stop_times["stop_id"]
+            else:
+                plot_ids = self.feed.stops["stop_id"]
+            # viz stop locations
+            m = self.feed.map_stops(plot_ids)
+
+        elif what_geoms == "hull":
+            if is_filtered:
+                # filter the stops table to only those stop_ids present
+                # in stop_times, this ensures hull viz agrees with point viz
+                stop_time_ids = set(self.feed.stop_times["stop_id"])
+                gtfs_hull = self.feed.compute_convex_hull(
+                    stop_ids=stop_time_ids
+                )
+            else:
+                # if not filtering, use gtfs_kit method
+                gtfs_hull = self.feed.compute_convex_hull()
+            # visualise feed, output to file with area est, based on stops
+            gdf = gpd.GeoDataFrame(
+                {"geometry": gtfs_hull}, index=[0], crs="epsg:4326"
+            )
+            units = self.feed.dist_units
+            # prepare the map title
+            txt = _create_map_title_text(gdf, units, crs)
+            title_pre = "<h3 align='center' style='font-size:16px'><b>"
+            title_html = f"{title_pre}{txt}</b></h3>"
+            geo_j = gdf.to_json()
+            geo_j = folium.GeoJson(
+                data=geo_j, style_function=lambda x: {"fillColor": "red"}
+            )
+            m = folium.Map()
+            geo_j.add_to(m)
+            m.get_root().html.add_child(folium.Element(title_html))
+            # format map zoom and center
+            m.fit_bounds(m.get_bounds())
+
+        return m
+
     def viz_stops(
-        self, out_pth, geoms="point", geom_crs=27700, create_out_parent=False
-    ):
+        self,
+        out_pth: Union[str, pathlib.Path],
+        geoms: str = "point",
+        geom_crs: Union[int, str] = 27700,
+        create_out_parent: bool = False,
+        filtered_only: bool = True,
+    ) -> None:
         """Visualise the stops on a map as points or convex hull. Writes file.
 
         Parameters
@@ -252,24 +317,36 @@ class GtfsInstance:
         out_pth : str
             Path to write the map file html document to, including the file
             name. Must end with '.html' file extension.
-
         geoms : str
             Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`
             to map point locations of available stops. If `geoms=hull`,
             calculates the convex hull & its area. Defaults to "point".
-
         geom_crs : (str, int)
             Geometric CRS to use for the calculation of the convex hull area
             only. Defaults to "27700" (OSGB36, British National Grid).
-
         create_out_parent : bool
             Should the parent directory of `out_pth` be created if not found.
+            Defaults to False.
+        filtered_only: bool
+            When True, only stops referenced within stop_times.txt will be
+            plotted. When False, stops referenced in stops.txt will be plotted.
+            Note that gtfs_kit filtering behaviour removes stops from
+            stop_times.txt but not stops.txt.
 
         Returns
         -------
         None
 
         """
+        typing_dict = {
+            "out_pth": [out_pth, (str, pathlib.Path)],
+            "geoms": [geoms, str],
+            "geoms_crs": [geom_crs, (str, int)],
+            "create_out_parent": [create_out_parent, bool],
+            "filtered_only": [filtered_only, bool],
+        }
+        for k, v in typing_dict.items():
+            _type_defence(v[0], param_nm=k, types=v[-1])
         # out_pth defence
         _check_parent_dir_exists(
             pth=out_pth, param_nm="out_pth", create=create_out_parent
@@ -283,51 +360,21 @@ class GtfsInstance:
             out_pth = os.path.normpath(pre + ".html")
 
         # geoms defence
-        if not isinstance(geoms, str):
-            raise TypeError(f"`geoms` expects a string. Found {type(geoms)}")
         geoms = geoms.lower().strip()
-        accept_vals = ["point", "hull"]
-        if geoms not in accept_vals:
-            raise ValueError("`geoms` must be either 'point' or 'hull.'")
-
-        # geom_crs defence
-        if not isinstance(geom_crs, (str, int)):
-            raise TypeError(
-                f"`geom_crs` expects string or integer. Found {type(geom_crs)}"
-            )
+        ACCEPT_VALS = ["point", "hull"]
+        _check_item_in_list(geoms, ACCEPT_VALS, "geoms")
 
         try:
+            m = self._produce_stops_map(
+                what_geoms=geoms, is_filtered=filtered_only, crs=geom_crs
+            )
             # map_stops will fail if stop_code not present. According to :
             # https://developers.google.com/transit/gtfs/reference#stopstxt
             # This should be an optional column
-            if geoms == "point":
-                # viz stop locations
-                m = self.feed.map_stops(self.feed.stops["stop_id"])
-            elif geoms == "hull":
-                # visualise feed, output to file with area est, based on stops
-                gtfs_hull = self.feed.compute_convex_hull()
-                gdf = gpd.GeoDataFrame(
-                    {"geometry": gtfs_hull}, index=[0], crs="epsg:4326"
-                )
-                units = self.feed.dist_units
-                # prepare the map title
-                txt = _create_map_title_text(gdf, units, geom_crs)
-
-                title_pre = "<h3 align='center' style='font-size:16px'><b>"
-                title_html = f"{title_pre}{txt}</b></h3>"
-                geo_j = gdf.to_json()
-                geo_j = folium.GeoJson(
-                    data=geo_j, style_function=lambda x: {"fillColor": "red"}
-                )
-                m = folium.Map()
-                geo_j.add_to(m)
-                m.get_root().html.add_child(folium.Element(title_html))
-                # format map zoom and center
-                m.fit_bounds(m.get_bounds())
             m.save(out_pth)
         except KeyError:
             # KeyError inside of an except KeyError here. This is to provide
-            # a more detaailed error message on why a KeyError is being raised.
+            # a more detailed error message on why a KeyError is being raised.
             raise KeyError(
                 "The stops table has no 'stop_code' column. While "
                 "this is an optional field in a GTFS file, it "
@@ -1053,7 +1100,9 @@ class GtfsInstance:
             </head>
             <body>
             <h1 style="font-family: 'Poppins', sans-serif;margin: 10px;">
-                Table:{table}<br>Message: {message}<br>
+                <a href="index.html" style="color:grey;weight:bold;">
+                Back to Index</a><hr>
+                Table: {table}<br>Message: {message}<br>
                 Type: <span style="color:{'red' if msg_type == 'error' else
                         'orange'};font-family: 'Poppins', sans-serif;">
                         {msg_type}</span>

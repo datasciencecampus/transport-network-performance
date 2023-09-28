@@ -66,7 +66,9 @@ class TestFilterOsm(object):
             filter_osm(bbox=[0, 1.1, 0.1, 1.2])
 
     @patch("builtins.print")
-    def test_filter_osm_defense_missing_osmosis(self, mock_print, mocker):
+    def test_filter_osm_defense_missing_osmosis(
+        self, mock_print, mocker, tmpdir
+    ):
         """Assert func behaves when osmosis is missing and install=False."""
         with pytest.raises(
             Exception, match="`osmosis` is not found. Please install."
@@ -76,7 +78,7 @@ class TestFilterOsm(object):
                 "transport_performance.osm.osm_utils.subprocess.run",
                 side_effect=FileNotFoundError("No osmosis here..."),
             )
-            filter_osm()
+            filter_osm(out_pth=os.path.join(tmpdir, "test-filter-osm.osm.pbf"))
         assert (
             mock_missing_osmosis.called
         ), "`mock_missing_osmosis` was not called."
@@ -88,9 +90,10 @@ class TestFilterOsm(object):
         ), f"Expected command got by mocker changed. Got: {subprocess_cmd} "
         # collect print statements
         func_out = mock_print.mock_calls
+        exp = "Rejecting ways: buildings, waterway, landuse & natural."
         assert func_out == [
-            call("Rejecting ways: buildings, waterway, landuse & natural.")
-        ], f"Expected print statement not encountered. Got: {func_out}"
+            call(exp)
+        ], f"Expected print statement {exp} not found. Got: {func_out}"
 
     @pytest.mark.runinteg
     @patch("builtins.print")
