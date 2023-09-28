@@ -384,9 +384,11 @@ class TestGtfsInstance(object):
         """Check viz_stops behaviour when plotting hull geom."""
         tmp = os.path.join(tmpdir, "hull.html")
         gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp), geoms="hull")
-        assert os.path.exists(
-            tmp
-        ), f"Map should have been written to {tmp} but was not found."
+        assert os.path.exists(tmp), f"Map file not found at {tmp}."
+        # assert file created when not filtering the hull
+        tmp1 = os.path.join(tmpdir, "filtered_hull.html")
+        gtfs_fixture.viz_stops(out_pth=tmp1, geoms="hull", filtered_only=False)
+        assert os.path.exists(tmp1), f"Map file not found at {tmp1}."
 
     def test__create_map_title_text_defence(self, gtfs_fixture):
         """Test the defences for _create_map_title_text()."""
