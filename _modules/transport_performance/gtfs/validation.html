@@ -343,11 +343,76 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;KeyError. Feed was not cleaned.&quot;</span><span class="p">)</span></div>
 
 
+    <span class="k">def</span> <span class="nf">_produce_stops_map</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">what_geoms</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_filtered</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">folium</span><span class="o">.</span><span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Avoiding complexity hook. Returns the required map.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        what_geoms : str</span>
+<span class="sd">            Has the user asked to visualise &#39;hull&#39; or &#39;points&#39;?</span>
+<span class="sd">        is_filtered : bool</span>
+<span class="sd">            Has the user specified to plot IDs in stops or stop_times only?</span>
+<span class="sd">        crs : (int, str)</span>
+<span class="sd">            The crs to use for hull calculation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        folium.folium.Map</span>
+<span class="sd">            Folium map object, either points or convex hull.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">what_geoms</span> <span class="o">==</span> <span class="s2">&quot;point&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_filtered</span><span class="p">:</span>
+                <span class="n">plot_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="p">[</span><span class="s2">&quot;stop_id&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plot_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">[</span><span class="s2">&quot;stop_id&quot;</span><span class="p">]</span>
+            <span class="c1"># viz stop locations</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">map_stops</span><span class="p">(</span><span class="n">plot_ids</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">what_geoms</span> <span class="o">==</span> <span class="s2">&quot;hull&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_filtered</span><span class="p">:</span>
+                <span class="c1"># filter the stops table to only those stop_ids present</span>
+                <span class="c1"># in stop_times, this ensures hull viz agrees with point viz</span>
+                <span class="n">stop_time_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="p">[</span><span class="s2">&quot;stop_id&quot;</span><span class="p">])</span>
+                <span class="n">gtfs_hull</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">compute_convex_hull</span><span class="p">(</span>
+                    <span class="n">stop_ids</span><span class="o">=</span><span class="n">stop_time_ids</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># if not filtering, use gtfs_kit method</span>
+                <span class="n">gtfs_hull</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">compute_convex_hull</span><span class="p">()</span>
+            <span class="c1"># visualise feed, output to file with area est, based on stops</span>
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">gtfs_hull</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;epsg:4326&quot;</span>
+            <span class="p">)</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">dist_units</span>
+            <span class="c1"># prepare the map title</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">_create_map_title_text</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">crs</span><span class="p">)</span>
+            <span class="n">title_pre</span> <span class="o">=</span> <span class="s2">&quot;&lt;h3 align=&#39;center&#39; style=&#39;font-size:16px&#39;&gt;&lt;b&gt;&quot;</span>
+            <span class="n">title_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">title_pre</span><span class="si">}{</span><span class="n">txt</span><span class="si">}</span><span class="s2">&lt;/b&gt;&lt;/h3&gt;&quot;</span>
+            <span class="n">geo_j</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+            <span class="n">geo_j</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">GeoJson</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">geo_j</span><span class="p">,</span> <span class="n">style_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;fillColor&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">()</span>
+            <span class="n">geo_j</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">get_root</span><span class="p">()</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">folium</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="n">title_html</span><span class="p">))</span>
+            <span class="c1"># format map zoom and center</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">m</span>
+
 <div class="viewcode-block" id="GtfsInstance.viz_stops">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.viz_stops">[docs]</a>
     <span class="k">def</span> <span class="nf">viz_stops</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">out_pth</span><span class="p">,</span> <span class="n">geoms</span><span class="o">=</span><span class="s2">&quot;point&quot;</span><span class="p">,</span> <span class="n">geom_crs</span><span class="o">=</span><span class="mi">27700</span><span class="p">,</span> <span class="n">create_out_parent</span><span class="o">=</span><span class="kc">False</span>
-    <span class="p">):</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">out_pth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
+        <span class="n">geoms</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;point&quot;</span><span class="p">,</span>
+        <span class="n">geom_crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="mi">27700</span><span class="p">,</span>
+        <span class="n">create_out_parent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">filtered_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualise the stops on a map as points or convex hull. Writes file.</span>
 
 <span class="sd">        Parameters</span>
@@ -355,24 +420,36 @@
 <span class="sd">        out_pth : str</span>
 <span class="sd">            Path to write the map file html document to, including the file</span>
 <span class="sd">            name. Must end with &#39;.html&#39; file extension.</span>
-
 <span class="sd">        geoms : str</span>
 <span class="sd">            Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`</span>
 <span class="sd">            to map point locations of available stops. If `geoms=hull`,</span>
 <span class="sd">            calculates the convex hull &amp; its area. Defaults to &quot;point&quot;.</span>
-
 <span class="sd">        geom_crs : (str, int)</span>
 <span class="sd">            Geometric CRS to use for the calculation of the convex hull area</span>
 <span class="sd">            only. Defaults to &quot;27700&quot; (OSGB36, British National Grid).</span>
-
 <span class="sd">        create_out_parent : bool</span>
 <span class="sd">            Should the parent directory of `out_pth` be created if not found.</span>
+<span class="sd">            Defaults to False.</span>
+<span class="sd">        filtered_only: bool</span>
+<span class="sd">            When True, only stops referenced within stop_times.txt will be</span>
+<span class="sd">            plotted. When False, stops referenced in stops.txt will be plotted.</span>
+<span class="sd">            Note that gtfs_kit filtering behaviour removes stops from</span>
+<span class="sd">            stop_times.txt but not stops.txt.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        None</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">typing_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;out_pth&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">out_pth</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)],</span>
+            <span class="s2">&quot;geoms&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">geoms</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+            <span class="s2">&quot;geoms_crs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">geom_crs</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)],</span>
+            <span class="s2">&quot;create_out_parent&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">create_out_parent</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span>
+            <span class="s2">&quot;filtered_only&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">filtered_only</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">typing_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">_type_defence</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">param_nm</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="c1"># out_pth defence</span>
         <span class="n">_check_parent_dir_exists</span><span class="p">(</span>
             <span class="n">pth</span><span class="o">=</span><span class="n">out_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;out_pth&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="n">create_out_parent</span>
@@ -386,51 +463,21 @@
             <span class="n">out_pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">pre</span> <span class="o">+</span> <span class="s2">&quot;.html&quot;</span><span class="p">)</span>
 
         <span class="c1"># geoms defence</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geoms</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`geoms` expects a string. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">geoms</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">geoms</span> <span class="o">=</span> <span class="n">geoms</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="n">accept_vals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;point&quot;</span><span class="p">,</span> <span class="s2">&quot;hull&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">geoms</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">accept_vals</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`geoms` must be either &#39;point&#39; or &#39;hull.&#39;&quot;</span><span class="p">)</span>
-
-        <span class="c1"># geom_crs defence</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom_crs</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;`geom_crs` expects string or integer. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">geom_crs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="n">ACCEPT_VALS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;point&quot;</span><span class="p">,</span> <span class="s2">&quot;hull&quot;</span><span class="p">]</span>
+        <span class="n">_check_item_in_list</span><span class="p">(</span><span class="n">geoms</span><span class="p">,</span> <span class="n">ACCEPT_VALS</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_produce_stops_map</span><span class="p">(</span>
+                <span class="n">what_geoms</span><span class="o">=</span><span class="n">geoms</span><span class="p">,</span> <span class="n">is_filtered</span><span class="o">=</span><span class="n">filtered_only</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">geom_crs</span>
+            <span class="p">)</span>
             <span class="c1"># map_stops will fail if stop_code not present. According to :</span>
             <span class="c1"># https://developers.google.com/transit/gtfs/reference#stopstxt</span>
             <span class="c1"># This should be an optional column</span>
-            <span class="k">if</span> <span class="n">geoms</span> <span class="o">==</span> <span class="s2">&quot;point&quot;</span><span class="p">:</span>
-                <span class="c1"># viz stop locations</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">map_stops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">[</span><span class="s2">&quot;stop_id&quot;</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="n">geoms</span> <span class="o">==</span> <span class="s2">&quot;hull&quot;</span><span class="p">:</span>
-                <span class="c1"># visualise feed, output to file with area est, based on stops</span>
-                <span class="n">gtfs_hull</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">compute_convex_hull</span><span class="p">()</span>
-                <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
-                    <span class="p">{</span><span class="s2">&quot;geometry&quot;</span><span class="p">:</span> <span class="n">gtfs_hull</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;epsg:4326&quot;</span>
-                <span class="p">)</span>
-                <span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">dist_units</span>
-                <span class="c1"># prepare the map title</span>
-                <span class="n">txt</span> <span class="o">=</span> <span class="n">_create_map_title_text</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">geom_crs</span><span class="p">)</span>
-
-                <span class="n">title_pre</span> <span class="o">=</span> <span class="s2">&quot;&lt;h3 align=&#39;center&#39; style=&#39;font-size:16px&#39;&gt;&lt;b&gt;&quot;</span>
-                <span class="n">title_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">title_pre</span><span class="si">}{</span><span class="n">txt</span><span class="si">}</span><span class="s2">&lt;/b&gt;&lt;/h3&gt;&quot;</span>
-                <span class="n">geo_j</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
-                <span class="n">geo_j</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">GeoJson</span><span class="p">(</span>
-                    <span class="n">data</span><span class="o">=</span><span class="n">geo_j</span><span class="p">,</span> <span class="n">style_function</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;fillColor&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">}</span>
-                <span class="p">)</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">()</span>
-                <span class="n">geo_j</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-                <span class="n">m</span><span class="o">.</span><span class="n">get_root</span><span class="p">()</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">folium</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="n">title_html</span><span class="p">))</span>
-                <span class="c1"># format map zoom and center</span>
-                <span class="n">m</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">())</span>
             <span class="n">m</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">out_pth</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="c1"># KeyError inside of an except KeyError here. This is to provide</span>
-            <span class="c1"># a more detaailed error message on why a KeyError is being raised.</span>
+            <span class="c1"># a more detailed error message on why a KeyError is being raised.</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
                 <span class="s2">&quot;The stops table has no &#39;stop_code&#39; column. While &quot;</span>
                 <span class="s2">&quot;this is an optional field in a GTFS file, it &quot;</span>
