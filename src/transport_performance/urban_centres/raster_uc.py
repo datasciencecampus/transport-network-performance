@@ -29,8 +29,8 @@ class UrbanCentre:
     ):
 
         # check that path is str or PosixPath
-        file = _is_expected_filetype(path, "file", exp_ext=exp_ext)
-        self.file = file
+        _is_expected_filetype(path, "file", exp_ext=exp_ext)
+        self.file = path
 
     def get_urban_centre(
         self,
