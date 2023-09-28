@@ -6,6 +6,7 @@ import geopandas as gpd
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
+import pathlib
 import rasterio
 import xarray as xr
 
@@ -14,16 +15,21 @@ from pyproj import Transformer
 from rasterio.mask import raster_geometry_mask
 from rasterio.transform import rowcol
 from scipy.ndimage import generic_filter, label
-from transport_performance.utils.defence import _handle_path_like
+from transport_performance.utils.defence import _is_expected_filetype
+from typing import Union
 
 
 class UrbanCentre:
     """Create urban centre object."""
 
-    def __init__(self, file):
+    def __init__(
+        self,
+        path: Union[str, pathlib.Path],
+        exp_ext: list = [".tif", ".tiff", ".tff"],
+    ):
 
         # check that path is str or PosixPath
-        file = _handle_path_like(file, "file")
+        file = _is_expected_filetype(path, "file", exp_ext=exp_ext)
         self.file = file
 
     def get_urban_centre(
