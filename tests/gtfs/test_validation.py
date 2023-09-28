@@ -320,7 +320,11 @@ class TestGtfsInstance(object):
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms=38)
         with pytest.raises(
-            ValueError, match="`geoms` must be either 'point' or 'hull."
+            ValueError,
+            match=re.escape(
+                "'geoms' expected one of the following:"
+                "['point', 'hull'] Got foobar"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
         with pytest.raises(

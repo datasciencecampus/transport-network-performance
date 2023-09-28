@@ -361,9 +361,8 @@ class GtfsInstance:
 
         # geoms defence
         geoms = geoms.lower().strip()
-        accept_vals = ["point", "hull"]
-        if geoms not in accept_vals:
-            raise ValueError("`geoms` must be either 'point' or 'hull.'")
+        ACCEPT_VALS = ["point", "hull"]
+        _check_item_in_list(geoms, ACCEPT_VALS, "geoms")
 
         try:
             m = self._produce_stops_map(
