@@ -125,8 +125,8 @@
 <span class="sd">        Bounding box used to perform the filter, in left, bottom, right top</span>
 <span class="sd">        order. Defaults to [-3.01, 51.58, -2.99, 51.59].</span>
 <span class="sd">    tag_filter: (bool, optional)</span>
-<span class="sd">        Should non-highway ways be filtered? Excludes waterway, landuse &amp;</span>
-<span class="sd">        natural. Defaults to True.</span>
+<span class="sd">        Should non-highway ways be filtered? Excludes buildings, waterway,</span>
+<span class="sd">        landuse &amp; natural. Defaults to True.</span>
 <span class="sd">    install_osmosis: (bool, optional)</span>
 <span class="sd">        Should brew be used to install osmosis if not found. Defaults to False.</span>
 
@@ -178,10 +178,22 @@
         <span class="sa">f</span><span class="s2">&quot;bottom=</span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="sa">f</span><span class="s2">&quot;right=</span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="sa">f</span><span class="s2">&quot;top=</span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="c1"># https://github.com/conveyal/r5/issues/276#issuecomment-306638448</span>
+        <span class="s2">&quot;completeWays=yes&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;completeRelations=yes&quot;</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="k">if</span> <span class="n">tag_filter</span><span class="p">:</span>  <span class="c1"># optionaly filter ways</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Rejecting ways:  waterway, landuse &amp; natural.&quot;</span><span class="p">)</span>
-        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--tf&quot;</span><span class="p">,</span> <span class="s2">&quot;reject-ways&quot;</span><span class="p">,</span> <span class="s2">&quot;waterway=* landuse=* natural=*&quot;</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Rejecting ways: buildings, waterway, landuse &amp; natural.&quot;</span><span class="p">)</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;--tf&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;reject-ways&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;building=*&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;waterway=*&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;landuse=*&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;natural=*&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
 
     <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--used-node&quot;</span><span class="p">,</span> <span class="s2">&quot;--write-pbf&quot;</span><span class="p">,</span> <span class="n">out_pth</span><span class="p">])</span>
 
