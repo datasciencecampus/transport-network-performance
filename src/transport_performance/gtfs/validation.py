@@ -179,6 +179,7 @@ class GtfsInstance:
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
+        self.ROUTE_LKP = get_saved_route_type_lookup()
 
     def get_gtfs_files(self) -> list:
         """Return a list of files making up the GTFS file.
@@ -854,10 +855,9 @@ class GtfsInstance:
         _check_column_in_df(df=summary_df, column_name=day_column)
 
         # convert column type for better graph plotting, use desc
-        ROUTE_LKP = get_saved_route_type_lookup()
         summary_df["route_type"] = summary_df["route_type"].astype("object")
         summary_df["route_type"] = summary_df["route_type"].apply(
-            lambda x: _get_route_type_desc(ROUTE_LKP, x)
+            lambda x: _get_route_type_desc(self.ROUTE_LKP, x)
         )
 
         xlabel = (
@@ -1109,13 +1109,12 @@ class GtfsInstance:
 
             # add a more detailed route_type decription
             if "route_type" in impacted_rows.columns:
-                ROUTE_LKP = get_saved_route_type_lookup()
                 impacted_rows["route_type"] = impacted_rows[
                     "route_type"
                 ].astype("object")
                 impacted_rows["route_type_desc"] = impacted_rows[
                     "route_type"
-                ].apply(lambda x: _get_route_type_desc(ROUTE_LKP, x))
+                ].apply(lambda x: _get_route_type_desc(self.ROUTE_LKP, x))
 
             table_html = table_html + build_table(
                 impacted_rows, scheme, padding="10px", escape=False
