@@ -19,6 +19,7 @@ transport\_performance.gtfs.routes
                 :nosignatures:
                 :template: autosummary/base.rst
                 
+                    get_saved_route_type_lookup
                     scrape_route_type_lookup
         
     

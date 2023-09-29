@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>transport_performance.gtfs.routes &mdash; transport-performance 0.0.1 documentation</title>
+  <title>get_saved_route_type_lookup &mdash; transport-performance 0.0.1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -21,8 +21,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="get_saved_route_type_lookup" href="transport_performance.gtfs.routes.get_saved_route_type_lookup.html" />
-    <link rel="prev" title="convert_pandas_to_plotly" href="transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly.html" /> 
+    <link rel="next" title="scrape_route_type_lookup" href="transport_performance.gtfs.routes.scrape_route_type_lookup.html" />
+    <link rel="prev" title="transport_performance.gtfs.routes" href="transport_performance.gtfs.routes.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -56,8 +56,8 @@
 <li class="toctree-l2"><a class="reference internal" href="transport_performance.population.html">transport_performance.population</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="transport_performance.gtfs.html">transport_performance.gtfs</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">transport_performance.gtfs.routes</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.routes.get_saved_route_type_lookup.html">get_saved_route_type_lookup</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="transport_performance.gtfs.routes.html">transport_performance.gtfs.routes</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">get_saved_route_type_lookup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.routes.scrape_route_type_lookup.html">scrape_route_type_lookup</a></li>
 </ul>
 </li>
@@ -94,9 +94,10 @@
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html"><cite>transport-performance</cite> API</a></li>
           <li class="breadcrumb-item"><a href="transport_performance.gtfs.html">transport_performance.gtfs</a></li>
-      <li class="breadcrumb-item active">transport_performance.gtfs.routes</li>
+          <li class="breadcrumb-item"><a href="transport_performance.gtfs.routes.html">transport_performance.gtfs.routes</a></li>
+      <li class="breadcrumb-item active">get_saved_route_type_lookup</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/_autosummary/transport_performance.gtfs.routes.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/_autosummary/transport_performance.gtfs.routes.get_saved_route_type_lookup.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -104,28 +105,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-transport_performance.gtfs.routes">
-<span id="transport-performance-gtfs-routes"></span><h1>transport_performance.gtfs.routes<a class="headerlink" href="#module-transport_performance.gtfs.routes" title="Link to this heading"></a></h1>
-<p>Helpers for working with routes.txt.</p>
-<p class="rubric">Functions</p>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="transport_performance.gtfs.routes.get_saved_route_type_lookup.html#transport_performance.gtfs.routes.get_saved_route_type_lookup" title="transport_performance.gtfs.routes.get_saved_route_type_lookup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_saved_route_type_lookup</span></code></a></p></td>
-<td><p>Get the lcoally saved route type lookup as a dataframe.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="transport_performance.gtfs.routes.scrape_route_type_lookup.html#transport_performance.gtfs.routes.scrape_route_type_lookup" title="transport_performance.gtfs.routes.scrape_route_type_lookup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scrape_route_type_lookup</span></code></a></p></td>
-<td><p>Scrape a lookup of GTFS route_type codes to descriptions.</p></td>
-</tr>
-</tbody>
-</table>
+  <section id="get-saved-route-type-lookup">
+<h1>get_saved_route_type_lookup<a class="headerlink" href="#get-saved-route-type-lookup" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="transport_performance.gtfs.routes.get_saved_route_type_lookup">
+<span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.routes.</span></span><span class="sig-name descname"><span class="pre">get_saved_route_type_lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('tests/data/gtfs/route_lookup.pkl')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/routes.html#get_saved_route_type_lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.routes.get_saved_route_type_lookup" title="Link to this definition"></a></dt>
+<dd><p>Get the lcoally saved route type lookup as a dataframe.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>path<span class="classifier">Union[str, pathlib.Path], optional</span></dt><dd><p>The path to the route type lookup,
+by default pathlib.Path(“tests/data/gtfs/route_lookup.pkl”)</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>The route type lookup</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly.html" class="btn btn-neutral float-left" title="convert_pandas_to_plotly" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="transport_performance.gtfs.routes.get_saved_route_type_lookup.html" class="btn btn-neutral float-right" title="get_saved_route_type_lookup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="transport_performance.gtfs.routes.html" class="btn btn-neutral float-left" title="transport_performance.gtfs.routes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="transport_performance.gtfs.routes.scrape_route_type_lookup.html" class="btn btn-neutral float-right" title="scrape_route_type_lookup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

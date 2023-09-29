@@ -104,7 +104,10 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 <span class="kn">from</span> <span class="nn">plotly.graph_objects</span> <span class="kn">import</span> <span class="n">Figure</span> <span class="k">as</span> <span class="n">PlotlyFigure</span>
 
-<span class="kn">from</span> <span class="nn">transport_performance.gtfs.routes</span> <span class="kn">import</span> <span class="n">scrape_route_type_lookup</span>
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.routes</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">scrape_route_type_lookup</span><span class="p">,</span>
+    <span class="n">get_saved_route_type_lookup</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_is_expected_filetype</span><span class="p">,</span>
     <span class="n">_check_namespace_export</span><span class="p">,</span>
@@ -118,7 +121,6 @@
 <span class="kn">from</span> <span class="nn">transport_performance.gtfs.report.report_utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">TemplateHTML</span><span class="p">,</span>
     <span class="n">_set_up_report_dir</span><span class="p">,</span>
-    <span class="n">GTFS_UNNEEDED_COLUMNS</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -253,6 +255,40 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">read_feed</span><span class="p">(</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">dist_units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gtfs_path</span> <span class="o">=</span> <span class="n">gtfs_pth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ROUTE_LKP</span> <span class="o">=</span> <span class="n">get_saved_route_type_lookup</span><span class="p">()</span>
+        <span class="c1"># Constant to remove non needed columns from repeated</span>
+        <span class="c1"># pair error information.</span>
+        <span class="c1"># This is a messy method however it is the only</span>
+        <span class="c1"># way to ensure that the error report remains</span>
+        <span class="c1"># dynamic and can adadpt to different tables</span>
+        <span class="c1"># in the GTFS file.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">GTFS_UNNEEDED_COLUMNS</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;routes&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;agency&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;agency_phone&quot;</span><span class="p">,</span> <span class="s2">&quot;agency_lang&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;stop_times&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;stop_headsign&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pickup_type&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;drop_off_type&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;shape_dist_traveled&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;timepoint&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;stops&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;wheelchair_boarding&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;location_type&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;parent_station&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;platform_code&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;calendar_dates&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;calendar&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;trips&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;trip_headsign&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;block_id&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;shape_id&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;wheelchair_accessible&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;shapes&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
 
 <div class="viewcode-block" id="GtfsInstance.get_gtfs_files">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.get_gtfs_files">[docs]</a>
@@ -998,8 +1034,17 @@
         <span class="n">_check_column_in_df</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">summary_df</span><span class="p">,</span> <span class="n">column_name</span><span class="o">=</span><span class="n">target_column</span><span class="p">)</span>
         <span class="n">_check_column_in_df</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">summary_df</span><span class="p">,</span> <span class="n">column_name</span><span class="o">=</span><span class="n">day_column</span><span class="p">)</span>
 
-        <span class="c1"># convert column type for better graph plotting</span>
-        <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">)</span>
+        <span class="c1"># convert column type for better graph plotting, use desc</span>
+        <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;str&quot;</span><span class="p">)</span>
+        <span class="n">summary_df</span> <span class="o">=</span> <span class="n">summary_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ROUTE_LKP</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;route_type&quot;</span>
+        <span class="p">)</span>
+        <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span>
+            <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">summary_df</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
 
         <span class="n">xlabel</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">xlabel</span>
@@ -1017,7 +1062,7 @@
             <span class="n">summary_df</span><span class="p">,</span>
             <span class="n">x</span><span class="o">=</span><span class="n">day_column</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="k">else</span> <span class="n">target_column</span><span class="p">,</span>
             <span class="n">y</span><span class="o">=</span><span class="n">target_column</span> <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span> <span class="k">else</span> <span class="n">day_column</span><span class="p">,</span>
-            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;route_type&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;desc&quot;</span><span class="p">,</span>
             <span class="n">barmode</span><span class="o">=</span><span class="s2">&quot;group&quot;</span><span class="p">,</span>
             <span class="n">text_auto</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
@@ -1183,7 +1228,7 @@
                 <span class="p">)</span>
                 <span class="n">drop_cols</span> <span class="o">=</span> <span class="p">[</span>
                     <span class="n">col</span>
-                    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">GTFS_UNNEEDED_COLUMNS</span><span class="p">[</span><span class="n">table</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">GTFS_UNNEEDED_COLUMNS</span><span class="p">[</span><span class="n">table</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">join_vars</span>
                 <span class="p">]</span>
                 <span class="n">filtered_tbl</span> <span class="o">=</span> <span class="n">table_map</span><span class="p">[</span><span class="n">table</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drop_cols</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1247,6 +1292,18 @@
                 <span class="n">table_html</span> <span class="o">=</span> <span class="n">table_html</span> <span class="o">+</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
             <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
                 <span class="k">pass</span>
+
+            <span class="c1"># add a more detailed route_type decription</span>
+            <span class="k">if</span> <span class="s2">&quot;route_type&quot;</span> <span class="ow">in</span> <span class="n">impacted_rows</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">impacted_rows</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">impacted_rows</span><span class="p">[</span>
+                    <span class="s2">&quot;route_type&quot;</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;str&quot;</span><span class="p">)</span>
+                <span class="n">impacted_rows</span> <span class="o">=</span> <span class="n">impacted_rows</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ROUTE_LKP</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;route_type&quot;</span>
+                <span class="p">)</span>
+                <span class="n">impacted_rows</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">impacted_rows</span><span class="p">[</span><span class="s2">&quot;desc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span>
+                    <span class="n">impacted_rows</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
 
             <span class="n">table_html</span> <span class="o">=</span> <span class="n">table_html</span> <span class="o">+</span> <span class="n">build_table</span><span class="p">(</span>
                 <span class="n">impacted_rows</span><span class="p">,</span> <span class="n">scheme</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;10px&quot;</span><span class="p">,</span> <span class="n">escape</span><span class="o">=</span><span class="kc">False</span>

@@ -1,0 +1,9 @@
+..
+  base.rst
+
+get\_saved\_route\_type\_lookup
+===============================
+
+.. currentmodule:: transport_performance.gtfs.routes
+
+.. autofunction:: get_saved_route_type_lookup

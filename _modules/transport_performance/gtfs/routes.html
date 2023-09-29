@@ -90,8 +90,14 @@
 <span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
 
-<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="n">_url_defence</span><span class="p">,</span> <span class="n">_type_defence</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_url_defence</span><span class="p">,</span>
+    <span class="n">_type_defence</span><span class="p">,</span>
+    <span class="n">_is_expected_filetype</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
     <span class="n">action</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;.*pkg_resources&quot;</span>
@@ -220,6 +226,56 @@
     <span class="n">route_lookup</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cds</span><span class="p">,</span> <span class="n">txts</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">,</span> <span class="s2">&quot;desc&quot;</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">route_lookup</span></div>
+
+
+
+<div class="viewcode-block" id="get_saved_route_type_lookup">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.routes.get_saved_route_type_lookup.html#transport_performance.gtfs.routes.get_saved_route_type_lookup">[docs]</a>
+<span class="k">def</span> <span class="nf">get_saved_route_type_lookup</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span>
+        <span class="s2">&quot;tests/data/gtfs/route_lookup.pkl&quot;</span>
+    <span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the lcoally saved route type lookup as a dataframe.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : Union[str, pathlib.Path], optional</span>
+<span class="sd">        The path to the route type lookup,</span>
+<span class="sd">        by default pathlib.Path(&quot;tests/data/gtfs/route_lookup.pkl&quot;)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        The route type lookup</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># defences</span>
+    <span class="n">_is_expected_filetype</span><span class="p">(</span>
+        <span class="n">pth</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="n">check_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.pkl&quot;</span>
+    <span class="p">)</span>
+    <span class="n">lookup</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">ACCEPTED_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="c1"># check unserialized .pkl file is of correct type</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">ACCEPTED_TYPES</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;Serialized object in specified .pkl file is of type: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">lookup</span><span class="p">)</span><span class="si">}</span><span class="s2">. Expected </span><span class="si">{</span><span class="n">ACCEPTED_TYPES</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># convert dicts to pandas df</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">lookup</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">lookup</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lookup</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Route type lookup has length of 0&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+    <span class="n">EXPECTED_COLS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">,</span> <span class="s2">&quot;desc&quot;</span><span class="p">]</span>
+    <span class="c1"># check columns</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">EXPECTED_COLS</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unexpected column &#39;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&#39; in route type lookup&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lookup</span></div>
 
 </pre></div>
 
