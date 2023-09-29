@@ -85,7 +85,8 @@ def _create_map_title_text(gdf, units, geom_crs):
 
     Returns
     -------
-    str : The formatted text string for presentation in the map title.
+    str
+        The formatted text string for presentation in the map title.
 
     """
     if units in ["m", "km"]:
@@ -183,8 +184,8 @@ class GtfsInstance:
 
         Returns
         -------
-            pd.core.frame.DataFrame: Table of errors, warnings & their
-            descriptions.
+        pd.core.frame.DataFrame
+            Table of errors, warnings & their descriptions.
 
         """
         self.validity_df = self.feed.validate()
@@ -583,8 +584,9 @@ class GtfsInstance:
 
         Returns
         -------
-        pd.DataFrame: A dataframe containing either summarized
-                      results or dated route data.
+        pd.DataFrame
+            A dataframe containing either summarized results or dated route
+            data.
 
         """
         self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)
@@ -651,8 +653,9 @@ class GtfsInstance:
 
         Returns
         -------
-        pd.DataFrame: A dataframe containing either summarized
-                      results or dated route data.
+        pd.DataFrame
+            A dataframe containing either summarized results or dated route
+            data.
 
         """
         self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)
@@ -704,8 +707,8 @@ class GtfsInstance:
 
         Returns
         -------
-            pd.core.frame.DataFrame: Summary table of route counts by transport
-            mode.
+        pd.core.frame.DataFrame
+            Summary table of route counts by transport mode.
 
         """
         # Get the available modalities

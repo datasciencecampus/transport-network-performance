@@ -29,8 +29,10 @@ def _construct_extended_schema_table(some_soup, cd_list, desc_list):
 
     Returns
     -------
-        tuple[0]: Proposed extension to route_type codes
-        tuple[1]: Proposed extension to route_type descriptions
+    tuple[0]: list
+        route_type codes of proposed GTFS scheme extension.
+    tuple[1]: list
+        route_type descriptions of proposed GTFS scheme extension.
 
     """
     for i in some_soup.findAll("table"):
@@ -91,7 +93,8 @@ def scrape_route_type_lookup(
 
     Returns
     -------
-        pd.core.frame.DataFrame: A lookup of route_type codes to descriptions.
+    pd.core.frame.DataFrame
+        A lookup of route_type codes to descriptions.
 
     """
     # a little defence
