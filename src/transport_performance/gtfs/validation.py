@@ -14,7 +14,7 @@ from pretty_html_table import build_table
 import zipfile
 import warnings
 import pathlib
-from typing import Union
+from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
 
 from transport_performance.gtfs.routes import scrape_route_type_lookup
@@ -75,7 +75,9 @@ def _get_intermediate_dates(
     return result
 
 
-def _create_map_title_text(gdf, units, geom_crs):
+def _create_map_title_text(
+    gdf: gpd.GeoDataFrame, units: str, geom_crs: Union[str, int]
+) -> str:
     """Generate the map title text when plotting convex hull.
 
     Parameters
@@ -171,7 +173,11 @@ class GtfsInstance:
     """
 
     def __init__(
-        self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
+        self,
+        gtfs_pth: Union[str, pathlib.Path] = here(
+            "tests/data/newport-20230613_gtfs.zip"
+        ),
+        units: str = "m",
     ):
         _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
@@ -205,7 +211,7 @@ class GtfsInstance:
         self.file_list = file_list
         return self.file_list
 
-    def is_valid(self):
+    def is_valid(self) -> pd.DataFrame:
         """Check a feed is valid with `gtfs_kit`.
 
         Returns
@@ -217,7 +223,7 @@ class GtfsInstance:
         self.validity_df = self.feed.validate()
         return self.validity_df
 
-    def print_alerts(self, alert_type="error"):
+    def print_alerts(self, alert_type: str = "error") -> None:
         """Print validity errors & warnins messages in full.
 
         Parameters
@@ -550,7 +556,7 @@ class GtfsInstance:
         )
         return dated_trips_routes
 
-    def _get_pre_processed_trips(self):
+    def _get_pre_processed_trips(self) -> pd.DataFrame:
         """Obtain pre-processed trip data."""
         try:
             return self.pre_processed_trips.copy()
@@ -560,7 +566,7 @@ class GtfsInstance:
 
     def _summary_defence(
         self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        summ_ops: list[Callable] = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
     ) -> None:
         """Check for any invalid parameters in a summarising function.
@@ -705,7 +711,7 @@ class GtfsInstance:
 
     def summarise_routes(
         self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        summ_ops: list[Callable] = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
     ) -> pd.DataFrame:
         """Produce a summarised table of route statistics by day of week.
@@ -787,7 +793,7 @@ class GtfsInstance:
         self.daily_route_summary = day_route_count.copy()
         return self.daily_route_summary
 
-    def get_route_modes(self):
+    def get_route_modes(self) -> pd.DataFrame:
         """Summarise the available routes by their associated `route_type`.
 
         Returns

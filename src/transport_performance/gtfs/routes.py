@@ -13,7 +13,9 @@ warnings.filterwarnings(
 # issues/19
 
 
-def _construct_extended_schema_table(some_soup, cd_list, desc_list):
+def _construct_extended_schema_table(
+    some_soup: BeautifulSoup, cd_list: list, desc_list: list
+) -> tuple:
     """Create the extended table from a soup object. Not exported.
 
     Parameters
@@ -55,7 +57,7 @@ def _construct_extended_schema_table(some_soup, cd_list, desc_list):
     return (cd_list, desc_list)
 
 
-def _get_response_text(url):
+def _get_response_text(url: str) -> str:
     """Return the response & extract the text. Not exported."""
     r = requests.get(url)
     t = r.text
@@ -63,13 +65,13 @@ def _get_response_text(url):
 
 
 def scrape_route_type_lookup(
-    gtfs_url="https://gtfs.org/schedule/reference/",
-    ext_spec_url=(
+    gtfs_url: str = "https://gtfs.org/schedule/reference/",
+    ext_spec_url: str = (
         "https://developers.google.com/transit/gtfs/reference/"
         "extended-route-types"
     ),
-    extended_schema=True,
-):
+    extended_schema: bool = True,
+) -> pd.core.frame.DataFrame:
     """Scrape a lookup of GTFS route_type codes to descriptions.
 
     Scrapes HTML tables from `gtfs_url` to provide a lookup of `route_type`
