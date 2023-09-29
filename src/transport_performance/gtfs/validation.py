@@ -17,7 +17,10 @@ import pathlib
 from typing import Union
 from plotly.graph_objects import Figure as PlotlyFigure
 
-from transport_performance.gtfs.routes import scrape_route_type_lookup
+from transport_performance.gtfs.routes import (
+    scrape_route_type_lookup,
+    get_saved_route_type_lookup,
+)
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_namespace_export,
@@ -31,7 +34,6 @@ from transport_performance.utils.defence import (
 from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
-    GTFS_UNNEEDED_COLUMNS,
 )
 
 
@@ -164,6 +166,40 @@ class GtfsInstance:
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
+        self.ROUTE_LKP = get_saved_route_type_lookup()
+        # Constant to remove non needed columns from repeated
+        # pair error information.
+        # This is a messy method however it is the only
+        # way to ensure that the error report remains
+        # dynamic and can adadpt to different tables
+        # in the GTFS file.
+
+        self.GTFS_UNNEEDED_COLUMNS = {
+            "routes": [],
+            "agency": ["agency_phone", "agency_lang"],
+            "stop_times": [
+                "stop_headsign",
+                "pickup_type",
+                "drop_off_type",
+                "shape_dist_traveled",
+                "timepoint",
+            ],
+            "stops": [
+                "wheelchair_boarding",
+                "location_type",
+                "parent_station",
+                "platform_code",
+            ],
+            "calendar_dates": [],
+            "calendar": [],
+            "trips": [
+                "trip_headsign",
+                "block_id",
+                "shape_id",
+                "wheelchair_accessible",
+            ],
+            "shapes": [],
+        }
 
     def get_gtfs_files(self) -> list:
         """Return a list of files making up the GTFS file.
@@ -885,8 +921,17 @@ class GtfsInstance:
         _check_column_in_df(df=summary_df, column_name=target_column)
         _check_column_in_df(df=summary_df, column_name=day_column)
 
-        # convert column type for better graph plotting
-        summary_df["route_type"] = summary_df["route_type"].astype("object")
+        # convert column type for better graph plotting, use desc
+        summary_df["route_type"] = summary_df["route_type"].astype("str")
+        summary_df = summary_df.merge(
+            self.ROUTE_LKP, how="left", on="route_type"
+        )
+        summary_df["desc"] = summary_df["desc"].fillna(
+            summary_df["route_type"]
+        )
+        summary_df["desc"] = summary_df["desc"].apply(
+            lambda x: x.split(".")[0]
+        )
 
         xlabel = (
             xlabel
@@ -904,7 +949,7 @@ class GtfsInstance:
             summary_df,
             x=day_column if orientation == "v" else target_column,
             y=target_column if orientation == "v" else day_column,
-            color="route_type",
+            color="desc",
             barmode="group",
             text_auto=True,
             height=height,
@@ -1070,7 +1115,7 @@ class GtfsInstance:
                 )
                 drop_cols = [
                     col
-                    for col in GTFS_UNNEEDED_COLUMNS[table]
+                    for col in self.GTFS_UNNEEDED_COLUMNS[table]
                     if col not in join_vars
                 ]
                 filtered_tbl = table_map[table].copy().drop(drop_cols, axis=1)
@@ -1134,6 +1179,18 @@ class GtfsInstance:
                 table_html = table_html + "</div>"
             except NameError:
                 pass
+
+            # add a more detailed route_type decription
+            if "route_type" in impacted_rows.columns:
+                impacted_rows["route_type"] = impacted_rows[
+                    "route_type"
+                ].astype("str")
+                impacted_rows = impacted_rows.merge(
+                    self.ROUTE_LKP, how="left", on="route_type"
+                )
+                impacted_rows["desc"] = impacted_rows["desc"].fillna(
+                    impacted_rows["route_type"]
+                )
 
             table_html = table_html + build_table(
                 impacted_rows, scheme, padding="10px", escape=False
