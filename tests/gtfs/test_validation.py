@@ -17,9 +17,7 @@ from transport_performance.gtfs.validation import (
     _get_intermediate_dates,
     _create_map_title_text,
     _convert_multi_index_to_single,
-    _get_route_type_desc,
 )
-from transport_performance.gtfs.routes import get_saved_route_type_lookup
 
 
 @pytest.fixture(scope="function")  # some funcs expect cleaned feed others dont
@@ -450,18 +448,6 @@ class TestGtfsInstance(object):
             assert col in expected_cols, f"{col} not an expected column"
             expected_cols.remove(col)
         assert len(expected_cols) == 0, "Not all expected cols in output cols"
-
-    def test__get_route_type_desc(self):
-        """Tests for _get_route_type_desc()."""
-        route_lkp = get_saved_route_type_lookup()
-        assert (
-            _get_route_type_desc(route_lkp, 3) == "Bus"
-        ), "Failed to get route type description"
-        # test if route_type isn't present
-        route_lkp = route_lkp[route_lkp["route_type"] != "3"]
-        assert (
-            _get_route_type_desc(route_lkp, 3) == 3
-        ), "Getting route type desc when route type not present failed"
 
     def test__order_dataframe_by_day_defence(self, gtfs_fixture):
         """Test __order_dataframe_by_day defences."""

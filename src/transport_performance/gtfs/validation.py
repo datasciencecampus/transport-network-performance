@@ -143,18 +143,6 @@ def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _get_route_type_desc(lkp, key):
-    """Private function to get route type description."""
-    # no defences as private and only intended to be used internally
-    try:
-        desc = list(lkp[lkp.route_type == str(key)].desc)[0]
-        # only take transport method name
-        desc = desc.split(".")[0]
-    except IndexError:
-        return key
-    return desc
-
-
 class GtfsInstance:
     """Create a feed instance for validation, cleaning & visualisation."""
 
@@ -855,9 +843,15 @@ class GtfsInstance:
         _check_column_in_df(df=summary_df, column_name=day_column)
 
         # convert column type for better graph plotting, use desc
-        summary_df["route_type"] = summary_df["route_type"].astype("object")
-        summary_df["route_type"] = summary_df["route_type"].apply(
-            lambda x: _get_route_type_desc(self.ROUTE_LKP, x)
+        summary_df["route_type"] = summary_df["route_type"].astype("str")
+        summary_df = summary_df.merge(
+            self.ROUTE_LKP, how="left", on="route_type"
+        )
+        summary_df["desc"] = summary_df["desc"].fillna(
+            summary_df["route_type"]
+        )
+        summary_df["desc"] = summary_df["desc"].apply(
+            lambda x: x.split(".")[0]
         )
 
         xlabel = (
@@ -876,7 +870,7 @@ class GtfsInstance:
             summary_df,
             x=day_column if orientation == "v" else target_column,
             y=target_column if orientation == "v" else day_column,
-            color="route_type",
+            color="desc",
             barmode="group",
             text_auto=True,
             height=height,
@@ -1111,10 +1105,13 @@ class GtfsInstance:
             if "route_type" in impacted_rows.columns:
                 impacted_rows["route_type"] = impacted_rows[
                     "route_type"
-                ].astype("object")
-                impacted_rows["route_type_desc"] = impacted_rows[
-                    "route_type"
-                ].apply(lambda x: _get_route_type_desc(self.ROUTE_LKP, x))
+                ].astype("str")
+                impacted_rows = impacted_rows.merge(
+                    self.ROUTE_LKP, how="left", on="route_type"
+                )
+                impacted_rows["desc"] = impacted_rows["desc"].fillna(
+                    impacted_rows["route_type"]
+                )
 
             table_html = table_html + build_table(
                 impacted_rows, scheme, padding="10px", escape=False
