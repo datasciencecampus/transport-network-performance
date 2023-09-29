@@ -55,6 +55,19 @@ def bbox_filter_gtfs(
     -------
     None
 
+    Raises
+    ------
+    TypeError
+        `bbox` is not of type list or gpd.GeoDataFrame.
+        `units` or `crs` are not of type str.
+        `out_pth` or `in_pth` are not of types str or pathlib.Path.
+        Elements of a `bbox` list are not of type float.
+    FileExistsError
+        `in_pth` does not exist on disk.
+    ValueError
+        `in_pth` or `out_pth` does not have the expected .zip extension.
+
+
     """
     typing_dict = {
         "bbox": [bbox, (list, GeoDataFrame)],

@@ -52,6 +52,11 @@ def _get_intermediate_dates(
     list[pd.Timestamp]
         A list of daily timestamps for each day in the time period
 
+    Raises
+    ------
+    TypeError
+        If `start` or `end` are not of type pd.Timestamp.
+
     """
     # checks for start and end
     if not isinstance(start, pd.Timestamp):
@@ -87,6 +92,11 @@ def _create_map_title_text(gdf, units, geom_crs):
     -------
     str
         The formatted text string for presentation in the map title.
+
+    Raises
+    ------
+    ValueError
+        If `crs_unit` is not either "kilometre" or "metre".
 
     """
     if units in ["m", "km"]:
@@ -142,7 +152,23 @@ def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
 
 
 class GtfsInstance:
-    """Create a feed instance for validation, cleaning & visualisation."""
+    """Create a feed instance for validation, cleaning & visualisation.
+
+    Raises
+    ------
+    TypeError
+        `pth` is not either of string or pathlib.PosixPath.
+    TypeError
+        `units` is not of type str.
+    FileExistsError
+        `pth` does not exist on disk.
+    ValueError
+        `pth` does not have the expected file extension(s).
+    ValueError
+        `units` are not one of: "m", "km", "metres", "meters", "kilometres",
+        "kilometers".
+
+    """
 
     def __init__(
         self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
@@ -203,6 +229,13 @@ class GtfsInstance:
         Returns
         -------
         None
+
+        Raises
+        ------
+        AttributeError
+            No `validity_df()` attrubute was found.
+        UserWarning
+            No alerts of the specified `alert_type` were found.
 
         """
         if not hasattr(self, "validity_df"):
@@ -338,6 +371,22 @@ class GtfsInstance:
         -------
         None
 
+        Raises
+        ------
+        TypeError
+            `out_pth` is not either of string or pathlib.PosixPath.
+            `geoms` is not of type str
+            `geom_crs` is not of type str or int
+            `create_out_parent` or `filtered_only` are not of type bool
+        FileNotFoundError
+            Raised if the parent directory of `out_pth` could not be found on
+            disk and `create_out_parent` is False.
+        KeyError
+            The stops table has no 'stops_code' column.
+        UserWarning
+            If the file extension of `out_pth` is not .html, the extension will
+            be changed to .html.
+
         """
         typing_dict = {
             "out_pth": [out_pth, (str, pathlib.Path)],
@@ -402,6 +451,12 @@ class GtfsInstance:
         pd.DataFrame
             The inputted dataframe ordered by the day column
             (by real world order).
+
+        Raises
+        ------
+        TypeError
+            `df` is not of type pd.df.
+            `day_column_name` is not of type str
 
         """
         # defences for parameters
@@ -524,6 +579,16 @@ class GtfsInstance:
         -------
         None
 
+        Raises
+        ------
+        TypeError
+            `return_summary` is not of type pd.df.
+            `summ_ops` must be a numpy function or a list.
+            Each item in a `summ_ops` list must be a function.
+            Each item in a `summ_ops` list must be a numpy namespace export.
+        NotImplementedError
+            `summ_ops` is a function not exported from numpy.
+
         """
         if not isinstance(return_summary, bool):
             raise TypeError(
@@ -587,6 +652,16 @@ class GtfsInstance:
         pd.DataFrame
             A dataframe containing either summarized results or dated route
             data.
+
+        Raises
+        ------
+        TypeError
+            return_summary is not of type pd.df.
+            summ_ops must be a numpy function or a list.
+            Each item in a summ_ops list must be a function.
+            Each item in a summ_ops list must be a numpy namespace export.
+        NotImplementedError
+            summ_ops is a function not exported from numpy.
 
         """
         self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)
@@ -656,6 +731,16 @@ class GtfsInstance:
         pd.DataFrame
             A dataframe containing either summarized results or dated route
             data.
+
+        Raises
+        ------
+        TypeError
+            return_summary is not of type pd.df.
+            summ_ops must be a numpy function or a list.
+            Each item in a summ_ops list must be a function.
+            Each item in a summ_ops list must be a numpy namespace export.
+        NotImplementedError
+            summ_ops is a function not exported from numpy.
 
         """
         self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)

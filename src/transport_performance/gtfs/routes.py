@@ -96,6 +96,13 @@ def scrape_route_type_lookup(
     pd.core.frame.DataFrame
         A lookup of route_type codes to descriptions.
 
+    Raises
+    ------
+    ValueError
+        `gtfs_url` or `ext_spec_url` are not "http" or "https" protocol.
+    TypeError
+        `extended_schema` is not of type bool.
+
     """
     # a little defence
     for url in [gtfs_url, ext_spec_url]:
