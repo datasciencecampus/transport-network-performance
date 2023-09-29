@@ -4,9 +4,6 @@ Fixtures used in this file geographically represent a small area over ONS site
 in Newport. The data vales do not represent any real or meaningfull measurments
 , they are purely for use as a unit test and mimic input data used in this repo
 .
-
-Note: this suite of tests does not cover plotting methods. TODO add plotting
-unit tests. See issue #43.
 """
 
 import os
@@ -21,6 +18,7 @@ from shapely.geometry import Polygon, Point
 from numpy.dtypes import Float64DType
 from pytest_lazyfixture import lazy_fixture
 from _pytest.python_api import RaisesContext
+from contextlib import nullcontext as does_not_raise
 
 from transport_performance.population.rasterpop import RasterPop
 from transport_performance.utils.test_utils import _np_to_rioxarray
@@ -413,28 +411,30 @@ class TestRasterPop:
         assert np.array_equal(pop_gdf[var_name], expected[1][key])
 
     @pytest.mark.parametrize(
-        "fpath, aoi_bounds, urban_centre_bounds, expected",
+        "fpath, expected",
         [
-            ("test.tif", None, None, pytest.raises(FileNotFoundError)),
+            # non-existant file
             (
-                lazy_fixture("xarr_1_fpath"),
-                ("test"),
-                None,
-                pytest.raises(TypeError),
+                "test.tif",
+                pytest.raises(
+                    FileNotFoundError, match="test.tif not found on file."
+                ),
             ),
+            # existing file but an incorrect file type
             (
-                lazy_fixture("xarr_1_fpath"),
-                lazy_fixture("xarr_1_aoi"),
-                "test",
-                pytest.raises(TypeError),
+                "tests/data/newport-2023-06-13.osm.pbf",
+                pytest.raises(
+                    ValueError,
+                    match=(
+                        "`filepath` expected file extension .tif. Found .pbf"
+                    ),
+                ),
             ),
         ],
     )
-    def test_rasterpop_raises(
+    def test_rasterpop_init_raises(
         self,
         fpath: str,
-        aoi_bounds: Tuple[str],
-        urban_centre_bounds: str,
         expected: Type[RaisesContext],
     ) -> None:
         """Test raises statements in RasterPop.
@@ -442,12 +442,7 @@ class TestRasterPop:
         Parameters
         ----------
         fpath : str
-            Filepath to dummy data.
-        aoi_bounds : Tuple[str]
-            Area of interest bounds, as a tuple where the 0th index is used (
-            for consistency with the `xarr1_aoi` fixture).
-        urban_centre_bounds : str
-            Urban centre bounds test string.
+            Filepath to non-existant/incorrect file type data.
         expected : Type[RaisesContext]
             Expected raise result.
 
@@ -460,10 +455,180 @@ class TestRasterPop:
         """
         # trigger the raise and ensure it matches the expected type.
         with expected:
-            rp = RasterPop(fpath)
+            RasterPop(fpath)
+
+    @pytest.mark.parametrize(
+        "aoi_bounds, aoi_crs, round, threshold, var_name, urban_centre_bounds,"
+        " urban_centre_crs, expected",
+        [
+            # test aoi_bounds incorrect type
+            (
+                "test",
+                None,
+                False,
+                None,
+                "population",
+                lazy_fixture("xarr_1_uc"),
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="^`aoi_bounds` expected .*Polygon.*. Got .*str.*",
+                ),
+            ),
+            # test aoi_crs incorrect type
+            (
+                lazy_fixture("xarr_1_aoi"),
+                1.0,
+                False,
+                None,
+                "population",
+                lazy_fixture("xarr_1_uc"),
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="^`aoi_crs` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test bounds incorrect type
+            (
+                lazy_fixture("xarr_1_aoi"),
+                None,
+                "test",
+                None,
+                "population",
+                lazy_fixture("xarr_1_uc"),
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="^`round` expected .*bool.*. Got .*str.*",
+                ),
+            ),
+            # test threshold incorrect type
+            (
+                lazy_fixture("xarr_1_aoi"),
+                None,
+                False,
+                "test",
+                "population",
+                lazy_fixture("xarr_1_uc"),
+                None,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "^`threshold` expected (.*int.*float.*)."
+                        " Got .*str.*"
+                    ),
+                ),
+            ),
+            # test var_name incorrect type
+            (
+                lazy_fixture("xarr_1_aoi"),
+                None,
+                False,
+                None,
+                1.0,
+                lazy_fixture("xarr_1_uc"),
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="^`var_name` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test urban_centre_bounds incorrect type
+            (
+                lazy_fixture("xarr_1_aoi"),
+                None,
+                False,
+                None,
+                "population",
+                "test",
+                None,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "^`urban_centre_bounds` expected .*Polygon.*."
+                        " Got .*str.*"
+                    ),
+                ),
+            ),
+            # test urban_centre_crs incorrect type
+            (
+                lazy_fixture("xarr_1_aoi"),
+                None,
+                False,
+                None,
+                "population",
+                lazy_fixture("xarr_1_uc"),
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "^`urban_centre_crs` expected .*str.*. Got .*float.*"
+                    ),
+                ),
+            ),
+        ],
+    )
+    def test_rasterpop_get_pop_raises(
+        self,
+        xarr_1_fpath: str,
+        aoi_bounds: tuple,
+        aoi_crs,
+        round,
+        threshold,
+        var_name,
+        urban_centre_bounds: tuple,
+        urban_centre_crs,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Test raises statements in RasterPop `get_population()` method.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            Filepath to dummy data.
+        aoi_bounds : tuple
+            Area of interest bounds, as a tuple where the 0th index is used (
+            for consistency with the `xarr_1_aoi` fixture).
+        aoi_crs
+            see `get_data()` docstring
+        round
+            see `get_data()` docstring
+        threshold
+            see `get_data()` docstring
+        var_name
+            see `get_data()` docstring
+        urban_centre_bounds : tuple
+            Urban centre bounds test, as a tuple where the 0th index is used (
+            for consistency with the `xarr_1_uc` fixture).
+        urban_centre_crs
+            see `get_data()` docstring
+        expected : Type[RaisesContext]
+            Expected raise result.
+
+        Note
+        ----
+        1. For more information on the other parameters used in this test see
+        the `get_pop` docstring. Avoiding duplication by not describing or
+        type hinting them here.
+        2. When testing `aoi_bounds` and `urban_centre_bounds` input types,
+        the capabilty to index strings is being somewhat 'abused' here such
+        that "t" out of "test" is being used as the test argument. This
+        presents no technical issues because passing "t" is equally valid as
+        "test" in this case.
+
+        """
+        # trigger the raise and ensure it matches the expected type.
+        with expected:
+            rp = RasterPop(xarr_1_fpath)
             rp.get_pop(
                 aoi_bounds=aoi_bounds[0],
-                urban_centre_bounds=urban_centre_bounds,
+                aoi_crs=aoi_crs,
+                round=round,
+                threshold=threshold,
+                var_name=var_name,
+                urban_centre_bounds=urban_centre_bounds[0],
+                urban_centre_crs=urban_centre_crs,
             )
 
     def test_rasterpop_crs_conversion(
@@ -508,3 +673,544 @@ class TestRasterPop:
         assert np.array_equal(
             pop_gdf.within_urban_centre, xarr_1_uc[1]["within_uc"]
         )
+
+    @pytest.mark.parametrize(
+        "which, save_folder, save_filename",
+        [
+            ("folium", "outputs", "folium.html"),
+            ("cartopy", "outputs", "cartopy.png"),
+            ("matplotlib", "outputs", "matplotlib.png"),
+            ("MaTpLoTlIb", "outputs", "matplotlib.png"),  # test .lower()
+        ],
+    )
+    def test_plot_on_pass(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+        xarr_1_uc: tuple,
+        tmp_path: str,
+        which: str,
+        save_folder: str,
+        save_filename: str,
+    ) -> None:
+        """Test plotting methods.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            filepath to dummy raster data
+        xarr_1_aoi : tuple
+            aoi polygon for dummy input
+        xarr_1_uc : tuple
+            urban centre polugon for dummy input
+        tmp_path : str
+            temporary path to save output within
+        which : str
+            plotting backend to use
+        save_folder: str
+            folder to save output within
+        save_filename : str
+            filename to use when saving the file within the temp directory
+
+        """
+        # create the full output path
+        output_path = os.path.join(tmp_path, save_folder, save_filename)
+
+        # run raster pop and assert that the file is generated
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        rp.plot(which=which, save=output_path)
+        assert os.path.exists(output_path)
+
+    def test_plot_before_get_data(self, xarr_1_fpath: str) -> None:
+        """Test case where plot is called before getting data.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            file path to dummy data.
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        with pytest.raises(
+            NotImplementedError,
+            match="Unable to call `plot` without calling `get_pop`.",
+        ):
+            rp.plot()
+
+    @pytest.mark.parametrize(
+        "which, save, expected",
+        [
+            # test an unknown which argument incorrect type
+            (
+                "unknown",
+                None,
+                pytest.raises(
+                    ValueError,
+                    match=(
+                        "Unrecognised value for `which` unknown. "
+                        "Must be one of "
+                    ),
+                ),
+            ),
+            # test which argument incorrect type
+            (
+                1.0,
+                None,
+                pytest.raises(
+                    TypeError,
+                    match="^`which` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test save argument incorrect type
+            (
+                "folium",
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`save` expected .*path-like.*, found .*float.*",
+                ),
+            ),
+        ],
+    )
+    def test_plot_unknown_which(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+        xarr_1_uc: tuple,
+        which,
+        save,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Test a plot call with an unknown backend plot type.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            file path to dummy data.
+        xarr_1_aoi : tuple
+            area of interest polygon for dummy data.
+        xarr_1_uc : tuple
+            urban centre polygon for dummy data.
+        which
+            see `RasterPop.plot()` docstring
+        save
+            see `RasterPop.plot()` docstring
+        expected : Type[RaisesContext]
+            Expected raise result.
+
+        Note
+        ----
+        1. For more information on the other parameters used in this test see
+        the `plot()` docstring. Avoiding duplication by not describing or type
+        hinting them here.
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with expected:
+            rp.plot(which=which, save=save)
+
+    def test_plot_unknown_kwarg(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+    ) -> None:
+        """Unit test unknown kwarg in plot."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with pytest.raises(
+            TypeError,
+            match=(
+                r"_plot_folium\(\) got an unexpected keyword argument "
+                r"'unknown_kwarg'"
+            ),
+        ):
+            rp.plot(unknown_kwarg=None)
+
+    @pytest.mark.parametrize(
+        "tiles, attr, cmap, boundary_color, boundary_weight, expected",
+        [
+            # test tiles incorrect type
+            (
+                1.0,
+                "",
+                "",
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`tiles` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test attr incorrect type
+            (
+                "",
+                1.0,
+                "",
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`attr` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test cmap incorrect type
+            (
+                "",
+                "",
+                1.0,
+                "",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cmap` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test boundary_color incorrect type
+            (
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`boundary_color` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test boundary_weight incorrect type
+            (
+                "",
+                "",
+                "",
+                "",
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`boundary_weight` expected .*int.*. Got .*float.*",
+                ),
+            ),
+        ],
+    )
+    def test_plot_folium_type_defence(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+        tiles,
+        attr,
+        cmap,
+        boundary_color,
+        boundary_weight,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Unit test _plot_folium kwargs type raises."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with expected:
+            rp.plot(
+                which="folium",
+                save=None,
+                tiles=tiles,
+                attr=attr,
+                cmap=cmap,
+                boundary_color=boundary_color,
+                boundary_weight=boundary_weight,
+            )
+
+    def test_plot_foliumn_no_uc(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+    ) -> None:
+        """Test folium plotting backend with no urban centre.
+
+        Unit test written to capture fix for issue 52.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            file path to dummy data.
+        xarr_1_aoi : tuple
+            area of interest polygon for dummy data.
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0])
+        with does_not_raise():
+            rp.plot(which="folium")
+
+    def test_plot_cartopy_unknown_attr_location(
+        self,
+        xarr_1_fpath: str,
+        xarr_1_aoi: tuple,
+    ) -> None:
+        """Test cartopy plotting backend with an unknown attribute location.
+
+        Parameters
+        ----------
+        xarr_1_fpath : str
+            Filepath to dummy data.
+        xarr_1_aoi : tuple
+            Area of interest for dummy data.
+
+        """
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0])
+        test_attr_location = "unknown"
+        with pytest.raises(
+            ValueError,
+            match=(
+                f"Unrecognised value for `attr_location` {test_attr_location}."
+                "Expecting one of "
+            ),
+        ):
+            rp.plot(
+                which="cartopy",
+                attr_location=test_attr_location,
+            )
+
+    @pytest.mark.parametrize(
+        "figsize, map_tile_zoom, cmap, cbar_fraction, cbar_pad, cbar_label, "
+        "var_attr, base_map_attr, attr_font_size, attr_location, expected",
+        [
+            # test figsize incorrect type
+            (
+                1.0,
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`figsize` expected .*tuple.*. Got .*float.*",
+                ),
+            ),
+            # test map_tile_zoom incorrect type
+            (
+                (1.0, 1.0),
+                1.0,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`map_tile_zoom` expected .*int.*. Got .*float.*",
+                ),
+            ),
+            # test cmap incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                1.0,
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cmap` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test cbar_fraction incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                "",
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cbar_fraction` expected .*float.*. Got .*str.*",
+                ),
+            ),
+            # test cbar_pad incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                "",
+                "",
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cbar_pad` expected .*float.*. Got .*str.*",
+                ),
+            ),
+            # test cbar_label incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                1.0,
+                "",
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`cbar_label` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test var_attr incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                1.0,
+                "",
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`var_attr` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test base_map_attr incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                1.0,
+                1.0,
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`base_map_attr` expected .*str.*. Got .*float.*",
+                ),
+            ),
+            # test attr_font_size incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                "1.0",
+                "",
+                pytest.raises(
+                    TypeError,
+                    match="^`attr_font_size` expected .*float.*. Got .*str.*",
+                ),
+            ),
+            # test attr_location incorrect type
+            (
+                (1.0, 1.0),
+                1,
+                "",
+                1.0,
+                1.0,
+                "",
+                "",
+                "",
+                1.0,
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`attr_location` expected .*str.*. Got .*float.*",
+                ),
+            ),
+        ],
+    )
+    def test_plot_cartopy_type_defence(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+        figsize,
+        map_tile_zoom,
+        cmap,
+        cbar_fraction,
+        cbar_pad,
+        cbar_label,
+        var_attr,
+        base_map_attr,
+        attr_font_size,
+        attr_location,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Unit test _plot_cartop() kwargs type raises."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with expected:
+            rp.plot(
+                which="cartopy",
+                save=None,
+                figsize=figsize,
+                map_tile_zoom=map_tile_zoom,
+                cmap=cmap,
+                cbar_fraction=cbar_fraction,
+                cbar_pad=cbar_pad,
+                cbar_label=cbar_label,
+                var_attr=var_attr,
+                base_map_attr=base_map_attr,
+                attr_font_size=attr_font_size,
+                attr_location=attr_location,
+            )
+
+    @pytest.mark.parametrize(
+        "figsize, expected",
+        [
+            # test figsize incorrect type
+            (
+                1.0,
+                pytest.raises(
+                    TypeError,
+                    match="^`figsize` expected .*tuple.*. Got .*float.*",
+                ),
+            ),
+        ],
+    )
+    def test_plot_matplotlib_type_defence(
+        self,
+        xarr_1_fpath,
+        xarr_1_aoi,
+        xarr_1_uc,
+        figsize,
+        expected: Type[RaisesContext],
+    ) -> None:
+        """Unit test _plot_folium kwargs type raises."""
+        rp = RasterPop(xarr_1_fpath)
+        rp.get_pop(xarr_1_aoi[0], urban_centre_bounds=xarr_1_uc[0])
+        with expected:
+            rp.plot(
+                which="matplotlib",
+                save=None,
+                figsize=figsize,
+            )

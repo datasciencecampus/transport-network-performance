@@ -1,19 +1,25 @@
 """Defensive check utility funcs. Internals only."""
+from typing import Union
+
 import pathlib
 import numpy as np
 import os
-from typing import Union
+import pandas as pd
+import warnings
 
 
-def _handle_path_like(pth, param_nm):
+def _handle_path_like(
+    pth: Union[str, pathlib.Path], param_nm: str
+) -> pathlib.Path:
     """Handle path-like parameter values.
 
     Checks a path for symlinks and relative paths. Converts to realpath &
-    outputs pathlib.Path object (platform agnostic).
+    outputs pathlib.PosixPath or pathlib.WindowsPath object
+    (platform agnostic).
 
     Parameters
     ----------
-    pth : (str, pathlib.PosixPath)
+    pth : (str, pathlib.Path)
         The path to check.
 
     param_nm : str
@@ -26,18 +32,20 @@ def _handle_path_like(pth, param_nm):
     Returns
     -------
     pathlib.Path
-        Platform agnostic representation of pth.
+        Platform agnostic representation of pth. On unix-like a PosixPath is
+        returned. On windows a WindowsPath is returned. Both are children of
+        pathlib.Path.
 
     """
     if not isinstance(pth, (str, pathlib.Path)):
         raise TypeError(f"`{param_nm}` expected path-like, found {type(pth)}.")
 
-    # ensure returned path is not relative or contains symbolic links
-    pth = os.path.realpath(pth)
+    # Convert backslashes to forward slashes for Windows paths
+    pth_str = str(pth).replace("\\", "/")
 
-    if not isinstance(pth, pathlib.Path):
-        # coerce to Path even if user passes string
-        pth = pathlib.Path(pth)
+    # Ensure returned path is not relative or contains symbolic links
+    pth = os.path.realpath(pth_str)
+    pth = pathlib.Path(pth)
 
     return pth
 
@@ -89,7 +97,12 @@ def _check_parent_dir_exists(
     return None
 
 
-def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
+def _is_expected_filetype(
+    pth: Union[pathlib.Path, str],
+    param_nm: str,
+    check_existing: bool = True,
+    exp_ext: Union[str, list] = ".zip",
+) -> None:
     """Handle file paths that should be existing filetypes.
 
     Parameters
@@ -100,26 +113,62 @@ def _is_expected_filetype(pth, param_nm, check_existing=True, exp_ext=".zip"):
         The name of the parameter being tested. Helps with debugging.
     check_existing : bool
         Whether to check if the filetype file already exists. Defaults to True.
-    exp_ext: str
-        The expected filetype.
+    exp_ext: (str, list)
+        The expected filetype as a string. Or a list of file extension strings
+        to check. If the user forgets to include the "." in `exp_ext`, one will
+        be added.
 
     Raises
     ------
     TypeError: `pth` is not either of string or pathlib.PosixPath.
     FileExistsError: `pth` does not exist on disk.
-    ValueError: `pth` does not have the expected file extension.
+    ValueError: `pth` does not have the expected file extension(s).
 
     Returns
     -------
     None
 
     """
+    typing_dict = {
+        "pth": [pth, (str, pathlib.Path)],
+        "param_nm": [param_nm, str],
+        "check_existing": [check_existing, bool],
+        "exp_ext": [exp_ext, (str, list)],
+    }
+    for k, v in typing_dict.items():
+        _type_defence(v[0], k, v[-1])
     pth = _handle_path_like(pth=pth, param_nm=param_nm)
-
     _, ext = os.path.splitext(pth)
+    # lower for consistency
+    ext = ext.lower()
+    # catch cases where directories are passed. eg no file stem.
+    if ext == "":
+        raise ValueError(f"No file extension was found in {pth}.")
+    # treat cases where user forgot to include '.'
+    if isinstance(exp_ext, list):
+        # lower everything for consistency
+        exp_ext = [ext.lower() for ext in exp_ext]
+        for i, e in enumerate(exp_ext):
+            if not e.startswith(r"."):
+                warnings.warn(
+                    UserWarning(
+                        f"'.' was prepended to `exp_ext` value '{exp_ext[i]}'."
+                    )
+                )
+                exp_ext[i] = "." + e
+        is_correct = ext in exp_ext
+
+    else:
+        exp_ext = exp_ext.lower()
+        if not exp_ext.startswith(r"."):
+            warnings.warn(UserWarning("'.' was prepended to the `exp_ext`."))
+            exp_ext = "." + exp_ext
+        is_correct = ext == exp_ext
+
     if check_existing and not os.path.exists(pth):
-        raise FileExistsError(f"{pth} not found on file.")
-    if ext != exp_ext:
+        raise FileNotFoundError(f"{pth} not found on file.")
+
+    if not is_correct:
         raise ValueError(
             f"`{param_nm}` expected file extension {exp_ext}. Found {ext}"
         )
@@ -149,19 +198,35 @@ def _check_namespace_export(pkg=np, func=np.min):
 
 def _url_defence(url):
     """Defence checking. Not exported."""
-    if not isinstance(url, str):
-        raise TypeError(f"url {url} expected string, instead got {type(url)}")
-    elif not url.startswith((r"http://", r"https://")):
+    _type_defence(url, "url", str)
+    if not url.startswith((r"http://", r"https://")):
         raise ValueError(f"url string expected protocol, instead found {url}")
 
     return None
 
 
-def _bool_defence(some_bool, param_nm):
-    """Defence checking. Not exported."""
-    if not isinstance(some_bool, bool):
+def _type_defence(some_object, param_nm, types) -> None:
+    """Defence checking utility. Can handle NoneType.
+
+    Parameters
+    ----------
+    some_object : Any
+        Object to test with isinstance.
+    param_nm : str
+        A name for the parameter. Useful when this utility is used in a wrapper
+        to inherit the parent's parameter name and present in error message.
+    types : type or tuple
+        A type or a tuple of types to test `some_object` against.
+
+    Raises
+    ------
+    TypeError
+        `some_object` is not of type `types`.
+
+    """
+    if not isinstance(some_object, types):
         raise TypeError(
-            f"`{param_nm}` expected boolean. Got {type(some_bool)}"
+            f"`{param_nm}` expected {types}. Got {type(some_object)}"
         )
 
     return None
@@ -215,3 +280,88 @@ def _gtfs_defence(gtfs, param_nm):
             f"'{param_nm}' expected a GtfsInstance object. "
             f"Got {type(gtfs)}"
         )
+
+
+def _check_column_in_df(df: pd.DataFrame, column_name: str) -> None:
+    """Defences to check that a column exists in a df.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A pandas dataframe to check if the specified column exists in.
+    column_name : str
+        The name of the column to check for
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    IndexError
+        Raises an error if the column (column_name) does not exist in the
+        dataframe
+
+    """
+    if column_name not in df.columns:
+        raise IndexError(f"'{column_name}' is not a column in the dataframe.")
+
+    return None
+
+
+def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
+    """Defence to check if an item is present in a list.
+
+    Parameters
+    ----------
+    item : str
+        THe item to check the list for
+    _list : list
+        The list to check that the item is in
+    param_nm : str
+        The name of the param that the item has been passed to
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        Error raised when item not in the list.
+
+    """
+    if item not in _list:
+        raise ValueError(
+            f"'{param_nm}' expected one of the following:"
+            f"{_list} Got {item}"
+        )
+    return None
+
+
+def _check_attribute(obj, attr: str, message: str = None):
+    """Test to check if an attribute exists in an object.
+
+    Parameters
+    ----------
+    obj : any
+        The object to check that the attr exists in
+    attr : str
+        The attribute to check exists in an object
+    message : str, optional
+        The error message to display, by default None
+
+    Raises
+    ------
+    AttributeError
+        An error raised if the attr does not exist
+
+    """
+    err_msg = (
+        message
+        if message
+        else (f"{obj.__class__.__name__} has no attribute {attr}")
+    )
+
+    if attr not in obj.__dir__():
+        raise AttributeError(err_msg)

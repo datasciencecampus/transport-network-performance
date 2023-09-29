@@ -3,8 +3,14 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import requests
 import warnings
+from typing import Union
+import pathlib
 
-from transport_performance.utils.defence import _url_defence, _bool_defence
+from transport_performance.utils.defence import (
+    _url_defence,
+    _type_defence,
+    _is_expected_filetype,
+)
 
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"
@@ -98,7 +104,7 @@ def scrape_route_type_lookup(
     for url in [gtfs_url, ext_spec_url]:
         _url_defence(url)
 
-    _bool_defence(extended_schema, "extended_schema")
+    _type_defence(extended_schema, "extended_schema", bool)
     # Get the basic scheme lookup
     resp_txt = _get_response_text(gtfs_url)
     soup = BeautifulSoup(resp_txt, "html.parser")
@@ -131,3 +137,50 @@ def scrape_route_type_lookup(
     route_lookup = pd.DataFrame(zip(cds, txts), columns=["route_type", "desc"])
 
     return route_lookup
+
+
+def get_saved_route_type_lookup(
+    path: Union[str, pathlib.Path] = pathlib.Path(
+        "tests/data/gtfs/route_lookup.pkl"
+    )
+) -> pd.DataFrame:
+    """Get the lcoally saved route type lookup as a dataframe.
+
+    Parameters
+    ----------
+    path : Union[str, pathlib.Path], optional
+        The path to the route type lookup,
+        by default pathlib.Path("tests/data/gtfs/route_lookup.pkl")
+
+    Returns
+    -------
+    pd.DataFrame
+        The route type lookup
+
+    """
+    # defences
+    _is_expected_filetype(
+        pth=path, param_nm="path", check_existing=True, exp_ext=".pkl"
+    )
+    lookup = pd.read_pickle(path)
+    ACCEPTED_TYPES = (dict, pd.DataFrame)
+    # check unserialized .pkl file is of correct type
+    if not isinstance(lookup, ACCEPTED_TYPES):
+        raise TypeError(
+            "Serialized object in specified .pkl file is of type: "
+            f"{type(lookup)}. Expected {ACCEPTED_TYPES}"
+        )
+    # convert dicts to pandas df
+    if isinstance(lookup, dict):
+        lookup = pd.DataFrame(lookup)
+    if len(lookup) < 1:
+        warnings.warn("Route type lookup has length of 0", UserWarning)
+    EXPECTED_COLS = ["route_type", "desc"]
+    # check columns
+    for col in lookup.columns.values:
+        if col.lower() not in EXPECTED_COLS:
+            warnings.warn(
+                f"Unexpected column '{col}' in route type lookup", UserWarning
+            )
+
+    return lookup

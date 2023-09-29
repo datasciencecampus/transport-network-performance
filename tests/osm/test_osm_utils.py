@@ -3,6 +3,7 @@ import pytest
 from pyprojroot import here
 import os
 from unittest.mock import patch, call
+import re
 
 from transport_performance.osm.osm_utils import filter_osm
 
@@ -13,10 +14,11 @@ class TestFilterOsm(object):
     def test_filter_osm_defense(self):
         """Defensive behaviour for filter_osm."""
         with pytest.raises(
-            FileExistsError, match="not/a/pbf/.nosiree not found on file."
+            FileNotFoundError,
+            match=re.escape("/not/a/pbf.nosiree not found on file."),
         ):
             # file doesnt exist
-            filter_osm(pbf_pth="not/a/pbf/.nosiree")
+            filter_osm(pbf_pth="not/a/pbf.nosiree")
         with pytest.raises(
             ValueError,
             match="`pbf_pth` expected file extension .pbf. Found .zip",
@@ -25,18 +27,22 @@ class TestFilterOsm(object):
             filter_osm(pbf_pth=here("tests/data/newport-20230613_gtfs.zip"))
         with pytest.raises(
             TypeError,
-            match="`out_pth` expected path-like, found <class 'bool'>.",
+            match=re.escape(
+                "`pth` expected (<class 'str'>, <class 'pathlib.Path'>). Got <"
+                "class 'bool'>"
+            ),
         ):
             # out_pth is not a path_like
             filter_osm(out_pth=False)
         with pytest.raises(
-            TypeError, match="`tag_filter` expected boolean. Got <class 'int'>"
+            TypeError,
+            match="`tag_filter` expected <class 'bool'>. Got <class 'int'>",
         ):
             # check for boolean defense
             filter_osm(tag_filter=1)
         with pytest.raises(
             TypeError,
-            match="`install_osmosis` expected boolean. Got <class 'str'>",
+            match="`install_osmosis` .* <class 'bool'>. Got <class 'str'>",
         ):
             # check for boolean defense
             filter_osm(install_osmosis="False")
@@ -60,7 +66,9 @@ class TestFilterOsm(object):
             filter_osm(bbox=[0, 1.1, 0.1, 1.2])
 
     @patch("builtins.print")
-    def test_filter_osm_defense_missing_osmosis(self, mock_print, mocker):
+    def test_filter_osm_defense_missing_osmosis(
+        self, mock_print, mocker, tmpdir
+    ):
         """Assert func behaves when osmosis is missing and install=False."""
         with pytest.raises(
             Exception, match="`osmosis` is not found. Please install."
@@ -70,7 +78,7 @@ class TestFilterOsm(object):
                 "transport_performance.osm.osm_utils.subprocess.run",
                 side_effect=FileNotFoundError("No osmosis here..."),
             )
-            filter_osm()
+            filter_osm(out_pth=os.path.join(tmpdir, "test-filter-osm.osm.pbf"))
         assert (
             mock_missing_osmosis.called
         ), "`mock_missing_osmosis` was not called."
@@ -82,9 +90,10 @@ class TestFilterOsm(object):
         ), f"Expected command got by mocker changed. Got: {subprocess_cmd} "
         # collect print statements
         func_out = mock_print.mock_calls
+        exp = "Rejecting ways: buildings, waterway, landuse & natural."
         assert func_out == [
-            call("Rejecting ways:  waterway, landuse & natural.")
-        ], f"Expected print statement not encountered. Got: {func_out}"
+            call(exp)
+        ], f"Expected print statement {exp} not found. Got: {func_out}"
 
     @pytest.mark.runinteg
     @patch("builtins.print")

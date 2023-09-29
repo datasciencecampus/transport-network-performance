@@ -1,9 +1,11 @@
 """Utility functions for OSM files."""
 import subprocess
 from pyprojroot import here
+from typing import Union
+import pathlib
 
 from transport_performance.utils.defence import (
-    _bool_defence,
+    _type_defence,
     _check_list,
     _check_parent_dir_exists,
     _is_expected_filetype,
@@ -11,12 +13,16 @@ from transport_performance.utils.defence import (
 
 
 def filter_osm(
-    pbf_pth=here("tests/data/newport-2023-06-13.osm.pbf"),
-    out_pth="filtered.osm.pbf",
-    bbox=[-3.01, 51.58, -2.99, 51.59],
-    tag_filter=True,
-    install_osmosis=False,
-):
+    pbf_pth: Union[str, pathlib.PosixPath] = here(
+        "tests/data/newport-2023-06-13.osm.pbf"
+    ),
+    out_pth: Union[str, pathlib.PosixPath] = here(
+        "outputs/osm/filtered.osm.pbf"
+    ),
+    bbox: list = [-3.01, 51.58, -2.99, 51.59],
+    tag_filter: bool = True,
+    install_osmosis: bool = False,
+) -> None:
     """Filter an osm.pbf file to a bbox. Relies on homebrew with osmosis.
 
     Parameters
@@ -25,13 +31,13 @@ def filter_osm(
         Path to the open street map pbf to be filtered. Defaults to
         here("tests/data/newport-2023-06-13.osm.pbf").
     out_pth: ((str, pathlib.PosixPath), optional)
-        Path to write to. Defaults to "filtered.osm.pbf".
+        Path to write to. Defaults to here("outputs/osm/filtered.osm.pbf").
     bbox:  (list, optional)
         Bounding box used to perform the filter, in left, bottom, right top
         order. Defaults to [-3.01, 51.58, -2.99, 51.59].
     tag_filter: (bool, optional)
-        Should non-highway ways be filtered? Excludes waterway, landuse &
-        natural. Defaults to True.
+        Should non-highway ways be filtered? Excludes buildings, waterway,
+        landuse & natural. Defaults to True.
     install_osmosis: (bool, optional)
         Should brew be used to install osmosis if not found. Defaults to False.
 
@@ -54,7 +60,7 @@ def filter_osm(
         "tag_filter": tag_filter,
         "install_osmosis": install_osmosis,
     }.items():
-        _bool_defence(val, param_nm=nm)
+        _type_defence(val, nm, bool)
     # check bbox values makes sense, else osmosis will error
     if not bbox[0] < bbox[2]:
         raise ValueError(
@@ -83,10 +89,22 @@ def filter_osm(
         f"bottom={bbox[1]}",
         f"right={bbox[2]}",
         f"top={bbox[3]}",
+        # https://github.com/conveyal/r5/issues/276#issuecomment-306638448
+        "completeWays=yes",
+        "completeRelations=yes",
     ]
     if tag_filter:  # optionaly filter ways
-        print("Rejecting ways:  waterway, landuse & natural.")
-        cmd.extend(["--tf", "reject-ways", "waterway=* landuse=* natural=*"])
+        print("Rejecting ways: buildings, waterway, landuse & natural.")
+        cmd.extend(
+            [
+                "--tf",
+                "reject-ways",
+                "building=*",
+                "waterway=*",
+                "landuse=*",
+                "natural=*",
+            ]
+        )
 
     cmd.extend(["--used-node", "--write-pbf", out_pth])
 

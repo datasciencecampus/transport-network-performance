@@ -1,5 +1,5 @@
 pre-commit
-r5py>=0.0.4
+r5py==0.1.0
 gtfs_kit==5.2.7
 rasterio
 matplotlib>=3.7.0
@@ -26,5 +26,9 @@ folium
 mapclassify
 seaborn
 haversine
+pretty_html_table
+kaleido
 numpy>=1.25.0 # test suite will fail if user installed lower than this
+sphinx
+sphinx-rtd-theme
 -e .

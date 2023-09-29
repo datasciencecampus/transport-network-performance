@@ -1,6 +1,13 @@
 """Unit tests for transport_performance/urban_centres/urban_centres_class.
 
 TODO: add docs.
+
+Note: in the class parameterised tests below there are some arguments that are
+not used across all tests within them. This is a deliberate design choice,
+since pytest expects all parameterised arguments to be passed - removing or
+excluding from a signle test triggers errors. The alternative would be to
+separate the tests and reparameterise each separetly, but this would lead to a
+larger codebase that is more difficult to maintain.
 """
 
 import os
@@ -20,6 +27,7 @@ from shapely.geometry import Polygon
 import transport_performance.urban_centres.raster_uc as ucc
 
 
+# fixtures
 @pytest.fixture
 def dummy_pop_array(tmp_path: str):
     """Create dummy population array."""
@@ -28,9 +36,9 @@ def dummy_pop_array(tmp_path: str):
     dummy = np.array(
         [
             [5000, 5000, 5000, 1500, 1500, 0, 0, 0, 5000, 5000],
-            [5000, 5000, 5000, 0, 0, 0, 0, 0, 0, 0],
+            [5000, 5000, 5000, 0, 0, 1500, 0, 0, 0, 0],
             [5000, 5000, 5000, 1500, 1500, 0, 0, 0, 0, 0],
-            [1500, 1500, 1500, 0, 0, 0, 0, 0, 0, 0],
+            [5000, 1500, 1500, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 500, 500, 100, 0, 0, 0],
             [1000, 0, 0, 0, 100, 40, 5000, 0, 0, 0],
@@ -140,7 +148,8 @@ def outside_cluster_centre():
     return (41.74, -13.25)
 
 
-# test exceptions for input parameters
+# tests
+# test exceptions for file path
 @pytest.mark.parametrize(
     "filepath, func, expected",
     [
@@ -162,6 +171,7 @@ def test_file(filepath, func, bbox, cluster_centre, expected):
         )
 
 
+# test exceptions for bounding box
 @pytest.mark.parametrize(
     "window, expected",
     [
@@ -187,6 +197,7 @@ def test_bbox(dummy_pop_array, window, cluster_centre, expected):
         )
 
 
+# test exceptions for area centre
 @pytest.mark.parametrize(
     "centre_coords, expected",
     [
@@ -209,6 +220,7 @@ def test_centre(dummy_pop_array, bbox, centre_coords, expected):
         )
 
 
+# test exceptions for band
 @pytest.mark.parametrize(
     "band, expected",
     [
@@ -229,95 +241,225 @@ def test_band_n(dummy_pop_array, bbox, cluster_centre, band, expected):
         )
 
 
+# test cell population threshold
 @pytest.mark.parametrize(
-    "cell_pop_t, expected",
+    "cell_pop_t, expected, flags",
     [
-        (1500, does_not_raise()),
-        (1500.5, pytest.raises(TypeError)),
-        ("1500", pytest.raises(TypeError)),
+        (1500, does_not_raise(), [True, True, False]),
+        (5000, does_not_raise(), [True, False, False]),
+        (1500.5, pytest.raises(TypeError), []),
+        ("1500", pytest.raises(TypeError), []),
         # tests value that would not create any cluster
-        (150000, pytest.raises(ValueError)),
+        (150000, pytest.raises(ValueError), []),
     ],
 )
-def test_cell_pop_t(
-    dummy_pop_array, bbox, cluster_centre, cell_pop_t, expected
-):
-    """Test cell_pop_threshold parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+class TestCellPop:
+    """Class to test effect of cell pop threshold on output."""
+
+    def test_cell_pop_t(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_pop_t,
+        expected,
+        flags,
+    ):
+        """Test cell_pop_threshold parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, cell_pop_threshold=cell_pop_t
+                )
+                is not None
+            )
+
+    def test_cell_pop_t_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_pop_t,
+        expected,
+        flags,
+    ):
+        """Test cell_pop_threshold output."""
+        if flags != []:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(
                 bbox, cluster_centre, cell_pop_threshold=cell_pop_t
             )
-            is not None
-        )
+            # fills with 5 and 7
+            assert uc._UrbanCentre__pop_filt_array[0, 2] == flags[0]
+            # fills with 5 but not 7
+            assert uc._UrbanCentre__pop_filt_array[0, 3] == flags[1]
+            # doesn't fill (checks if outside bounds are 0)
+            assert uc._UrbanCentre__pop_filt_array[6, 0] == flags[2]
 
 
+# test diagonal boolean
 @pytest.mark.parametrize(
-    "diagonal, expected",
+    "diagonal, expected, cluster, num_clusters",
     [
-        (True, does_not_raise()),
-        (False, does_not_raise()),
-        ("True", pytest.raises(TypeError)),
+        (True, does_not_raise(), 1, 3),
+        (False, does_not_raise(), 3, 4),
+        (1, pytest.raises(TypeError), 0, 0),
+        ("True", pytest.raises(TypeError), 0, 0),
     ],
 )
-def test_diag(dummy_pop_array, bbox, cluster_centre, diagonal, expected):
-    """Test diag parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
-                bbox, cluster_centre, diag=diagonal
+class TestDiag:
+    """Class to test effect of diagonal boolean on output."""
+
+    def test_diag(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        diagonal,
+        expected,
+        cluster,
+        num_clusters,
+    ):
+        """Test diag parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, diag=diagonal
+                )
+                is not None
             )
-            is not None
-        )
+
+    def test_diag_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        diagonal,
+        expected,
+        cluster,
+        num_clusters,
+    ):
+        """Test diag parameter output."""
+        if cluster != 0:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(bbox, cluster_centre, diag=diagonal)
+            # checks if diagonal cell is clustered with main blob or separate
+            assert uc._UrbanCentre__cluster_array[1, 5] == cluster
+            assert uc._UrbanCentre__num_clusters == num_clusters
 
 
+# test cluster population threshold
 @pytest.mark.parametrize(
-    "cluster_pop_t, expected",
+    "cluster_pop_t, expected, clusters",
     [
-        (50000, does_not_raise()),
-        (50000.5, pytest.raises(TypeError)),
-        ("50000", pytest.raises(TypeError)),
+        (50000, does_not_raise(), [1, 0, 0]),
+        (10000, does_not_raise(), [1, 2, 0]),
+        (50000.5, pytest.raises(TypeError), []),
+        ("50000", pytest.raises(TypeError), []),
         # test value that would filter out all clusters
-        (1000000, pytest.raises(ValueError)),
+        (1000000, pytest.raises(ValueError), []),
     ],
 )
-def test_cluster_pop_t(
-    dummy_pop_array, bbox, cluster_centre, cluster_pop_t, expected
-):
-    """Test pop_threshold parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+class TestClusterPop:
+    """Class to test effect of clustering pop threshold on output."""
+
+    def test_cluster_pop_t(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cluster_pop_t,
+        expected,
+        clusters,
+    ):
+        """Test pop_threshold parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, cluster_pop_threshold=cluster_pop_t
+                )
+                is not None
+            )
+
+    def test_cluster_pop_t_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cluster_pop_t,
+        expected,
+        clusters,
+    ):
+        """Test pop_threshold outputs."""
+        if clusters != []:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(
                 bbox, cluster_centre, cluster_pop_threshold=cluster_pop_t
             )
-            is not None
-        )
+            # checks if diagonal cell is clustered with main blob or separate
+            assert uc._UrbanCentre__urban_centres_array[0, 0] == clusters[0]
+            assert uc._UrbanCentre__urban_centres_array[0, 9] == clusters[1]
+            assert uc._UrbanCentre__urban_centres_array[6, 6] == clusters[2]
 
 
+# test adjacent cells threshold to fill
 @pytest.mark.parametrize(
-    "cell_fill_t, expected",
+    "cell_fill_t, expected, fills",
     [
-        (5, does_not_raise()),
-        (5.5, pytest.raises(TypeError)),
-        ("5", pytest.raises(TypeError)),
+        (5, does_not_raise(), [1, 1, 0]),
+        (7, does_not_raise(), [1, 0, 0]),
+        (5.5, pytest.raises(TypeError), []),
+        ("5", pytest.raises(TypeError), []),
         # test values outside boundaries
-        (11, pytest.raises(ValueError)),
-        (0, pytest.raises(ValueError)),
+        (11, pytest.raises(ValueError), []),
+        (0, pytest.raises(ValueError), []),
     ],
 )
-def test_cell_fill_t(
-    dummy_pop_array, bbox, cluster_centre, cell_fill_t, expected
-):
-    """Test cell_fill_threshold parameter."""
-    with expected:
-        assert (
-            ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+class TestFill:
+    """Class to test effect of fill threshold on output."""
+
+    def test_cell_fill_t(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_fill_t,
+        expected,
+        fills,
+    ):
+        """Test cell_fill_threshold parameter."""
+        with expected:
+            assert (
+                ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
+                    bbox, cluster_centre, cell_fill_treshold=cell_fill_t
+                )
+                is not None
+            )
+
+    def test_cell_fill_output(
+        self,
+        dummy_pop_array,
+        bbox,
+        cluster_centre,
+        cell_fill_t,
+        expected,
+        fills,
+    ):
+        """Test fill output."""
+        if fills != []:
+            uc = ucc.UrbanCentre(dummy_pop_array)
+            uc.get_urban_centre(
                 bbox, cluster_centre, cell_fill_treshold=cell_fill_t
             )
-            is not None
-        )
+            # fills with 5 and 7
+            assert uc._UrbanCentre__filled_array[1, 3] == fills[0]
+            # fills with 5 but not 7
+            assert uc._UrbanCentre__filled_array[1, 4] == fills[1]
+            # doesn't fill (checks if outside bounds are 0)
+            assert uc._UrbanCentre__filled_array[4, 0] == fills[2]
 
 
+# test nodata parameter
 @pytest.mark.parametrize(
     "v_nodata, expected",
     [
@@ -337,6 +479,7 @@ def test_v_nodata(dummy_pop_array, bbox, cluster_centre, v_nodata, expected):
         )
 
 
+# test buffer parameter
 @pytest.mark.parametrize(
     "buffer, expected",
     [
@@ -357,6 +500,7 @@ def test_buffer(dummy_pop_array, bbox, cluster_centre, buffer, expected):
         )
 
 
+# test intermediate output types
 @pytest.mark.parametrize(
     "output, expected",
     [
@@ -381,11 +525,37 @@ def test_output_types(dummy_pop_array, bbox, cluster_centre, output, expected):
     assert type(getattr(obj, output)) == expected
 
 
+# test final output characteristics using defaults
 def test_final_output(dummy_pop_array, bbox, cluster_centre):
     """Test final output."""
     out = ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
         bbox, cluster_centre
     )
+
+    # uc expected coordinates
+    # coordinates will need to be recalculated if array fixture changes
+    # you can just do list(Polygon.exterior.coords) to get coordinates
+    uc_coords = [
+        (-243000.0, 6056000.0),
+        (-243000.0, 6052000.0),
+        (-240000.0, 6052000.0),
+        (-240000.0, 6053000.0),
+        (-238000.0, 6053000.0),
+        (-238000.0, 6056000.0),
+        (-243000.0, 6056000.0),
+    ]
+    assert out.loc[0][1] == Polygon(uc_coords)
+
+    # bbox expected coordinates
+    bbox_coords = [
+        (-253000.0, 6042000.0),
+        (-228000.0, 6042000.0),
+        (-228000.0, 6066000.0),
+        (-253000.0, 6066000.0),
+        (-253000.0, 6042000.0),
+    ]
+    assert out.loc[2][1] == Polygon(bbox_coords)
+
     # type of output
     assert type(out) == gpd.GeoDataFrame
 
