@@ -108,6 +108,7 @@
     <span class="n">_type_defence</span><span class="p">,</span>
     <span class="n">_handle_path_like</span><span class="p">,</span>
     <span class="n">_check_parent_dir_exists</span><span class="p">,</span>
+    <span class="n">_enforce_file_extension</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -608,6 +609,18 @@
         <span class="c1"># write to file if filepath is given</span>
         <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># get file extension for a more detailed error msg</span>
+            <span class="n">root</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="n">save</span> <span class="o">=</span> <span class="n">_enforce_file_extension</span><span class="p">(</span>
+                <span class="n">save</span><span class="p">,</span>
+                <span class="s2">&quot;.html&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;.html&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;save&quot;</span><span class="p">,</span>
+                <span class="n">msg</span><span class="o">=</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Format &#39;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&#39; not implemented. Writing folium&quot;</span>
+                    <span class="s2">&quot;map as &#39;.html&#39;&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
             <span class="n">m</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
             <span class="n">m</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -632,8 +645,11 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        save : str, optional</span>
-<span class="sd">            Filepath to save location, with &quot;.png&quot; extension, by default None</span>
-<span class="sd">            meaning the map will not be saved to file.</span>
+<span class="sd">            Filepath to save location, by default None meaning the map will</span>
+<span class="sd">            not be saved to file. Accepted formats are &#39;eps&#39;, &#39;jpg&#39;,&#39;jpeg&#39;,</span>
+<span class="sd">            &#39;pdf&#39;, &#39;pgf&#39;, &#39;png&#39;, &#39;ps&#39;, &#39;raw&#39;, &#39;rgba&#39;, &#39;svg&#39;, &#39;svgz&#39;, &#39;tif&#39;,</span>
+<span class="sd">            &#39;tiff&#39;, &#39;webp&#39;. If any other file extension is given, it will</span>
+<span class="sd">            default to &#39;.png&#39;.</span>
 <span class="sd">        figsize : tuple, optional</span>
 <span class="sd">            The matplotlib figure size width and height in inches, by default</span>
 <span class="sd">            (10, 8).</span>
@@ -787,10 +803,28 @@
         <span class="c1"># use tight layout to maximise axis size of axis</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
+        <span class="c1"># list of allowed formats to save plot</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">n</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">get_supported_filetypes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="p">]</span>
+
         <span class="c1"># write to file if filepath is given, since there is no figure, need to</span>
         <span class="c1"># get the current figure and resize it to match the axis before saving</span>
         <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># get extension for error messge</span>
+            <span class="n">root</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="n">save</span> <span class="o">=</span> <span class="n">_enforce_file_extension</span><span class="p">(</span>
+                <span class="n">save</span><span class="p">,</span>
+                <span class="n">formats</span><span class="p">,</span>
+                <span class="s2">&quot;.png&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;save&quot;</span><span class="p">,</span>
+                <span class="n">msg</span><span class="o">=</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Format &#39;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&#39; not implemented. Writing cartopy plot&quot;</span>
+                    <span class="s2">&quot; as &#39;.png&#39;&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
             <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="o">*</span><span class="n">figsize</span><span class="p">)</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
@@ -809,8 +843,11 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        save : str, optional</span>
-<span class="sd">            Filepath to save location, with &quot;.png&quot; extension, by default None</span>
-<span class="sd">            meaning the plot will not be saved to file.</span>
+<span class="sd">            Filepath to save location, by default None meaning the map will</span>
+<span class="sd">            not be saved to file. Accepted formats are &#39;eps&#39;, &#39;jpg&#39;,&#39;jpeg&#39;,</span>
+<span class="sd">            &#39;pdf&#39;, &#39;pgf&#39;, &#39;png&#39;, &#39;ps&#39;, &#39;raw&#39;, &#39;rgba&#39;, &#39;svg&#39;, &#39;svgz&#39;, &#39;tif&#39;,</span>
+<span class="sd">            &#39;tiff&#39;, &#39;webp&#39;. If any other file extension is given, it will</span>
+<span class="sd">            default to &#39;.png&#39;.</span>
 <span class="sd">        figsize : tuple, optional</span>
 <span class="sd">            The matplotlib figursize width and height in inches, by default</span>
 <span class="sd">            (6.4, 4.8).</span>
@@ -830,9 +867,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_xds</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
+        <span class="c1"># list of allowed formats to save plot</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">n</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">get_supported_filetypes</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="p">]</span>
+
         <span class="c1"># write to file if filepath is given</span>
         <span class="k">if</span> <span class="n">save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">save</span><span class="p">,</span> <span class="s2">&quot;save&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># get extension for error messge</span>
+            <span class="n">root</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
+            <span class="n">save</span> <span class="o">=</span> <span class="n">_enforce_file_extension</span><span class="p">(</span>
+                <span class="n">save</span><span class="p">,</span>
+                <span class="n">formats</span><span class="p">,</span>
+                <span class="s2">&quot;.png&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;save&quot;</span><span class="p">,</span>
+                <span class="n">msg</span><span class="o">=</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Format &#39;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&#39; not implemented. Writing matplotlib plot&quot;</span>
+                    <span class="s2">&quot; as &#39;.png&#39;&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save</span><span class="p">)</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span>
 
