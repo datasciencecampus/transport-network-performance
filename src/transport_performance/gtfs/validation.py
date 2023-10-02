@@ -284,16 +284,21 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(self, fast_travel: bool = True):
+    def clean_feed(self, validate: bool = False, fast_travel: bool = True):
         """Attempt to clean feed using `gtfs_kit`.
 
         Parameters
         ----------
+        validate: bool, optional
+            Whether or not to validate the dataframe before cleaning
         fast_travel: bool, optional
             Whether or not to clean warnings related to fast travel.
 
         """
         _type_defence(fast_travel, "fast_travel", bool)
+        _type_defence(validate, "valiidate", bool)
+        if validate:
+            self.validity_df = self.feed.validate()
         try:
             # In cases where shape_id is missing, keyerror is raised.
             # https://developers.google.com/transit/gtfs/reference#shapestxt
@@ -1280,8 +1285,9 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed()
-        validation_dataframe = self.is_valid()
+        self.clean_feed(validate=True, fast_travel=True)
+        # re-validate to clean any newly raised errors/warnings
+        validation_dataframe = self.is_valid(far_stops=True)
 
         # create extended reports if requested
         if extended_validation:

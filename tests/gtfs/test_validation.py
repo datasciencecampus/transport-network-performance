@@ -949,7 +949,6 @@ class TestGtfsInstance(object):
     def test_html_report_on_pass(self, gtfs_fixture, tmp_path):
         """Test that a HTML report is generated if defences are passed."""
         # validate before generating the html report
-        gtfs_fixture.is_valid()
         gtfs_fixture.html_report(report_dir=pathlib.Path(tmp_path))
 
         # assert that the report has been completely generated
