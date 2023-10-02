@@ -705,6 +705,12 @@ class RasterPop:
         # use tight layout to maximise axis size of axis
         plt.tight_layout()
 
+        # list of allowed formats to save plot
+        formats = [
+            "." + n
+            for n in list(plt.gcf().canvas.get_supported_filetypes().keys())
+        ]
+
         # write to file if filepath is given, since there is no figure, need to
         # get the current figure and resize it to match the axis before saving
         if save is not None:
@@ -713,7 +719,7 @@ class RasterPop:
             root, ext = os.path.splitext(save)
             save = _enforce_file_extension(
                 save,
-                ".png",
+                formats,
                 ".png",
                 "save",
                 msg=(
@@ -760,6 +766,12 @@ class RasterPop:
         self._xds.plot(ax=ax)
         plt.tight_layout()
 
+        # list of allowed formats to save plot
+        formats = [
+            "." + n
+            for n in list(plt.gcf().canvas.get_supported_filetypes().keys())
+        ]
+
         # write to file if filepath is given
         if save is not None:
             _check_parent_dir_exists(save, "save", create=True)
@@ -767,7 +779,7 @@ class RasterPop:
             root, ext = os.path.splitext(save)
             save = _enforce_file_extension(
                 save,
-                ".png",
+                formats,
                 ".png",
                 "save",
                 msg=(
