@@ -550,8 +550,11 @@ class RasterPop:
         Parameters
         ----------
         save : str, optional
-            Filepath to save location, with ".png" extension, by default None
-            meaning the map will not be saved to file.
+            Filepath to save location, by default None meaning the map will
+            not be saved to file. Accepted formats are 'eps', 'jpg','jpeg',
+            'pdf', 'pgf', 'png', 'ps', 'raw', 'rgba', 'svg', 'svgz', 'tif',
+            'tiff', 'webp'. If any other file extension is given, it will
+            default to '.png'.
         figsize : tuple, optional
             The matplotlib figure size width and height in inches, by default
             (10, 8).
@@ -745,8 +748,11 @@ class RasterPop:
         Parameters
         ----------
         save : str, optional
-            Filepath to save location, with ".png" extension, by default None
-            meaning the plot will not be saved to file.
+            Filepath to save location, by default None meaning the map will
+            not be saved to file. Accepted formats are 'eps', 'jpg','jpeg',
+            'pdf', 'pgf', 'png', 'ps', 'raw', 'rgba', 'svg', 'svgz', 'tif',
+            'tiff', 'webp'. If any other file extension is given, it will
+            default to '.png'.
         figsize : tuple, optional
             The matplotlib figursize width and height in inches, by default
             (6.4, 4.8).
