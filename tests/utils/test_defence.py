@@ -2,8 +2,10 @@
 import re
 import os
 import pathlib
+from typing import Union, Type
 
 import pytest
+from _pytest.python_api import RaisesContext
 import pandas as pd
 from pyprojroot import here
 
@@ -16,6 +18,7 @@ from transport_performance.utils.defence import (
     _check_attribute,
     _handle_path_like,
     _is_expected_filetype,
+    _enforce_file_extension,
 )
 
 
@@ -522,3 +525,109 @@ class Test_IsExpectedFiletype(object):
             _is_expected_filetype(
                 "bar.baZ", "barbaz", False, exp_ext=["PBF", ".BAz"]
             )
+
+
+class Test_EnforceFileExtension(object):
+    """Tests for _enforce_file_extension()."""
+
+    @pytest.mark.parametrize(
+        (
+            "path, exp_ext, default_ext, param_nm, msg, expected_warn,"
+            " expected_pth"
+        ),
+        [
+            (
+                "invalid.txt",
+                ".html",
+                ".html",
+                "test",
+                None,
+                pytest.warns(
+                    UserWarning,
+                    match=(
+                        re.escape(
+                            "Format .txt provided. Expected ['.html'] for path"
+                            " given to 'test'"
+                        )
+                    ),
+                ),
+                "invalid.html",
+            ),
+            # test with custom error message
+            (
+                "invalid.txt",
+                ".html",
+                ".html",
+                "test",
+                "custom message test",
+                pytest.warns(
+                    UserWarning, match=(re.escape("custom message test"))
+                ),
+                "invalid.html",
+            ),
+            # list of acceptable types
+            (
+                "invalid.txt",
+                [".html", ".xml"],
+                ".xml",
+                "test",
+                None,
+                pytest.warns(
+                    UserWarning,
+                    match=(
+                        re.escape(
+                            "Format .txt provided. Expected ['.html', '.xml'] "
+                            "for path given to 'test'"
+                        )
+                    ),
+                ),
+                "invalid.xml",
+            ),
+        ],
+    )
+    def test__enforce_file_extension_warns(
+        self,
+        path: Union[str, pathlib.Path],
+        exp_ext: Union[str, list],
+        default_ext: str,
+        param_nm: str,
+        msg: str,
+        expected_warn: Type[RaisesContext],
+        expected_pth: Union[str, pathlib.Path],
+        tmp_path,
+    ) -> None:
+        """Tests for _enforce_file_extension() raising warnings."""
+        path = os.path.join(tmp_path, path)
+        expected_pth = os.path.join(tmp_path, expected_pth)
+        with expected_warn:
+            new_pth = _enforce_file_extension(
+                path, exp_ext, default_ext, param_nm, msg
+            )
+            assert str(new_pth) == expected_pth, "new path not as expected"
+
+    @pytest.mark.parametrize(
+        ("path, exp_ext, default_ext, param_nm, msg, expected_pth"),
+        [
+            # single accepted type
+            ("valid.txt", ".txt", ".txt", "test", None, "valid.txt"),
+            # list of accepted types
+            ("valid.py", [".txt", ".py"], ".txt", "test", None, "valid.py"),
+        ],
+    )
+    def test__enforce_file_extension_on_pass(
+        self,
+        path: Union[str, pathlib.Path],
+        exp_ext: Union[str, list],
+        default_ext: str,
+        param_nm: str,
+        msg: str,
+        expected_pth: Union[str, pathlib.Path],
+        tmp_path,
+    ) -> None:
+        """Tests for _enforce_file_extension() on pass."""
+        path = os.path.join(tmp_path, path)
+        expected_pth = os.path.join(tmp_path, expected_pth)
+        new_path = _enforce_file_extension(
+            path, exp_ext, default_ext, param_nm, msg
+        )
+        assert str(new_path) == expected_pth, "New path not as expected"
