@@ -113,7 +113,7 @@ def convert_pandas_to_plotly(
         (single index only)
     return_html : bool, optional
         Whether or not to return the html element,
-          by default False
+        by default False
 
     Returns
     -------

@@ -461,7 +461,7 @@ class GtfsInstance:
         Raises
         ------
         TypeError
-            `df` is not of type pd.df.
+            `df` is not of type pd.DataFrame.
             `day_column_name` is not of type str
 
         """
