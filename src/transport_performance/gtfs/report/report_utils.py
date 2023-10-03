@@ -40,6 +40,11 @@ class TemplateHTML:
         -------
         None
 
+        Raises
+        ------
+        TypeError
+            `path` is not either of string or pathlib.Path.
+
         """
         _handle_path_like(path, "path")
         with open(path, "r", encoding="utf8") as f:
@@ -72,6 +77,9 @@ class TemplateHTML:
         ValueError
             A ValueError is raised if there are multiple instances of a
             place-holder but 'replace_multiple' is not True
+        TypeError
+            `placeholder` or `value` is not of type str.
+            `replace_multiple` is not of type bool.
 
         """
         _type_defence(placeholder, "placeholder", str)
@@ -124,6 +132,9 @@ def _set_up_report_dir(
     FileExistsError
         Raises an error if you the gtfs report directory already exists in the
         given path and overwrite=False
+    FileNotFoundError
+        An error is raised if the `report_dir` parent directory could not be
+        found.
 
     """
     # create report_dir var

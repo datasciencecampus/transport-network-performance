@@ -36,24 +36,37 @@ def bbox_filter_gtfs(
 
     Parameters
     ----------
-    in_pth : (str, pathlib.PosixPath)
+    in_pth : Union[pathlib.Path, str], optional
         Path to the unfiltered GTFS feed. Defaults to
         here("tests/data/newport-20230613_gtfs.zip").
-    out_pth : (str, pathlib.PosixPath)
+    out_pth : Union[pathlib.Path, str], optional
         Path to write the filtered feed to. Defaults to
         here("data/external/filtered_gtfs.zip").
-    bbox : (gpd.GeoDataFrame, list(float))
+    bbox : Union[gpd.GeoDataFrame, list(float)], optional
         A list of x and y values in the order of minx, miny, maxx, maxy.
         Defaults to [-3.077081, 51.52222, -2.925075, 51.593596].
-    units : str
-        Distance units of the original GTFS. Defaults to "m".
-    crs : str
+    units : str, optional
+        Distance units of the original GTFS. Defaults to "km".
+    crs : str, optional
         What projection should the `bbox_list` be interpreted as. Defaults to
         "epsg:4326" for lat long.
 
     Returns
     -------
     None
+
+    Raises
+    ------
+    TypeError
+        `bbox` is not of type list or gpd.GeoDataFrame.
+        `units` or `crs` are not of type str.
+        `out_pth` or `in_pth` are not of types str or pathlib.Path.
+        Elements of a `bbox` list are not of type float.
+    FileExistsError
+        `in_pth` does not exist on disk.
+    ValueError
+        `in_pth` or `out_pth` does not have the expected .zip extension.
+
 
     """
     typing_dict = {
@@ -100,7 +113,7 @@ def convert_pandas_to_plotly(
         (single index only)
     return_html : bool, optional
         Whether or not to return the html element,
-          by default False
+        by default False
 
     Returns
     -------
