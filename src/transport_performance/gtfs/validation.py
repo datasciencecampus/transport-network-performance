@@ -156,6 +156,25 @@ def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
 class GtfsInstance:
     """Create a feed instance for validation, cleaning & visualisation.
 
+    Attributes
+    ----------
+    feed : gtfs_kit.Feed
+        A gtfs_kit feed produced using the files at `gtfs_pth` on init.
+    gtfs_path : Union[str, pathlib.Path]
+        The path to the GTFS archive.
+    file_list: list
+        Files in the GTFS archive.
+    validity_df: pd.DataFrame
+        Table of GTFS errors, warnings & their descriptions.
+    dated_trip_counts: pd.DataFrame
+        Dated trip counts by modality.
+    daily_trip_summary: pd.DataFrame
+        Summarized trip results by day of the week and modality.
+    daily_route_summary: pd.DataFrame
+        Dated route counts by modality.
+    route_mode_summary_df: pd.DataFrame
+        Summarized route counts by day of the week and modality.
+
     Raises
     ------
     TypeError
@@ -656,7 +675,7 @@ class GtfsInstance:
         Returns
         -------
         pd.DataFrame
-            A dataframe containing either summarized results or dated route
+            A dataframe containing either summarized results or dated trip
             data.
 
         Raises
