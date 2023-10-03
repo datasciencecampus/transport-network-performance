@@ -114,18 +114,18 @@
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
 <dl class="simple">
-<dt>in_pth<span class="classifier">(str, pathlib.PosixPath)</span></dt><dd><p>Path to the unfiltered GTFS feed. Defaults to
+<dt>in_pth<span class="classifier">Union[pathlib.Path, str], optional</span></dt><dd><p>Path to the unfiltered GTFS feed. Defaults to
 here(“tests/data/newport-20230613_gtfs.zip”).</p>
 </dd>
-<dt>out_pth<span class="classifier">(str, pathlib.PosixPath)</span></dt><dd><p>Path to write the filtered feed to. Defaults to
+<dt>out_pth<span class="classifier">Union[pathlib.Path, str], optional</span></dt><dd><p>Path to write the filtered feed to. Defaults to
 here(“data/external/filtered_gtfs.zip”).</p>
 </dd>
-<dt>bbox<span class="classifier">(gpd.GeoDataFrame, list(float))</span></dt><dd><p>A list of x and y values in the order of minx, miny, maxx, maxy.
+<dt>bbox<span class="classifier">Union[gpd.GeoDataFrame, list(float)], optional</span></dt><dd><p>A list of x and y values in the order of minx, miny, maxx, maxy.
 Defaults to [-3.077081, 51.52222, -2.925075, 51.593596].</p>
 </dd>
-<dt>units<span class="classifier">str</span></dt><dd><p>Distance units of the original GTFS. Defaults to “m”.</p>
+<dt>units<span class="classifier">str, optional</span></dt><dd><p>Distance units of the original GTFS. Defaults to “km”.</p>
 </dd>
-<dt>crs<span class="classifier">str</span></dt><dd><p>What projection should the <cite>bbox_list</cite> be interpreted as. Defaults to
+<dt>crs<span class="classifier">str, optional</span></dt><dd><p>What projection should the <cite>bbox_list</cite> be interpreted as. Defaults to
 “epsg:4326” for lat long.</p>
 </dd>
 </dl>
@@ -133,6 +133,20 @@ Defaults to [-3.077081, 51.52222, -2.925075, 51.593596].</p>
 <section id="returns">
 <h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
 <p>None</p>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>TypeError</dt><dd><p><cite>bbox</cite> is not of type list or gpd.GeoDataFrame.
+<cite>units</cite> or <cite>crs</cite> are not of type str.
+<cite>out_pth</cite> or <cite>in_pth</cite> are not of types str or pathlib.Path.
+Elements of a <cite>bbox</cite> list are not of type float.</p>
+</dd>
+<dt>FileExistsError</dt><dd><p><cite>in_pth</cite> does not exist on disk.</p>
+</dd>
+<dt>ValueError</dt><dd><p><cite>in_pth</cite> or <cite>out_pth</cite> does not have the expected .zip extension.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 

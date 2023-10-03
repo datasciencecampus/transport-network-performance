@@ -106,7 +106,9 @@
 <span class="c1"># issues/19</span>
 
 
-<span class="k">def</span> <span class="nf">_construct_extended_schema_table</span><span class="p">(</span><span class="n">some_soup</span><span class="p">,</span> <span class="n">cd_list</span><span class="p">,</span> <span class="n">desc_list</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_construct_extended_schema_table</span><span class="p">(</span>
+    <span class="n">some_soup</span><span class="p">:</span> <span class="n">BeautifulSoup</span><span class="p">,</span> <span class="n">cd_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">desc_list</span><span class="p">:</span> <span class="nb">list</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create the extended table from a soup object. Not exported.</span>
 
 <span class="sd">    Parameters</span>
@@ -122,8 +124,10 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">        tuple[0]: Proposed extension to route_type codes</span>
-<span class="sd">        tuple[1]: Proposed extension to route_type descriptions</span>
+<span class="sd">    tuple[0]: list</span>
+<span class="sd">        route_type codes of proposed GTFS scheme extension.</span>
+<span class="sd">    tuple[1]: list</span>
+<span class="sd">        route_type descriptions of proposed GTFS scheme extension.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">some_soup</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">):</span>
@@ -146,7 +150,7 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">cd_list</span><span class="p">,</span> <span class="n">desc_list</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_get_response_text</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_response_text</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the response &amp; extract the text. Not exported.&quot;&quot;&quot;</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">text</span>
@@ -156,13 +160,13 @@
 <div class="viewcode-block" id="scrape_route_type_lookup">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.routes.scrape_route_type_lookup.html#transport_performance.gtfs.routes.scrape_route_type_lookup">[docs]</a>
 <span class="k">def</span> <span class="nf">scrape_route_type_lookup</span><span class="p">(</span>
-    <span class="n">gtfs_url</span><span class="o">=</span><span class="s2">&quot;https://gtfs.org/schedule/reference/&quot;</span><span class="p">,</span>
-    <span class="n">ext_spec_url</span><span class="o">=</span><span class="p">(</span>
+    <span class="n">gtfs_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://gtfs.org/schedule/reference/&quot;</span><span class="p">,</span>
+    <span class="n">ext_spec_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">&quot;https://developers.google.com/transit/gtfs/reference/&quot;</span>
         <span class="s2">&quot;extended-route-types&quot;</span>
     <span class="p">),</span>
-    <span class="n">extended_schema</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">):</span>
+    <span class="n">extended_schema</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scrape a lookup of GTFS route_type codes to descriptions.</span>
 
 <span class="sd">    Scrapes HTML tables from `gtfs_url` to provide a lookup of `route_type`</span>
@@ -172,21 +176,29 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    gtfs_url : str</span>
+<span class="sd">    gtfs_url : str, optional</span>
 <span class="sd">        The url containing the GTFS accepted route_type codes. Defaults to</span>
 <span class="sd">        &quot;https://gtfs.org/schedule/reference/&quot;.</span>
-<span class="sd">    ext_spec_url : str</span>
+<span class="sd">    ext_spec_url : str, optional</span>
 <span class="sd">        The url containing the table of the proposed extension to the GTFS</span>
 <span class="sd">        schema for route_type codes. Defaults to</span>
 <span class="sd">        ( &quot;https://developers.google.com/transit/gtfs/reference/&quot;</span>
 <span class="sd">        &quot;extended-route-types&quot; ).</span>
-<span class="sd">    extended_schema : bool</span>
+<span class="sd">    extended_schema : bool, optional</span>
 <span class="sd">        Should the extended schema table be scraped and included in the output?</span>
 <span class="sd">        Defaults to True.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">        pd.core.frame.DataFrame: A lookup of route_type codes to descriptions.</span>
+<span class="sd">    pd.core.frame.DataFrame</span>
+<span class="sd">        A lookup of route_type codes to descriptions.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        `gtfs_url` or `ext_spec_url` are not &quot;http&quot; or &quot;https&quot; protocol.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        `extended_schema` is not of type bool.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># a little defence</span>

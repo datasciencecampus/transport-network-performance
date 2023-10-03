@@ -125,24 +125,37 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    in_pth : (str, pathlib.PosixPath)</span>
+<span class="sd">    in_pth : Union[pathlib.Path, str], optional</span>
 <span class="sd">        Path to the unfiltered GTFS feed. Defaults to</span>
 <span class="sd">        here(&quot;tests/data/newport-20230613_gtfs.zip&quot;).</span>
-<span class="sd">    out_pth : (str, pathlib.PosixPath)</span>
+<span class="sd">    out_pth : Union[pathlib.Path, str], optional</span>
 <span class="sd">        Path to write the filtered feed to. Defaults to</span>
 <span class="sd">        here(&quot;data/external/filtered_gtfs.zip&quot;).</span>
-<span class="sd">    bbox : (gpd.GeoDataFrame, list(float))</span>
+<span class="sd">    bbox : Union[gpd.GeoDataFrame, list(float)], optional</span>
 <span class="sd">        A list of x and y values in the order of minx, miny, maxx, maxy.</span>
 <span class="sd">        Defaults to [-3.077081, 51.52222, -2.925075, 51.593596].</span>
-<span class="sd">    units : str</span>
-<span class="sd">        Distance units of the original GTFS. Defaults to &quot;m&quot;.</span>
-<span class="sd">    crs : str</span>
+<span class="sd">    units : str, optional</span>
+<span class="sd">        Distance units of the original GTFS. Defaults to &quot;km&quot;.</span>
+<span class="sd">    crs : str, optional</span>
 <span class="sd">        What projection should the `bbox_list` be interpreted as. Defaults to</span>
 <span class="sd">        &quot;epsg:4326&quot; for lat long.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    None</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        `bbox` is not of type list or gpd.GeoDataFrame.</span>
+<span class="sd">        `units` or `crs` are not of type str.</span>
+<span class="sd">        `out_pth` or `in_pth` are not of types str or pathlib.Path.</span>
+<span class="sd">        Elements of a `bbox` list are not of type float.</span>
+<span class="sd">    FileExistsError</span>
+<span class="sd">        `in_pth` does not exist on disk.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        `in_pth` or `out_pth` does not have the expected .zip extension.</span>
+
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">typing_dict</span> <span class="o">=</span> <span class="p">{</span>
@@ -192,7 +205,7 @@
 <span class="sd">        (single index only)</span>
 <span class="sd">    return_html : bool, optional</span>
 <span class="sd">        Whether or not to return the html element,</span>
-<span class="sd">          by default False</span>
+<span class="sd">        by default False</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>

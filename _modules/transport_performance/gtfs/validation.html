@@ -101,7 +101,7 @@
 <span class="kn">import</span> <span class="nn">zipfile</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">plotly.graph_objects</span> <span class="kn">import</span> <span class="n">Figure</span> <span class="k">as</span> <span class="n">PlotlyFigure</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.gtfs.routes</span> <span class="kn">import</span> <span class="p">(</span>
@@ -141,6 +141,11 @@
 <span class="sd">    list[pd.Timestamp]</span>
 <span class="sd">        A list of daily timestamps for each day in the time period</span>
 
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If `start` or `end` are not of type pd.Timestamp.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># checks for start and end</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
@@ -159,7 +164,9 @@
     <span class="k">return</span> <span class="n">result</span>
 
 
-<span class="k">def</span> <span class="nf">_create_map_title_text</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">geom_crs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_create_map_title_text</span><span class="p">(</span>
+    <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">geom_crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate the map title text when plotting convex hull.</span>
 
 <span class="sd">    Parameters</span>
@@ -168,13 +175,19 @@
 <span class="sd">        GeoDataFrame containing the spatial features.</span>
 <span class="sd">    units :  str</span>
 <span class="sd">        Distance units of the GTFS feed from which `gdf` originated.</span>
-<span class="sd">    geom_crs : (str, int):</span>
+<span class="sd">    geom_crs : Union[str, int]:</span>
 <span class="sd">        The geometric crs to use in reprojecting the data in order to</span>
 <span class="sd">        calculate the area of the hull polygon.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    str : The formatted text string for presentation in the map title.</span>
+<span class="sd">    str</span>
+<span class="sd">        The formatted text string for presentation in the map title.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `crs_unit` is not either &quot;kilometre&quot; or &quot;metre&quot;.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">units</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;km&quot;</span><span class="p">]:</span>
@@ -232,10 +245,102 @@
 <div class="viewcode-block" id="GtfsInstance">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance">[docs]</a>
 <span class="k">class</span> <span class="nc">GtfsInstance</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a feed instance for validation, cleaning &amp; visualisation.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a feed instance for validation, cleaning &amp; visualisation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gtfs_pth : Union[str, bytes, os.PathLike]</span>
+<span class="sd">        File path to GTFS archive, defaults to</span>
+<span class="sd">        &quot;tests/data/newport-20230613_gtfs.zip&quot;.</span>
+<span class="sd">    units: str</span>
+<span class="sd">        Spatial units of the GTFS file, defaults to &quot;km&quot;.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    feed : gtfs_kit.Feed</span>
+<span class="sd">        A gtfs_kit feed produced using the files at `gtfs_pth` on init.</span>
+<span class="sd">    gtfs_path : Union[str, pathlib.Path]</span>
+<span class="sd">        The path to the GTFS archive.</span>
+<span class="sd">    file_list: list</span>
+<span class="sd">        Files in the GTFS archive.</span>
+<span class="sd">    validity_df: pd.DataFrame</span>
+<span class="sd">        Table of GTFS errors, warnings &amp; their descriptions.</span>
+<span class="sd">    dated_trip_counts: pd.DataFrame</span>
+<span class="sd">        Dated trip counts by modality.</span>
+<span class="sd">    daily_trip_summary: pd.DataFrame</span>
+<span class="sd">        Summarized trip results by day of the week and modality.</span>
+<span class="sd">    daily_route_summary: pd.DataFrame</span>
+<span class="sd">        Dated route counts by modality.</span>
+<span class="sd">    route_mode_summary_df: pd.DataFrame</span>
+<span class="sd">        Summarized route counts by day of the week and modality.</span>
+<span class="sd">    pre_processed_trips: pd.DataFrame</span>
+<span class="sd">        A table of pre-processed trip data.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_gtfs_files()</span>
+<span class="sd">        Returns the `file_list` attribute.</span>
+<span class="sd">    is_valid()</span>
+<span class="sd">        Returns the `validity_df` attribute.</span>
+<span class="sd">    print_alerts()</span>
+<span class="sd">        Print validity errors &amp; warning messages in full.</span>
+<span class="sd">    clean_feed()</span>
+<span class="sd">        Attempt to clean the `feed` attribute using `gtfs_kit`.</span>
+<span class="sd">    viz_stops()</span>
+<span class="sd">        Visualise the stops on a map as points or convex hull. Writes file.</span>
+<span class="sd">    get_route_modes()</span>
+<span class="sd">        Returns the `route_mode_summary_df` attribute.</span>
+<span class="sd">    summarise_trips()</span>
+<span class="sd">        Returns the `daily_trip_summary` attribute.</span>
+<span class="sd">    summarise_routes()</span>
+<span class="sd">        Returns the `daily_route_summary` attribute.</span>
+<span class="sd">    html_report()</span>
+<span class="sd">        Generate a HTML report describing the GTFS data.</span>
+<span class="sd">    _produce_stops_map()</span>
+<span class="sd">        Produces the stops map for use in `viz_stops()`.</span>
+<span class="sd">    _order_dataframe_by_day()</span>
+<span class="sd">        Orders tables by day. Used in `summarise_trips()` and</span>
+<span class="sd">        `summarise_routes()`.</span>
+<span class="sd">    _preprocess_trips_and_routes()</span>
+<span class="sd">        Produces a table of dated trips for use in `_get_pre_processed_trips()`</span>
+<span class="sd">        .</span>
+<span class="sd">    _get_pre_processed_trips()</span>
+<span class="sd">        Attempts to access the `pre_processed_trips` attribute and instantiates</span>
+<span class="sd">        it with `_preprocess_trips_and_routes()` if not found.</span>
+<span class="sd">    _summary_defence()</span>
+<span class="sd">        Check the summary parameters for `summarise_trips()` and</span>
+<span class="sd">        `summarise_routes()`</span>
+<span class="sd">    _plot_summary()</span>
+<span class="sd">        Save a plotly summary table, used in `html_report()`.</span>
+<span class="sd">    _create_extended_repeated_pair_table()</span>
+<span class="sd">        Return a table of repeated pair warnings. Used in</span>
+<span class="sd">        `_extended_validation()`.</span>
+<span class="sd">    _extended_validation()</span>
+<span class="sd">        Generate HTML warning &amp; error summary tables for use in `html_report()`</span>
+<span class="sd">        .</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        `pth` is not either of string or pathlib.PosixPath.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        `units` is not of type str.</span>
+<span class="sd">    FileExistsError</span>
+<span class="sd">        `pth` does not exist on disk.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        `pth` does not have the expected file extension(s).</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        `units` are not one of: &quot;m&quot;, &quot;km&quot;, &quot;metres&quot;, &quot;meters&quot;, &quot;kilometres&quot;,</span>
+<span class="sd">        &quot;kilometers&quot;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">gtfs_pth</span><span class="o">=</span><span class="n">here</span><span class="p">(</span><span class="s2">&quot;tests/data/newport-20230613_gtfs.zip&quot;</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;m&quot;</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">gtfs_pth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">here</span><span class="p">(</span>
+            <span class="s2">&quot;tests/data/newport-20230613_gtfs.zip&quot;</span>
+        <span class="p">),</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;km&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">pth</span><span class="o">=</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;gtfs_pth&quot;</span><span class="p">)</span>
 
@@ -308,13 +413,13 @@
 
 <div class="viewcode-block" id="GtfsInstance.is_valid">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.is_valid">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check a feed is valid with `gtfs_kit`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            pd.core.frame.DataFrame: Table of errors, warnings &amp; their</span>
-<span class="sd">            descriptions.</span>
+<span class="sd">        pd.core.frame.DataFrame</span>
+<span class="sd">            Table of errors, warnings &amp; their descriptions.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
@@ -323,18 +428,25 @@
 
 <div class="viewcode-block" id="GtfsInstance.print_alerts">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.print_alerts">[docs]</a>
-    <span class="k">def</span> <span class="nf">print_alerts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alert_type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print validity errors &amp; warnins messages in full.</span>
+    <span class="k">def</span> <span class="nf">print_alerts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alert_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print validity errors &amp; warning messages in full.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        alert_type : str, optional</span>
-<span class="sd">                The alert type to print messages. Defaults to &quot;error&quot;. Also</span>
-<span class="sd">                accepts &quot;warning&quot;.</span>
+<span class="sd">                The alert type to print messages. Also accepts &quot;warning&quot;.</span>
+<span class="sd">                Defaults to &quot;error&quot;.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        AttributeError</span>
+<span class="sd">            No `validity_df()` attrubute was found.</span>
+<span class="sd">        UserWarning</span>
+<span class="sd">            No alerts of the specified `alert_type` were found.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;validity_df&quot;</span><span class="p">):</span>
@@ -367,7 +479,7 @@
 
 <div class="viewcode-block" id="GtfsInstance.clean_feed">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.clean_feed">[docs]</a>
-    <span class="k">def</span> <span class="nf">clean_feed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">clean_feed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attempt to clean feed using `gtfs_kit`.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># In cases where shape_id is missing, keyerror is raised.</span>
@@ -390,7 +502,7 @@
 <span class="sd">            Has the user asked to visualise &#39;hull&#39; or &#39;points&#39;?</span>
 <span class="sd">        is_filtered : bool</span>
 <span class="sd">            Has the user specified to plot IDs in stops or stop_times only?</span>
-<span class="sd">        crs : (int, str)</span>
+<span class="sd">        crs : Union[int, str]</span>
 <span class="sd">            The crs to use for hull calculation.</span>
 
 <span class="sd">        Returns</span>
@@ -453,28 +565,44 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        out_pth : str</span>
+<span class="sd">        out_pth : Union[str, pathlib.Path]</span>
 <span class="sd">            Path to write the map file html document to, including the file</span>
 <span class="sd">            name. Must end with &#39;.html&#39; file extension.</span>
-<span class="sd">        geoms : str</span>
+<span class="sd">        geoms : str, optional</span>
 <span class="sd">            Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`</span>
 <span class="sd">            to map point locations of available stops. If `geoms=hull`,</span>
-<span class="sd">            calculates the convex hull &amp; its area. Defaults to &quot;point&quot;.</span>
-<span class="sd">        geom_crs : (str, int)</span>
+<span class="sd">            calculates the convex hull &amp; its area, defaults to &quot;point&quot;.</span>
+<span class="sd">        geom_crs : Union[str, int], optional</span>
 <span class="sd">            Geometric CRS to use for the calculation of the convex hull area</span>
-<span class="sd">            only. Defaults to &quot;27700&quot; (OSGB36, British National Grid).</span>
-<span class="sd">        create_out_parent : bool</span>
-<span class="sd">            Should the parent directory of `out_pth` be created if not found.</span>
-<span class="sd">            Defaults to False.</span>
-<span class="sd">        filtered_only: bool</span>
+<span class="sd">            only, defaults to &quot;27700&quot; (OSGB36, British National Grid).</span>
+<span class="sd">        create_out_parent : bool, optional</span>
+<span class="sd">            Should the parent directory of `out_pth` be created if not found,</span>
+<span class="sd">            defaults to False.</span>
+<span class="sd">        filtered_only: bool, optional</span>
 <span class="sd">            When True, only stops referenced within stop_times.txt will be</span>
 <span class="sd">            plotted. When False, stops referenced in stops.txt will be plotted.</span>
 <span class="sd">            Note that gtfs_kit filtering behaviour removes stops from</span>
-<span class="sd">            stop_times.txt but not stops.txt.</span>
+<span class="sd">            stop_times.txt but not stops.txt, defaults to True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            `out_pth` is not either of string or pathlib.PosixPath.</span>
+<span class="sd">            `geoms` is not of type str</span>
+<span class="sd">            `geom_crs` is not of type str or int</span>
+<span class="sd">            `create_out_parent` or `filtered_only` are not of type bool</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            Raised if the parent directory of `out_pth` could not be found on</span>
+<span class="sd">            disk and `create_out_parent` is False.</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            The stops table has no &#39;stops_code&#39; column.</span>
+<span class="sd">        UserWarning</span>
+<span class="sd">            If the file extension of `out_pth` is not .html, the extension will</span>
+<span class="sd">            be changed to .html.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">typing_dict</span> <span class="o">=</span> <span class="p">{</span>
@@ -541,6 +669,12 @@
 <span class="sd">        pd.DataFrame</span>
 <span class="sd">            The inputted dataframe ordered by the day column</span>
 <span class="sd">            (by real world order).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            `df` is not of type pd.DataFrame.</span>
+<span class="sd">            `day_column_name` is not of type str</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># defences for parameters</span>
@@ -634,8 +768,15 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">dated_trips_routes</span>
 
-    <span class="k">def</span> <span class="nf">_get_pre_processed_trips</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtain pre-processed trip data.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_get_pre_processed_trips</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtain pre-processed trip data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            `pre_processed_trips` attribute.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_processed_trips</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
@@ -644,7 +785,7 @@
 
     <span class="k">def</span> <span class="nf">_summary_defence</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
         <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check for any invalid parameters in a summarising function.</span>
@@ -656,12 +797,21 @@
 <span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
 <span class="sd">        return_summary : bool, optional</span>
 <span class="sd">            When True, a summary is returned. When False, route data</span>
-<span class="sd">            for each date is returned,</span>
-<span class="sd">            by default True</span>
+<span class="sd">            for each date is returned, by default True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            `return_summary` is not of type pd.df.</span>
+<span class="sd">            `summ_ops` must be a numpy function or a list.</span>
+<span class="sd">            Each item in a `summ_ops` list must be a function.</span>
+<span class="sd">            Each item in a `summ_ops` list must be a numpy namespace export.</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            `summ_ops` is a function not exported from numpy.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">return_summary</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
@@ -717,16 +867,26 @@
 <span class="sd">        ----------</span>
 <span class="sd">        summ_ops : list, optional</span>
 <span class="sd">            A list of operators used to get a summary of a given day,</span>
-<span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
+<span class="sd">            by default [np.min, np.max, np.mean, np.median].</span>
 <span class="sd">        return_summary : bool, optional</span>
 <span class="sd">            When True, a summary is returned. When False, trip data</span>
-<span class="sd">            for each date is returned,</span>
-<span class="sd">            by default True</span>
+<span class="sd">            for each date is returned, by default True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        pd.DataFrame: A dataframe containing either summarized</span>
-<span class="sd">                      results or dated route data.</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            A dataframe containing either summarized results or dated trip</span>
+<span class="sd">            data.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            return_summary is not of type pd.df.</span>
+<span class="sd">            summ_ops must be a numpy function or a list.</span>
+<span class="sd">            Each item in a summ_ops list must be a function.</span>
+<span class="sd">            Each item in a summ_ops list must be a numpy namespace export.</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            summ_ops is a function not exported from numpy.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_summary_defence</span><span class="p">(</span><span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span> <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">)</span>
@@ -773,7 +933,7 @@
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.summarise_routes">[docs]</a>
     <span class="k">def</span> <span class="nf">summarise_routes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
         <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Produce a summarised table of route statistics by day of week.</span>
@@ -788,16 +948,26 @@
 <span class="sd">        ----------</span>
 <span class="sd">        summ_ops : list, optional</span>
 <span class="sd">            A list of operators used to get a summary of a given day,</span>
-<span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
+<span class="sd">            by default [np.min, np.max, np.mean, np.median].</span>
 <span class="sd">        return_summary : bool, optional</span>
 <span class="sd">            When True, a summary is returned. When False, route data</span>
-<span class="sd">            for each date is returned,</span>
-<span class="sd">            by default True</span>
+<span class="sd">            for each date is returned, by default True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        pd.DataFrame: A dataframe containing either summarized</span>
-<span class="sd">                      results or dated route data.</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            A dataframe containing either summarized results or dated route</span>
+<span class="sd">            data.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            return_summary is not of type pd.df.</span>
+<span class="sd">            summ_ops must be a numpy function or a list.</span>
+<span class="sd">            Each item in a summ_ops list must be a function.</span>
+<span class="sd">            Each item in a summ_ops list must be a numpy namespace export.</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            summ_ops is a function not exported from numpy.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_summary_defence</span><span class="p">(</span><span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span> <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">)</span>
@@ -847,13 +1017,13 @@
 
 <div class="viewcode-block" id="GtfsInstance.get_route_modes">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.get_route_modes">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_route_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_route_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the available routes by their associated `route_type`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            pd.core.frame.DataFrame: Summary table of route counts by transport</span>
-<span class="sd">            mode.</span>
+<span class="sd">        pd.core.frame.DataFrame</span>
+<span class="sd">            Summary table of route counts by transport mode.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Get the available modalities</span>
@@ -919,35 +1089,29 @@
 <span class="sd">        height : int, optional</span>
 <span class="sd">            The height of the plot (in pixels), by default 800</span>
 <span class="sd">        xlabel : str, optional</span>
-<span class="sd">            The label for the x axis.</span>
-<span class="sd">            If left empty, the column name will be used,</span>
-<span class="sd">            by default None</span>
+<span class="sd">            The label for the x axis. If left empty, the column name will be</span>
+<span class="sd">            used, by default None</span>
 <span class="sd">        ylabel : str, optional</span>
-<span class="sd">            The label for the y axis.</span>
-<span class="sd">            If left empty, the column name will be used,</span>
-<span class="sd">            by default None</span>
+<span class="sd">            The label for the y axis. If left empty, the column name will be</span>
+<span class="sd">            used, by default None</span>
 <span class="sd">        plotly_kwargs : dict, optional</span>
-<span class="sd">            Kwargs to pass to fig.update_layout() for</span>
-<span class="sd">            additional plot customisation,</span>
-<span class="sd">            by default {}</span>
+<span class="sd">            Kwargs to pass to fig.update_layout() for additional plot</span>
+<span class="sd">            customisation, by default {}</span>
 <span class="sd">        return_html : bool, optional</span>
-<span class="sd">            Whether or not to return a html string,</span>
-<span class="sd">            by default False</span>
+<span class="sd">            Whether or not to return a html string, by default False</span>
 <span class="sd">        save_html : bool, optional</span>
-<span class="sd">            Whether or not to save the plot as a html file,</span>
-<span class="sd">            by default False</span>
+<span class="sd">            Whether or not to save the plot as a html file, by default False</span>
 <span class="sd">        save_image : bool, optional</span>
-<span class="sd">            Whether or not to save the plot as a PNG,</span>
-<span class="sd">            by default False</span>
+<span class="sd">            Whether or not to save the plot as a PNG, by default False</span>
 <span class="sd">        out_dir : Union[pathlib.Path, str], optional</span>
 <span class="sd">            The directory to save the plot into. If a file extension is added</span>
 <span class="sd">            to this directory, it won&#39;t be cleaned. Whatever is passed as the</span>
 <span class="sd">            out dir will be used as the parent directory of the save, leaving</span>
-<span class="sd">            the responsibility on the user to specify the correct path.,</span>
-<span class="sd">            by default os.path.join(&quot;outputs&quot;, &quot;gtfs&quot;)</span>
+<span class="sd">            the responsibility on the user to specify the correct path., by</span>
+<span class="sd">            default os.path.join(&quot;outputs&quot;, &quot;gtfs&quot;)</span>
 <span class="sd">        img_type : str, optional</span>
-<span class="sd">            The type of the image to be saved. E.g, .svg or .jpeg.,</span>
-<span class="sd">            by defauly &quot;png&quot;</span>
+<span class="sd">            The type of the image to be saved. E.g, .svg or .jpeg., by default</span>
+<span class="sd">            &quot;png&quot;</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1156,8 +1320,8 @@
 <span class="sd">        join_vars : Union[str, list]</span>
 <span class="sd">            The variables that have repeated pairs</span>
 <span class="sd">        original_rows : list[int]</span>
-<span class="sd">            The original duplicate rows, contained in</span>
-<span class="sd">            the GTFS validation table (rows column)</span>
+<span class="sd">            The original duplicate rows, contained in the GTFS validation table</span>
+<span class="sd">            (rows column)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1332,19 +1496,16 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        report_dir : Union[str, pathlib.Path], optional</span>
-<span class="sd">            The directory to save the report to,</span>
-<span class="sd">            by default &quot;outputs&quot;</span>
+<span class="sd">            The directory to save the report to, by default &quot;outputs&quot;</span>
 <span class="sd">        overwrite : bool, optional</span>
-<span class="sd">            Whether or not to overwrite the existing report</span>
-<span class="sd">            if it already exists in the report_dir,</span>
-<span class="sd">            by default False</span>
+<span class="sd">            Whether or not to overwrite the existing report if it already</span>
+<span class="sd">            exists in the report_dir, by default False</span>
 <span class="sd">        summary_type : str, optional</span>
-<span class="sd">            The type of summary to show on the</span>
-<span class="sd">            summaries on the gtfs report.,</span>
-<span class="sd">            by default &quot;mean&quot;</span>
+<span class="sd">            The type of summary to show on the summaries on the gtfs report, by</span>
+<span class="sd">            default &quot;mean&quot;</span>
 <span class="sd">        extended_validation : bool, optional</span>
-<span class="sd">            Whether or not to create extended reports</span>
-<span class="sd">            for gtfs validation errors/warnings.</span>
+<span class="sd">            Whether or not to create extended reports for gtfs validation</span>
+<span class="sd">            errors/warnings.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

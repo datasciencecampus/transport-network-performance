@@ -108,9 +108,100 @@
 <h1>GtfsInstance<a class="headerlink" href="#gtfsinstance" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.validation.</span></span><span class="sig-name descname"><span class="pre">GtfsInstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtfs_pth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/work/transport-network-performance/transport-network-performance/tests/data/newport-20230613_gtfs.zip')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'m'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.validation.</span></span><span class="sig-name descname"><span class="pre">GtfsInstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtfs_pth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/work/transport-network-performance/transport-network-performance/tests/data/newport-20230613_gtfs.zip')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'km'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Create a feed instance for validation, cleaning &amp; visualisation.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>gtfs_pth<span class="classifier">Union[str, bytes, os.PathLike]</span></dt><dd><p>File path to GTFS archive, defaults to
+“tests/data/newport-20230613_gtfs.zip”.</p>
+</dd>
+<dt>units: str</dt><dd><p>Spatial units of the GTFS file, defaults to “km”.</p>
+</dd>
+</dl>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>feed<span class="classifier">gtfs_kit.Feed</span></dt><dd><p>A gtfs_kit feed produced using the files at <cite>gtfs_pth</cite> on init.</p>
+</dd>
+<dt>gtfs_path<span class="classifier">Union[str, pathlib.Path]</span></dt><dd><p>The path to the GTFS archive.</p>
+</dd>
+<dt>file_list: list</dt><dd><p>Files in the GTFS archive.</p>
+</dd>
+<dt>validity_df: pd.DataFrame</dt><dd><p>Table of GTFS errors, warnings &amp; their descriptions.</p>
+</dd>
+<dt>dated_trip_counts: pd.DataFrame</dt><dd><p>Dated trip counts by modality.</p>
+</dd>
+<dt>daily_trip_summary: pd.DataFrame</dt><dd><p>Summarized trip results by day of the week and modality.</p>
+</dd>
+<dt>daily_route_summary: pd.DataFrame</dt><dd><p>Dated route counts by modality.</p>
+</dd>
+<dt>route_mode_summary_df: pd.DataFrame</dt><dd><p>Summarized route counts by day of the week and modality.</p>
+</dd>
+<dt>pre_processed_trips: pd.DataFrame</dt><dd><p>A table of pre-processed trip data.</p>
+</dd>
+</dl>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>get_gtfs_files()</dt><dd><p>Returns the <cite>file_list</cite> attribute.</p>
+</dd>
+<dt>is_valid()</dt><dd><p>Returns the <cite>validity_df</cite> attribute.</p>
+</dd>
+<dt>print_alerts()</dt><dd><p>Print validity errors &amp; warning messages in full.</p>
+</dd>
+<dt>clean_feed()</dt><dd><p>Attempt to clean the <cite>feed</cite> attribute using <cite>gtfs_kit</cite>.</p>
+</dd>
+<dt>viz_stops()</dt><dd><p>Visualise the stops on a map as points or convex hull. Writes file.</p>
+</dd>
+<dt>get_route_modes()</dt><dd><p>Returns the <cite>route_mode_summary_df</cite> attribute.</p>
+</dd>
+<dt>summarise_trips()</dt><dd><p>Returns the <cite>daily_trip_summary</cite> attribute.</p>
+</dd>
+<dt>summarise_routes()</dt><dd><p>Returns the <cite>daily_route_summary</cite> attribute.</p>
+</dd>
+<dt>html_report()</dt><dd><p>Generate a HTML report describing the GTFS data.</p>
+</dd>
+<dt>_produce_stops_map()</dt><dd><p>Produces the stops map for use in <cite>viz_stops()</cite>.</p>
+</dd>
+<dt>_order_dataframe_by_day()</dt><dd><p>Orders tables by day. Used in <cite>summarise_trips()</cite> and
+<cite>summarise_routes()</cite>.</p>
+</dd>
+<dt>_preprocess_trips_and_routes()</dt><dd><p>Produces a table of dated trips for use in <cite>_get_pre_processed_trips()</cite>
+.</p>
+</dd>
+<dt>_get_pre_processed_trips()</dt><dd><p>Attempts to access the <cite>pre_processed_trips</cite> attribute and instantiates
+it with <cite>_preprocess_trips_and_routes()</cite> if not found.</p>
+</dd>
+<dt>_summary_defence()</dt><dd><p>Check the summary parameters for <cite>summarise_trips()</cite> and
+<cite>summarise_routes()</cite></p>
+</dd>
+<dt>_plot_summary()</dt><dd><p>Save a plotly summary table, used in <cite>html_report()</cite>.</p>
+</dd>
+<dt>_create_extended_repeated_pair_table()</dt><dd><p>Return a table of repeated pair warnings. Used in
+<cite>_extended_validation()</cite>.</p>
+</dd>
+<dt>_extended_validation()</dt><dd><p>Generate HTML warning &amp; error summary tables for use in <cite>html_report()</cite>
+.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl>
+<dt>TypeError</dt><dd><p><cite>pth</cite> is not either of string or pathlib.PosixPath.</p>
+</dd>
+<dt>TypeError</dt><dd><p><cite>units</cite> is not of type str.</p>
+</dd>
+<dt>FileExistsError</dt><dd><p><cite>pth</cite> does not exist on disk.</p>
+</dd>
+<dt>ValueError</dt><dd><p><cite>pth</cite> does not have the expected file extension(s).</p>
+</dd>
+<dt>ValueError</dt><dd><p><cite>units</cite> are not one of: “m”, “km”, “metres”, “meters”, “kilometres”,
+“kilometers”.</p>
 <blockquote>
 <div><p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
@@ -134,7 +225,7 @@
 <td><p>Check a feed is valid with <cite>gtfs_kit</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.validation.GtfsInstance.print_alerts" title="transport_performance.gtfs.validation.GtfsInstance.print_alerts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_alerts</span></code></a></p></td>
-<td><p>Print validity errors &amp; warnins messages in full.</p></td>
+<td><p>Print validity errors &amp; warning messages in full.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.validation.GtfsInstance.summarise_routes" title="transport_performance.gtfs.validation.GtfsInstance.summarise_routes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarise_routes</span></code></a></p></td>
 <td><p>Produce a summarised table of route statistics by day of week.</p></td>
@@ -148,9 +239,11 @@
 </tbody>
 </table>
 </div></blockquote>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance.clean_feed">
-<span class="sig-name descname"><span class="pre">clean_feed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.clean_feed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.clean_feed" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clean_feed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.clean_feed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.clean_feed" title="Link to this definition"></a></dt>
 <dd><p>Attempt to clean feed using <cite>gtfs_kit</cite>.</p>
 </dd></dl>
 
@@ -159,7 +252,7 @@
 <span class="sig-name descname"><span class="pre">get_gtfs_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.get_gtfs_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.get_gtfs_files" title="Link to this definition"></a></dt>
 <dd><p>Return a list of files making up the GTFS file.</p>
 <section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>list</dt><dd><p>A list of files that create the GTFS file</p>
 </dd>
@@ -169,14 +262,14 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance.get_route_modes">
-<span class="sig-name descname"><span class="pre">get_route_modes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.get_route_modes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.get_route_modes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_route_modes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.get_route_modes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.get_route_modes" title="Link to this definition"></a></dt>
 <dd><p>Summarise the available routes by their associated <cite>route_type</cite>.</p>
 <section id="id1">
-<h2>Returns<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
-<blockquote>
-<div><p>pd.core.frame.DataFrame: Summary table of route counts by transport
-mode.</p>
-</div></blockquote>
+<h3>Returns<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>pd.core.frame.DataFrame</dt><dd><p>Summary table of route counts by transport mode.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 
@@ -184,31 +277,28 @@ mode.</p>
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance.html_report">
 <span class="sig-name descname"><span class="pre">html_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'outputs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extended_validation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.html_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.html_report" title="Link to this definition"></a></dt>
 <dd><p>Generate a HTML report describing the GTFS data.</p>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>Parameters<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt>report_dir<span class="classifier">Union[str, pathlib.Path], optional</span></dt><dd><p>The directory to save the report to,
-by default “outputs”</p>
+<dt>report_dir<span class="classifier">Union[str, pathlib.Path], optional</span></dt><dd><p>The directory to save the report to, by default “outputs”</p>
 </dd>
-<dt>overwrite<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to overwrite the existing report
-if it already exists in the report_dir,
-by default False</p>
+<dt>overwrite<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to overwrite the existing report if it already
+exists in the report_dir, by default False</p>
 </dd>
-<dt>summary_type<span class="classifier">str, optional</span></dt><dd><p>The type of summary to show on the
-summaries on the gtfs report.,
-by default “mean”</p>
+<dt>summary_type<span class="classifier">str, optional</span></dt><dd><p>The type of summary to show on the summaries on the gtfs report, by
+default “mean”</p>
 </dd>
-<dt>extended_validation<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to create extended reports
-for gtfs validation errors/warnings.</p>
+<dt>extended_validation<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to create extended reports for gtfs validation
+errors/warnings.</p>
 </dd>
 </dl>
 </section>
-<section id="id2">
-<h2>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id3">
+<h3>Returns<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <p>None</p>
 </section>
-<section id="raises">
-<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<section id="id4">
+<h3>Raises<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError</dt><dd><p>An error raised if the type of summary passed is invalid</p>
 </dd>
@@ -218,60 +308,81 @@ for gtfs validation errors/warnings.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance.is_valid">
-<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.is_valid" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.is_valid" title="Link to this definition"></a></dt>
 <dd><p>Check a feed is valid with <cite>gtfs_kit</cite>.</p>
-<section id="id3">
-<h2>Returns<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
-<blockquote>
-<div><p>pd.core.frame.DataFrame: Table of errors, warnings &amp; their
-descriptions.</p>
-</div></blockquote>
+<section id="id5">
+<h3>Returns<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>pd.core.frame.DataFrame</dt><dd><p>Table of errors, warnings &amp; their descriptions.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance.print_alerts">
-<span class="sig-name descname"><span class="pre">print_alerts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alert_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'error'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.print_alerts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.print_alerts" title="Link to this definition"></a></dt>
-<dd><p>Print validity errors &amp; warnins messages in full.</p>
-<section id="id4">
-<h2>Parameters<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<span class="sig-name descname"><span class="pre">print_alerts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alert_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'error'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.print_alerts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.print_alerts" title="Link to this definition"></a></dt>
+<dd><p>Print validity errors &amp; warning messages in full.</p>
+<section id="id6">
+<h3>Parameters<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt>alert_type<span class="classifier">str, optional</span></dt><dd><p>The alert type to print messages. Defaults to “error”. Also
-accepts “warning”.</p>
+<dt>alert_type<span class="classifier">str, optional</span></dt><dd><p>The alert type to print messages. Also accepts “warning”.
+Defaults to “error”.</p>
 </dd>
 </dl>
 </section>
-<section id="id5">
-<h2>Returns<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id7">
+<h3>Returns<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
 <p>None</p>
+</section>
+<section id="id8">
+<h3>Raises<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>AttributeError</dt><dd><p>No <cite>validity_df()</cite> attrubute was found.</p>
+</dd>
+<dt>UserWarning</dt><dd><p>No alerts of the specified <cite>alert_type</cite> were found.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance.summarise_routes">
-<span class="sig-name descname"><span class="pre">summarise_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.summarise_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.summarise_routes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">summarise_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list[~typing.Callable]</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.summarise_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.summarise_routes" title="Link to this definition"></a></dt>
 <dd><p>Produce a summarised table of route statistics by day of week.</p>
 <p>For route count summaries, func counts route_id only, irrespective of
 which service_id the routes map to. If the services run on different
 calendar days, they will be counted separately. In cases where more
 than one service runs the same route on the same day, these will not be
 counted as distinct routes.</p>
-<section id="id6">
-<h2>Parameters<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<section id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>summ_ops<span class="classifier">list, optional</span></dt><dd><p>A list of operators used to get a summary of a given day,
-by default [np.min, np.max, np.mean, np.median]</p>
+by default [np.min, np.max, np.mean, np.median].</p>
 </dd>
 <dt>return_summary<span class="classifier">bool, optional</span></dt><dd><p>When True, a summary is returned. When False, route data
-for each date is returned,
-by default True</p>
+for each date is returned, by default True.</p>
 </dd>
 </dl>
 </section>
-<section id="id7">
-<h2>Returns<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<section id="id10">
+<h3>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt>pd.DataFrame: A dataframe containing either summarized</dt><dd><p>results or dated route data.</p>
+<dt>pd.DataFrame</dt><dd><p>A dataframe containing either summarized results or dated route
+data.</p>
+</dd>
+</dl>
+</section>
+<section id="id11">
+<h3>Raises<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError</dt><dd><p>return_summary is not of type pd.df.
+summ_ops must be a numpy function or a list.
+Each item in a summ_ops list must be a function.
+Each item in a summ_ops list must be a numpy namespace export.</p>
+</dd>
+<dt>NotImplementedError</dt><dd><p>summ_ops is a function not exported from numpy.</p>
 </dd>
 </dl>
 </section>
@@ -285,22 +396,34 @@ by default True</p>
 are then summarised into average/median/min/max (default) number
 of trips per day. Raw data for each date can also be obtained by
 setting the ‘return_summary’ parameter to False (bool).</p>
-<section id="id8">
-<h2>Parameters<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="id12">
+<h3>Parameters<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>summ_ops<span class="classifier">list, optional</span></dt><dd><p>A list of operators used to get a summary of a given day,
-by default [np.min, np.max, np.mean, np.median]</p>
+by default [np.min, np.max, np.mean, np.median].</p>
 </dd>
 <dt>return_summary<span class="classifier">bool, optional</span></dt><dd><p>When True, a summary is returned. When False, trip data
-for each date is returned,
-by default True</p>
+for each date is returned, by default True.</p>
 </dd>
 </dl>
 </section>
-<section id="id9">
-<h2>Returns<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<section id="id13">
+<h3>Returns<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt>pd.DataFrame: A dataframe containing either summarized</dt><dd><p>results or dated route data.</p>
+<dt>pd.DataFrame</dt><dd><p>A dataframe containing either summarized results or dated trip
+data.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h3>Raises<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError</dt><dd><p>return_summary is not of type pd.df.
+summ_ops must be a numpy function or a list.
+Each item in a summ_ops list must be a function.
+Each item in a summ_ops list must be a numpy namespace export.</p>
+</dd>
+<dt>NotImplementedError</dt><dd><p>summ_ops is a function not exported from numpy.</p>
 </dd>
 </dl>
 </section>
@@ -310,35 +433,54 @@ by default True</p>
 <dt class="sig sig-object py" id="transport_performance.gtfs.validation.GtfsInstance.viz_stops">
 <span class="sig-name descname"><span class="pre">viz_stops</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_pth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'point'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">27700</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_out_parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtered_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validation.html#GtfsInstance.viz_stops"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validation.GtfsInstance.viz_stops" title="Link to this definition"></a></dt>
 <dd><p>Visualise the stops on a map as points or convex hull. Writes file.</p>
-<section id="id10">
-<h2>Parameters<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<section id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt>out_pth<span class="classifier">str</span></dt><dd><p>Path to write the map file html document to, including the file
+<dt>out_pth<span class="classifier">Union[str, pathlib.Path]</span></dt><dd><p>Path to write the map file html document to, including the file
 name. Must end with ‘.html’ file extension.</p>
 </dd>
-<dt>geoms<span class="classifier">str</span></dt><dd><p>Type of map to plot. If <cite>geoms=point</cite> (the default) uses <cite>gtfs_kit</cite>
+<dt>geoms<span class="classifier">str, optional</span></dt><dd><p>Type of map to plot. If <cite>geoms=point</cite> (the default) uses <cite>gtfs_kit</cite>
 to map point locations of available stops. If <cite>geoms=hull</cite>,
-calculates the convex hull &amp; its area. Defaults to “point”.</p>
+calculates the convex hull &amp; its area, defaults to “point”.</p>
 </dd>
-<dt>geom_crs<span class="classifier">(str, int)</span></dt><dd><p>Geometric CRS to use for the calculation of the convex hull area
-only. Defaults to “27700” (OSGB36, British National Grid).</p>
+<dt>geom_crs<span class="classifier">Union[str, int], optional</span></dt><dd><p>Geometric CRS to use for the calculation of the convex hull area
+only, defaults to “27700” (OSGB36, British National Grid).</p>
 </dd>
-<dt>create_out_parent<span class="classifier">bool</span></dt><dd><p>Should the parent directory of <cite>out_pth</cite> be created if not found.
-Defaults to False.</p>
+<dt>create_out_parent<span class="classifier">bool, optional</span></dt><dd><p>Should the parent directory of <cite>out_pth</cite> be created if not found,
+defaults to False.</p>
 </dd>
-<dt>filtered_only: bool</dt><dd><p>When True, only stops referenced within stop_times.txt will be
+<dt>filtered_only: bool, optional</dt><dd><p>When True, only stops referenced within stop_times.txt will be
 plotted. When False, stops referenced in stops.txt will be plotted.
 Note that gtfs_kit filtering behaviour removes stops from
-stop_times.txt but not stops.txt.</p>
+stop_times.txt but not stops.txt, defaults to True.</p>
 </dd>
 </dl>
 </section>
-<section id="id11">
-<h2>Returns<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<section id="id16">
+<h3>Returns<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
 <p>None</p>
+</section>
+<section id="id17">
+<h3>Raises<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>TypeError</dt><dd><p><cite>out_pth</cite> is not either of string or pathlib.PosixPath.
+<cite>geoms</cite> is not of type str
+<cite>geom_crs</cite> is not of type str or int
+<cite>create_out_parent</cite> or <cite>filtered_only</cite> are not of type bool</p>
+</dd>
+<dt>FileNotFoundError</dt><dd><p>Raised if the parent directory of <cite>out_pth</cite> could not be found on
+disk and <cite>create_out_parent</cite> is False.</p>
+</dd>
+<dt>KeyError</dt><dd><p>The stops table has no ‘stops_code’ column.</p>
+</dd>
+<dt>UserWarning</dt><dd><p>If the file extension of <cite>out_pth</cite> is not .html, the extension will
+be changed to .html.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 
+</section>
 </dd></dl>
 
 </section>

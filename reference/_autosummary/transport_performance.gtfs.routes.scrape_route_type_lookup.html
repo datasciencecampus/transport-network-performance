@@ -109,7 +109,7 @@
 <h1>scrape_route_type_lookup<a class="headerlink" href="#scrape-route-type-lookup" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="transport_performance.gtfs.routes.scrape_route_type_lookup">
-<span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.routes.</span></span><span class="sig-name descname"><span class="pre">scrape_route_type_lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtfs_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://gtfs.org/schedule/reference/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext_spec_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://developers.google.com/transit/gtfs/reference/extended-route-types'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extended_schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/routes.html#scrape_route_type_lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.routes.scrape_route_type_lookup" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.routes.</span></span><span class="sig-name descname"><span class="pre">scrape_route_type_lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtfs_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'https://gtfs.org/schedule/reference/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext_spec_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'https://developers.google.com/transit/gtfs/reference/extended-route-types'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extended_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/routes.html#scrape_route_type_lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.routes.scrape_route_type_lookup" title="Link to this definition"></a></dt>
 <dd><p>Scrape a lookup of GTFS route_type codes to descriptions.</p>
 <p>Scrapes HTML tables from <cite>gtfs_url</cite> to provide a lookup of <cite>route_type</cite>
 codes to human readable descriptions. Useful for confirming available
@@ -118,24 +118,34 @@ include the proposed extension of route_type to the GTFS.</p>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
 <dl class="simple">
-<dt>gtfs_url<span class="classifier">str</span></dt><dd><p>The url containing the GTFS accepted route_type codes. Defaults to
+<dt>gtfs_url<span class="classifier">str, optional</span></dt><dd><p>The url containing the GTFS accepted route_type codes. Defaults to
 “<a class="reference external" href="https://gtfs.org/schedule/reference/">https://gtfs.org/schedule/reference/</a>”.</p>
 </dd>
-<dt>ext_spec_url<span class="classifier">str</span></dt><dd><p>The url containing the table of the proposed extension to the GTFS
+<dt>ext_spec_url<span class="classifier">str, optional</span></dt><dd><p>The url containing the table of the proposed extension to the GTFS
 schema for route_type codes. Defaults to
 ( “<a class="reference external" href="https://developers.google.com/transit/gtfs/reference/">https://developers.google.com/transit/gtfs/reference/</a>”
 “extended-route-types” ).</p>
 </dd>
-<dt>extended_schema<span class="classifier">bool</span></dt><dd><p>Should the extended schema table be scraped and included in the output?
+<dt>extended_schema<span class="classifier">bool, optional</span></dt><dd><p>Should the extended schema table be scraped and included in the output?
 Defaults to True.</p>
 </dd>
 </dl>
 </section>
 <section id="returns">
 <h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
-<blockquote>
-<div><p>pd.core.frame.DataFrame: A lookup of route_type codes to descriptions.</p>
-</div></blockquote>
+<dl class="simple">
+<dt>pd.core.frame.DataFrame</dt><dd><p>A lookup of route_type codes to descriptions.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>ValueError</dt><dd><p><cite>gtfs_url</cite> or <cite>ext_spec_url</cite> are not “http” or “https” protocol.</p>
+</dd>
+<dt>TypeError</dt><dd><p><cite>extended_schema</cite> is not of type bool.</p>
+</dd>
+</dl>
 </section>
 </dd></dl>
 
