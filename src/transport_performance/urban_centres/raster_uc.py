@@ -20,7 +20,41 @@ from typing import Union
 
 
 class UrbanCentre:
-    """Create urban centre object."""
+    """Object to create and store urban centres.
+
+    Attributes
+    ----------
+    file : Union[str, pathlib.Path]
+        Path to the raw raster file.
+    aff : affine.Affine
+        Affine transform matrix for the raster file.
+    crs : rasterio.crs.CRS
+        CRS string for the raster.
+    output : gpd.GeoDataFrame
+        GeoDataFrame including vector information for the urban centre, buffer
+        and bounding box limits.
+
+    Methods
+    -------
+    get_urban_centre
+        Calculates urban centre from population raster and returns vectorised
+        geography for urban centre, buffer and bounding box.
+
+    Raises
+    ------
+    TypeError
+        When `file` is not either of string or pathlib.Path.
+    FileExistsError
+        When `file` does not exist on disk.
+    ValueError
+        When `file` does not have the expected file extension(s).
+
+    Notes
+    -----
+    Intermediate results for the urban centre calculations are stored as
+    internal (mangled) attributes, but can be accessed for examination.
+
+    """
 
     def __init__(
         self,
@@ -44,10 +78,52 @@ class UrbanCentre:
         cell_fill_threshold: int = 5,
         vector_nodata: int = -200,
         buffer_size: int = 10000,
-    ):
+    ) -> gpd.GeoDataFrame:
         """Get urban centre.
 
         Wrapper for functions to get urban centre, buffer and bbox.
+
+        Parameters
+        ----------
+        bbox : gpd.GeoDataFrame
+            A GeoPandas GeoDataFrame containing boundaries to filter the
+            raster. If the boundaries are a bounding box, the raster is
+            clipped to the box. If it is an irregular shape (e.g. LA
+            boundaries) the raster is clipped to the extent of the shape,
+            and a mask is applied to the shape.
+        centre : tuple
+            Tuple with coordinates for city centre. Urban centres that do not
+            contain these coordinates will be filtered out.
+        centre_crs : str = None, optional
+            crs string of the centre coordinates. If None, it will default
+            to raster_crs.
+        band_n : int = 1, optional
+            Band number to load from the geoTIFF.
+        cell_pop_threshold : int = 1500, optional
+            When calculating urban centre, keep cells whose value is equal or
+            higher than the threshold.
+        diag : bool = False, optional
+            When calculating clusters, if True, diagonals are considered as
+            adjacent and included in the cluster.
+        cluster_pop_threshold : int = 50000, optional
+            Threshold to consider inclusion of cluster. If total population in
+            cluster is lower than threshold, the cluster label is filtered out.
+        cell_fill_threshold : int = 5, optional
+            Defines gap filling behaviour. If the number of cells adjacent to
+            any empty cell belonging to a cluster is higher than the threshold,
+            the cell is filled with the cluster value. Needs to be between
+            5 and 8.
+        vector_nodata : int = -200, optional
+            Value to fill empty cells.
+        buffer_size : int = 10000, optional
+            Size of the buffer around the urban centre.
+
+        Returns
+        -------
+        output : gpd.GeoDataFrame
+            GeoDataFrame with urban centre, buffer and bbox vector polygon
+            boundaries.
+
         """
         # window raster based on bbox
         self.__windowed_array, self.aff, self.crs = self._window_raster(
@@ -127,19 +203,19 @@ class UrbanCentre:
             Path to geoTIFF file.
         bbox : gpd.GeoDataFrame
             A GeoPandas GeoDataFrame containing boundaries to filter the
-            raster. If the boundaries are a bounding box, the raster is
-            clipped to the box. If it is an irregular shape (e.g. LA
-            boundaries) the raster is clipped to the extent of the shape,
-            and a mask is applied to the shape.
-        band_n : int
+            raster.
+        band_n : int, optional
             Band number to load from the geoTIFF.
 
         Returns
         -------
-            tuple[0]: numpy.ndarray: raster, clipped to the extent of the
-            bbox and masked if extent does not match the boundaries provided.
-            tuple[1]: Affine: transform matrix for the loaded raster.
-            tuple[2]: crs string from the raster.
+        tuple[0] : numpy.ndarray
+            raster, clipped to the extent of the bbox and masked if extent
+            does not match the boundaries provided.
+        tuple[1] : Affine
+            transform matrix for the loaded raster.
+        tuple[2] : rasterio.crs.CRS
+            crs string from the raster.
 
         """
         if not isinstance(bbox, gpd.GeoDataFrame):
@@ -173,14 +249,20 @@ class UrbanCentre:
         ----------
         masked_rst : np.ndarray
             Clipped (and potentially masked) array.
-        cell_pop_threshold: int
-            A cell is flagged if its value is equal or
-            higher than the threshold.
+        cell_pop_threshold : int, optional
+            A cell is flagged if its value is equal or higher than the
+            threshold.
 
         Returns
         -------
-            np.ndarray: boolean array where cells over
-            the threshold are flagged as True.
+        flag_array : np.ndarray
+            boolean array where cells over the threshold are flagged as
+            True.
+
+        Raises
+        ------
+        ValueError
+            If cell_pop_threshold is too high and all cells are filtered out.
 
         """
         if not isinstance(masked_rst, np.ndarray):
@@ -213,13 +295,15 @@ class UrbanCentre:
         ----------
         flag_array : ma.core.MaskedArray
             Boolean array.
-        diag: bool
+        diag : bool, optional
             If True, diagonals are considered as adjacent.
 
         Returns
         -------
-            tuple[0]: array including all clusters, each with an unique label.
-            tuple[1]: number of clusters identified.
+        tuple[0] : np.ndarray
+            Array including all clusters, each with an unique label.
+        tuple[1] : int
+            Number of clusters identified.
 
         """
         if not isinstance(flag_array, np.ndarray):
@@ -245,7 +329,7 @@ class UrbanCentre:
         labelled_array: np.ndarray,
         num_clusters: int,
         cluster_pop_threshold: int = 50000,
-    ):
+    ) -> np.ndarray:
         """Filter clusters based on total population.
 
         Checks whether clusters have more than the threshold population
@@ -255,19 +339,18 @@ class UrbanCentre:
         ----------
         band : np.ndarray or ma.core.MaskedArray
             Original clipped raster with population values.
-        labelled_array: np.ndarray
+        labelled_array : np.ndarray
             Array with clusters, each with unique labels.
-        num_clusters: int
+        num_clusters : int
             Number of unique clusters in the labelled array.
-        cluster_pop_threshold: int
-            Threshold to consider inclusion of cluster. If
-            total population in cluster is lower than
-            threshold, the cluster label is set to 0.
+        cluster_pop_threshold : int, optional
+            Threshold to consider inclusion of cluster. If total population in
+            cluster is lower than threshold, the cluster label is set to 0.
 
         Returns
         -------
-            np.ndarray: array including only clusters with
-            population over the threshold.
+        urban_centres : np.ndarray
+            Array including only clusters with population over the threshold.
 
         """
         if not isinstance(band, np.ndarray):
@@ -308,23 +391,23 @@ class UrbanCentre:
     def _custom_filter(self, win: np.ndarray, threshold: int) -> int:
         """Check gap filling criteria.
 
-        Counts non-zero values within window and if
-        higher than threshold and cell is zero
-        returns mode, else returns value of origin cell.
+        Counts non-zero values within window and if higher than threshold and
+        cell is zero returns mode, else returns value of origin cell.
 
         Parameters
         ----------
         win : np.ndarray
-            1-D flattened array of a 3x3 grid, where the
-            centre is win[len(win) // 2]. Note that cells
-            outside of the edges are filled with 0.
-        threshold: int
-            Number of cells that need to be filled to change
-            the value of the central cell.
+            1-D flattened array of a 3x3 grid, where the centre is
+            win[len(win) // 2]. Note that cells outside of the edges are
+            filled with 0.
+        threshold : int
+            Number of cells that need to be filled to change the value of the
+            central cell.
 
         Returns
         -------
-            int: value to impute to the central cell.
+        int
+            Value to impute to the central cell.
 
         """
         counter = Counter(win)
@@ -348,14 +431,15 @@ class UrbanCentre:
         urban_centres : np.ndarray
             Array including urban centres, i.e. clusters over the population
             threshold.
-        cell_fill_threshold: int
+        cell_fill_threshold : int, optional
             If the number of cells adjacent to any empty cell belonging to
             a cluster is higher than the threshold, the cell is filled with
             the cluster value.  Needs to be between 5 and 8.
 
         Returns
         -------
-            np.ndarray: array including urban centres with gaps filled.
+        filled : np.ndarray
+            Array including urban centres with gaps filled.
 
         """
         if not isinstance(urban_centres, np.ndarray):
@@ -401,19 +485,20 @@ class UrbanCentre:
 
         Parameters
         ----------
-        coords: tuple
+        coords : tuple
             Tuple with coordinates to convert.
             Must be in format (lat, long) and EPSG: 4326.
-        aff: affine.Affine
+        aff : affine.Affine
             Affine transform.
-        raster_crs: rasterio.crs.CRS
+        raster_crs : rasterio.crs.CRS
             valid rasterio crs string.
-        coords_crs: str
+        coords_crs : str
             CRS code for coordinates provided.
 
         Returns
         -------
-            tuple: (row, col) position for provided parameters.
+        tuple
+            (row, col) position for provided parameters.
 
         """
         if len(coords) != 2:
@@ -445,21 +530,31 @@ class UrbanCentre:
         ----------
         uc_array : np.ndarray
             Array including filled urban centres.
-        aff: affine.Affine
+        aff : affine.Affine
             Affine transform of the masked raster.
-        raster_crs: rasterio.crs.CRS
+        raster_crs : rasterio.crs.CRS
             crs string of the masked raster.
-        centre: tuple
+        centre : tuple
             Tuple with coordinates for city centre, used to filter cluster.
-        centre_crs: str
+        centre_crs : str, optional
             crs string of the centre coordinates. If None, it will default
             to raster_crs.
-        nodata: int
+        nodata : int, optional
             Value to fill empty cells.
 
         Returns
         -------
-            gpd.GeoDataFrame: GeoDataFrame with polygon boundaries.
+        gpd.GeoDataFrame
+            GeoDataFrame with polygon boundaries.
+
+        Raises
+        ------
+        IndexError
+            If centre coordinates provided fall outside the raster window.
+            This can be caused if coordinates are provided in a tuple in the
+            wrong order, or if a wrong crs is provided.
+        ValueError
+            If centre coordinates are not included within any cluster.
 
         """
         if not isinstance(uc_array, np.ndarray):
@@ -496,7 +591,6 @@ class UrbanCentre:
         if cluster_num == 0:
             raise ValueError(
                 "Coordinates provided are not included within any cluster."
-                "Did you use the correct x, y order?"
             )
 
         filt_array = uc_array == cluster_num
