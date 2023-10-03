@@ -665,7 +665,14 @@ class GtfsInstance:
         return dated_trips_routes
 
     def _get_pre_processed_trips(self) -> pd.DataFrame:
-        """Obtain pre-processed trip data."""
+        """Obtain pre-processed trip data.
+
+        Returns
+        -------
+        pd.DataFrame
+            `pre_processed_trips` attribute.
+
+        """
         try:
             return self.pre_processed_trips.copy()
         except AttributeError:
