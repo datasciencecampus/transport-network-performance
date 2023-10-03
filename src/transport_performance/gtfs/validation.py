@@ -158,6 +158,13 @@ def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
 class GtfsInstance:
     """Create a feed instance for validation, cleaning & visualisation.
 
+    Parameters
+    ----------
+    gtfs_pth : Union[str, bytes, os.PathLike]
+        File path to GTFS archive.
+    units: str
+        Spatial units of the GTFS file. Defaults to "km".
+
     Attributes
     ----------
     feed : gtfs_kit.Feed
@@ -176,6 +183,51 @@ class GtfsInstance:
         Dated route counts by modality.
     route_mode_summary_df: pd.DataFrame
         Summarized route counts by day of the week and modality.
+    pre_processed_trips: pd.DataFrame
+        A table of pre-processed trip data.
+
+    Methods
+    -------
+    get_gtfs_files()
+        Returns the `file_list` attribute.
+    is_valid()
+        Returns the `validity_df` attribute.
+    print_alerts()
+        Print validity errors & warning messages in full.
+    clean_feed()
+        Attempt to clean the `feed` attribute using `gtfs_kit`.
+    viz_stops()
+        Visualise the stops on a map as points or convex hull. Writes file.
+    get_route_modes()
+        Returns the `route_mode_summary_df` attribute.
+    summarise_trips()
+        Returns the `daily_trip_summary` attribute.
+    summarise_routes()
+        Returns the `daily_route_summary` attribute.
+    html_report()
+        Generate a HTML report describing the GTFS data.
+    _produce_stops_map()
+        Produces the stops map for use in `viz_stops()`.
+    _order_dataframe_by_day()
+        Orders tables by day. Used in `summarise_trips()` and
+        `summarise_routes()`.
+    _preprocess_trips_and_routes()
+        Produces a table of dated trips for use in `_get_pre_processed_trips()`
+        .
+    _get_pre_processed_trips()
+        Attempts to access the `pre_processed_trips` attribute and instantiates
+        it with `_preprocess_trips_and_routes()` if not found.
+    _summary_defence()
+        Check the summary parameters for `summarise_trips()` and
+        `summarise_routes()`
+    _plot_summary()
+        Save a plotly summary table, used in `html_report()`.
+    _create_extended_repeated_pair_table()
+        Return a table of repeated pair warnings. Used in
+        `_extended_validation()`.
+    _extended_validation()
+        Generate HTML warning & error summary tables for use in `html_report()`
+        .
 
     Raises
     ------
@@ -198,7 +250,7 @@ class GtfsInstance:
         gtfs_pth: Union[str, pathlib.Path] = here(
             "tests/data/newport-20230613_gtfs.zip"
         ),
-        units: str = "m",
+        units: str = "km",
     ):
         _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
@@ -279,7 +331,7 @@ class GtfsInstance:
         return self.validity_df
 
     def print_alerts(self, alert_type: str = "error") -> None:
-        """Print validity errors & warnins messages in full.
+        """Print validity errors & warning messages in full.
 
         Parameters
         ----------
@@ -326,7 +378,7 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(self):
+    def clean_feed(self) -> None:
         """Attempt to clean feed using `gtfs_kit`."""
         try:
             # In cases where shape_id is missing, keyerror is raised.
@@ -633,8 +685,7 @@ class GtfsInstance:
             by default [np.min, np.max, np.mean, np.median]
         return_summary : bool, optional
             When True, a summary is returned. When False, route data
-            for each date is returned,
-            by default True
+            for each date is returned, by default True.
 
         Returns
         -------
