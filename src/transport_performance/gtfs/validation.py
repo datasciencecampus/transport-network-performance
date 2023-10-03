@@ -161,9 +161,10 @@ class GtfsInstance:
     Parameters
     ----------
     gtfs_pth : Union[str, bytes, os.PathLike]
-        File path to GTFS archive.
+        File path to GTFS archive, defaults to
+        "tests/data/newport-20230613_gtfs.zip".
     units: str
-        Spatial units of the GTFS file. Defaults to "km".
+        Spatial units of the GTFS file, defaults to "km".
 
     Attributes
     ----------
@@ -336,8 +337,8 @@ class GtfsInstance:
         Parameters
         ----------
         alert_type : str, optional
-                The alert type to print messages. Defaults to "error". Also
-                accepts "warning".
+                The alert type to print messages. Also accepts "warning".
+                Defaults to "error".
 
         Returns
         -------
@@ -464,21 +465,21 @@ class GtfsInstance:
         out_pth : str
             Path to write the map file html document to, including the file
             name. Must end with '.html' file extension.
-        geoms : str
+        geoms : str, optional
             Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`
             to map point locations of available stops. If `geoms=hull`,
-            calculates the convex hull & its area. Defaults to "point".
-        geom_crs : (str, int)
+            calculates the convex hull & its area, defaults to "point".
+        geom_crs : (str, int), optional
             Geometric CRS to use for the calculation of the convex hull area
-            only. Defaults to "27700" (OSGB36, British National Grid).
-        create_out_parent : bool
-            Should the parent directory of `out_pth` be created if not found.
-            Defaults to False.
-        filtered_only: bool
+            only, defaults to "27700" (OSGB36, British National Grid).
+        create_out_parent : bool, optional
+            Should the parent directory of `out_pth` be created if not found,
+            defaults to False.
+        filtered_only: bool, optional
             When True, only stops referenced within stop_times.txt will be
             plotted. When False, stops referenced in stops.txt will be plotted.
             Note that gtfs_kit filtering behaviour removes stops from
-            stop_times.txt but not stops.txt.
+            stop_times.txt but not stops.txt, defaults to True.
 
         Returns
         -------
@@ -753,11 +754,10 @@ class GtfsInstance:
         ----------
         summ_ops : list, optional
             A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
+            by default [np.min, np.max, np.mean, np.median].
         return_summary : bool, optional
             When True, a summary is returned. When False, trip data
-            for each date is returned,
-            by default True
+            for each date is returned, by default True.
 
         Returns
         -------
@@ -832,11 +832,10 @@ class GtfsInstance:
         ----------
         summ_ops : list, optional
             A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
+            by default [np.min, np.max, np.mean, np.median].
         return_summary : bool, optional
             When True, a summary is returned. When False, route data
-            for each date is returned,
-            by default True
+            for each date is returned, by default True.
 
         Returns
         -------
@@ -970,35 +969,29 @@ class GtfsInstance:
         height : int, optional
             The height of the plot (in pixels), by default 800
         xlabel : str, optional
-            The label for the x axis.
-            If left empty, the column name will be used,
-            by default None
+            The label for the x axis. If left empty, the column name will be
+            used, by default None
         ylabel : str, optional
-            The label for the y axis.
-            If left empty, the column name will be used,
-            by default None
+            The label for the y axis. If left empty, the column name will be
+            used, by default None
         plotly_kwargs : dict, optional
-            Kwargs to pass to fig.update_layout() for
-            additional plot customisation,
-            by default {}
+            Kwargs to pass to fig.update_layout() for additional plot
+            customisation, by default {}
         return_html : bool, optional
-            Whether or not to return a html string,
-            by default False
+            Whether or not to return a html string, by default False
         save_html : bool, optional
-            Whether or not to save the plot as a html file,
-            by default False
+            Whether or not to save the plot as a html file, by default False
         save_image : bool, optional
-            Whether or not to save the plot as a PNG,
-            by default False
+            Whether or not to save the plot as a PNG, by default False
         out_dir : Union[pathlib.Path, str], optional
             The directory to save the plot into. If a file extension is added
             to this directory, it won't be cleaned. Whatever is passed as the
             out dir will be used as the parent directory of the save, leaving
-            the responsibility on the user to specify the correct path.,
-            by default os.path.join("outputs", "gtfs")
+            the responsibility on the user to specify the correct path., by
+            default os.path.join("outputs", "gtfs")
         img_type : str, optional
-            The type of the image to be saved. E.g, .svg or .jpeg.,
-            by defauly "png"
+            The type of the image to be saved. E.g, .svg or .jpeg., by default
+            "png"
 
         Returns
         -------
@@ -1207,8 +1200,8 @@ class GtfsInstance:
         join_vars : Union[str, list]
             The variables that have repeated pairs
         original_rows : list[int]
-            The original duplicate rows, contained in
-            the GTFS validation table (rows column)
+            The original duplicate rows, contained in the GTFS validation table
+            (rows column)
 
         Returns
         -------
@@ -1381,19 +1374,16 @@ class GtfsInstance:
         Parameters
         ----------
         report_dir : Union[str, pathlib.Path], optional
-            The directory to save the report to,
-            by default "outputs"
+            The directory to save the report to, by default "outputs"
         overwrite : bool, optional
-            Whether or not to overwrite the existing report
-            if it already exists in the report_dir,
-            by default False
+            Whether or not to overwrite the existing report if it already
+            exists in the report_dir, by default False
         summary_type : str, optional
-            The type of summary to show on the
-            summaries on the gtfs report.,
-            by default "mean"
+            The type of summary to show on the summaries on the gtfs report, by
+            default "mean"
         extended_validation : bool, optional
-            Whether or not to create extended reports
-            for gtfs validation errors/warnings.
+            Whether or not to create extended reports for gtfs validation
+            errors/warnings.
 
         Returns
         -------
