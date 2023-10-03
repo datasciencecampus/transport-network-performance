@@ -365,12 +365,12 @@ class UrbanCentre:
             )
         if not isinstance(cell_fill_threshold, int):
             raise TypeError(
-                "`threshold` expected integer, "
+                "`cell_fill_threshold` expected integer, "
                 f"got {type(cell_fill_threshold).__name__}"
             )
         if not (5 <= cell_fill_threshold <= 8):
             raise ValueError(
-                "Wrong value for `threshold`, "
+                "Wrong value for `cell_fill_threshold`, "
                 "please enter value between 5 and 8"
             )
 
@@ -474,7 +474,9 @@ class UrbanCentre:
         if not isinstance(aff, affine.Affine):
             raise TypeError("`aff` must be a valid Affine object")
         if not isinstance(raster_crs, rasterio.crs.CRS):
-            raise TypeError("`crs` must be a valid rasterio.crs.CRS object")
+            raise TypeError(
+                "`raster_crs` must be a valid rasterio.crs.CRS " "object"
+            )
         if not isinstance(nodata, int):
             raise TypeError(
                 "`nodata` expected integer, " f"got {type(nodata).__name__}"
