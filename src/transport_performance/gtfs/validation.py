@@ -88,7 +88,7 @@ def _create_map_title_text(
         GeoDataFrame containing the spatial features.
     units :  str
         Distance units of the GTFS feed from which `gdf` originated.
-    geom_crs : (str, int):
+    geom_crs : Union[str, int]:
         The geometric crs to use in reprojecting the data in order to
         calculate the area of the hull polygon.
 
@@ -401,7 +401,7 @@ class GtfsInstance:
             Has the user asked to visualise 'hull' or 'points'?
         is_filtered : bool
             Has the user specified to plot IDs in stops or stop_times only?
-        crs : (int, str)
+        crs : Union[int, str]
             The crs to use for hull calculation.
 
         Returns
@@ -462,14 +462,14 @@ class GtfsInstance:
 
         Parameters
         ----------
-        out_pth : str
+        out_pth : Union[str, pathlib.Path]
             Path to write the map file html document to, including the file
             name. Must end with '.html' file extension.
         geoms : str, optional
             Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`
             to map point locations of available stops. If `geoms=hull`,
             calculates the convex hull & its area, defaults to "point".
-        geom_crs : (str, int), optional
+        geom_crs : Union[str, int], optional
             Geometric CRS to use for the calculation of the convex hull area
             only, defaults to "27700" (OSGB36, British National Grid).
         create_out_parent : bool, optional
