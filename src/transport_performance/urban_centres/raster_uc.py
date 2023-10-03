@@ -6,6 +6,7 @@ import geopandas as gpd
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
+import pathlib
 import rasterio
 import xarray as xr
 
@@ -14,27 +15,33 @@ from pyproj import Transformer
 from rasterio.mask import raster_geometry_mask
 from rasterio.transform import rowcol
 from scipy.ndimage import generic_filter, label
-from transport_performance.utils.defence import _handle_path_like
+from transport_performance.utils.defence import _is_expected_filetype
+from typing import Union
 
 
 class UrbanCentre:
     """Create urban centre object."""
 
-    def __init__(self, file):
+    def __init__(
+        self,
+        path: Union[str, pathlib.Path],
+        exp_ext: list = [".tif", ".tiff", ".tff"],
+    ):
 
         # check that path is str or PosixPath
-        file = _handle_path_like(file, "file")
-        self.file = file
+        _is_expected_filetype(path, "file", exp_ext=exp_ext)
+        self.file = path
 
     def get_urban_centre(
         self,
         bbox: gpd.GeoDataFrame,
         centre: tuple,
+        centre_crs: str = None,
         band_n: int = 1,
         cell_pop_threshold: int = 1500,
         diag: bool = False,
         cluster_pop_threshold: int = 50000,
-        cell_fill_treshold: int = 5,
+        cell_fill_threshold: int = 5,
         vector_nodata: int = -200,
         buffer_size: int = 10000,
     ):
@@ -67,12 +74,17 @@ class UrbanCentre:
 
         # smoothed clusters
         self.__filled_array = self._fill_gaps(
-            self.__urban_centres_array, cell_fill_treshold
+            self.__urban_centres_array, cell_fill_threshold
         )
 
         # vectorized urban centre
         self.__vectorized_uc = self._vectorize_uc(
-            self.__filled_array, self.aff, self.crs, centre, vector_nodata
+            self.__filled_array,
+            self.aff,
+            self.crs,
+            centre,
+            centre_crs,
+            vector_nodata,
         )
 
         # buffer
@@ -153,7 +165,7 @@ class UrbanCentre:
             return (rst, affine, src.crs)
 
     def _flag_cells(
-        self, masked_rst: np.ndarray, cell_pop_thres: int = 1500
+        self, masked_rst: np.ndarray, cell_pop_threshold: int = 1500
     ) -> np.ndarray:
         """Flag cells that are over the threshold.
 
@@ -161,7 +173,7 @@ class UrbanCentre:
         ----------
         masked_rst : np.ndarray
             Clipped (and potentially masked) array.
-        cell_pop_thres: int
+        cell_pop_threshold: int
             A cell is flagged if its value is equal or
             higher than the threshold.
 
@@ -176,13 +188,13 @@ class UrbanCentre:
                 "`masked_rst` expected numpy array, "
                 f"got {type(masked_rst).__name__}."
             )
-        if not isinstance(cell_pop_thres, int):
+        if not isinstance(cell_pop_threshold, int):
             raise TypeError(
                 "`cell_pop_threshold` expected integer, "
-                f"got {type(cell_pop_thres).__name__}."
+                f"got {type(cell_pop_threshold).__name__}."
             )
 
-        flag_array = masked_rst >= cell_pop_thres
+        flag_array = masked_rst >= cell_pop_threshold
 
         if np.sum(flag_array) == 0:
             raise ValueError(
@@ -212,7 +224,7 @@ class UrbanCentre:
         """
         if not isinstance(flag_array, np.ndarray):
             raise TypeError(
-                "`masked_rst` expected numpy array, "
+                "`flag_array` expected numpy array, "
                 f"got {type(flag_array).__name__}."
             )
         if not isinstance(diag, bool):
@@ -260,8 +272,7 @@ class UrbanCentre:
         """
         if not isinstance(band, np.ndarray):
             raise TypeError(
-                "`masked_rst` expected numpy array, "
-                f"got {type(band).__name__}."
+                "`band` expected numpy array, " f"got {type(band).__name__}."
             )
         if not isinstance(labelled_array, np.ndarray):
             raise TypeError(
@@ -275,7 +286,7 @@ class UrbanCentre:
             )
         if not isinstance(cluster_pop_threshold, int):
             raise TypeError(
-                "`pop_threshold` expected integer, "
+                "`cluster_pop_threshold` expected integer, "
                 f"got {type(cluster_pop_threshold).__name__}"
             )
 
@@ -325,7 +336,7 @@ class UrbanCentre:
         return r
 
     def _fill_gaps(
-        self, urban_centres: np.ndarray, threshold: int = 5
+        self, urban_centres: np.ndarray, cell_fill_threshold: int = 5
     ) -> np.ndarray:
         """Fill gaps in urban clusters.
 
@@ -337,7 +348,7 @@ class UrbanCentre:
         urban_centres : np.ndarray
             Array including urban centres, i.e. clusters over the population
             threshold.
-        threshold: int
+        cell_fill_threshold: int
             If the number of cells adjacent to any empty cell belonging to
             a cluster is higher than the threshold, the cell is filled with
             the cluster value.  Needs to be between 5 and 8.
@@ -352,14 +363,14 @@ class UrbanCentre:
                 "`urban_centres` expected numpy array, "
                 f"got {type(urban_centres).__name__}."
             )
-        if not isinstance(threshold, int):
+        if not isinstance(cell_fill_threshold, int):
             raise TypeError(
-                "`threshold` expected integer, "
-                f"got {type(threshold).__name__}"
+                "`cell_fill_threshold` expected integer, "
+                f"got {type(cell_fill_threshold).__name__}"
             )
-        if not (5 <= threshold <= 8):
+        if not (5 <= cell_fill_threshold <= 8):
             raise ValueError(
-                "Wrong value for `threshold`, "
+                "Wrong value for `cell_fill_threshold`, "
                 "please enter value between 5 and 8"
             )
 
@@ -373,14 +384,18 @@ class UrbanCentre:
                 function=self._custom_filter,
                 size=3,
                 mode="constant",
-                extra_keywords={"threshold": threshold},
+                extra_keywords={"threshold": cell_fill_threshold},
             )
             if np.array_equal(filled, check):
                 break
         return filled
 
     def _get_x_y(
-        self, coords: tuple, aff: affine.Affine, crs: rasterio.crs.CRS
+        self,
+        coords: tuple,
+        aff: affine.Affine,
+        raster_crs: rasterio.crs.CRS,
+        coords_crs: str,
     ) -> tuple:
         """Get array index for given coordinates.
 
@@ -391,12 +406,14 @@ class UrbanCentre:
             Must be in format (lat, long) and EPSG: 4326.
         aff: affine.Affine
             Affine transform.
-        crs: rasterio.crs.CRS
+        raster_crs: rasterio.crs.CRS
             valid rasterio crs string.
+        coords_crs: str
+            CRS code for coordinates provided.
 
         Returns
         -------
-            tuple: (x, y) coordinates in provided crs.
+            tuple: (row, col) position for provided parameters.
 
         """
         if len(coords) != 2:
@@ -407,7 +424,7 @@ class UrbanCentre:
         ):
             raise TypeError("Elements of `coords` need to be float.")
 
-        transformer = Transformer.from_crs("EPSG:4326", crs)
+        transformer = Transformer.from_crs(coords_crs, raster_crs)
         x, y = transformer.transform(*coords)
         row, col = rowcol(aff, x, y)
 
@@ -417,8 +434,9 @@ class UrbanCentre:
         self,
         uc_array: np.ndarray,
         aff: affine.Affine,
-        crs: rasterio.crs.CRS,
+        raster_crs: rasterio.crs.CRS,
         centre: tuple,
+        centre_crs: str = None,
         nodata: int = -200,
     ) -> gpd.GeoDataFrame:
         """Vectorize raster with urban centre polygon.
@@ -429,11 +447,13 @@ class UrbanCentre:
             Array including filled urban centres.
         aff: affine.Affine
             Affine transform of the masked raster.
-        crs: rasterio.crs.CRS
+        raster_crs: rasterio.crs.CRS
             crs string of the masked raster.
         centre: tuple
             Tuple with coordinates for city centre, used to filter cluster.
-            Must be in format (lat, long) and EPSG: 4326.
+        centre_crs: str
+            crs string of the centre coordinates. If None, it will default
+            to raster_crs.
         nodata: int
             Value to fill empty cells.
 
@@ -453,24 +473,30 @@ class UrbanCentre:
             )
         if not isinstance(aff, affine.Affine):
             raise TypeError("`aff` must be a valid Affine object")
-        if not isinstance(crs, rasterio.crs.CRS):
-            raise TypeError("`crs` must be a valid rasterio.crs.CRS object")
+        if not isinstance(raster_crs, rasterio.crs.CRS):
+            raise TypeError(
+                "`raster_crs` must be a valid rasterio.crs.CRS " "object"
+            )
         if not isinstance(nodata, int):
             raise TypeError(
                 "`nodata` expected integer, " f"got {type(nodata).__name__}"
             )
 
-        row, col = self._get_x_y(centre, aff, crs)
+        if centre_crs is None:
+            centre_crs = raster_crs
+
+        row, col = self._get_x_y(centre, aff, raster_crs, centre_crs)
         if row > uc_array.shape[0] or col > uc_array.shape[1]:
             raise IndexError(
                 "Coordinates fall outside of raster window. "
-                "Did you use the correct y, x order?"
+                "Did you use the correct x, y order?"
             )
 
         cluster_num = uc_array[row, col]
         if cluster_num == 0:
             raise ValueError(
                 "Coordinates provided are not included within any cluster."
+                "Did you use the correct x, y order?"
             )
 
         filt_array = uc_array == cluster_num
@@ -480,7 +506,7 @@ class UrbanCentre:
             .astype("int32")
             .rio.write_nodata(nodata)
             .rio.write_transform(aff)
-            .rio.set_crs(crs, inplace=True)
+            .rio.set_crs(raster_crs, inplace=True)
         )
 
         gdf = vectorize(x_array)
