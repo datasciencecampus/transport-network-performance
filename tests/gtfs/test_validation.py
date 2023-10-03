@@ -71,10 +71,10 @@ class TestGtfsInstance(object):
         gtfs = GtfsInstance()
         assert isinstance(
             gtfs.feed, gk.feed.Feed
-        ), f"GExpected gtfs_kit feed attribute. Found: {type(gtfs.feed)}"
+        ), f"Expected gtfs_kit feed attribute. Found: {type(gtfs.feed)}"
         assert (
-            gtfs.feed.dist_units == "m"
-        ), f"Expected 'm', found: {gtfs.feed.dist_units}"
+            gtfs.feed.dist_units == "km"
+        ), f"Expected 'km', found: {gtfs.feed.dist_units}"
         # can coerce to correct distance unit?
         gtfs1 = GtfsInstance(units="kilometers")
         assert (
