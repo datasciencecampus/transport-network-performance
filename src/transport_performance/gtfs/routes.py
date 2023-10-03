@@ -21,7 +21,7 @@ warnings.filterwarnings(
 
 def _construct_extended_schema_table(
     some_soup: BeautifulSoup, cd_list: list, desc_list: list
-) -> tuple:
+) -> (list, list):
     """Create the extended table from a soup object. Not exported.
 
     Parameters
@@ -87,15 +87,15 @@ def scrape_route_type_lookup(
 
     Parameters
     ----------
-    gtfs_url : str
+    gtfs_url : str, optional
         The url containing the GTFS accepted route_type codes. Defaults to
         "https://gtfs.org/schedule/reference/".
-    ext_spec_url : str
+    ext_spec_url : str, optional
         The url containing the table of the proposed extension to the GTFS
         schema for route_type codes. Defaults to
         ( "https://developers.google.com/transit/gtfs/reference/"
         "extended-route-types" ).
-    extended_schema : bool
+    extended_schema : bool, optional
         Should the extended schema table be scraped and included in the output?
         Defaults to True.
 
