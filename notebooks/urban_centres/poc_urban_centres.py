@@ -120,7 +120,7 @@ coords = (bbox_lds_centroid.x[0], bbox_lds_centroid.y[0])
 
 # pop only criteria
 lds = ucc.UrbanCentre(path=(MERGED_DIR))
-lds_uc = npt.get_urban_centre(bbox_lds_r, coords)
+lds_uc = lds.get_urban_centre(bbox_lds_r, coords)
 
 fig = plt.figure
 m = lds_uc[lds_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -145,7 +145,7 @@ coords = (bbox_lnd_centroid.x[0], bbox_lnd_centroid.y[0])
 
 # pop only criteria
 lnd = ucc.UrbanCentre(path=(MERGED_DIR))
-lnd_uc = npt.get_urban_centre(bbox_lnd_r, coords)
+lnd_uc = lnd.get_urban_centre(bbox_lnd_r, coords)
 
 fig = plt.figure
 m = lnd_uc[lnd_uc["label"] == "vectorized_uc"].explore(color="red")
@@ -169,7 +169,7 @@ coords = (bbox_mrs_centroid.x[0], bbox_mrs_centroid.y[0])
 
 # pop only criteria
 mrs = ucc.UrbanCentre(path=(MERGED_DIR))
-mrs_uc = npt.get_urban_centre(bbox_mrs_r, coords)
+mrs_uc = mrs.get_urban_centre(bbox_mrs_r, coords)
 
 fig = plt.figure
 m = mrs_uc[mrs_uc["label"] == "vectorized_uc"].explore(color="red")
