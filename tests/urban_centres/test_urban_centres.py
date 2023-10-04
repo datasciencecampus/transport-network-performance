@@ -11,6 +11,8 @@ larger codebase that is more difficult to maintain.
 """
 
 import os
+from contextlib import nullcontext as does_not_raise
+from pathlib import Path
 
 import affine
 import geopandas as gpd
@@ -18,9 +20,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import rasterio as rio
-
-from contextlib import nullcontext as does_not_raise
-from pathlib import Path
 from pytest_lazyfixture import lazy_fixture
 from shapely.geometry import Polygon
 
@@ -150,11 +149,29 @@ def cluster_centre():
         (lazy_fixture("dummy_pop_array"), "str", does_not_raise()),
         (lazy_fixture("dummy_pop_array"), "path", does_not_raise()),
         # wrong path
-        ("wrongpath.tif", "str", pytest.raises(IOError)),
+        (
+            "wrongpath.tif",
+            "str",
+            pytest.raises(
+                FileNotFoundError,
+                match=(r".*wrongpath.tif not found on file."),
+            ),
+        ),
         # wrong extension
-        ("wrongpath", "str", pytest.raises(ValueError)),
-        # wrong extension
-        (1234, "num", pytest.raises(TypeError)),
+        (
+            "wrongpath",
+            "str",
+            pytest.raises(ValueError, match=(r"No file extension was found")),
+        ),
+        # wrong type
+        (
+            1234,
+            "num",
+            pytest.raises(
+                TypeError,
+                match=(r"`pth` expected .*'str'.*Path'.* Got .*'int'.*"),
+            ),
+        ),
     ],
 )
 def test_file(filepath, func, bbox, cluster_centre, expected):
@@ -177,14 +194,44 @@ def test_file(filepath, func, bbox, cluster_centre, expected):
     "window, expected",
     [
         (lazy_fixture("bbox"), does_not_raise()),
-        ("string", pytest.raises(TypeError)),
-        (pd.DataFrame(), pytest.raises(TypeError)),
+        (
+            "string",
+            pytest.raises(
+                TypeError, match=(r"`bbox` expected GeoDataFrame, got str")
+            ),
+        ),
+        (
+            pd.DataFrame(),
+            pytest.raises(
+                TypeError,
+                match=(r"`bbox` expected GeoDataFrame, got DataFrame"),
+            ),
+        ),
         # badly defined bbox
-        (gpd.GeoDataFrame(), pytest.raises(AttributeError)),
+        (
+            gpd.GeoDataFrame(),
+            pytest.raises(
+                AttributeError,
+                match=(
+                    r"The CRS attribute of a GeoDataFrame without an "
+                    r"active geometry column is not defined"
+                ),
+            ),
+        ),
         # bbox not overlapping
-        (lazy_fixture("non_overlapping_bbox"), pytest.raises(ValueError)),
+        (
+            lazy_fixture("non_overlapping_bbox"),
+            pytest.raises(
+                ValueError, match=(r"Input shapes do not overlap raster")
+            ),
+        ),
         # wrong crs bbox
-        (lazy_fixture("wrong_crs_bbox"), pytest.raises(ValueError)),
+        (
+            lazy_fixture("wrong_crs_bbox"),
+            pytest.raises(
+                ValueError, match=(r"Raster and bounding box crs do not match")
+            ),
+        ),
     ],
 )
 def test_bbox(dummy_pop_array, window, cluster_centre, expected):
@@ -206,14 +253,55 @@ def test_bbox(dummy_pop_array, window, cluster_centre, expected):
         # different crs
         ((51.74, -3.25), "EPSG: 4326", does_not_raise()),
         # outside cluster
-        ((-235000.0, 6055000.0), None, pytest.raises(ValueError)),
+        (
+            (-235000.0, 6055000.0),
+            None,
+            pytest.raises(
+                ValueError,
+                match=(
+                    r"Coordinates provided are not included within any "
+                    r"cluster"
+                ),
+            ),
+        ),
         # outside bbox
-        ((-200000.0, 6055000.0), None, pytest.raises(IndexError)),
+        (
+            (-200000.0, 6055000.0),
+            None,
+            pytest.raises(
+                IndexError,
+                match=(r"Coordinates fall outside of raster window"),
+            ),
+        ),
         # check tuple constrains
-        ((50, 3), None, pytest.raises(TypeError)),
-        ((50, 3, 3), None, pytest.raises(ValueError)),
-        (50, None, pytest.raises(TypeError)),
-        ("(50, 3)", None, pytest.raises(TypeError)),
+        (
+            (50, 3),
+            None,
+            pytest.raises(
+                TypeError, match=(r"Elements of `coords` need to be float")
+            ),
+        ),
+        (
+            (50, 3, 3),
+            None,
+            pytest.raises(
+                ValueError, match=(r"`coords` expected a tuple of lenght 2")
+            ),
+        ),
+        (
+            50,
+            None,
+            pytest.raises(
+                TypeError, match=(r"`centre` expected tuple, got int")
+            ),
+        ),
+        (
+            "(50, 3)",
+            None,
+            pytest.raises(
+                TypeError, match=(r"`centre` expected tuple, got str")
+            ),
+        ),
     ],
 )
 def test_centre(dummy_pop_array, bbox, centre_coords, centre_crs, expected):
@@ -232,9 +320,19 @@ def test_centre(dummy_pop_array, bbox, centre_coords, centre_crs, expected):
     "band, expected",
     [
         (1, does_not_raise()),
-        (1.5, pytest.raises(TypeError)),
-        (2, pytest.raises(IndexError)),
-        ("2", pytest.raises(TypeError)),
+        (
+            1.5,
+            pytest.raises(
+                TypeError, match=(r"`band_n` expected integer, got float")
+            ),
+        ),
+        (2, pytest.raises(IndexError, match=(r"band index 2 out of range"))),
+        (
+            "2",
+            pytest.raises(
+                TypeError, match=(r"`band_n` expected integer, got str")
+            ),
+        ),
     ],
 )
 def test_band_n(dummy_pop_array, bbox, cluster_centre, band, expected):
@@ -254,10 +352,34 @@ def test_band_n(dummy_pop_array, bbox, cluster_centre, band, expected):
     [
         (1500, does_not_raise(), [True, True, False]),
         (5000, does_not_raise(), [True, False, False]),
-        (1500.5, pytest.raises(TypeError), []),
-        ("1500", pytest.raises(TypeError), []),
+        (
+            1500.5,
+            pytest.raises(
+                TypeError,
+                match=(r"`cell_pop_threshold` expected integer, got float"),
+            ),
+            [],
+        ),
+        (
+            "1500",
+            pytest.raises(
+                TypeError,
+                match=(r"`cell_pop_threshold` expected integer, got str"),
+            ),
+            [],
+        ),
         # tests value that would not create any cluster
-        (150000, pytest.raises(ValueError), []),
+        (
+            150000,
+            pytest.raises(
+                ValueError,
+                match=(
+                    r"`cell_pop_threshold` value too high, no cells over "
+                    r"threshold"
+                ),
+            ),
+            [],
+        ),
     ],
 )
 class TestCellPop:
@@ -310,8 +432,18 @@ class TestCellPop:
     [
         (True, does_not_raise(), 1, 3),
         (False, does_not_raise(), 3, 4),
-        (1, pytest.raises(TypeError), 0, 0),
-        ("True", pytest.raises(TypeError), 0, 0),
+        (
+            1,
+            pytest.raises(TypeError, match=(r"`diag` must be a boolean")),
+            0,
+            0,
+        ),
+        (
+            "True",
+            pytest.raises(TypeError, match=(r"`diag` must be a boolean")),
+            0,
+            0,
+        ),
     ],
 )
 class TestDiag:
@@ -361,10 +493,34 @@ class TestDiag:
     [
         (50000, does_not_raise(), [1, 0, 0]),
         (10000, does_not_raise(), [1, 2, 0]),
-        (50000.5, pytest.raises(TypeError), []),
-        ("50000", pytest.raises(TypeError), []),
+        (
+            50000.5,
+            pytest.raises(
+                TypeError,
+                match=(r"`cluster_pop_threshold` expected integer, got float"),
+            ),
+            [],
+        ),
+        (
+            "50000",
+            pytest.raises(
+                TypeError,
+                match=(r"`cluster_pop_threshold` expected integer, got str"),
+            ),
+            [],
+        ),
         # test value that would filter out all clusters
-        (1000000, pytest.raises(ValueError), []),
+        (
+            1000000,
+            pytest.raises(
+                ValueError,
+                match=(
+                    r"`cluster_pop_threshold` value too high, no clusters "
+                    r"over threshold"
+                ),
+            ),
+            [],
+        ),
     ],
 )
 class TestClusterPop:
@@ -415,11 +571,45 @@ class TestClusterPop:
     [
         (5, does_not_raise(), [1, 1, 0]),
         (7, does_not_raise(), [1, 0, 0]),
-        (5.5, pytest.raises(TypeError), []),
-        ("5", pytest.raises(TypeError), []),
+        (
+            5.5,
+            pytest.raises(
+                TypeError,
+                match=(r"`cell_fill_threshold` expected integer, got float"),
+            ),
+            [],
+        ),
+        (
+            "5",
+            pytest.raises(
+                TypeError,
+                match=(r"`cell_fill_threshold` expected integer, got str"),
+            ),
+            [],
+        ),
         # test values outside boundaries
-        (11, pytest.raises(ValueError), []),
-        (0, pytest.raises(ValueError), []),
+        (
+            11,
+            pytest.raises(
+                ValueError,
+                match=(
+                    r"Wrong value for `cell_fill_threshold`, please enter "
+                    r"value between 5 and 8"
+                ),
+            ),
+            [],
+        ),
+        (
+            0,
+            pytest.raises(
+                ValueError,
+                match=(
+                    r"Wrong value for `cell_fill_threshold`, please enter "
+                    r"value between 5 and 8"
+                ),
+            ),
+            [],
+        ),
     ],
 )
 class TestFill:
@@ -471,8 +661,18 @@ class TestFill:
     "v_nodata, expected",
     [
         (-200, does_not_raise()),
-        (-200.5, pytest.raises(TypeError)),
-        ("str", pytest.raises(TypeError)),
+        (
+            -200.5,
+            pytest.raises(
+                TypeError, match=(r"`nodata` expected integer, got float")
+            ),
+        ),
+        (
+            "str",
+            pytest.raises(
+                TypeError, match=(r"`nodata` expected integer, got str")
+            ),
+        ),
     ],
 )
 def test_v_nodata(dummy_pop_array, bbox, cluster_centre, v_nodata, expected):
@@ -491,9 +691,25 @@ def test_v_nodata(dummy_pop_array, bbox, cluster_centre, v_nodata, expected):
     "buffer, expected",
     [
         (10000, does_not_raise()),
-        (-10000, pytest.raises(ValueError)),
-        (10000.5, pytest.raises(TypeError)),
-        ("str", pytest.raises(TypeError)),
+        (
+            -10000,
+            pytest.raises(
+                ValueError,
+                match=(r"`buffer_size` expected positive non-zero integer"),
+            ),
+        ),
+        (
+            10000.5,
+            pytest.raises(
+                TypeError, match=(r"`buffer_size` expected int, got float")
+            ),
+        ),
+        (
+            "str",
+            pytest.raises(
+                TypeError, match=(r"`buffer_size` expected int, got str")
+            ),
+        ),
     ],
 )
 def test_buffer(dummy_pop_array, bbox, cluster_centre, buffer, expected):
