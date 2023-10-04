@@ -30,4 +30,5 @@ kaleido
 numpy>=1.25.0 # test suite will fail if user installed lower than this
 sphinx
 sphinx-rtd-theme
+setuptools==65.6.3
 -e .
