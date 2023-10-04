@@ -1,6 +1,8 @@
 """Unit tests for transport_performance/urban_centres/urban_centres_class.
 
-TODO: add docs.
+Fixtures used in this file are made up. An affine transform matrix has been
+created to match the crs, and the bounding box fixture and centre coordinates
+were created from it.
 
 Note: in the class parameterised tests below there are some arguments that are
 not used across all tests within them. This is a deliberate design choice,
@@ -18,10 +20,14 @@ import affine
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pathlib
 import pytest
 import rasterio as rio
+
 from pytest_lazyfixture import lazy_fixture
 from shapely.geometry import Polygon
+from typing import Union, Type
+from _pytest.python_api import RaisesContext
 
 import transport_performance.urban_centres.raster_uc as ucc
 
@@ -29,7 +35,19 @@ import transport_performance.urban_centres.raster_uc as ucc
 # fixtures
 @pytest.fixture
 def dummy_pop_array(tmp_path: str):
-    """Create dummy population array."""
+    """Create dummy population array.
+
+    Parameters
+    ----------
+    tmp_path : str
+        Temporary directory to use for pytest run.
+
+    Returns
+    -------
+    write_dir : str
+        Filepath to dummy raster data.
+
+    """
     aff = rio.Affine(1000.0, 0.0, -243000.0, 0.0, -1000.0, 6056000.0)
     crs = rio.CRS.from_string("ESRI: 54009")
     dummy = np.array(
@@ -65,7 +83,14 @@ def dummy_pop_array(tmp_path: str):
 
 @pytest.fixture()
 def bbox():
-    """Create dummy bbox."""
+    """Create dummy bbox.
+
+    Returns
+    -------
+    gdf : gpd.GeoDataFrame
+        Boundaries of the bounding box.
+
+    """
     minx = -243000
     miny = 6056000
     maxx = minx + (1000 * 10)
@@ -89,7 +114,14 @@ def bbox():
 
 @pytest.fixture()
 def non_overlapping_bbox():
-    """Create dummy bbox that does not overlap with raster."""
+    """Create dummy bbox that does not overlap with raster.
+
+    Returns
+    -------
+    gdf : gpd.GeoDataFrame
+        Boundaries of the bounding box.
+
+    """
     minx = -23000
     miny = 656000
     maxx = minx + (1000 * 10)
@@ -113,7 +145,14 @@ def non_overlapping_bbox():
 
 @pytest.fixture()
 def wrong_crs_bbox():
-    """Create dummy bbox with wrong crs."""
+    """Create dummy bbox with wrong crs.
+
+    Returns
+    -------
+    gdf : gpd.GeoDataFrame
+        Boundaries of the bounding box.
+
+    """
     minx = -23000
     miny = 656000
     maxx = minx + (1000 * 10)
@@ -137,7 +176,14 @@ def wrong_crs_bbox():
 
 @pytest.fixture
 def cluster_centre():
-    """Create dummy cluster centre."""
+    """Create dummy cluster centre.
+
+    Returns
+    -------
+    tuple
+        Coordinates of the cluster centre.
+
+    """
     return (-242000.0, 6055000.0)
 
 
@@ -174,8 +220,29 @@ def cluster_centre():
         ),
     ],
 )
-def test_file(filepath, func, bbox, cluster_centre, expected):
-    """Test filepath."""
+def test_file(
+    filepath: Union[str, pathlib.Path],
+    func: str,
+    bbox: gpd.GeoDataFrame,
+    cluster_centre: tuple,
+    expected: Type[RaisesContext],
+):
+    """Test filepath.
+
+    Parameters
+    ----------
+    filepath : Union[str, pathlib.Path]
+        Filepath to dummy raster data.
+    func : str
+        Type of the filepath argument provided.
+    bbox : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    cluster_centre : tuple
+        Coordinates for the centre of the cluster.
+    expected : Type[RaisesContext]
+        Expected raise result.
+
+    """
     if func == "str":
         filepath = str(filepath)
     elif func == "num":
@@ -200,6 +267,7 @@ def test_file(filepath, func, bbox, cluster_centre, expected):
                 TypeError, match=(r"`bbox` expected GeoDataFrame, got str")
             ),
         ),
+        # wrong format bbox
         (
             pd.DataFrame(),
             pytest.raises(
@@ -234,8 +302,32 @@ def test_file(filepath, func, bbox, cluster_centre, expected):
         ),
     ],
 )
-def test_bbox(dummy_pop_array, window, cluster_centre, expected):
-    """Test bounding box."""
+def test_bbox(
+    dummy_pop_array: str,
+    window: gpd.GeoDataFrame,
+    cluster_centre: tuple,
+    expected: Type[RaisesContext],
+):
+    """Test bounding box.
+
+    Parameters
+    ----------
+    dummy_pop_array : str
+        Filepath to dummy raster data.
+    window : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    cluster_centre : tuple
+        Coordinates for the centre of the cluster.
+    expected : Type[RaisesContext]
+        Expected raise result.
+
+    Note
+    ----
+    The bounding box is defined as the whole of the raster. The filtering of
+    the raster using a window is from a third party package and should be
+    tested elsewhere.
+
+    """
     with expected:
         assert (
             ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -304,8 +396,29 @@ def test_bbox(dummy_pop_array, window, cluster_centre, expected):
         ),
     ],
 )
-def test_centre(dummy_pop_array, bbox, centre_coords, centre_crs, expected):
-    """Test centre."""
+def test_centre(
+    dummy_pop_array: str,
+    bbox: gpd.GeoDataFrame,
+    centre_coords: tuple,
+    centre_crs: str,
+    expected: Type[RaisesContext],
+):
+    """Test centre.
+
+    Parameters
+    ----------
+    dummy_pop_array : str
+        Filepath to dummy raster data.
+    bbox : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    centre_coords : tuple
+        Coordinates for the centre of the cluster.
+    centre_crs: str
+        CRS string for the centre coordinates.
+    expected : Type[RaisesContext]
+        Expected raise result.
+
+    """
     with expected:
         assert (
             ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -335,8 +448,29 @@ def test_centre(dummy_pop_array, bbox, centre_coords, centre_crs, expected):
         ),
     ],
 )
-def test_band_n(dummy_pop_array, bbox, cluster_centre, band, expected):
-    """Test raster band parameter."""
+def test_band_n(
+    dummy_pop_array: str,
+    bbox: gpd.GeoDataFrame,
+    cluster_centre: tuple,
+    band: int,
+    expected: Type[RaisesContext],
+):
+    """Test raster band parameter.
+
+    Parameters
+    ----------
+    dummy_pop_array : str
+        Filepath to dummy raster data.
+    bbox : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    cluster_centre : tuple
+        Coordinates for the centre of the cluster.
+    band : int
+        Band number to load from the raster file.
+    expected : Type[RaisesContext]
+        Expected raise result.
+
+    """
     with expected:
         assert (
             ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -387,14 +521,36 @@ class TestCellPop:
 
     def test_cell_pop_t(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        cell_pop_t,
-        expected,
-        flags,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        cell_pop_t: int,
+        expected: Type[RaisesContext],
+        flags: list,
     ):
-        """Test cell_pop_threshold parameter."""
+        """Test cell_pop_threshold parameter.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        cell_pop_t : int
+            Threshold to define what cells are included.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        flags : list
+            List to check including results of algorithm for specific cells.
+
+        Note
+        ----
+        `flags` is not used in this function, but it has to be included in the
+        signature as it is in the parameters.
+
+        """
         with expected:
             assert (
                 ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -405,14 +561,36 @@ class TestCellPop:
 
     def test_cell_pop_t_output(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        cell_pop_t,
-        expected,
-        flags,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        cell_pop_t: int,
+        expected: Type[RaisesContext],
+        flags: list,
     ):
-        """Test cell_pop_threshold output."""
+        """Test cell_pop_threshold output.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        cell_pop_t : int
+            Threshold to define what cells are included.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        flags : list
+            List to check including results of algorithm for specific cells.
+
+        Note
+        ----
+        `expected` is not used in this function, but it has to be included in
+        the signature as it is in the parameters.
+
+        """
         if flags != []:
             uc = ucc.UrbanCentre(dummy_pop_array)
             uc.get_urban_centre(
@@ -451,15 +629,40 @@ class TestDiag:
 
     def test_diag(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        diagonal,
-        expected,
-        cluster,
-        num_clusters,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        diagonal: bool,
+        expected: Type[RaisesContext],
+        cluster: int,
+        num_clusters: int,
     ):
-        """Test diag parameter."""
+        """Test diag parameter.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        diagonal : bool
+            Flag to indicate if diagonals are included in cluster.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        cluster : int
+            Cluster number returned in specific cell provided. This will be
+            different depending on inclusion of diagonals.
+        num_clusters : int
+            Total number of clusters created.
+
+        Note
+        ----
+        `cluster` and `num_clusters` are not used in this function, but they
+        have to be included in the signature as they are in the parameters.
+
+        """
         with expected:
             assert (
                 ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -470,15 +673,40 @@ class TestDiag:
 
     def test_diag_output(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        diagonal,
-        expected,
-        cluster,
-        num_clusters,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        diagonal: bool,
+        expected: Type[RaisesContext],
+        cluster: int,
+        num_clusters: int,
     ):
-        """Test diag parameter output."""
+        """Test diag parameter output.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        diagonal : bool
+            Flag to indicate if diagonals are included in cluster.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        cluster : int
+            Cluster number returned in specific cell provided. This will be
+            different depending on inclusion of diagonals.
+        num_clusters : int
+            Total number of clusters created.
+
+        Note
+        ----
+        `expected` is not used in this function, but it has to be included in
+        the signature as they are in the parameters.
+
+        """
         if cluster != 0:
             uc = ucc.UrbanCentre(dummy_pop_array)
             uc.get_urban_centre(bbox, cluster_centre, diag=diagonal)
@@ -528,14 +756,37 @@ class TestClusterPop:
 
     def test_cluster_pop_t(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        cluster_pop_t,
-        expected,
-        clusters,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        cluster_pop_t: int,
+        expected: Type[RaisesContext],
+        clusters: list,
     ):
-        """Test pop_threshold parameter."""
+        """Test pop_threshold parameter.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        cluster_pop_t : int
+            Threshold to define what clusters are kept.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        clusters : list
+            List with cluster numbers for specific cells. Clusters expected
+            are based on `cluster_pop_t`
+
+        Note
+        ----
+        `clusters` is not used in this function, but it has to be included in
+        the signature as they are in the parameters.
+
+        """
         with expected:
             assert (
                 ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -546,14 +797,37 @@ class TestClusterPop:
 
     def test_cluster_pop_t_output(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        cluster_pop_t,
-        expected,
-        clusters,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        cluster_pop_t: int,
+        expected: Type[RaisesContext],
+        clusters: list,
     ):
-        """Test pop_threshold outputs."""
+        """Test pop_threshold outputs.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        cluster_pop_t : int
+            Threshold to define what clusters are kept.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        clusters : list
+            List with cluster numbers for specific cells. Clusters expected
+            are based on `cluster_pop_t`
+
+        Note
+        ----
+        `expected` is not used in this function, but it has to be included in
+        the signature as they are in the parameters.
+
+        """
         if clusters != []:
             uc = ucc.UrbanCentre(dummy_pop_array)
             uc.get_urban_centre(
@@ -617,14 +891,39 @@ class TestFill:
 
     def test_cell_fill_t(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        cell_fill_t,
-        expected,
-        fills,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        cell_fill_t: int,
+        expected: Type[RaisesContext],
+        fills: list,
     ):
-        """Test cell_fill_threshold parameter."""
+        """Test cell_fill_threshold parameter.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        cell_fill_t : int
+            Number of cells around a specific empty cell needed for this cell
+            to be filled.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        fills : list
+            List of flags for specific cells, indicating 1 if cell has been
+            filled or 0 if they have not been filled. Filling behaviour will
+            change based on `cell_fill_t`.
+
+        Note
+        ----
+        `fills` is not used in this function, but it has to be included in
+        the signature as they are in the parameters.
+
+        """
         with expected:
             assert (
                 ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -635,14 +934,39 @@ class TestFill:
 
     def test_cell_fill_output(
         self,
-        dummy_pop_array,
-        bbox,
-        cluster_centre,
-        cell_fill_t,
-        expected,
-        fills,
+        dummy_pop_array: str,
+        bbox: gpd.GeoDataFrame,
+        cluster_centre: tuple,
+        cell_fill_t: int,
+        expected: Type[RaisesContext],
+        fills: list,
     ):
-        """Test fill output."""
+        """Test fill output.
+
+        Parameters
+        ----------
+        dummy_pop_array : str
+            Filepath to dummy raster data.
+        bbox : gpd.GeoDataFrame
+            Boundaries of the bounding box to filter the raster.
+        cluster_centre : tuple
+            Coordinates for the centre of the cluster.
+        cell_fill_t : int
+            Number of cells around a specific empty cell needed for this cell
+            to be filled.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        fills : list
+            List of flags for specific cells, indicating 1 if cell has been
+            filled or 0 if they have not been filled. Filling behaviour will
+            change based on `cell_fill_t`.
+
+        Note
+        ----
+        `expected` is not used in this function, but it has to be included in
+        the signature as they are in the parameters.
+
+        """
         if fills != []:
             uc = ucc.UrbanCentre(dummy_pop_array)
             uc.get_urban_centre(
@@ -675,8 +999,29 @@ class TestFill:
         ),
     ],
 )
-def test_v_nodata(dummy_pop_array, bbox, cluster_centre, v_nodata, expected):
-    """Test vector_nodata parameter."""
+def test_v_nodata(
+    dummy_pop_array: str,
+    bbox: gpd.GeoDataFrame,
+    cluster_centre: tuple,
+    v_nodata: int,
+    expected: Type[RaisesContext],
+):
+    """Test vector_nodata parameter.
+
+    Parameters
+    ----------
+    dummy_pop_array : str
+        Filepath to dummy raster data.
+    bbox : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    cluster_centre : tuple
+        Coordinates for the centre of the cluster.
+    v_nodata : int
+        Value to fill cells with no data.
+    expected : Type[RaisesContext]
+        Expected raise result.
+
+    """
     with expected:
         assert (
             ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -712,8 +1057,29 @@ def test_v_nodata(dummy_pop_array, bbox, cluster_centre, v_nodata, expected):
         ),
     ],
 )
-def test_buffer(dummy_pop_array, bbox, cluster_centre, buffer, expected):
-    """Test buffer parameter."""
+def test_buffer(
+    dummy_pop_array: str,
+    bbox: gpd.GeoDataFrame,
+    cluster_centre: tuple,
+    buffer: int,
+    expected: Type[RaisesContext],
+):
+    """Test buffer parameter.
+
+    Parameters
+    ----------
+    dummy_pop_array : str
+        Filepath to dummy raster data.
+    bbox : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    cluster_centre : tuple
+        Coordinates for the centre of the cluster.
+    buffer : int
+        Size of the buffer around urban centres, in metres.
+    expected : Type[RaisesContext]
+        Expected raise result.
+
+    """
     with expected:
         assert (
             ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
@@ -740,8 +1106,29 @@ def test_buffer(dummy_pop_array, bbox, cluster_centre, buffer, expected):
         ("_UrbanCentre__uc_buffer_bbox", gpd.GeoDataFrame),
     ],
 )
-def test_output_types(dummy_pop_array, bbox, cluster_centre, output, expected):
-    """Test intermediate outputs."""
+def test_output_types(
+    dummy_pop_array: str,
+    bbox: gpd.GeoDataFrame,
+    cluster_centre: tuple,
+    output: str,
+    expected: Type[type],
+):
+    """Test intermediate outputs.
+
+    Parameters
+    ----------
+    dummy_pop_array : str
+        Filepath to dummy raster data.
+    bbox : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    cluster_centre : tuple
+        Coordinates for the centre of the cluster.
+    output : str
+        Name of the intermediate output attribute.
+    expected : Type[type]
+        Expected type.
+
+    """
     obj = ucc.UrbanCentre(dummy_pop_array)
     obj.get_urban_centre(bbox, cluster_centre)
 
@@ -749,8 +1136,21 @@ def test_output_types(dummy_pop_array, bbox, cluster_centre, output, expected):
 
 
 # test final output characteristics using defaults
-def test_final_output(dummy_pop_array, bbox, cluster_centre):
-    """Test final output."""
+def test_final_output(
+    dummy_pop_array: str, bbox: gpd.GeoDataFrame, cluster_centre: tuple
+):
+    """Test final output.
+
+    Parameters
+    ----------
+    dummy_pop_array : str
+        Filepath to dummy raster data.
+    bbox : gpd.GeoDataFrame
+        Boundaries of the bounding box to filter the raster.
+    cluster_centre : tuple
+        Coordinates for the centre of the cluster.
+
+    """
     out = ucc.UrbanCentre(dummy_pop_array).get_urban_centre(
         bbox, cluster_centre
     )
