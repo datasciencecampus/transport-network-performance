@@ -10,40 +10,6 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
 )
 
-# Constant to remove non needed columns from repeated
-# pair error information.
-# This is a messy method however it is the only
-# way to ensure that the error report remains
-# dynamic and can adadpt to different tables
-# in the GTFS file.
-
-GTFS_UNNEEDED_COLUMNS = {
-    "routes": [],
-    "agency": ["agency_phone", "agency_lang"],
-    "stop_times": [
-        "stop_headsign",
-        "pickup_type",
-        "drop_off_type",
-        "shape_dist_traveled",
-        "timepoint",
-    ],
-    "stops": [
-        "wheelchair_boarding",
-        "location_type",
-        "parent_station",
-        "platform_code",
-    ],
-    "calendar_dates": [],
-    "calendar": [],
-    "trips": [
-        "trip_headsign",
-        "block_id",
-        "shape_id",
-        "wheelchair_accessible",
-    ],
-    "shapes": [],
-}
-
 
 class TemplateHTML:
     """A class for inserting HTML string into a template.
@@ -73,6 +39,11 @@ class TemplateHTML:
         Returns
         -------
         None
+
+        Raises
+        ------
+        TypeError
+            `path` is not either of string or pathlib.Path.
 
         """
         _handle_path_like(path, "path")
@@ -106,6 +77,9 @@ class TemplateHTML:
         ValueError
             A ValueError is raised if there are multiple instances of a
             place-holder but 'replace_multiple' is not True
+        TypeError
+            `placeholder` or `value` is not of type str.
+            `replace_multiple` is not of type bool.
 
         """
         _type_defence(placeholder, "placeholder", str)
@@ -158,6 +132,9 @@ def _set_up_report_dir(
     FileExistsError
         Raises an error if you the gtfs report directory already exists in the
         given path and overwrite=False
+    FileNotFoundError
+        An error is raised if the `report_dir` parent directory could not be
+        found.
 
     """
     # create report_dir var

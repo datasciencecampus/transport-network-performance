@@ -3,8 +3,18 @@ import pytest
 import pandas as pd
 from pyprojroot import here
 from unittest.mock import call
+from typing import Union, Type
+import pathlib
+from _pytest.python_api import RaisesContext
+import re
+import pickle
+import os
 
-from transport_performance.gtfs.routes import scrape_route_type_lookup
+
+from transport_performance.gtfs.routes import (
+    scrape_route_type_lookup,
+    get_saved_route_type_lookup,
+)
 
 
 def mocked__get_response_text(*args):
@@ -125,3 +135,119 @@ class TestScrapeRouteTypeLookup(object):
         lookup_fix = pd.read_pickle(here("tests/data/gtfs/route_lookup.pkl"))
         lookup = scrape_route_type_lookup()
         pd.testing.assert_frame_equal(lookup, lookup_fix)
+
+
+def _create_pkl(obj, out_pth: Union[str, pathlib.Path]) -> None:
+    """Private function used to create .pkl. Not exported."""
+    # NOTE: not including defences as this is a private function that is only
+    # used for testing
+    with open(out_pth, "wb") as f:
+        pickle.dump(obj, f)
+
+    return None
+
+
+class Test_GetSavedRouteTypeLookup(object):
+    """Tests for get_saved_route_type_lookup()."""
+
+    @pytest.mark.parametrize(
+        "path, expected",
+        [
+            # test raises from key _is_expected_filetype() defences
+            (
+                pathlib.Path("tests/data/newport-20230613_gtfs.zip"),
+                pytest.raises(
+                    ValueError,
+                    match=r"`path` expected file extension .pkl. "
+                    r"Found .zip",
+                ),
+            ),
+            (
+                here("tests/data/test_file.pkl"),
+                pytest.raises(
+                    FileNotFoundError,
+                    match=re.escape(
+                        f"{here('tests/data/test_file.pkl')} not "
+                        "found on file."
+                    ),
+                ),
+            ),
+        ],
+    )
+    def test_get_saved_route_type_lookup_raises(
+        self, path: Union[str, pathlib.Path], expected: Type[RaisesContext]
+    ):
+        """Test raises."""
+        with expected:
+            get_saved_route_type_lookup(path=path)
+
+    @pytest.mark.parametrize(
+        "pkl_name, test_obj, expected",
+        [
+            # invalid object once .pkl unserialized
+            (
+                "list_pkl.pkl",
+                [1, 2, 3, 4, 5],
+                pytest.raises(
+                    TypeError,
+                    match=re.escape(
+                        "Serialized object in specified .pkl file is of type: "
+                        "<class 'list'>. Expected (<class 'dict'>, "
+                        "<class 'pandas.core.frame.DataFrame'>)"
+                    ),
+                ),
+            ),
+            # empty dataframe
+            (
+                "empty_pkl.pkl",
+                pd.DataFrame({"test_col": []}),
+                pytest.warns(
+                    UserWarning, match="Route type lookup has length of 0"
+                ),
+            ),
+            # df with invalid columns
+            (
+                "invalid_col_pkl.pkl",
+                pd.DataFrame(
+                    {"route_type": [0, 1], "route_desc": ["car", "bus"]}
+                ),
+                pytest.warns(
+                    UserWarning,
+                    match=(
+                        "Unexpected column 'route_desc' in route type lookup"
+                    ),
+                ),
+            ),
+        ],
+    )
+    def test_get_saved_route_type_lookup_invalid_pkl(
+        self, tmp_path, pkl_name, test_obj, expected
+    ):
+        """Test defences when unserialized pickle is invalid obj type."""
+        out_pth = os.path.join(tmp_path, pkl_name)
+        _create_pkl(obj=test_obj, out_pth=out_pth)
+        with expected:
+            get_saved_route_type_lookup(out_pth)
+
+    def test_get_saved_route_type_lookup_on_pass(self, tmp_path):
+        """Test get_saved_route_type_lookup_on_pass()."""
+        found_lkp = get_saved_route_type_lookup()
+        assert isinstance(found_lkp, pd.DataFrame), ".pkl did not return df"
+        assert len(found_lkp) == 91, ".pkl is an unexpected length"
+        assert list(found_lkp.columns) == [
+            "route_type",
+            "desc",
+        ], ".pkl columns are not as expected"
+        # test a .pkl containing a serialized dict
+        test_dict = {"route_type": [0, 1, 2], "desc": ["bus", "train", "car"]}
+        out_pth = os.path.join(tmp_path, "dict_pkl.pkl")
+        _create_pkl(test_dict, out_pth=out_pth)
+        dict_lkp = get_saved_route_type_lookup(path=out_pth)
+        assert isinstance(
+            dict_lkp, pd.DataFrame
+        ), "Dict pkl did not convert to pd.DataFrame"
+        assert len(dict_lkp) == 3, "Dict .pkl length not as expected"
+        assert list(dict_lkp.columns) == [
+            "route_type",
+            "desc",
+        ], ".pkl columns are not as expected"
