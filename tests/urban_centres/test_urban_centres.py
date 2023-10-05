@@ -1193,3 +1193,85 @@ def test_final_output(
 
     # check output crs
     assert out.crs == "ESRI: 54009"
+
+
+def test__flag_cells_raises(dummy_pop_array):
+    """Test _flag_cells raises expected exception."""
+    uc = ucc.UrbanCentre(dummy_pop_array)
+    with pytest.raises(
+        TypeError, match="`masked_rst` expected numpy array, got str."
+    ):
+        uc._flag_cells("not an array")
+
+
+def test__cluster_cells_raises(dummy_pop_array):
+    """Test _cluster_cells raises."""
+    uc = ucc.UrbanCentre(dummy_pop_array)
+    with pytest.raises(
+        TypeError, match="`flag_array` expected numpy array, got str."
+    ):
+        uc._cluster_cells("not an array")
+
+
+def test__check_cluster_pop_raises(dummy_pop_array):
+    """Test _check_cluster_pop raises."""
+    uc = ucc.UrbanCentre(dummy_pop_array)
+    with pytest.raises(
+        TypeError, match="`band` expected numpy array, got str."
+    ):
+        uc._check_cluster_pop(
+            band="not an array", labelled_array=1, num_clusters=2
+        )
+    with pytest.raises(
+        TypeError, match="`labelled_array` expected numpy array, got str."
+    ):
+        uc._check_cluster_pop(
+            band=np.array([0, 1, 2]),
+            labelled_array="not an array",
+            num_clusters=2,
+        )
+    with pytest.raises(
+        TypeError, match="`num_clusters` expected integer, got float"
+    ):
+        uc._check_cluster_pop(
+            band=np.array([0, 1, 2]),
+            labelled_array=np.array([3, 4, 5]),
+            num_clusters=1.0,
+        )
+
+
+def test__fill_gaps_raises(dummy_pop_array):
+    """Test _fill_gaps raises."""
+    uc = ucc.UrbanCentre(dummy_pop_array)
+    with pytest.raises(
+        TypeError, match="`urban_centres` expected numpy array, got str."
+    ):
+        uc._fill_gaps(urban_centres="not an array")
+
+
+def test__vectorize_uc_raises(dummy_pop_array):
+    """Test _vectorize_uc raises."""
+    uc = ucc.UrbanCentre(dummy_pop_array)
+    # crs = rio.crs.CRS.from_epsg(3005)
+    with pytest.raises(
+        TypeError, match="`uc_array` expected numpy array, got str."
+    ):
+        uc._vectorize_uc(
+            uc_array="not an array", aff=1, raster_crs=2, centre=3
+        )
+    with pytest.raises(TypeError, match="`aff` must be a valid Affine object"):
+        uc._vectorize_uc(
+            uc_array=np.array([0, 1, 2]),
+            aff="not Affine",
+            raster_crs=1,
+            centre=(1, 2),
+        )
+    with pytest.raises(
+        TypeError, match="`raster_crs` must be a valid rasterio.crs.CRS object"
+    ):
+        uc._vectorize_uc(
+            uc_array=np.array([0, 1, 2]),
+            aff=affine.Affine(1.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+            raster_crs="epsg:4326",
+            centre=(1, 2),
+        )
