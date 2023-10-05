@@ -22,6 +22,15 @@ from typing import Union
 class UrbanCentre:
     """Object to create and store urban centres.
 
+    Parameters
+    ----------
+    path: Union[str, pathlib.Path]
+        Path to the raw raster file
+
+    exp_ext: list = [".tif", ".tiff", ".tff"], optional
+        List of acceptable raster file extensions, defaults to
+        [".tif", ".tiff", ".tff"].
+
     Attributes
     ----------
     file : Union[str, pathlib.Path]
@@ -44,7 +53,7 @@ class UrbanCentre:
     ------
     TypeError
         When `file` is not either of string or pathlib.Path.
-    FileExistsError
+    FileNotFoundError
         When `file` does not exist on disk.
     ValueError
         When `file` does not have the expected file extension(s).
@@ -95,8 +104,8 @@ class UrbanCentre:
             Tuple with coordinates for city centre. Urban centres that do not
             contain these coordinates will be filtered out.
         centre_crs : str = None, optional
-            crs string of the centre coordinates. If None, it will default
-            to raster_crs.
+            crs string of the centre coordinates. If None, it will default to
+            raster_crs.
         band_n : int = 1, optional
             Band number to load from the geoTIFF.
         cell_pop_threshold : int = 1500, optional
@@ -111,12 +120,14 @@ class UrbanCentre:
         cell_fill_threshold : int = 5, optional
             Defines gap filling behaviour. If the number of cells adjacent to
             any empty cell belonging to a cluster is higher than the threshold,
-            the cell is filled with the cluster value. Needs to be between
-            5 and 8.
+            the cell is filled with the cluster value. Needs to be between 5
+            and 8.
         vector_nodata : int = -200, optional
-            Value to fill empty cells.
+            Value to fill empty cells. Select a negative value that you would
+            not expect to encounter within the raster population data.
         buffer_size : int = 10000, optional
-            Size of the buffer around the urban centre.
+            Size of the buffer around the urban centre, in the distance units
+            of the `centre_crs`. Defaults to 10,000 metres.
 
         Returns
         -------
@@ -204,7 +215,7 @@ class UrbanCentre:
         bbox : gpd.GeoDataFrame
             A GeoPandas GeoDataFrame containing boundaries to filter the
             raster.
-        band_n : int, optional
+        band_n : int = 1, optional
             Band number to load from the geoTIFF.
 
         Returns
@@ -249,7 +260,7 @@ class UrbanCentre:
         ----------
         masked_rst : np.ndarray
             Clipped (and potentially masked) array.
-        cell_pop_threshold : int, optional
+        cell_pop_threshold : int = 1500, optional
             A cell is flagged if its value is equal or higher than the
             threshold.
 
@@ -295,7 +306,7 @@ class UrbanCentre:
         ----------
         flag_array : ma.core.MaskedArray
             Boolean array.
-        diag : bool, optional
+        diag : bool = False, optional
             If True, diagonals are considered as adjacent.
 
         Returns
@@ -325,25 +336,25 @@ class UrbanCentre:
 
     def _check_cluster_pop(
         self,
-        band: np.ndarray,
+        band: Union[np.ndarray, ma.core.MaskedArray],
         labelled_array: np.ndarray,
         num_clusters: int,
         cluster_pop_threshold: int = 50000,
     ) -> np.ndarray:
         """Filter clusters based on total population.
 
-        Checks whether clusters have more than the threshold population
-        and changes label for those that don't to 0.
+        Checks whether clusters have more than the threshold population and
+        changes label for those that don't to 0.
 
         Parameters
         ----------
-        band : np.ndarray or ma.core.MaskedArray
+        band : Union[np.ndarray, ma.core.MaskedArray]
             Original clipped raster with population values.
         labelled_array : np.ndarray
             Array with clusters, each with unique labels.
         num_clusters : int
             Number of unique clusters in the labelled array.
-        cluster_pop_threshold : int, optional
+        cluster_pop_threshold : int = 50000, optional
             Threshold to consider inclusion of cluster. If total population in
             cluster is lower than threshold, the cluster label is set to 0.
 
@@ -431,7 +442,7 @@ class UrbanCentre:
         urban_centres : np.ndarray
             Array including urban centres, i.e. clusters over the population
             threshold.
-        cell_fill_threshold : int, optional
+        cell_fill_threshold : int = 5, optional
             If the number of cells adjacent to any empty cell belonging to
             a cluster is higher than the threshold, the cell is filled with
             the cluster value.  Needs to be between 5 and 8.
@@ -486,12 +497,12 @@ class UrbanCentre:
         Parameters
         ----------
         coords : tuple
-            Tuple with coordinates to convert.
-            Must be in format (lat, long) and EPSG: 4326.
+            Tuple with coordinates to convert. Must be in format (lat, long)
+            and EPSG: 4326.
         aff : affine.Affine
             Affine transform.
         raster_crs : rasterio.crs.CRS
-            valid rasterio crs string.
+            Valid rasterio crs string.
         coords_crs : str
             CRS code for coordinates provided.
 
@@ -536,10 +547,10 @@ class UrbanCentre:
             crs string of the masked raster.
         centre : tuple
             Tuple with coordinates for city centre, used to filter cluster.
-        centre_crs : str, optional
+        centre_crs : str = None, optional
             crs string of the centre coordinates. If None, it will default
             to raster_crs.
-        nodata : int, optional
+        nodata : int = -200, optional
             Value to fill empty cells.
 
         Returns
