@@ -9,6 +9,7 @@ kaleido
 mapclassify
 munkres # new parent import flagged pipdeptools
 nbformat
+pandas<2.1.0
 plotly
 pre-commit
 pretty_html_table
