@@ -225,6 +225,7 @@ class RasterPop:
         aoi_bounds: Type[Polygon],
         aoi_crs: str = None,
         var_name: str = "population",
+        band: int = 1,
     ) -> None:
         """Open data and clip to the area of interest boundary.
 
@@ -241,6 +242,8 @@ class RasterPop:
             which means it is assumed to have the same CRS as `aoi_bounds`.
         var_name : str, optional
             The variable name, by default "population".
+        band : int, optional
+            The band to select from the raster, by default 1.
 
         """
         # input type defence checks
@@ -256,9 +259,11 @@ class RasterPop:
 
         # open and clip raster data - using `all_touched` method to include any
         # cell touched and `from_disk` for improved reading speeds.
-        self._xds = rioxarray.open_rasterio(
-            self.__filepath, masked=True
-        ).rio.clip([aoi_bounds], from_disk=True, all_touched=True)
+        self._xds = (
+            rioxarray.open_rasterio(self.__filepath, masked=True)
+            .sel(band=band)
+            .rio.clip([aoi_bounds], from_disk=True, all_touched=True)
+        )
 
         # set the variable name - set internal variable for reuse in class
         self._xds.name = var_name
