@@ -1,11 +1,11 @@
 """Test osm_utils module."""
 import pytest
-from pyprojroot import here
 import os
 from unittest.mock import patch, call
 import re
 
 from transport_performance.osm.osm_utils import filter_osm
+from transport_performance.utils.constants import PKG_PATH
 
 
 class TestFilterOsm(object):
@@ -24,7 +24,11 @@ class TestFilterOsm(object):
             match="`pbf_pth` expected file extension .pbf. Found .zip",
         ):
             # file exists but is not a pbf
-            filter_osm(pbf_pth=here("tests/data/newport-20230613_gtfs.zip"))
+            filter_osm(
+                pbf_pth=os.path.join(
+                    PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"
+                )
+            )
         with pytest.raises(
             TypeError,
             match=re.escape(
