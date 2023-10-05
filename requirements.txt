@@ -1,33 +1,22 @@
-pre-commit
-r5py==0.1.0
-gtfs_kit==5.2.7
-rasterio
-matplotlib>=3.7.0
-scipy
-rioxarray
-geopandas
-geocube
-pyproj>=3.6.0
-pytest
+beautifulsoup4
+cartopy
 coverage
+numpy>=1.25.0 # test suite will fail if user installed lower than this
+geocube
+gtfs_kit==5.2.7
+ipykernel==6.23.1
+kaleido
+mapclassify
+munkres # new parent import flagged pipdeptools
+nbformat
+plotly
+pre-commit
+pretty_html_table
 pyprojroot
 pytest-lazy-fixture
-ipykernel==6.23.1
-pandas<2.1.0
-beautifulsoup4
-requests
 pytest-mock
-toml
-plotly
-nbformat>=4.2.0
+r5py==0.1.0
 scikit-image
-cartopy
-folium
-mapclassify
 seaborn
-pretty_html_table
-kaleido
-numpy>=1.25.0 # test suite will fail if user installed lower than this
-sphinx
 sphinx-rtd-theme
--e .
+toml
