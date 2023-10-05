@@ -96,13 +96,11 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
 
     # expected result after reading and clipping the array
     # set nan values in corners to match post aoi clipping expectations
-    # add extra dimension to match reading of a band in rioxarray
     exp_post_clip = np.copy(xarr_1.to_numpy())
     exp_post_clip[0, 0] = np.nan
     exp_post_clip[0, -1] = np.nan
     exp_post_clip[-1, 0] = np.nan
     exp_post_clip[-1, -1] = np.nan
-    exp_post_clip = np.expand_dims(exp_post_clip, axis=0)
 
     # expected results after converting to geopandas dataframe
     # flatten to get 1-d array, and remove nans as per _to_geopandas()
