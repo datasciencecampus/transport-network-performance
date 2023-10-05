@@ -84,6 +84,7 @@ class RasterPop:
         var_name: str = "population",
         urban_centre_bounds: Type[Polygon] = None,
         urban_centre_crs: str = None,
+        band: int = 1,
     ) -> Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
         """Get population data.
 
@@ -113,6 +114,8 @@ class RasterPop:
             The urban centre polygon CRS, by default None meaning this is the
             same CRS as the input raster data. Only used when
             `urban_centre_bounds` is set.
+        band : int, optional
+            The band to select from the raster, by default 1.
 
         Returns
         -------
@@ -125,7 +128,7 @@ class RasterPop:
 
         """
         # read and clip population data to area of interest
-        self._read_and_clip(aoi_bounds, aoi_crs, var_name)
+        self._read_and_clip(aoi_bounds, aoi_crs, var_name, band)
 
         # round population estimates, if requested
         _type_defence(round, "round", bool)
@@ -245,11 +248,29 @@ class RasterPop:
         band : int, optional
             The band to select from the raster, by default 1.
 
+        Raises
+        ------
+        ValueError
+            Shape of array is not exactly 2. This could happen if bands are
+            not being filtered out, so array would have shape 3 (band, x, y).
+        IndexError
+            If `band` number is not in the bands available in the raster
+            file.
+
         """
         # input type defence checks
         _type_defence(aoi_bounds, "aoi_bounds", Polygon)
         _type_defence(aoi_crs, "aoi_crs", (str, type(None)))
         _type_defence(var_name, "var_name", str)
+        _type_defence(band, "band", int)
+
+        # check if band selected is within raster file
+        with rio.open(self.__filepath) as rst:
+            if not 0 < band <= rst.count:
+                raise IndexError(
+                    f"Band number {band} not contained in raster. "
+                    f"Bands available: {tuple(range(1, rst.count + 1))}."
+                )
 
         # convert aoi bounds CRS if needed
         if aoi_crs is not None:
@@ -264,6 +285,12 @@ class RasterPop:
             .sel(band=band)
             .rio.clip([aoi_bounds], from_disk=True, all_touched=True)
         )
+
+        # checks that array has only two dimensions
+        if len(self._xds.shape) != 2:
+            raise ValueError(
+                f"Shape of array should be exactly 2, got {self._xds.shape}"
+            )
 
         # set the variable name - set internal variable for reuse in class
         self._xds.name = var_name
