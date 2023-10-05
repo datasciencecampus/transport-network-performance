@@ -589,18 +589,18 @@ class TestRasterPop:
             Area of interest bounds, as a tuple where the 0th index is used (
             for consistency with the `xarr_1_aoi` fixture).
         aoi_crs
-            see `get_data()` docstring
+            see `get_pop()` docstring
         round
-            see `get_data()` docstring
+            see `get_pop()` docstring
         threshold
-            see `get_data()` docstring
+            see `get_pop()` docstring
         var_name
-            see `get_data()` docstring
+            see `get_pop()` docstring
         urban_centre_bounds : tuple
             Urban centre bounds test, as a tuple where the 0th index is used (
             for consistency with the `xarr_1_uc` fixture).
         urban_centre_crs
-            see `get_data()` docstring
+            see `get_pop()` docstring
         expected : Type[RaisesContext]
             Expected raise result.
 
