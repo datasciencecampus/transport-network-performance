@@ -162,7 +162,7 @@ class GtfsInstance:
     ----------
     gtfs_pth : Union[str, bytes, os.PathLike]
         File path to GTFS archive, defaults to
-        "tests/data/newport-20230613_gtfs.zip".
+        os.path.join(PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip").
     units: str
         Spatial units of the GTFS file, defaults to "km".
 

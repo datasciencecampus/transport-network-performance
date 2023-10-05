@@ -687,7 +687,7 @@ class TestGtfsInstance(object):
         ).all(), f"Columns were not as expected. Found {found_drc}"
 
         # tests the output of the daily_route_summary table
-        # using tests/data/newport-20230613_gtfs.zip
+        # using data/gtfs/newport-20230613_gtfs.zip
         expected_df = {
             "day": {8: "friday", 9: "friday"},
             "route_type": {8: 3, 9: 200},
@@ -756,7 +756,7 @@ class TestGtfsInstance(object):
         ).all(), f"Columns were not as expected. Found {found_drc}"
 
         # tests the output of the daily_route_summary table
-        # using tests/data/newport-20230613_gtfs.zip
+        # using data/gtfs/newport-20230613_gtfs.zip
         expected_df = {
             "day": {8: "friday", 9: "friday"},
             "route_count_max": {8: 74, 9: 10},

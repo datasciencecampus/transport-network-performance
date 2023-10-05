@@ -164,7 +164,7 @@ def get_saved_route_type_lookup(
     ----------
     path : Union[str, pathlib.Path], optional
         The path to the route type lookup,
-        by default pathlib.Path("tests/data/gtfs/route_lookup.pkl")
+        defaults to os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
 
     Returns
     -------
