@@ -287,9 +287,8 @@ class RasterPop:
     def _to_geopandas(self, round: bool = False) -> None:
         """Convert to geopandas dataframe."""
         # vectorise to geopandas dataframe, setting data type to np.float32 -
-        # dtype is required by vecotrize function. Squeeze needed since shape
-        # is (1xnxm) (1 band in tiff file)
-        self.pop_gdf = vectorize(self._xds.squeeze(axis=0).astype(np.float32))
+        # dtype is required by vecotrize function.
+        self.pop_gdf = vectorize(self._xds.astype(np.float32))
 
         # dropna to remove nodata regions and those below threshold (if set)
         self.pop_gdf = self.pop_gdf.dropna(subset=self.__var_name).reset_index(
@@ -650,12 +649,12 @@ class RasterPop:
         # to match the whole colormap range. transform to data_crs required to
         # project onto base map.
         plot_cmap = colormaps.get_cmap(cmap)
-        plot_data = self._xds.squeeze(axis=0).to_numpy()
+        plot_data = self._xds.to_numpy()
         vmin_data = np.nanmin(plot_data)
         vmax_data = np.nanmax(plot_data)
         ctf = ax.pcolormesh(
-            self._xds.squeeze().x.to_numpy(),
-            self._xds.squeeze().y.to_numpy(),
+            self._xds.x.to_numpy(),
+            self._xds.y.to_numpy(),
             plot_data,
             cmap=plot_cmap,
             vmin=vmin_data,
