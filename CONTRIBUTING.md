@@ -30,8 +30,8 @@ Install Dependencies:
 
 Package set-up and installation:
 
-1. Setup a new conda env: `conda create -n r5py python=3.9.13`
-2. Activate the environment: `conda activate r5py`
+1. Setup a new conda env: `conda env create -f environment.yml`
+2. Activate the environment: `conda activate transport-performance`
 3. Launch terminal and change directory to wherever you keep your GitHub repos: `cd ~/Documents`
 4. Clone this repo, eg with https: `git clone https://github.com/datasciencecampus/transport-network-performance.git`
 5. Change directory to the repo: `cd transport-network-performance`
