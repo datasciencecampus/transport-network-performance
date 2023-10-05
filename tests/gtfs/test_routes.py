@@ -15,6 +15,7 @@ from transport_performance.gtfs.routes import (
     scrape_route_type_lookup,
     get_saved_route_type_lookup,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 
 def mocked__get_response_text(*args):
@@ -132,7 +133,9 @@ class TestScrapeRouteTypeLookup(object):
     def test_lookup_is_stable(self):
         """Check if the tables at the urls have changed content."""
         # import the expected fixtures
-        lookup_fix = pd.read_pickle(here("tests/data/gtfs/route_lookup.pkl"))
+        lookup_fix = pd.read_pickle(
+            os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
+        )
         lookup = scrape_route_type_lookup()
         pd.testing.assert_frame_equal(lookup, lookup_fix)
 
@@ -155,7 +158,11 @@ class Test_GetSavedRouteTypeLookup(object):
         [
             # test raises from key _is_expected_filetype() defences
             (
-                pathlib.Path("tests/data/newport-20230613_gtfs.zip"),
+                pathlib.Path(
+                    os.path.join(
+                        PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"
+                    )
+                ),
                 pytest.raises(
                     ValueError,
                     match=r"`path` expected file extension .pkl. "

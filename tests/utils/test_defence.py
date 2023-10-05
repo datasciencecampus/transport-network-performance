@@ -20,6 +20,7 @@ from transport_performance.utils.defence import (
     _is_expected_filetype,
     _enforce_file_extension,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 
 class Test_CheckList(object):
@@ -454,7 +455,9 @@ class Test_IsExpectedFiletype(object):
             match="`gtfs.zip` expected file extension .tiff. Found .zip",
         ):
             _is_expected_filetype(
-                here("tests/data/newport-20230613_gtfs.zip"),
+                os.path.join(
+                    PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"
+                ),
                 param_nm="gtfs.zip",
                 check_existing=True,
                 exp_ext=".tiff",
