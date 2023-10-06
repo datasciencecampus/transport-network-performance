@@ -252,6 +252,7 @@ class GtfsInstance:
             os.path.join(PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip")
         ),
         units: str = "km",
+        route_lookup_pth: Union[str, pathlib.Path] = None,
     ):
         _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
@@ -271,7 +272,15 @@ class GtfsInstance:
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
-        self.ROUTE_LKP = get_saved_route_type_lookup()
+        if route_lookup_pth is not None:
+            _is_expected_filetype(
+                pth=route_lookup_pth,
+                exp_ext=".pkl",
+                param_nm="route_lookup_pth",
+            )
+            self.ROUTE_LKP = get_saved_route_type_lookup(path=route_lookup_pth)
+        else:
+            self.ROUTE_LKP = get_saved_route_type_lookup()
         # Constant to remove non needed columns from repeated
         # pair error information.
         # This is a messy method however it is the only

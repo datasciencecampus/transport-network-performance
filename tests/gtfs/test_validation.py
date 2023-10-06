@@ -18,6 +18,7 @@ from transport_performance.gtfs.validation import (
     _create_map_title_text,
     _convert_multi_index_to_single,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 
 @pytest.fixture(scope="function")  # some funcs expect cleaned feed others dont
@@ -55,6 +56,16 @@ class TestGtfsInstance(object):
             GtfsInstance(
                 gtfs_pth=here("tests/data/newport-2023-06-13.osm.pbf")
             )
+        with pytest.raises(
+            ValueError,
+            match=(
+                r"`route_lookup_pth` expected file extension .pkl. Found "
+                r".pbf"
+            ),
+        ):
+            GtfsInstance(
+                route_lookup_pth=here("tests/data/newport-2023-06-13.osm.pbf")
+            )
         # handling units
         with pytest.raises(
             TypeError, match=r"`units` expected a string. Found <class 'bool'>"
@@ -84,6 +95,15 @@ class TestGtfsInstance(object):
         assert (
             gtfs2.feed.dist_units == "m"
         ), f"Expected 'm', found: {gtfs2.feed.dist_units}"
+        without_pth = GtfsInstance().ROUTE_LKP
+        with_pth = GtfsInstance(
+            route_lookup_pth=(
+                os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
+            )
+        ).ROUTE_LKP
+        assert (
+            without_pth.to_dict() == with_pth.to_dict()
+        ), "Failed to get route type lookup correctly"
 
     def test_get_gtfs_files(self, gtfs_fixture):
         """Assert files that make up the GTFS."""
