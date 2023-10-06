@@ -27,7 +27,7 @@ class UrbanCentre:
     path: Union[str, pathlib.Path]
         Path to the raw raster file
 
-    exp_ext: list = [".tif", ".tiff", ".tff"], optional
+    exp_ext: list, optional
         List of acceptable raster file extensions, defaults to
         [".tif", ".tiff", ".tff"].
 
@@ -103,29 +103,29 @@ class UrbanCentre:
         centre : tuple
             Tuple with coordinates for city centre. Urban centres that do not
             contain these coordinates will be filtered out.
-        centre_crs : str = None, optional
+        centre_crs : str, optional
             crs string of the centre coordinates. If None, it will default to
             raster_crs.
-        band_n : int = 1, optional
+        band_n : int, optional
             Band number to load from the geoTIFF.
-        cell_pop_threshold : int = 1500, optional
+        cell_pop_threshold : int, optional
             When calculating urban centre, keep cells whose value is equal or
             higher than the threshold.
-        diag : bool = False, optional
+        diag : bool, optional
             When calculating clusters, if True, diagonals are considered as
             adjacent and included in the cluster.
-        cluster_pop_threshold : int = 50000, optional
+        cluster_pop_threshold : int, optional
             Threshold to consider inclusion of cluster. If total population in
             cluster is lower than threshold, the cluster label is filtered out.
-        cell_fill_threshold : int = 5, optional
+        cell_fill_threshold : int, optional
             Defines gap filling behaviour. If the number of cells adjacent to
             any empty cell belonging to a cluster is higher than the threshold,
             the cell is filled with the cluster value. Needs to be between 5
             and 8.
-        vector_nodata : int = -200, optional
+        vector_nodata : int, optional
             Value to fill empty cells. Select a negative value that you would
             not expect to encounter within the raster population data.
-        buffer_size : int = 10000, optional
+        buffer_size : int, optional
             Size of the buffer around the urban centre, in the distance units
             of the `centre_crs`. Defaults to 10,000 metres.
 
@@ -215,7 +215,7 @@ class UrbanCentre:
         bbox : gpd.GeoDataFrame
             A GeoPandas GeoDataFrame containing boundaries to filter the
             raster.
-        band_n : int = 1, optional
+        band_n : int, optional
             Band number to load from the geoTIFF.
 
         Returns
@@ -260,7 +260,7 @@ class UrbanCentre:
         ----------
         masked_rst : np.ndarray
             Clipped (and potentially masked) array.
-        cell_pop_threshold : int = 1500, optional
+        cell_pop_threshold : int, optional
             A cell is flagged if its value is equal or higher than the
             threshold.
 
@@ -306,7 +306,7 @@ class UrbanCentre:
         ----------
         flag_array : np.ndarray
             Boolean array.
-        diag : bool = False, optional
+        diag : bool, optional
             If True, diagonals are considered as adjacent.
 
         Returns
@@ -354,7 +354,7 @@ class UrbanCentre:
             Array with clusters, each with unique labels.
         num_clusters : int
             Number of unique clusters in the labelled array.
-        cluster_pop_threshold : int = 50000, optional
+        cluster_pop_threshold : int, optional
             Threshold to consider inclusion of cluster. If total population in
             cluster is lower than threshold, the cluster label is set to 0.
 
@@ -442,7 +442,7 @@ class UrbanCentre:
         urban_centres : np.ndarray
             Array including urban centres, i.e. clusters over the population
             threshold.
-        cell_fill_threshold : int = 5, optional
+        cell_fill_threshold : int, optional
             If the number of cells adjacent to any empty cell belonging to
             a cluster is higher than the threshold, the cell is filled with
             the cluster value.  Needs to be between 5 and 8.
@@ -546,10 +546,10 @@ class UrbanCentre:
             crs string of the masked raster.
         centre : tuple
             Tuple with coordinates for city centre, used to filter cluster.
-        centre_crs : str = None, optional
+        centre_crs : str, optional
             crs string of the centre coordinates. If None, it will default
             to raster_crs.
-        nodata : int = -200, optional
+        nodata : int, optional
             Value to fill empty cells.
 
         Returns
