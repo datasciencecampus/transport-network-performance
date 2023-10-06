@@ -14,7 +14,7 @@ from pretty_html_table import build_table
 import zipfile
 import warnings
 import pathlib
-from typing import Union
+from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
 
 from transport_performance.gtfs.routes import (
@@ -54,6 +54,11 @@ def _get_intermediate_dates(
     list[pd.Timestamp]
         A list of daily timestamps for each day in the time period
 
+    Raises
+    ------
+    TypeError
+        If `start` or `end` are not of type pd.Timestamp.
+
     """
     # checks for start and end
     if not isinstance(start, pd.Timestamp):
@@ -72,7 +77,9 @@ def _get_intermediate_dates(
     return result
 
 
-def _create_map_title_text(gdf, units, geom_crs):
+def _create_map_title_text(
+    gdf: gpd.GeoDataFrame, units: str, geom_crs: Union[str, int]
+) -> str:
     """Generate the map title text when plotting convex hull.
 
     Parameters
@@ -81,13 +88,19 @@ def _create_map_title_text(gdf, units, geom_crs):
         GeoDataFrame containing the spatial features.
     units :  str
         Distance units of the GTFS feed from which `gdf` originated.
-    geom_crs : (str, int):
+    geom_crs : Union[str, int]:
         The geometric crs to use in reprojecting the data in order to
         calculate the area of the hull polygon.
 
     Returns
     -------
-    str : The formatted text string for presentation in the map title.
+    str
+        The formatted text string for presentation in the map title.
+
+    Raises
+    ------
+    ValueError
+        If `crs_unit` is not either "kilometre" or "metre".
 
     """
     if units in ["m", "km"]:
@@ -143,10 +156,102 @@ def _convert_multi_index_to_single(df: pd.DataFrame) -> pd.DataFrame:
 
 
 class GtfsInstance:
-    """Create a feed instance for validation, cleaning & visualisation."""
+    """Create a feed instance for validation, cleaning & visualisation.
+
+    Parameters
+    ----------
+    gtfs_pth : Union[str, bytes, os.PathLike]
+        File path to GTFS archive, defaults to
+        "tests/data/newport-20230613_gtfs.zip".
+    units: str
+        Spatial units of the GTFS file, defaults to "km".
+
+    Attributes
+    ----------
+    feed : gtfs_kit.Feed
+        A gtfs_kit feed produced using the files at `gtfs_pth` on init.
+    gtfs_path : Union[str, pathlib.Path]
+        The path to the GTFS archive.
+    file_list: list
+        Files in the GTFS archive.
+    validity_df: pd.DataFrame
+        Table of GTFS errors, warnings & their descriptions.
+    dated_trip_counts: pd.DataFrame
+        Dated trip counts by modality.
+    daily_trip_summary: pd.DataFrame
+        Summarized trip results by day of the week and modality.
+    daily_route_summary: pd.DataFrame
+        Dated route counts by modality.
+    route_mode_summary_df: pd.DataFrame
+        Summarized route counts by day of the week and modality.
+    pre_processed_trips: pd.DataFrame
+        A table of pre-processed trip data.
+
+    Methods
+    -------
+    get_gtfs_files()
+        Returns the `file_list` attribute.
+    is_valid()
+        Returns the `validity_df` attribute.
+    print_alerts()
+        Print validity errors & warning messages in full.
+    clean_feed()
+        Attempt to clean the `feed` attribute using `gtfs_kit`.
+    viz_stops()
+        Visualise the stops on a map as points or convex hull. Writes file.
+    get_route_modes()
+        Returns the `route_mode_summary_df` attribute.
+    summarise_trips()
+        Returns the `daily_trip_summary` attribute.
+    summarise_routes()
+        Returns the `daily_route_summary` attribute.
+    html_report()
+        Generate a HTML report describing the GTFS data.
+    _produce_stops_map()
+        Produces the stops map for use in `viz_stops()`.
+    _order_dataframe_by_day()
+        Orders tables by day. Used in `summarise_trips()` and
+        `summarise_routes()`.
+    _preprocess_trips_and_routes()
+        Produces a table of dated trips for use in `_get_pre_processed_trips()`
+        .
+    _get_pre_processed_trips()
+        Attempts to access the `pre_processed_trips` attribute and instantiates
+        it with `_preprocess_trips_and_routes()` if not found.
+    _summary_defence()
+        Check the summary parameters for `summarise_trips()` and
+        `summarise_routes()`
+    _plot_summary()
+        Save a plotly summary table, used in `html_report()`.
+    _create_extended_repeated_pair_table()
+        Return a table of repeated pair warnings. Used in
+        `_extended_validation()`.
+    _extended_validation()
+        Generate HTML warning & error summary tables for use in `html_report()`
+        .
+
+    Raises
+    ------
+    TypeError
+        `pth` is not either of string or pathlib.PosixPath.
+    TypeError
+        `units` is not of type str.
+    FileExistsError
+        `pth` does not exist on disk.
+    ValueError
+        `pth` does not have the expected file extension(s).
+    ValueError
+        `units` are not one of: "m", "km", "metres", "meters", "kilometres",
+        "kilometers".
+
+    """
 
     def __init__(
-        self, gtfs_pth=here("tests/data/newport-20230613_gtfs.zip"), units="m"
+        self,
+        gtfs_pth: Union[str, pathlib.Path] = here(
+            "tests/data/newport-20230613_gtfs.zip"
+        ),
+        units: str = "km",
     ):
         _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
@@ -214,30 +319,37 @@ class GtfsInstance:
         self.file_list = file_list
         return self.file_list
 
-    def is_valid(self):
+    def is_valid(self) -> pd.DataFrame:
         """Check a feed is valid with `gtfs_kit`.
 
         Returns
         -------
-            pd.core.frame.DataFrame: Table of errors, warnings & their
-            descriptions.
+        pd.core.frame.DataFrame
+            Table of errors, warnings & their descriptions.
 
         """
         self.validity_df = self.feed.validate()
         return self.validity_df
 
-    def print_alerts(self, alert_type="error"):
-        """Print validity errors & warnins messages in full.
+    def print_alerts(self, alert_type: str = "error") -> None:
+        """Print validity errors & warning messages in full.
 
         Parameters
         ----------
         alert_type : str, optional
-                The alert type to print messages. Defaults to "error". Also
-                accepts "warning".
+                The alert type to print messages. Also accepts "warning".
+                Defaults to "error".
 
         Returns
         -------
         None
+
+        Raises
+        ------
+        AttributeError
+            No `validity_df()` attrubute was found.
+        UserWarning
+            No alerts of the specified `alert_type` were found.
 
         """
         if not hasattr(self, "validity_df"):
@@ -267,7 +379,7 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(self):
+    def clean_feed(self) -> None:
         """Attempt to clean feed using `gtfs_kit`."""
         try:
             # In cases where shape_id is missing, keyerror is raised.
@@ -289,7 +401,7 @@ class GtfsInstance:
             Has the user asked to visualise 'hull' or 'points'?
         is_filtered : bool
             Has the user specified to plot IDs in stops or stop_times only?
-        crs : (int, str)
+        crs : Union[int, str]
             The crs to use for hull calculation.
 
         Returns
@@ -350,28 +462,44 @@ class GtfsInstance:
 
         Parameters
         ----------
-        out_pth : str
+        out_pth : Union[str, pathlib.Path]
             Path to write the map file html document to, including the file
             name. Must end with '.html' file extension.
-        geoms : str
+        geoms : str, optional
             Type of map to plot. If `geoms=point` (the default) uses `gtfs_kit`
             to map point locations of available stops. If `geoms=hull`,
-            calculates the convex hull & its area. Defaults to "point".
-        geom_crs : (str, int)
+            calculates the convex hull & its area, defaults to "point".
+        geom_crs : Union[str, int], optional
             Geometric CRS to use for the calculation of the convex hull area
-            only. Defaults to "27700" (OSGB36, British National Grid).
-        create_out_parent : bool
-            Should the parent directory of `out_pth` be created if not found.
-            Defaults to False.
-        filtered_only: bool
+            only, defaults to "27700" (OSGB36, British National Grid).
+        create_out_parent : bool, optional
+            Should the parent directory of `out_pth` be created if not found,
+            defaults to False.
+        filtered_only: bool, optional
             When True, only stops referenced within stop_times.txt will be
             plotted. When False, stops referenced in stops.txt will be plotted.
             Note that gtfs_kit filtering behaviour removes stops from
-            stop_times.txt but not stops.txt.
+            stop_times.txt but not stops.txt, defaults to True.
 
         Returns
         -------
         None
+
+        Raises
+        ------
+        TypeError
+            `out_pth` is not either of string or pathlib.PosixPath.
+            `geoms` is not of type str
+            `geom_crs` is not of type str or int
+            `create_out_parent` or `filtered_only` are not of type bool
+        FileNotFoundError
+            Raised if the parent directory of `out_pth` could not be found on
+            disk and `create_out_parent` is False.
+        KeyError
+            The stops table has no 'stops_code' column.
+        UserWarning
+            If the file extension of `out_pth` is not .html, the extension will
+            be changed to .html.
 
         """
         typing_dict = {
@@ -437,6 +565,12 @@ class GtfsInstance:
         pd.DataFrame
             The inputted dataframe ordered by the day column
             (by real world order).
+
+        Raises
+        ------
+        TypeError
+            `df` is not of type pd.DataFrame.
+            `day_column_name` is not of type str
 
         """
         # defences for parameters
@@ -530,8 +664,15 @@ class GtfsInstance:
         )
         return dated_trips_routes
 
-    def _get_pre_processed_trips(self):
-        """Obtain pre-processed trip data."""
+    def _get_pre_processed_trips(self) -> pd.DataFrame:
+        """Obtain pre-processed trip data.
+
+        Returns
+        -------
+        pd.DataFrame
+            `pre_processed_trips` attribute.
+
+        """
         try:
             return self.pre_processed_trips.copy()
         except AttributeError:
@@ -540,7 +681,7 @@ class GtfsInstance:
 
     def _summary_defence(
         self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        summ_ops: list[Callable] = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
     ) -> None:
         """Check for any invalid parameters in a summarising function.
@@ -552,12 +693,21 @@ class GtfsInstance:
             by default [np.min, np.max, np.mean, np.median]
         return_summary : bool, optional
             When True, a summary is returned. When False, route data
-            for each date is returned,
-            by default True
+            for each date is returned, by default True.
 
         Returns
         -------
         None
+
+        Raises
+        ------
+        TypeError
+            `return_summary` is not of type pd.df.
+            `summ_ops` must be a numpy function or a list.
+            Each item in a `summ_ops` list must be a function.
+            Each item in a `summ_ops` list must be a numpy namespace export.
+        NotImplementedError
+            `summ_ops` is a function not exported from numpy.
 
         """
         if not isinstance(return_summary, bool):
@@ -611,16 +761,26 @@ class GtfsInstance:
         ----------
         summ_ops : list, optional
             A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
+            by default [np.min, np.max, np.mean, np.median].
         return_summary : bool, optional
             When True, a summary is returned. When False, trip data
-            for each date is returned,
-            by default True
+            for each date is returned, by default True.
 
         Returns
         -------
-        pd.DataFrame: A dataframe containing either summarized
-                      results or dated route data.
+        pd.DataFrame
+            A dataframe containing either summarized results or dated trip
+            data.
+
+        Raises
+        ------
+        TypeError
+            return_summary is not of type pd.df.
+            summ_ops must be a numpy function or a list.
+            Each item in a summ_ops list must be a function.
+            Each item in a summ_ops list must be a numpy namespace export.
+        NotImplementedError
+            summ_ops is a function not exported from numpy.
 
         """
         self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)
@@ -664,7 +824,7 @@ class GtfsInstance:
 
     def summarise_routes(
         self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
+        summ_ops: list[Callable] = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
     ) -> pd.DataFrame:
         """Produce a summarised table of route statistics by day of week.
@@ -679,16 +839,26 @@ class GtfsInstance:
         ----------
         summ_ops : list, optional
             A list of operators used to get a summary of a given day,
-            by default [np.min, np.max, np.mean, np.median]
+            by default [np.min, np.max, np.mean, np.median].
         return_summary : bool, optional
             When True, a summary is returned. When False, route data
-            for each date is returned,
-            by default True
+            for each date is returned, by default True.
 
         Returns
         -------
-        pd.DataFrame: A dataframe containing either summarized
-                      results or dated route data.
+        pd.DataFrame
+            A dataframe containing either summarized results or dated route
+            data.
+
+        Raises
+        ------
+        TypeError
+            return_summary is not of type pd.df.
+            summ_ops must be a numpy function or a list.
+            Each item in a summ_ops list must be a function.
+            Each item in a summ_ops list must be a numpy namespace export.
+        NotImplementedError
+            summ_ops is a function not exported from numpy.
 
         """
         self._summary_defence(summ_ops=summ_ops, return_summary=return_summary)
@@ -735,13 +905,13 @@ class GtfsInstance:
         self.daily_route_summary = day_route_count.copy()
         return self.daily_route_summary
 
-    def get_route_modes(self):
+    def get_route_modes(self) -> pd.DataFrame:
         """Summarise the available routes by their associated `route_type`.
 
         Returns
         -------
-            pd.core.frame.DataFrame: Summary table of route counts by transport
-            mode.
+        pd.core.frame.DataFrame
+            Summary table of route counts by transport mode.
 
         """
         # Get the available modalities
@@ -806,35 +976,29 @@ class GtfsInstance:
         height : int, optional
             The height of the plot (in pixels), by default 800
         xlabel : str, optional
-            The label for the x axis.
-            If left empty, the column name will be used,
-            by default None
+            The label for the x axis. If left empty, the column name will be
+            used, by default None
         ylabel : str, optional
-            The label for the y axis.
-            If left empty, the column name will be used,
-            by default None
+            The label for the y axis. If left empty, the column name will be
+            used, by default None
         plotly_kwargs : dict, optional
-            Kwargs to pass to fig.update_layout() for
-            additional plot customisation,
-            by default {}
+            Kwargs to pass to fig.update_layout() for additional plot
+            customisation, by default {}
         return_html : bool, optional
-            Whether or not to return a html string,
-            by default False
+            Whether or not to return a html string, by default False
         save_html : bool, optional
-            Whether or not to save the plot as a html file,
-            by default False
+            Whether or not to save the plot as a html file, by default False
         save_image : bool, optional
-            Whether or not to save the plot as a PNG,
-            by default False
+            Whether or not to save the plot as a PNG, by default False
         out_dir : Union[pathlib.Path, str], optional
             The directory to save the plot into. If a file extension is added
             to this directory, it won't be cleaned. Whatever is passed as the
             out dir will be used as the parent directory of the save, leaving
-            the responsibility on the user to specify the correct path.,
-            by default os.path.join("outputs", "gtfs")
+            the responsibility on the user to specify the correct path., by
+            default os.path.join("outputs", "gtfs")
         img_type : str, optional
-            The type of the image to be saved. E.g, .svg or .jpeg.,
-            by defauly "png"
+            The type of the image to be saved. E.g, .svg or .jpeg., by default
+            "png"
 
         Returns
         -------
@@ -1043,8 +1207,8 @@ class GtfsInstance:
         join_vars : Union[str, list]
             The variables that have repeated pairs
         original_rows : list[int]
-            The original duplicate rows, contained in
-            the GTFS validation table (rows column)
+            The original duplicate rows, contained in the GTFS validation table
+            (rows column)
 
         Returns
         -------
@@ -1217,19 +1381,16 @@ class GtfsInstance:
         Parameters
         ----------
         report_dir : Union[str, pathlib.Path], optional
-            The directory to save the report to,
-            by default "outputs"
+            The directory to save the report to, by default "outputs"
         overwrite : bool, optional
-            Whether or not to overwrite the existing report
-            if it already exists in the report_dir,
-            by default False
+            Whether or not to overwrite the existing report if it already
+            exists in the report_dir, by default False
         summary_type : str, optional
-            The type of summary to show on the
-            summaries on the gtfs report.,
-            by default "mean"
+            The type of summary to show on the summaries on the gtfs report, by
+            default "mean"
         extended_validation : bool, optional
-            Whether or not to create extended reports
-            for gtfs validation errors/warnings.
+            Whether or not to create extended reports for gtfs validation
+            errors/warnings.
 
         Returns
         -------
