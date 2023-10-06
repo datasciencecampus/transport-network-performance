@@ -497,8 +497,7 @@ class UrbanCentre:
         Parameters
         ----------
         coords : tuple
-            Tuple with coordinates to convert. Must be in format (lat, long)
-            and EPSG: 4326.
+            Tuple with coordinates to convert.
         aff : affine.Affine
             Affine transform.
         raster_crs : rasterio.crs.CRS
