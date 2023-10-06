@@ -108,7 +108,54 @@
 <dt class="sig sig-object py" id="transport_performance.urban_centres.raster_uc.UrbanCentre">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">transport_performance.urban_centres.raster_uc.</span></span><span class="sig-name descname"><span class="pre">UrbanCentre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exp_ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['.tif',</span> <span class="pre">'.tiff',</span> <span class="pre">'.tff']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/urban_centres/raster_uc.html#UrbanCentre"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.urban_centres.raster_uc.UrbanCentre" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Create urban centre object.</p>
+<p>Object to create and store urban centres.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>path: Union[str, pathlib.Path]</dt><dd><p>Path to the raw raster file</p>
+</dd>
+<dt>exp_ext: list, optional</dt><dd><p>List of acceptable raster file extensions, defaults to
+[“.tif”, “.tiff”, “.tff”].</p>
+</dd>
+</dl>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>file<span class="classifier">Union[str, pathlib.Path]</span></dt><dd><p>Path to the raw raster file.</p>
+</dd>
+<dt>aff<span class="classifier">affine.Affine</span></dt><dd><p>Affine transform matrix for the raster file.</p>
+</dd>
+<dt>crs<span class="classifier">rasterio.crs.CRS</span></dt><dd><p>CRS string for the raster.</p>
+</dd>
+<dt>output<span class="classifier">gpd.GeoDataFrame</span></dt><dd><p>GeoDataFrame including vector information for the urban centre, buffer
+and bounding box limits.</p>
+</dd>
+</dl>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>get_urban_centre</dt><dd><p>Calculates urban centre from population raster and returns vectorised
+geography for urban centre, buffer and bounding box.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>TypeError</dt><dd><p>When <cite>file</cite> is not either of string or pathlib.Path.</p>
+</dd>
+<dt>FileNotFoundError</dt><dd><p>When <cite>file</cite> does not exist on disk.</p>
+</dd>
+<dt>ValueError</dt><dd><p>When <cite>file</cite> does not have the expected file extension(s).</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>Intermediate results for the urban centre calculations are stored as
+internal (mangled) attributes, but can be accessed for examination.</p>
 <blockquote>
 <div><p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
@@ -124,11 +171,59 @@
 </div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.urban_centres.raster_uc.UrbanCentre.get_urban_centre">
-<span class="sig-name descname"><span class="pre">get_urban_centre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centre</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centre_crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_pop_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_pop_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_fill_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_nodata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/urban_centres/raster_uc.html#UrbanCentre.get_urban_centre"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.urban_centres.raster_uc.UrbanCentre.get_urban_centre" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_urban_centre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centre</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centre_crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_pop_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_pop_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_fill_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_nodata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GeoDataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/urban_centres/raster_uc.html#UrbanCentre.get_urban_centre"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.urban_centres.raster_uc.UrbanCentre.get_urban_centre" title="Link to this definition"></a></dt>
 <dd><p>Get urban centre.</p>
 <p>Wrapper for functions to get urban centre, buffer and bbox.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>bbox<span class="classifier">gpd.GeoDataFrame</span></dt><dd><p>A GeoPandas GeoDataFrame containing boundaries to filter the
+raster. If the boundaries are a bounding box, the raster is
+clipped to the box. If it is an irregular shape (e.g. LA
+boundaries) the raster is clipped to the extent of the shape,
+and a mask is applied to the shape.</p>
+</dd>
+<dt>centre<span class="classifier">tuple</span></dt><dd><p>Tuple with coordinates for city centre. Urban centres that do not
+contain these coordinates will be filtered out.</p>
+</dd>
+<dt>centre_crs<span class="classifier">str, optional</span></dt><dd><p>crs string of the centre coordinates. If None, it will default to
+raster_crs.</p>
+</dd>
+<dt>band_n<span class="classifier">int, optional</span></dt><dd><p>Band number to load from the geoTIFF.</p>
+</dd>
+<dt>cell_pop_threshold<span class="classifier">int, optional</span></dt><dd><p>When calculating urban centre, keep cells whose value is equal or
+higher than the threshold.</p>
+</dd>
+<dt>diag<span class="classifier">bool, optional</span></dt><dd><p>When calculating clusters, if True, diagonals are considered as
+adjacent and included in the cluster.</p>
+</dd>
+<dt>cluster_pop_threshold<span class="classifier">int, optional</span></dt><dd><p>Threshold to consider inclusion of cluster. If total population in
+cluster is lower than threshold, the cluster label is filtered out.</p>
+</dd>
+<dt>cell_fill_threshold<span class="classifier">int, optional</span></dt><dd><p>Defines gap filling behaviour. If the number of cells adjacent to
+any empty cell belonging to a cluster is higher than the threshold,
+the cell is filled with the cluster value. Needs to be between 5
+and 8.</p>
+</dd>
+<dt>vector_nodata<span class="classifier">int, optional</span></dt><dd><p>Value to fill empty cells. Select a negative value that you would
+not expect to encounter within the raster population data.</p>
+</dd>
+<dt>buffer_size<span class="classifier">int, optional</span></dt><dd><p>Size of the buffer around the urban centre, in the distance units
+of the <cite>centre_crs</cite>. Defaults to 10,000 metres.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>output<span class="classifier">gpd.GeoDataFrame</span></dt><dd><p>GeoDataFrame with urban centre, buffer and bbox vector polygon
+boundaries.</p>
+</dd>
+</dl>
+</section>
 </dd></dl>
 
+</section>
 </dd></dl>
 
 </section>
