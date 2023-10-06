@@ -304,7 +304,7 @@ class UrbanCentre:
 
         Parameters
         ----------
-        flag_array : ma.core.MaskedArray
+        flag_array : np.ndarray
             Boolean array.
         diag : bool = False, optional
             If True, diagonals are considered as adjacent.
@@ -336,7 +336,7 @@ class UrbanCentre:
 
     def _check_cluster_pop(
         self,
-        band: Union[np.ndarray, ma.core.MaskedArray],
+        band: np.ndarray,
         labelled_array: np.ndarray,
         num_clusters: int,
         cluster_pop_threshold: int = 50000,
@@ -348,7 +348,7 @@ class UrbanCentre:
 
         Parameters
         ----------
-        band : Union[np.ndarray, ma.core.MaskedArray]
+        band : np.ndarray
             Original clipped raster with population values.
         labelled_array : np.ndarray
             Array with clusters, each with unique labels.
