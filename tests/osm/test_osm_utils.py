@@ -15,10 +15,13 @@ class TestFilterOsm(object):
         """Defensive behaviour for filter_osm."""
         with pytest.raises(
             FileNotFoundError,
-            match=re.escape("/not/a/pbf.nosiree not found on file."),
+            match=re.escape(
+                f"{os.path.join('not', 'a', 'pbf.nosiree')} "
+                "not found on file."
+            ),
         ):
             # file doesnt exist
-            filter_osm(pbf_pth="not/a/pbf.nosiree")
+            filter_osm(pbf_pth=os.path.join("not", "a", "pbf.nosiree"))
         with pytest.raises(
             ValueError,
             match="`pbf_pth` expected file extension .pbf. Found .zip",
