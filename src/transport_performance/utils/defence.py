@@ -121,7 +121,7 @@ def _is_expected_filetype(
     Raises
     ------
     TypeError: `pth` is not either of string or pathlib.PosixPath.
-    FileExistsError: `pth` does not exist on disk.
+    FileNotFoundError: `pth` does not exist on disk.
     ValueError: `pth` does not have the expected file extension(s).
 
     Returns
