@@ -163,8 +163,12 @@ class GtfsInstance:
     gtfs_pth : Union[str, bytes, os.PathLike]
         File path to GTFS archive, defaults to
         os.path.join(PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip").
-    units: str
+    units: str, optionl
         Spatial units of the GTFS file, defaults to "km".
+    route_lookup_pth : Union[str, pathlib.Path], optional
+        The path to the route type lookup. If left empty, the default path will
+        be used. The default path points to a route lookup table that is held
+        within this package, defaults to None.
 
     Attributes
     ----------
