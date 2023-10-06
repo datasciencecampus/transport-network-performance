@@ -1195,6 +1195,7 @@ def test_final_output(
     assert out.crs == "ESRI: 54009"
 
 
+# test internal functions input defences
 def test__flag_cells_raises(dummy_pop_array):
     """Test _flag_cells raises expected exception."""
     uc = ucc.UrbanCentre(dummy_pop_array)
