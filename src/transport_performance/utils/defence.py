@@ -1,5 +1,6 @@
 """Defensive check utility funcs. Internals only."""
 from typing import Union
+from collections import Iterable
 
 import pathlib
 import numpy as np
@@ -232,36 +233,59 @@ def _type_defence(some_object, param_nm, types) -> None:
     return None
 
 
-def _check_list(ls, param_nm, check_elements=True, exp_type=str):
-    """Check a list and its elements for type.
+def _check_iterable(
+    iterable: Iterable,
+    param_nm: str,
+    iterable_type: type,
+    check_elements: bool = True,
+    exp_type: Union[tuple, type] = str,
+):
+    """Check an iterable and its elements for type.
 
     Parameters
     ----------
-    ls : list
-        List to check.
+    iterable : Iterable
+        Iterable to check.
     param_nm : str
         Name of the parameter being checked.
-    check_elements : (bool, optional)
+    iterable_type : type
+        Expected iterable type.
+    check_elements : bool, optional
         Whether to check the list element types. Defaults to True.
-    exp_type : (_type_, optional):
-        The expected type of the elements. Defaults to str.
+    exp_type : Union[tuple, type], optional:
+        The expected type of the elements. Defaults to str. If using a tuple,
+        it should be a tuple of types.
 
     Raises
     ------
-        TypeError: `ls` is not a list.
-        TypeError: Elements of `ls` are not of the expected type.
+        TypeError: `iterable` is not iterable.
+        TypeError: `exp_type` contains elements that are not type.
+        TypeError: Elements of `iterable` are not of the expected type(s).
 
     Returns
     -------
     None
 
     """
-    if not isinstance(ls, list):
-        raise TypeError(
-            f"`{param_nm}` should be a list. Instead found {type(ls)}"
-        )
+    # check if iterable
+    _type_defence(iterable, param_nm, Iterable)
+    # check if iterable type matches expectation
+    _type_defence(iterable, param_nm, iterable_type)
+
+    # check if expected types tuple includes only types
+    if isinstance(exp_type, tuple):
+        for i in exp_type:
+            if not isinstance(i, type):
+                raise TypeError(
+                    (
+                        f"`exp_type` must contain types only. "
+                        f"Found {type(i)} : {i}"
+                    )
+                )
+
+    # check if elements are of the expected types
     if check_elements:
-        for i in ls:
+        for i in iterable:
             if not isinstance(i, exp_type):
                 raise TypeError(
                     (
@@ -300,15 +324,15 @@ def _check_column_in_df(df: pd.DataFrame, column_name: str) -> None:
     return None
 
 
-def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
-    """Defence to check if an item is present in a list.
+def _check_item_in_iter(item: str, iterable: Iterable, param_nm: str) -> None:
+    """Defence to check if an item is present in an iterable.
 
     Parameters
     ----------
     item : str
         The item to check the list for
-    _list : list
-        The list to check that the item is in
+    iterable : Iterable
+        The iterable to check that the item is in
     param_nm : str
         The name of the param that the item has been passed to
 
@@ -322,10 +346,13 @@ def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
         Error raised when item not in the list.
 
     """
-    if item not in _list:
+    # check if iterable
+    _type_defence(iterable, param_nm, Iterable)
+
+    if item not in iterable:
         raise ValueError(
             f"'{param_nm}' expected one of the following:"
-            f"{_list} Got {item}"
+            f"{iterable}. Got {item}: {type(item)}"
         )
     return None
 
