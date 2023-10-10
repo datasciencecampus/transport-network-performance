@@ -269,7 +269,9 @@ def _check_iterable(
     """
     # check if iterable
     _type_defence(iterable, param_nm, Iterable)
-    # check if iterable type matches expectation
+    # check if iterable_type is type
+    _type_defence(iterable_type, "iterable_type", type)
+    # check if iterable type matches expected
     _type_defence(iterable, param_nm, iterable_type)
 
     # check if expected types tuple includes only types
@@ -282,6 +284,8 @@ def _check_iterable(
                         f"Found {type(i)} : {i}"
                     )
                 )
+    else:
+        _type_defence(exp_type, "exp_type", (type, tuple))
 
     # check if elements are of the expected types
     if check_elements:
@@ -351,7 +355,7 @@ def _check_item_in_iter(item: str, iterable: Iterable, param_nm: str) -> None:
 
     if item not in iterable:
         raise ValueError(
-            f"'{param_nm}' expected one of the following:"
+            f"'{param_nm}' expected one of the following: "
             f"{iterable}. Got {item}: {type(item)}"
         )
     return None

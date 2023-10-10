@@ -14,7 +14,7 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
     _type_defence,
     _check_column_in_df,
-    _check_item_in_list,
+    _check_item_in_iter,
     _check_attribute,
     _handle_path_like,
     _is_expected_filetype,
@@ -22,14 +22,15 @@ from transport_performance.utils.defence import (
 )
 
 
-class Test_CheckList(object):
-    """Test internal _check_list."""
+class Test_CheckIter(object):
+    """Test internal _check_iterable."""
 
-    def test__check_list_only(self):
-        """Func raises as expected when not checking list elements."""
+    def test__check_iter_only(self):
+        """Func raises as expected when not checking iterable elements."""
+        # not iterable
         with pytest.raises(
             TypeError,
-            match="`some_bool` should be a list. Instead found <class 'bool'>",
+            match="`some_bool` expected .*Iterable.* Got .*bool.*",
         ):
             _check_iterable(
                 iterable=True,
@@ -38,7 +39,31 @@ class Test_CheckList(object):
                 check_elements=False,
             )
 
-    def test__check_list_elements(self):
+        # iterable does not match provided type
+        with pytest.raises(
+            TypeError,
+            match="`some_tuple` expected .*list.* Got .*tuple.*",
+        ):
+            _check_iterable(
+                iterable=(1, 2, 3),
+                param_nm="some_tuple",
+                iterable_type=list,
+                check_elements=False,
+            )
+
+        # iterable_type is not type
+        with pytest.raises(
+            TypeError,
+            match="`iterable_type` expected .*type.* Got .*str.*",
+        ):
+            _check_iterable(
+                iterable=(1, 2, 3),
+                param_nm="some_tuple",
+                iterable_type="tuple",
+                check_elements=False,
+            )
+
+    def test__check_iter_elements(self):
         """Func raises as expected when checking list elements."""
         # mixed types
         with pytest.raises(
@@ -56,45 +81,33 @@ class Test_CheckList(object):
                 exp_type=int,
             )
 
-        # wrong iterable type
-        with pytest.raises(
-            TypeError,
-            match=("`int_list` expected .*tuple.*" "Got .*list.*"),
-        ):
-            _check_iterable(
-                iterable=[1, 2, 3],
-                param_nm="int_list",
-                iterable_type=tuple,
-                check_elements=False,
-            )
-
-        # no iterable
-        with pytest.raises(
-            TypeError,
-            match=("`int` expected .*Iterable.*" "Got .*int.*"),
-        ):
-            _check_iterable(
-                iterable=123,
-                param_nm="int",
-                iterable_type=tuple,
-                check_elements=False,
-            )
-
         # wrong expected types
         with pytest.raises(
             TypeError,
-            match=(
-                "`exp_type` must contain types only.*" "Found .*str.*: tuple"
-            ),
+            match=("`exp_type` expected .*type.*tuple.*" "Got .*str.*"),
         ):
             _check_iterable(
-                iterable=123,
+                iterable=["1", "2", "3"],
                 param_nm="param",
-                iterable_type=("tuple", str),
-                check_elements=False,
+                iterable_type=list,
+                check_elements=True,
+                exp_type="str",
             )
 
-    def test__check_list_passes(self):
+        # wrong types in exp_type tuple
+        with pytest.raises(
+            TypeError,
+            match=("`exp_type` must contain types only.* Found .*str.*: str"),
+        ):
+            _check_iterable(
+                iterable=[1, "2", 3],
+                param_nm="param",
+                iterable_type=list,
+                check_elements=True,
+                exp_type=(int, "str"),
+            )
+
+    def test__check_iter_passes(self):
         """Test returns None when pass conditions met."""
         # check list and element type
         assert (
@@ -121,7 +134,7 @@ class Test_CheckList(object):
         # check tuple
         assert (
             _check_iterable(
-                ls=(False, True),
+                iterable=(False, True),
                 param_nm="bool_list",
                 iterable_type=tuple,
                 check_elements=False,
@@ -354,24 +367,24 @@ def test_list():
 
 
 class TestCheckItemInList(object):
-    """Tests for _check_item_in_list()."""
+    """Tests for _check_item_in_iter()."""
 
-    def test_check_item_in_list_defence(self, test_list):
-        """Defensive tests for check_item_in_list()."""
+    def test_check_item_in_iter_defence(self, test_list):
+        """Defensive tests for check_item_in_iter()."""
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'test' expected one of the following:"
-                f"{test_list} Got not_in_test"
+                "'test' expected one of the following: "
+                f"{test_list}. Got not_in_test: <class 'str'>"
             ),
         ):
-            _check_item_in_list(
-                item="not_in_test", _list=test_list, param_nm="test"
+            _check_item_in_iter(
+                item="not_in_test", iterable=test_list, param_nm="test"
             )
 
-    def test_check_item_in_list_on_pass(self, test_list):
-        """General tests for check_item_in_list()."""
-        _check_item_in_list(item="test", _list=test_list, param_nm="test")
+    def test_check_item_in_iter_on_pass(self, test_list):
+        """General tests for check_item_in_iter()."""
+        _check_item_in_iter(item="test", iterable=test_list, param_nm="test")
 
 
 @pytest.fixture(scope="function")
@@ -391,7 +404,7 @@ def dummy_obj():
 
 
 class TestCheckAttribute(object):
-    """Tests for _check_item_in_list()."""
+    """Tests for _check_item_in_iter()."""
 
     def test_check_attribute_defence(self, dummy_obj):
         """Defensive tests for check_attribute."""
