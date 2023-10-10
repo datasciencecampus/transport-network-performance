@@ -15,7 +15,6 @@ from transport_performance.gtfs.gtfs_utils import (
     convert_pandas_to_plotly,
 )
 from transport_performance.gtfs.validation import GtfsInstance
-from transport_performance.utils.constants import PKG_PATH
 
 
 class TestBboxFilterGtfs(object):
@@ -41,7 +40,7 @@ class TestBboxFilterGtfs(object):
         )
         bbox_filter_gtfs(
             in_pth=os.path.join(
-                PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"
+                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
             ),
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_list,
@@ -67,7 +66,7 @@ class TestBboxFilterGtfs(object):
 
         bbox_filter_gtfs(
             in_pth=os.path.join(
-                PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"
+                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
             ),
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_gdf,

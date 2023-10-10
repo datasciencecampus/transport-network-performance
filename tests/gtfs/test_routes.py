@@ -160,7 +160,7 @@ class Test_GetSavedRouteTypeLookup(object):
             (
                 pathlib.Path(
                     os.path.join(
-                        PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"
+                        "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
                     )
                 ),
                 pytest.raises(

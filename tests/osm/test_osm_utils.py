@@ -5,13 +5,12 @@ from unittest.mock import patch, call
 import re
 
 from transport_performance.osm.osm_utils import filter_osm
-from transport_performance.utils.constants import PKG_PATH
 
 
 class TestFilterOsm(object):
     """Testing filter_osm()."""
 
-    def test_filter_osm_defense(self):
+    def test_filter_osm_defence(self):
         """Defensive behaviour for filter_osm."""
         with pytest.raises(
             FileNotFoundError,
@@ -29,7 +28,7 @@ class TestFilterOsm(object):
             # file exists but is not a pbf
             filter_osm(
                 pbf_pth=os.path.join(
-                    PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"
+                    "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
                 )
             )
         with pytest.raises(
@@ -73,7 +72,7 @@ class TestFilterOsm(object):
             filter_osm(bbox=[0, 1.1, 0.1, 1.2])
 
     @patch("builtins.print")
-    def test_filter_osm_defense_missing_osmosis(
+    def test_filter_osm_defence_missing_osmosis(
         self, mock_print, mocker, tmpdir
     ):
         """Assert func behaves when osmosis is missing and install=False."""
