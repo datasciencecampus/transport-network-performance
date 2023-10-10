@@ -18,12 +18,17 @@ from transport_performance.gtfs.validation import (
     _create_map_title_text,
     _convert_multi_index_to_single,
 )
+from transport_performance.utils.constants import PKG_PATH
+
+GTFS_FIX_PTH = os.path.join(
+    "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
+)
 
 
 @pytest.fixture(scope="function")  # some funcs expect cleaned feed others dont
 def gtfs_fixture():
     """Fixture for test funcs expecting a valid feed object."""
-    gtfs = GtfsInstance()
+    gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
     return gtfs
 
 
@@ -55,20 +60,33 @@ class TestGtfsInstance(object):
             GtfsInstance(
                 gtfs_pth=here("tests/data/newport-2023-06-13.osm.pbf")
             )
+        with pytest.raises(
+            ValueError,
+            match=(
+                r"`route_lookup_pth` expected file extension .pkl. Found "
+                r".pbf"
+            ),
+        ):
+            GtfsInstance(
+                gtfs_pth=GTFS_FIX_PTH,
+                route_lookup_pth=here("tests/data/newport-2023-06-13.osm.pbf"),
+            )
         # handling units
         with pytest.raises(
             TypeError, match=r"`units` expected a string. Found <class 'bool'>"
         ):
-            GtfsInstance(units=False)
+            GtfsInstance(gtfs_pth=GTFS_FIX_PTH, units=False)
         # non metric units
         with pytest.raises(
             ValueError, match=r"`units` accepts metric only. Found: miles"
         ):
-            GtfsInstance(units="Miles")  # imperial units not implemented
+            GtfsInstance(
+                gtfs_pth=GTFS_FIX_PTH, units="Miles"
+            )  # imperial units not implemented
 
     def test_init_on_pass(self):
         """Assertions about the feed attribute."""
-        gtfs = GtfsInstance()
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         assert isinstance(
             gtfs.feed, gk.feed.Feed
         ), f"Expected gtfs_kit feed attribute. Found: {type(gtfs.feed)}"
@@ -76,22 +94,34 @@ class TestGtfsInstance(object):
             gtfs.feed.dist_units == "km"
         ), f"Expected 'km', found: {gtfs.feed.dist_units}"
         # can coerce to correct distance unit?
-        gtfs1 = GtfsInstance(units="kilometers")
+        gtfs1 = GtfsInstance(gtfs_pth=GTFS_FIX_PTH, units="kilometers")
         assert (
             gtfs1.feed.dist_units == "km"
         ), f"Expected 'km', found: {gtfs1.feed.dist_units}"
-        gtfs2 = GtfsInstance(units="metres")
+        gtfs2 = GtfsInstance(gtfs_pth=GTFS_FIX_PTH, units="metres")
         assert (
             gtfs2.feed.dist_units == "m"
         ), f"Expected 'm', found: {gtfs2.feed.dist_units}"
+        without_pth = GtfsInstance(gtfs_pth=GTFS_FIX_PTH).ROUTE_LKP
+        with_pth = GtfsInstance(
+            gtfs_pth=GTFS_FIX_PTH,
+            route_lookup_pth=(
+                os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
+            ),
+        ).ROUTE_LKP
+        assert (
+            without_pth.to_dict() == with_pth.to_dict()
+        ), "Failed to get route type lookup correctly"
 
     def test_get_gtfs_files(self, gtfs_fixture):
         """Assert files that make up the GTFS."""
         expected_files = [
+            # smaller filter has resulted in a GTFS with no calendar dates /
+            # frequencies...
             "agency.txt",
-            "calendar_dates.txt",
+            # "calendar_dates.txt",
             "stop_times.txt",
-            "frequencies.txt",
+            # "frequencies.txt",
             "shapes.txt",
             "trips.txt",
             "feed_info.txt",
@@ -99,9 +129,11 @@ class TestGtfsInstance(object):
             "calendar.txt",
             "routes.txt",
         ]
+        foundf = gtfs_fixture.get_gtfs_files()
         assert (
-            gtfs_fixture.get_gtfs_files() == expected_files
-        ), "GTFS files not as expected"
+            foundf == expected_files
+        ), f"GTFS files not as expected. Expected {expected_files},"
+        "found: {foundf}"
 
     def test_is_valid(self, gtfs_fixture):
         """Assertions about validity_df table."""
@@ -537,9 +569,9 @@ class TestGtfsInstance(object):
             f"Columns not as expected. Expected {expected_columns},",
             f"Found {returned_df.columns}",
         )
-        expected_shape = (281627, 15)
+        expected_shape = (40163, 15)
         assert returned_df.shape == expected_shape, (
-            f"Columns not as expected. Expected {expected_shape},",
+            f"DF shape not as expected. Expected {expected_shape},",
             f"Found {returned_df.shape}",
         )
 
@@ -690,25 +722,36 @@ class TestGtfsInstance(object):
         ).all(), f"Columns were not as expected. Found {found_drc}"
 
         # tests the output of the daily_route_summary table
-        # using tests/data/newport-20230613_gtfs.zip
-        expected_df = {
-            "day": {8: "friday", 9: "friday"},
-            "route_type": {8: 3, 9: 200},
-            "trip_count_max": {8: 1211, 9: 90},
-            "trip_count_min": {8: 1211, 9: 88},
-            "trip_count_mean": {8: 1211.0, 9: 88.0},
-            "trip_count_median": {8: 1211.0, 9: 88.0},
-        }
+        # using data/gtfs/newport-20230613_gtfs.zip
+        expected_df = pd.DataFrame(
+            {
+                "day": {0: "friday", 1: "friday"},
+                "route_type": {0: 3, 1: 200},
+                "trip_count_max": {0: 151, 1: 22},
+                "trip_count_mean": {0: 151.0, 1: 22.0},
+                "trip_count_median": {0: 151.0, 1: 22.0},
+                "trip_count_min": {0: 151, 1: 22},
+            }
+        )
 
-        found_df = gtfs_fixture.daily_trip_summary[
-            gtfs_fixture.daily_trip_summary["day"] == "friday"
-        ].to_dict()
-        assert (
-            found_df == expected_df
-        ), f"Daily summary not as expected. Found {found_df}"
+        found_df = (
+            gtfs_fixture.daily_trip_summary[
+                gtfs_fixture.daily_trip_summary["day"] == "friday"
+            ]
+            .sort_values(by="route_type", ascending=True)
+            .reset_index(drop=True)
+        )
+        try:
+            pd.testing.assert_frame_equal(found_df, expected_df)
+        except AssertionError as e:
+            comp = found_df.compare(
+                expected_df, result_names=("found_df", "expected_df")
+            )
+            print(f"daily_trip_summary not as expected:\n {comp}")
+            raise AssertionError(e)
 
         # test that the dated_trip_counts can be returned
-        expected_size = (542, 4)
+        expected_size = (504, 4)
         found_size = gtfs_fixture.summarise_trips(return_summary=False).shape
         assert expected_size == found_size, (
             "Size of date_route_counts not as expected. "
@@ -759,25 +802,36 @@ class TestGtfsInstance(object):
         ).all(), f"Columns were not as expected. Found {found_drc}"
 
         # tests the output of the daily_route_summary table
-        # using tests/data/newport-20230613_gtfs.zip
-        expected_df = {
-            "day": {8: "friday", 9: "friday"},
-            "route_count_max": {8: 74, 9: 10},
-            "route_count_min": {8: 74, 9: 9},
-            "route_count_mean": {8: 74.0, 9: 9.0},
-            "route_count_median": {8: 74.0, 9: 9.0},
-            "route_type": {8: 3, 9: 200},
-        }
+        # using tests/data/gtfs/newport-20230613_gtfs.zip
+        expected_df = pd.DataFrame(
+            {
+                "day": {0: "friday", 1: "friday"},
+                "route_count_max": {0: 12, 1: 4},
+                "route_count_mean": {0: 12.0, 1: 4.0},
+                "route_count_median": {0: 12.0, 1: 4.0},
+                "route_count_min": {0: 12, 1: 4},
+                "route_type": {0: 3, 1: 200},
+            }
+        )
 
-        found_df = gtfs_fixture.daily_route_summary[
-            gtfs_fixture.daily_route_summary["day"] == "friday"
-        ].to_dict()
-        assert (
-            found_df == expected_df
-        ), f"Daily summary not as expected. Found {found_df}"
+        found_df = (
+            gtfs_fixture.daily_route_summary[
+                gtfs_fixture.daily_route_summary["day"] == "friday"
+            ]
+            .sort_values(by="route_type", ascending=True)
+            .reset_index(drop=True)
+        )
+        try:
+            pd.testing.assert_frame_equal(found_df, expected_df)
+        except AssertionError as e:
+            comp = found_df.compare(
+                expected_df, result_names=("found_df", "expected_df")
+            )
+            print(f"daily_route_summary incorrect:\n {comp}")
+            raise AssertionError(e)
 
         # test that the dated_route_counts can be returned
-        expected_size = (542, 4)
+        expected_size = (504, 4)
         found_size = gtfs_fixture.summarise_routes(return_summary=False).shape
         assert expected_size == found_size, (
             "Size of date_route_counts not as expected. "

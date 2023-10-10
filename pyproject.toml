@@ -19,6 +19,12 @@ classifiers = [
 requires-python = ">=3.9, <3.10"
 version = "0.0.1"
 
+[tool.setuptools]
+# This is true by default so this can be removed.
+# Currently retaining this line before discussing with others whether or not
+# we want to keep it for more clarity.
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

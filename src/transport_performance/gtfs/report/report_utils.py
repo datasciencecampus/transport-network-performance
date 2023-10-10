@@ -9,6 +9,7 @@ from transport_performance.utils.defence import (
     _handle_path_like,
     _check_parent_dir_exists,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 
 class TemplateHTML:
@@ -155,8 +156,11 @@ def _set_up_report_dir(
         os.mkdir(report_dir)
     except FileExistsError:
         pass
+    styles_loc = os.path.join(
+        PKG_PATH, "data", "gtfs", "report", "css_styles", "styles.css"
+    )
     shutil.copy(
-        src="src/transport_performance/gtfs/report/css_styles/styles.css",
+        src=styles_loc,
         dst=report_dir,
     )
     return None
