@@ -40,13 +40,17 @@ class TestSetup:
         from r5py import TransportNetwork
 
         # search the ext dir for pbf & gtfs
-        search_pth = os.path.join("tests", "data")
-        foundf = os.listdir(search_pth)
+        test_data = os.path.join("tests", "data")
+        gtfs_data = os.path.join(test_data, "gtfs")
+        found_gtfs = os.listdir(gtfs_data)
+        foundf = os.listdir(test_data)
         gtfs = [
-            os.path.join(search_pth, x) for x in foundf if x.endswith(".zip")
+            os.path.join(gtfs_data, x)
+            for x in found_gtfs
+            if x.endswith(".zip")
         ][0]
         pbf = [
-            os.path.join(search_pth, x) for x in foundf if x.endswith(".pbf")
+            os.path.join(test_data, x) for x in foundf if x.endswith(".pbf")
         ][0]
 
         # needs wrapping in try but specific exception to raise unknown.
