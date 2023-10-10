@@ -386,7 +386,7 @@ def _enforce_file_extension(
         The path with the correct file extension
 
     """
-    _check_parent_dir_exists(path, "path", create=True)
+    _handle_path_like(path, "path")
     root, ext = os.path.splitext(path)
     if isinstance(exp_ext, str):
         exp_ext = [exp_ext]
