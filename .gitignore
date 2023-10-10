@@ -7,9 +7,9 @@
 *.pkl
 *.html
 
-# exception for test fixtures/packaage data
+# exception for test fixtures/package data
 !tests/data/newport-2023-06-13.osm.pbf
-!src/transport_performance/data/gtfs/newport-20230613_gtfs.zip
+!tests/data/gtfs/newport-20230613_gtfs.zip
 !src/transport_performance/data/gtfs/route_lookup.pkl
 !tests/data/gtfs/report/html_template.html
 
