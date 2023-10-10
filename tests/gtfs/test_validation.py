@@ -365,7 +365,10 @@ class TestGtfsInstance(object):
         tmp1 = os.path.join(tmpdir, "points2.svg")
         with pytest.warns(
             UserWarning,
-            match=".svg format not implemented. Saving as .html",
+            match=re.escape(
+                "Format .svg provided. Expected ['html'] for path given "
+                "to 'out_pth'. Path defaulted to .html"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
         # need to use regex for the first print statement, as tmpdir will
@@ -821,11 +824,11 @@ class TestGtfsInstance(object):
 
         # save test for an image with invalid file extension
         valid_img_formats = ["png", "pdf", "jpg", "jpeg", "webp", "svg"]
-        with pytest.raises(
-            ValueError,
+        with pytest.warns(
+            UserWarning,
             match=re.escape(
-                "Please specify a valid image format. Valid formats "
-                f"include {valid_img_formats}"
+                f"Format .test provided. Expected {valid_img_formats} for path"
+                " given to 'img_type'. Path defaulted to .png"
             ),
         ):
             gtfs_fixture._plot_summary(

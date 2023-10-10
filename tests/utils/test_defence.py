@@ -546,8 +546,8 @@ class Test_EnforceFileExtension(object):
                     UserWarning,
                     match=(
                         re.escape(
-                            "Format .txt provided. Expected ['.html'] for path"
-                            " given to 'test'"
+                            "Format .txt provided. Expected ['html'] for path"
+                            " given to 'test'. Path defaulted to .html"
                         )
                     ),
                 ),
@@ -576,8 +576,8 @@ class Test_EnforceFileExtension(object):
                     UserWarning,
                     match=(
                         re.escape(
-                            "Format .txt provided. Expected ['.html', '.xml'] "
-                            "for path given to 'test'"
+                            "Format .txt provided. Expected ['html', 'xml'] "
+                            "for path given to 'test'. Path defaulted to .xml"
                         )
                     ),
                 ),

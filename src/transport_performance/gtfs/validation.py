@@ -29,6 +29,7 @@ from transport_performance.utils.defence import (
     _type_defence,
     _check_item_in_list,
     _check_attribute,
+    _enforce_file_extension,
 )
 
 from transport_performance.gtfs.report.report_utils import (
@@ -515,13 +516,7 @@ class GtfsInstance:
         _check_parent_dir_exists(
             pth=out_pth, param_nm="out_pth", create=create_out_parent
         )
-
-        pre, ext = os.path.splitext(out_pth)
-        if ext != ".html":
-            warnings.warn(
-                f"{ext} format not implemented. Saving as .html", UserWarning
-            )
-            out_pth = os.path.normpath(pre + ".html")
+        out_pth = _enforce_file_extension(out_pth, ".html", ".html", "out_pth")
 
         # geoms defence
         geoms = geoms.lower().strip()
@@ -1177,16 +1172,18 @@ class GtfsInstance:
                 "webp",
                 "svg",
             ]
-            if img_type.lower().replace(".", "") not in valid_img_formats:
-                raise ValueError(
-                    "Please specify a valid image format. Valid formats "
-                    f"include {valid_img_formats}"
-                )
-            plotly_io.write_image(
-                fig=fig,
-                file=os.path.normpath(
+            path = _enforce_file_extension(
+                path=os.path.normpath(
                     raw_pth + f".{img_type.replace('.', '')}"
                 ),
+                exp_ext=valid_img_formats,
+                default_ext="png",
+                param_nm="img_type",
+            )
+
+            plotly_io.write_image(
+                fig=fig,
+                file=path,
             )
         if return_html:
             return plotly_io.to_html(fig, full_html=False)

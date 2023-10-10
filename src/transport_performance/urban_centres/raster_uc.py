@@ -71,7 +71,7 @@ class UrbanCentre:
         exp_ext: list = [".tif", ".tiff", ".tff"],
     ):
 
-        # check that path is str or PosixPath
+        # check that path is str or pathlib.Path
         _is_expected_filetype(path, "file", exp_ext=exp_ext)
         self.file = path
 
@@ -512,7 +512,7 @@ class UrbanCentre:
 
         """
         if len(coords) != 2:
-            raise ValueError("`coords` expected a tuple of lenght 2.")
+            raise ValueError("`coords` expected a tuple of length 2.")
 
         if (not isinstance(coords[0], float)) and (
             not isinstance(coords[1], float)
