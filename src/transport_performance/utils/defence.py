@@ -262,7 +262,7 @@ def _check_iter_length(iterable: Iterable, param_nm: str, length: int):
     if len(iterable) != length:
         raise ValueError(
             f"`{param_nm}` is of length {len(iterable)}. "
-            f"Expected length {length}"
+            f"Expected length {length}."
         )
 
     return None

@@ -142,6 +142,33 @@ class Test_CheckIter(object):
             is None
         )
 
+    def test__check_iter_length(self):
+        """Func raises as expected when length of iterable does not match."""
+        # wrong length
+        with pytest.raises(
+            ValueError,
+            match=("`list_3` is of length 3. Expected length 2."),
+        ):
+            _check_iterable(
+                iterable=[1, 2, 3],
+                param_nm="list_3",
+                iterable_type=list,
+                check_elements=False,
+                check_length=True,
+                length=2,
+            )
+
+    def test__check_iter_length_pass(self):
+        """Test returns None when pass conditions met."""
+        _check_iterable(
+            iterable=[1, 2, 3],
+            param_nm="list_3",
+            iterable_type=list,
+            check_elements=False,
+            check_length=True,
+            length=3,
+        )
+
 
 class Test_CheckParentDirExists(object):
     """Assertions for check_parent_dir_exists."""
