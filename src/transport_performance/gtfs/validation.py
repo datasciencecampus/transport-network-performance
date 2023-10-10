@@ -161,8 +161,7 @@ class GtfsInstance:
     Parameters
     ----------
     gtfs_pth : Union[str, bytes, os.PathLike]
-        File path to GTFS archive, defaults to
-        os.path.join(PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip").
+        File path to GTFS archive.
     units: str, optionl
         Spatial units of the GTFS file, defaults to "km".
     route_lookup_pth : Union[str, pathlib.Path], optional
@@ -252,9 +251,7 @@ class GtfsInstance:
 
     def __init__(
         self,
-        gtfs_pth: Union[str, pathlib.Path] = pathlib.Path(
-            os.path.join(PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip")
-        ),
+        gtfs_pth: Union[str, pathlib.Path],
         units: str = "km",
         route_lookup_pth: Union[str, pathlib.Path] = None,
     ):
