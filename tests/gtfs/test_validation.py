@@ -720,25 +720,28 @@ class TestGtfsInstance(object):
 
         # tests the output of the daily_route_summary table
         # using data/gtfs/newport-20230613_gtfs.zip
-        expected_df = {
-            "day": {8: "friday", 9: "friday"},
-            "route_type": {8: 3, 9: 200},
-            "trip_count_max": {8: 151, 9: 22},
-            "trip_count_min": {8: 151, 9: 22},
-            "trip_count_mean": {8: 151.0, 9: 22.0},
-            "trip_count_median": {8: 151.0, 9: 22.0},
-        }
-
-        found_df = (
-            gtfs_fixture.daily_trip_summary[
-                gtfs_fixture.daily_trip_summary["day"] == "friday"
-            ]
-            .sort_values(by="route_type")
-            .to_dict()
+        expected_df = pd.DataFrame(
+            {
+                "day": {8: "friday", 9: "friday"},
+                "route_type": {8: 3, 9: 200},
+                "trip_count_max": {8: 151, 9: 22},
+                "trip_count_mean": {8: 151.0, 9: 22.0},
+                "trip_count_median": {8: 151.0, 9: 22.0},
+                "trip_count_min": {8: 151, 9: 22},
+            }
         )
-        assert (
-            found_df == expected_df
-        ), f"Daily summary not as expected. Found {found_df}"
+
+        found_df = gtfs_fixture.daily_trip_summary[
+            gtfs_fixture.daily_trip_summary["day"] == "friday"
+        ].sort_values(by="route_type", ascending=True)
+        try:
+            pd.testing.assert_frame_equal(found_df, expected_df)
+        except AssertionError as e:
+            comp = found_df.compare(
+                expected_df, result_names=("found_df", "expected_df")
+            )
+            print(f"daily_trip_summary not as expected:\n {comp}")
+            raise AssertionError(e)
 
         # test that the dated_trip_counts can be returned
         expected_size = (504, 4)
@@ -792,26 +795,29 @@ class TestGtfsInstance(object):
         ).all(), f"Columns were not as expected. Found {found_drc}"
 
         # tests the output of the daily_route_summary table
-        # using data/gtfs/newport-20230613_gtfs.zip
-        expected_df = {
-            "day": {8: "friday", 9: "friday"},
-            "route_count_max": {8: 12, 9: 4},
-            "route_count_min": {8: 12, 9: 4},
-            "route_count_mean": {8: 12.0, 9: 4.0},
-            "route_count_median": {8: 12.0, 9: 4.0},
-            "route_type": {8: 3, 9: 200},
-        }
-
-        found_df = (
-            gtfs_fixture.daily_route_summary[
-                gtfs_fixture.daily_route_summary["day"] == "friday"
-            ]
-            .sort_values(by="route_type")
-            .to_dict()
+        # using tests/data/gtfs/newport-20230613_gtfs.zip
+        expected_df = pd.DataFrame(
+            {
+                "day": {8: "friday", 9: "friday"},
+                "route_count_max": {8: 12, 9: 4},
+                "route_count_mean": {8: 12.0, 9: 4.0},
+                "route_count_median": {8: 12.0, 9: 4.0},
+                "route_count_min": {8: 12, 9: 4},
+                "route_type": {8: 3, 9: 200},
+            }
         )
-        assert (
-            found_df == expected_df
-        ), f"Daily summary not as expected. Found {found_df}"
+
+        found_df = gtfs_fixture.daily_route_summary[
+            gtfs_fixture.daily_route_summary["day"] == "friday"
+        ].sort_values(by="route_type", ascending=True)
+        try:
+            pd.testing.assert_frame_equal(found_df, expected_df)
+        except AssertionError as e:
+            comp = found_df.compare(
+                expected_df, result_names=("found_df", "expected_df")
+            )
+            print(f"daily_route_summary incorrect:\n {comp}")
+            raise AssertionError(e)
 
         # test that the dated_route_counts can be returned
         expected_size = (504, 4)
