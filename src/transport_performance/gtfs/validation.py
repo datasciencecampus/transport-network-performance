@@ -26,7 +26,7 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
     _check_column_in_df,
     _type_defence,
-    _check_item_in_list,
+    _check_item_in_iterable,
     _check_attribute,
 )
 
@@ -536,7 +536,7 @@ class GtfsInstance:
         # geoms defence
         geoms = geoms.lower().strip()
         ACCEPT_VALS = ["point", "hull"]
-        _check_item_in_list(geoms, ACCEPT_VALS, "geoms")
+        _check_item_in_iterable(geoms, ACCEPT_VALS, "geoms")
 
         try:
             m = self._produce_stops_map(
@@ -1042,7 +1042,7 @@ class GtfsInstance:
         which = which.lower()
 
         # ensure 'which' is valid
-        _check_item_in_list(
+        _check_item_in_iterable(
             item=which, _list=["trip", "route"], param_nm="which"
         )
 
@@ -1053,7 +1053,7 @@ class GtfsInstance:
         _check_parent_dir_exists(raw_pth, "save_pth", create=True)
 
         # orientation input defences
-        _check_item_in_list(
+        _check_item_in_iterable(
             item=orientation, _list=["v", "h"], param_nm="orientation"
         )
 
