@@ -8,6 +8,7 @@ import numpy.ma as ma
 import pandas as pd
 import pathlib
 import rasterio
+import transport_performance.utils.defence as d
 import xarray as xr
 
 from geocube.vector import vectorize
@@ -15,7 +16,6 @@ from pyproj import Transformer
 from rasterio.mask import raster_geometry_mask
 from rasterio.transform import rowcol
 from scipy.ndimage import generic_filter, label
-from transport_performance.utils.defence import _is_expected_filetype
 from typing import Union
 
 
@@ -72,7 +72,7 @@ class UrbanCentre:
     ):
 
         # check that path is str or PosixPath
-        _is_expected_filetype(path, "file", exp_ext=exp_ext)
+        d._is_expected_filetype(path, "file", exp_ext=exp_ext)
         self.file = path
 
     def get_urban_centre(
@@ -175,11 +175,8 @@ class UrbanCentre:
         )
 
         # buffer
-        if not isinstance(buffer_size, int):
-            raise TypeError(
-                "`buffer_size` expected int, "
-                f"got {type(buffer_size).__name__}."
-            )
+        d._type_defence(buffer_size, "buffer_size", int)
+
         if buffer_size <= 0:
             raise ValueError(
                 "`buffer_size` expected positive non-zero integer"
@@ -229,14 +226,8 @@ class UrbanCentre:
             crs string from the raster.
 
         """
-        if not isinstance(bbox, gpd.GeoDataFrame):
-            raise TypeError(
-                "`bbox` expected GeoDataFrame, " f"got {type(bbox).__name__}."
-            )
-        if not isinstance(band_n, int):
-            raise TypeError(
-                "`band_n` expected integer, " f"got {type(band_n).__name__}"
-            )
+        d._type_defence(bbox, "bbox", gpd.GeoDataFrame)
+        d._type_defence(band_n, "band_n", int)
 
         with rasterio.open(file) as src:
             if src.crs != bbox.crs:
@@ -276,16 +267,8 @@ class UrbanCentre:
             If cell_pop_threshold is too high and all cells are filtered out.
 
         """
-        if not isinstance(masked_rst, np.ndarray):
-            raise TypeError(
-                "`masked_rst` expected numpy array, "
-                f"got {type(masked_rst).__name__}."
-            )
-        if not isinstance(cell_pop_threshold, int):
-            raise TypeError(
-                "`cell_pop_threshold` expected integer, "
-                f"got {type(cell_pop_threshold).__name__}."
-            )
+        d._type_defence(masked_rst, "masked_rst", np.ndarray)
+        d._type_defence(cell_pop_threshold, "cell_pop_threshold", int)
 
         flag_array = masked_rst >= cell_pop_threshold
 
@@ -317,13 +300,8 @@ class UrbanCentre:
             Number of clusters identified.
 
         """
-        if not isinstance(flag_array, np.ndarray):
-            raise TypeError(
-                "`flag_array` expected numpy array, "
-                f"got {type(flag_array).__name__}."
-            )
-        if not isinstance(diag, bool):
-            raise TypeError("`diag` must be a boolean.")
+        d._type_defence(flag_array, "flag_array", np.ndarray)
+        d._type_defence(diag, "diag", bool)
 
         if diag is False:
             s = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
@@ -364,25 +342,10 @@ class UrbanCentre:
             Array including only clusters with population over the threshold.
 
         """
-        if not isinstance(band, np.ndarray):
-            raise TypeError(
-                "`band` expected numpy array, " f"got {type(band).__name__}."
-            )
-        if not isinstance(labelled_array, np.ndarray):
-            raise TypeError(
-                "`labelled_array` expected numpy array, "
-                f"got {type(labelled_array).__name__}."
-            )
-        if not isinstance(num_clusters, int):
-            raise TypeError(
-                "`num_clusters` expected integer, "
-                f"got {type(num_clusters).__name__}"
-            )
-        if not isinstance(cluster_pop_threshold, int):
-            raise TypeError(
-                "`cluster_pop_threshold` expected integer, "
-                f"got {type(cluster_pop_threshold).__name__}"
-            )
+        d._type_defence(band, "band", np.ndarray)
+        d._type_defence(labelled_array, "labelled_array", np.ndarray)
+        d._type_defence(num_clusters, "num_clusters", int)
+        d._type_defence(cluster_pop_threshold, "cluster_pop_threshold", int)
 
         urban_centres = labelled_array.copy()
         for n in range(1, num_clusters + 1):
@@ -453,16 +416,9 @@ class UrbanCentre:
             Array including urban centres with gaps filled.
 
         """
-        if not isinstance(urban_centres, np.ndarray):
-            raise TypeError(
-                "`urban_centres` expected numpy array, "
-                f"got {type(urban_centres).__name__}."
-            )
-        if not isinstance(cell_fill_threshold, int):
-            raise TypeError(
-                "`cell_fill_threshold` expected integer, "
-                f"got {type(cell_fill_threshold).__name__}"
-            )
+        d._type_defence(urban_centres, "urban_centres", np.ndarray)
+        d._type_defence(cell_fill_threshold, "cell_fill_threshold", int)
+
         if not (5 <= cell_fill_threshold <= 8):
             raise ValueError(
                 "Wrong value for `cell_fill_threshold`, "
@@ -567,25 +523,11 @@ class UrbanCentre:
             If centre coordinates are not included within any cluster.
 
         """
-        if not isinstance(uc_array, np.ndarray):
-            raise TypeError(
-                "`uc_array` expected numpy array, "
-                f"got {type(uc_array).__name__}."
-            )
-        if not isinstance(centre, tuple):
-            raise TypeError(
-                "`centre` expected tuple, " f"got {type(centre).__name__}"
-            )
-        if not isinstance(aff, affine.Affine):
-            raise TypeError("`aff` must be a valid Affine object")
-        if not isinstance(raster_crs, rasterio.crs.CRS):
-            raise TypeError(
-                "`raster_crs` must be a valid rasterio.crs.CRS " "object"
-            )
-        if not isinstance(nodata, int):
-            raise TypeError(
-                "`nodata` expected integer, " f"got {type(nodata).__name__}"
-            )
+        d._type_defence(uc_array, "uc_array", np.ndarray)
+        d._type_defence(centre, "centre", tuple)
+        d._type_defence(aff, "aff", affine.Affine)
+        d._type_defence(raster_crs, "raster_crs", rasterio.crs.CRS)
+        d._type_defence(nodata, "nodata", int)
 
         if centre_crs is None:
             centre_crs = raster_crs
