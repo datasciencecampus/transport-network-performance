@@ -1,6 +1,5 @@
 """Validating GTFS data."""
 import gtfs_kit as gk
-from pyprojroot import here
 import pandas as pd
 import geopandas as gpd
 import folium
@@ -35,6 +34,7 @@ from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 
 def _get_intermediate_dates(
@@ -161,10 +161,13 @@ class GtfsInstance:
     Parameters
     ----------
     gtfs_pth : Union[str, bytes, os.PathLike]
-        File path to GTFS archive, defaults to
-        "tests/data/newport-20230613_gtfs.zip".
-    units: str
+        File path to GTFS archive.
+    units: str, optionl
         Spatial units of the GTFS file, defaults to "km".
+    route_lookup_pth : Union[str, pathlib.Path], optional
+        The path to the route type lookup. If left empty, the default path will
+        be used. The default path points to a route lookup table that is held
+        within this package, defaults to None.
 
     Attributes
     ----------
@@ -248,10 +251,9 @@ class GtfsInstance:
 
     def __init__(
         self,
-        gtfs_pth: Union[str, pathlib.Path] = here(
-            "tests/data/newport-20230613_gtfs.zip"
-        ),
+        gtfs_pth: Union[str, pathlib.Path],
         units: str = "km",
+        route_lookup_pth: Union[str, pathlib.Path] = None,
     ):
         _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
@@ -271,7 +273,15 @@ class GtfsInstance:
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
-        self.ROUTE_LKP = get_saved_route_type_lookup()
+        if route_lookup_pth is not None:
+            _is_expected_filetype(
+                pth=route_lookup_pth,
+                exp_ext=".pkl",
+                param_nm="route_lookup_pth",
+            )
+            self.ROUTE_LKP = get_saved_route_type_lookup(path=route_lookup_pth)
+        else:
+            self.ROUTE_LKP = get_saved_route_type_lookup()
         # Constant to remove non needed columns from repeated
         # pair error information.
         # This is a messy method however it is the only
@@ -1436,8 +1446,14 @@ class GtfsInstance:
 
         eval_temp = TemplateHTML(
             path=(
-                "src/transport_performance/gtfs/report/"
-                "html_templates/evaluation_template.html"
+                os.path.join(
+                    PKG_PATH,
+                    "data",
+                    "gtfs",
+                    "report",
+                    "html_templates",
+                    "evaluation_template.html",
+                )
             )
         )
         eval_temp._insert(
@@ -1526,8 +1542,14 @@ class GtfsInstance:
         )
         stops_temp = TemplateHTML(
             (
-                "src/transport_performance/gtfs/report/"
-                "html_templates/stops_template.html"
+                os.path.join(
+                    PKG_PATH,
+                    "data",
+                    "gtfs",
+                    "report",
+                    "html_templates",
+                    "stops_template.html",
+                )
             )
         )
         stops_temp._insert("stops_placeholder_1", "stop_locations.html")
@@ -1566,8 +1588,14 @@ class GtfsInstance:
 
         summ_temp = TemplateHTML(
             path=(
-                "src/transport_performance/gtfs/report/"
-                "html_templates/summary_template.html"
+                os.path.join(
+                    PKG_PATH,
+                    "data",
+                    "gtfs",
+                    "report",
+                    "html_templates",
+                    "summary_template.html",
+                )
             )
         )
         summ_temp._insert("plotly_placeholder_1", route_html)

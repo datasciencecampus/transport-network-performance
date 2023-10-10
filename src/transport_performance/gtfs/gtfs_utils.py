@@ -8,17 +8,19 @@ import pandas as pd
 from typing import Union
 import pathlib
 from geopandas import GeoDataFrame
+import os
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_list,
     _type_defence,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 
 def bbox_filter_gtfs(
-    in_pth: Union[pathlib.Path, str] = here(
-        "tests/data/newport-20230613_gtfs.zip"
+    in_pth: Union[pathlib.Path, str] = (
+        os.path.join(PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip"),
     ),
     out_pth: Union[pathlib.Path, str] = pathlib.Path(
         here("data/external/filtered_gtfs.zip")
@@ -38,7 +40,7 @@ def bbox_filter_gtfs(
     ----------
     in_pth : Union[pathlib.Path, str], optional
         Path to the unfiltered GTFS feed. Defaults to
-        here("tests/data/newport-20230613_gtfs.zip").
+        os.path.join(PKG_PATH, "data", "gtfs", "newport-20230613_gtfs.zip").
     out_pth : Union[pathlib.Path, str], optional
         Path to write the filtered feed to. Defaults to
         here("data/external/filtered_gtfs.zip").

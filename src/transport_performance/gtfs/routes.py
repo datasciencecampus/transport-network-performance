@@ -5,12 +5,14 @@ import requests
 import warnings
 from typing import Union
 import pathlib
+import os
 
 from transport_performance.utils.defence import (
     _url_defence,
     _type_defence,
     _is_expected_filetype,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"
@@ -153,7 +155,7 @@ def scrape_route_type_lookup(
 
 def get_saved_route_type_lookup(
     path: Union[str, pathlib.Path] = pathlib.Path(
-        "tests/data/gtfs/route_lookup.pkl"
+        os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
     )
 ) -> pd.DataFrame:
     """Get the lcoally saved route type lookup as a dataframe.
@@ -162,7 +164,7 @@ def get_saved_route_type_lookup(
     ----------
     path : Union[str, pathlib.Path], optional
         The path to the route type lookup,
-        by default pathlib.Path("tests/data/gtfs/route_lookup.pkl")
+        defaults to os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
 
     Returns
     -------
