@@ -10,7 +10,7 @@ import pandas as pd
 from pyprojroot import here
 
 from transport_performance.utils.defence import (
-    _check_list,
+    _check_iterable,
     _check_parent_dir_exists,
     _type_defence,
     _check_column_in_df,
@@ -31,10 +31,16 @@ class Test_CheckList(object):
             TypeError,
             match="`some_bool` should be a list. Instead found <class 'bool'>",
         ):
-            _check_list(ls=True, param_nm="some_bool", check_elements=False)
+            _check_iterable(
+                iterable=True,
+                param_nm="some_bool",
+                iterable_type=list,
+                check_elements=False,
+            )
 
     def test__check_list_elements(self):
         """Func raises as expected when checking list elements."""
+        # mixed types
         with pytest.raises(
             TypeError,
             match=(
@@ -42,22 +48,83 @@ class Test_CheckList(object):
                 "<class 'str'> : 2"
             ),
         ):
-            _check_list(
-                ls=[1, "2", 3],
+            _check_iterable(
+                iterable=[1, "2", 3],
                 param_nm="mixed_list",
+                iterable_type=list,
                 check_elements=True,
                 exp_type=int,
             )
 
+        # wrong iterable type
+        with pytest.raises(
+            TypeError,
+            match=("`int_list` expected .*tuple.*" "Got .*list.*"),
+        ):
+            _check_iterable(
+                iterable=[1, 2, 3],
+                param_nm="int_list",
+                iterable_type=tuple,
+                check_elements=False,
+            )
+
+        # no iterable
+        with pytest.raises(
+            TypeError,
+            match=("`int` expected .*Iterable.*" "Got .*int.*"),
+        ):
+            _check_iterable(
+                iterable=123,
+                param_nm="int",
+                iterable_type=tuple,
+                check_elements=False,
+            )
+
+        # wrong expected types
+        with pytest.raises(
+            TypeError,
+            match=(
+                "`exp_type` must contain types only.*" "Found .*str.*: tuple"
+            ),
+        ):
+            _check_iterable(
+                iterable=123,
+                param_nm="param",
+                iterable_type=("tuple", str),
+                check_elements=False,
+            )
+
     def test__check_list_passes(self):
         """Test returns None when pass conditions met."""
+        # check list and element type
         assert (
-            _check_list(ls=[1, 2, 3], param_nm="int_list", exp_type=int)
+            _check_iterable(
+                iterable=[1, 2, 3],
+                param_nm="int_list",
+                iterable_type=list,
+                exp_type=int,
+            )
             is None
         )
+
+        # check list and multiple element types
         assert (
-            _check_list(
-                ls=[False, True], param_nm="bool_list", check_elements=False
+            _check_iterable(
+                iterable=[1, "2", 3],
+                param_nm="int_list",
+                iterable_type=list,
+                exp_type=(int, str),
+            )
+            is None
+        )
+
+        # check tuple
+        assert (
+            _check_iterable(
+                ls=(False, True),
+                param_nm="bool_list",
+                iterable_type=tuple,
+                check_elements=False,
             )
             is None
         )
