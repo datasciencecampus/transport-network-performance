@@ -92,12 +92,14 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_url_defence</span><span class="p">,</span>
     <span class="n">_type_defence</span><span class="p">,</span>
     <span class="n">_is_expected_filetype</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.constants</span> <span class="kn">import</span> <span class="n">PKG_PATH</span>
 
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
     <span class="n">action</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;.*pkg_resources&quot;</span>
@@ -245,7 +247,7 @@
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.routes.get_saved_route_type_lookup.html#transport_performance.gtfs.routes.get_saved_route_type_lookup">[docs]</a>
 <span class="k">def</span> <span class="nf">get_saved_route_type_lookup</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span>
-        <span class="s2">&quot;tests/data/gtfs/route_lookup.pkl&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PKG_PATH</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">,</span> <span class="s2">&quot;route_lookup.pkl&quot;</span><span class="p">)</span>
     <span class="p">)</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the lcoally saved route type lookup as a dataframe.</span>
@@ -254,7 +256,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    path : Union[str, pathlib.Path], optional</span>
 <span class="sd">        The path to the route type lookup,</span>
-<span class="sd">        by default pathlib.Path(&quot;tests/data/gtfs/route_lookup.pkl&quot;)</span>
+<span class="sd">        defaults to os.path.join(PKG_PATH, &quot;data&quot;, &quot;gtfs&quot;, &quot;route_lookup.pkl&quot;)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>

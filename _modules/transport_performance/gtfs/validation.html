@@ -87,7 +87,6 @@
   <h1>Source code for transport_performance.gtfs.validation</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Validating GTFS data.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">gtfs_kit</span> <span class="k">as</span> <span class="nn">gk</span>
-<span class="kn">from</span> <span class="nn">pyprojroot</span> <span class="kn">import</span> <span class="n">here</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 <span class="kn">import</span> <span class="nn">folium</span>
@@ -122,6 +121,7 @@
     <span class="n">TemplateHTML</span><span class="p">,</span>
     <span class="n">_set_up_report_dir</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.constants</span> <span class="kn">import</span> <span class="n">PKG_PATH</span>
 
 
 <span class="k">def</span> <span class="nf">_get_intermediate_dates</span><span class="p">(</span>
@@ -250,10 +250,13 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    gtfs_pth : Union[str, bytes, os.PathLike]</span>
-<span class="sd">        File path to GTFS archive, defaults to</span>
-<span class="sd">        &quot;tests/data/newport-20230613_gtfs.zip&quot;.</span>
-<span class="sd">    units: str</span>
+<span class="sd">        File path to GTFS archive.</span>
+<span class="sd">    units: str, optionl</span>
 <span class="sd">        Spatial units of the GTFS file, defaults to &quot;km&quot;.</span>
+<span class="sd">    route_lookup_pth : Union[str, pathlib.Path], optional</span>
+<span class="sd">        The path to the route type lookup. If left empty, the default path will</span>
+<span class="sd">        be used. The default path points to a route lookup table that is held</span>
+<span class="sd">        within this package, defaults to None.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -337,10 +340,9 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">gtfs_pth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">here</span><span class="p">(</span>
-            <span class="s2">&quot;tests/data/newport-20230613_gtfs.zip&quot;</span>
-        <span class="p">),</span>
+        <span class="n">gtfs_pth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span>
         <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;km&quot;</span><span class="p">,</span>
+        <span class="n">route_lookup_pth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">pth</span><span class="o">=</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;gtfs_pth&quot;</span><span class="p">)</span>
 
@@ -360,7 +362,15 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">read_feed</span><span class="p">(</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">dist_units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gtfs_path</span> <span class="o">=</span> <span class="n">gtfs_pth</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ROUTE_LKP</span> <span class="o">=</span> <span class="n">get_saved_route_type_lookup</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">route_lookup_pth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_is_expected_filetype</span><span class="p">(</span>
+                <span class="n">pth</span><span class="o">=</span><span class="n">route_lookup_pth</span><span class="p">,</span>
+                <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.pkl&quot;</span><span class="p">,</span>
+                <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;route_lookup_pth&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ROUTE_LKP</span> <span class="o">=</span> <span class="n">get_saved_route_type_lookup</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">route_lookup_pth</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ROUTE_LKP</span> <span class="o">=</span> <span class="n">get_saved_route_type_lookup</span><span class="p">()</span>
         <span class="c1"># Constant to remove non needed columns from repeated</span>
         <span class="c1"># pair error information.</span>
         <span class="c1"># This is a messy method however it is the only</span>
@@ -1551,8 +1561,14 @@
 
         <span class="n">eval_temp</span> <span class="o">=</span> <span class="n">TemplateHTML</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;src/transport_performance/gtfs/report/&quot;</span>
-                <span class="s2">&quot;html_templates/evaluation_template.html&quot;</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">PKG_PATH</span><span class="p">,</span>
+                    <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;gtfs&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;report&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;html_templates&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;evaluation_template.html&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="n">eval_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span>
@@ -1641,8 +1657,14 @@
         <span class="p">)</span>
         <span class="n">stops_temp</span> <span class="o">=</span> <span class="n">TemplateHTML</span><span class="p">(</span>
             <span class="p">(</span>
-                <span class="s2">&quot;src/transport_performance/gtfs/report/&quot;</span>
-                <span class="s2">&quot;html_templates/stops_template.html&quot;</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">PKG_PATH</span><span class="p">,</span>
+                    <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;gtfs&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;report&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;html_templates&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;stops_template.html&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="n">stops_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;stops_placeholder_1&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_locations.html&quot;</span><span class="p">)</span>
@@ -1681,8 +1703,14 @@
 
         <span class="n">summ_temp</span> <span class="o">=</span> <span class="n">TemplateHTML</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="p">(</span>
-                <span class="s2">&quot;src/transport_performance/gtfs/report/&quot;</span>
-                <span class="s2">&quot;html_templates/summary_template.html&quot;</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">PKG_PATH</span><span class="p">,</span>
+                    <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;gtfs&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;report&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;html_templates&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;summary_template.html&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="n">summ_temp</span><span class="o">.</span><span class="n">_insert</span><span class="p">(</span><span class="s2">&quot;plotly_placeholder_1&quot;</span><span class="p">,</span> <span class="n">route_html</span><span class="p">)</span>
