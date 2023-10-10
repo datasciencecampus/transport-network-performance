@@ -17,6 +17,11 @@ from transport_performance.gtfs.gtfs_utils import (
     convert_pandas_to_plotly,
 )
 
+# location of GTFS test fixture
+GTFS_FIX_PTH = os.path.join(
+    "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
+)
+
 
 class TestBboxFilterGtfs(object):
     """Test bbox_filter_gtfs."""
@@ -88,7 +93,7 @@ class Test_AddValidationRow(object):
 
     def test__add_validation_row_defence(self):
         """Defensive tests for _add_test_validation_row()."""
-        gtfs = GtfsInstance()
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         with pytest.raises(
             AttributeError,
             match=re.escape(
@@ -103,7 +108,7 @@ class Test_AddValidationRow(object):
 
     def test__add_validation_row_on_pass(self):
         """General tests for _add_test_validation_row()."""
-        gtfs = GtfsInstance()
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         gtfs.is_valid(far_stops=False)
 
         _add_validation_row(
@@ -125,25 +130,25 @@ class Test_FilterGtfsAroundTrip(object):
     def test_filter_gtfs_around_trip_defence(self):
         """Defensive tests for filter_gtfs_around_trip()."""
         # check trips with no shape id are filtered
-        gtfs = GtfsInstance()
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         with pytest.raises(
             ValueError,
             match="'shape_id' not available for trip with trip_id: "
-            "VJd44c7f90d8e70b3b7332d7d0646690b7c118a7c0",
+            "VJe1fb5120f04b2e3699a133007032117aed104794",
         ):
             filter_gtfs_around_trip(
-                gtfs, trip_id="VJd44c7f90d8e70b3b7332d7d0646690b7c118a7c0"
+                gtfs, trip_id="VJe1fb5120f04b2e3699a133007032117aed104794"
             )
 
     def test_filter_gtfs_around_trip_on_pass(self, tmpdir):
         """General tests for filter_gtfs_around_trip()."""
-        gtfs = GtfsInstance()
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         out_pth = os.path.join(tmpdir, "test_gtfs.zip")
 
         # check gtfs can be created
         filter_gtfs_around_trip(
             gtfs,
-            trip_id="VJ217b8849f1e5675d19ca46660a32d0719db12c80",
+            trip_id="VJbedb4cfd0673348e017d42435abbdff3ddacbf82",
             out_pth=out_pth,
         )
         assert os.path.exists(out_pth), "Failed to filtere GTFS around trip."
