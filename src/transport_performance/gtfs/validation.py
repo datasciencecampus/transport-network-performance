@@ -1043,7 +1043,7 @@ class GtfsInstance:
 
         # ensure 'which' is valid
         _check_item_in_iter(
-            item=which, _list=["trip", "route"], param_nm="which"
+            item=which, iterable=["trip", "route"], param_nm="which"
         )
 
         raw_pth = os.path.join(
@@ -1054,7 +1054,7 @@ class GtfsInstance:
 
         # orientation input defences
         _check_item_in_iter(
-            item=orientation, _list=["v", "h"], param_nm="orientation"
+            item=orientation, iterable=["v", "h"], param_nm="orientation"
         )
 
         # assign the correct values depending on which breakdown has been
