@@ -354,7 +354,7 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'geoms' expected one of the following:"
+                "'geoms' expected one of the following: "
                 "['point', 'hull']. Got foobar: <class 'str'>"
             ),
         ):
@@ -863,7 +863,7 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'orientation' expected one of the following:"
+                "'orientation' expected one of the following: "
                 f"{options}. Got i: <class 'str'>"
             ),
         ):
@@ -894,7 +894,7 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'which' expected one of the following:"
+                "'which' expected one of the following: "
                 "['trip', 'route']. Got tester: <class 'str'>"
             ),
         ):
