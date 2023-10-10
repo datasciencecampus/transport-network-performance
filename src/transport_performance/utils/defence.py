@@ -233,12 +233,49 @@ def _type_defence(some_object, param_nm, types) -> None:
     return None
 
 
+def _check_iter_length(iterable: Iterable, param_nm: str, length: int):
+    """Check the lenght of an iterable.
+
+    Parameters
+    ----------
+    iterable : Iterable
+        Iterable to check.
+    param_nm : str
+        Name of the parameter being checked.
+    length: int
+        Expected length of the iterable to check.
+
+    Raises
+    ------
+        ValueError: length of iterable does not match `length`.
+
+    Returns
+    -------
+    None
+
+    """
+    # check if iterable
+    _type_defence(iterable, param_nm, Iterable)
+    # check if lenght is int
+    _type_defence(length, "length", int)
+
+    if len(iterable) != length:
+        raise ValueError(
+            f"{param_nm} is of length {len(iterable)}. "
+            f"Expected lenght {length}"
+        )
+
+    return None
+
+
 def _check_iterable(
     iterable: Iterable,
     param_nm: str,
     iterable_type: type,
     check_elements: bool = True,
     exp_type: Union[tuple, type] = str,
+    check_length: bool = False,
+    length: int = 0,
 ):
     """Check an iterable and its elements for type.
 
@@ -255,6 +292,10 @@ def _check_iterable(
     exp_type : Union[tuple, type], optional:
         The expected type of the elements. Defaults to str. If using a tuple,
         it should be a tuple of types.
+    check_length: bool, optional
+        Wether to check the length of the iterable. Defaults to False.
+    length: int, optional
+        Expected length of the iterable.
 
     Raises
     ------
@@ -286,6 +327,10 @@ def _check_iterable(
                 )
     else:
         _type_defence(exp_type, "exp_type", (type, tuple))
+
+    # check lenght
+    if check_length is True:
+        _check_iter_length(iterable, param_nm, length)
 
     # check if elements are of the expected types
     if check_elements:
