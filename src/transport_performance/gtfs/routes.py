@@ -5,12 +5,14 @@ import requests
 import warnings
 from typing import Union
 import pathlib
+import os
 
 from transport_performance.utils.defence import (
     _url_defence,
     _type_defence,
     _is_expected_filetype,
 )
+from transport_performance.utils.constants import PKG_PATH
 
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"
@@ -19,7 +21,9 @@ warnings.filterwarnings(
 # issues/19
 
 
-def _construct_extended_schema_table(some_soup, cd_list, desc_list):
+def _construct_extended_schema_table(
+    some_soup: BeautifulSoup, cd_list: list, desc_list: list
+) -> (list, list):
     """Create the extended table from a soup object. Not exported.
 
     Parameters
@@ -35,8 +39,10 @@ def _construct_extended_schema_table(some_soup, cd_list, desc_list):
 
     Returns
     -------
-        tuple[0]: Proposed extension to route_type codes
-        tuple[1]: Proposed extension to route_type descriptions
+    tuple[0]: list
+        route_type codes of proposed GTFS scheme extension.
+    tuple[1]: list
+        route_type descriptions of proposed GTFS scheme extension.
 
     """
     for i in some_soup.findAll("table"):
@@ -59,7 +65,7 @@ def _construct_extended_schema_table(some_soup, cd_list, desc_list):
     return (cd_list, desc_list)
 
 
-def _get_response_text(url):
+def _get_response_text(url: str) -> str:
     """Return the response & extract the text. Not exported."""
     r = requests.get(url)
     t = r.text
@@ -67,13 +73,13 @@ def _get_response_text(url):
 
 
 def scrape_route_type_lookup(
-    gtfs_url="https://gtfs.org/schedule/reference/",
-    ext_spec_url=(
+    gtfs_url: str = "https://gtfs.org/schedule/reference/",
+    ext_spec_url: str = (
         "https://developers.google.com/transit/gtfs/reference/"
         "extended-route-types"
     ),
-    extended_schema=True,
-):
+    extended_schema: bool = True,
+) -> pd.core.frame.DataFrame:
     """Scrape a lookup of GTFS route_type codes to descriptions.
 
     Scrapes HTML tables from `gtfs_url` to provide a lookup of `route_type`
@@ -83,21 +89,29 @@ def scrape_route_type_lookup(
 
     Parameters
     ----------
-    gtfs_url : str
+    gtfs_url : str, optional
         The url containing the GTFS accepted route_type codes. Defaults to
         "https://gtfs.org/schedule/reference/".
-    ext_spec_url : str
+    ext_spec_url : str, optional
         The url containing the table of the proposed extension to the GTFS
         schema for route_type codes. Defaults to
         ( "https://developers.google.com/transit/gtfs/reference/"
         "extended-route-types" ).
-    extended_schema : bool
+    extended_schema : bool, optional
         Should the extended schema table be scraped and included in the output?
         Defaults to True.
 
     Returns
     -------
-        pd.core.frame.DataFrame: A lookup of route_type codes to descriptions.
+    pd.core.frame.DataFrame
+        A lookup of route_type codes to descriptions.
+
+    Raises
+    ------
+    ValueError
+        `gtfs_url` or `ext_spec_url` are not "http" or "https" protocol.
+    TypeError
+        `extended_schema` is not of type bool.
 
     """
     # a little defence
@@ -141,7 +155,7 @@ def scrape_route_type_lookup(
 
 def get_saved_route_type_lookup(
     path: Union[str, pathlib.Path] = pathlib.Path(
-        "tests/data/gtfs/route_lookup.pkl"
+        os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
     )
 ) -> pd.DataFrame:
     """Get the lcoally saved route type lookup as a dataframe.
@@ -150,7 +164,7 @@ def get_saved_route_type_lookup(
     ----------
     path : Union[str, pathlib.Path], optional
         The path to the route type lookup,
-        by default pathlib.Path("tests/data/gtfs/route_lookup.pkl")
+        defaults to os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
 
     Returns
     -------

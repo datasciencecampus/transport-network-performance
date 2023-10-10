@@ -1,6 +1,5 @@
 """Test GTFS utility functions."""
 
-from pyprojroot import here
 import os
 import pytest
 import re
@@ -41,7 +40,9 @@ class TestBboxFilterGtfs(object):
             tmpdir, "newport-train-station-bboxlist_gtfs.zip"
         )
         bbox_filter_gtfs(
-            in_pth=here("tests/data/newport-20230613_gtfs.zip"),
+            in_pth=os.path.join(
+                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
+            ),
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_list,
         )
@@ -65,7 +66,9 @@ class TestBboxFilterGtfs(object):
         )
 
         bbox_filter_gtfs(
-            in_pth=here("tests/data/newport-20230613_gtfs.zip"),
+            in_pth=os.path.join(
+                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
+            ),
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_gdf,
         )

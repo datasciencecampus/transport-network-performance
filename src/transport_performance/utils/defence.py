@@ -121,7 +121,7 @@ def _is_expected_filetype(
     Raises
     ------
     TypeError: `pth` is not either of string or pathlib.PosixPath.
-    FileExistsError: `pth` does not exist on disk.
+    FileNotFoundError: `pth` does not exist on disk.
     ValueError: `pth` does not have the expected file extension(s).
 
     Returns
@@ -315,7 +315,7 @@ def _check_item_in_list(item: str, _list: list, param_nm: str) -> None:
     Parameters
     ----------
     item : str
-        THe item to check the list for
+        The item to check the list for
     _list : list
         The list to check that the item is in
     param_nm : str
@@ -365,3 +365,47 @@ def _check_attribute(obj, attr: str, message: str = None):
 
     if attr not in obj.__dir__():
         raise AttributeError(err_msg)
+
+
+def _enforce_file_extension(
+    path: Union[str, pathlib.Path],
+    exp_ext: Union[str, list],
+    default_ext: str,
+    param_nm: str,
+    msg: str = None,
+) -> pathlib.Path:
+    """Defensive check for enforcing file extensions.
+
+    Parameters
+    ----------
+    path : Union[str, pathlib.Path]
+        The filepath to check the extension of.
+    exp_ext : Union[str, list]
+        The expected/implemented extension(s)
+    default_ext : str
+        The extensions to default to if the extension is invalid
+    param_nm : str
+        The name of the parameter that the path was passed to
+    msg : str, optional
+        Custom error message to display, by default None
+
+    Returns
+    -------
+    pathlib.Path
+        The path with the correct file extension
+
+    """
+    root, ext = os.path.splitext(path)
+    if isinstance(exp_ext, str):
+        exp_ext = [exp_ext]
+    if ext.lower() not in exp_ext:
+        # format warning message
+        if not msg:
+            msg = (
+                f"Format {ext} provided. Expected {exp_ext} for path given "
+                f"to '{param_nm}'"
+            )
+        # warn user
+        warnings.warn(msg, UserWarning)
+        path = os.path.normpath(root + default_ext)
+    return pathlib.Path(path)

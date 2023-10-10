@@ -21,6 +21,7 @@ from transport_performance.utils.defence import (
     _type_defence,
     _handle_path_like,
     _check_parent_dir_exists,
+    _enforce_file_extension,
 )
 
 
@@ -513,6 +514,18 @@ class RasterPop:
         # write to file if filepath is given
         if save is not None:
             _check_parent_dir_exists(save, "save", create=True)
+            # get file extension for a more detailed error msg
+            root, ext = os.path.splitext(save)
+            save = _enforce_file_extension(
+                save,
+                ".html",
+                ".html",
+                "save",
+                msg=(
+                    f"Format '{ext}' not implemented. Writing folium"
+                    "map as '.html'"
+                ),
+            )
             m.save(save)
             m = None
 
@@ -537,8 +550,11 @@ class RasterPop:
         Parameters
         ----------
         save : str, optional
-            Filepath to save location, with ".png" extension, by default None
-            meaning the map will not be saved to file.
+            Filepath to save location, by default None meaning the map will
+            not be saved to file. Accepted formats are 'eps', 'jpg','jpeg',
+            'pdf', 'pgf', 'png', 'ps', 'raw', 'rgba', 'svg', 'svgz', 'tif',
+            'tiff', 'webp'. If any other file extension is given, it will
+            default to '.png'.
         figsize : tuple, optional
             The matplotlib figure size width and height in inches, by default
             (10, 8).
@@ -692,10 +708,28 @@ class RasterPop:
         # use tight layout to maximise axis size of axis
         plt.tight_layout()
 
+        # list of allowed formats to save plot
+        formats = [
+            "." + n
+            for n in list(plt.gcf().canvas.get_supported_filetypes().keys())
+        ]
+
         # write to file if filepath is given, since there is no figure, need to
         # get the current figure and resize it to match the axis before saving
         if save is not None:
             _check_parent_dir_exists(save, "save", create=True)
+            # get extension for error messge
+            root, ext = os.path.splitext(save)
+            save = _enforce_file_extension(
+                save,
+                formats,
+                ".png",
+                "save",
+                msg=(
+                    f"Format '{ext}' not implemented. Writing cartopy plot"
+                    " as '.png'"
+                ),
+            )
             fig = plt.gcf()
             fig.set_size_inches(*figsize)
             fig.savefig(save)
@@ -714,8 +748,11 @@ class RasterPop:
         Parameters
         ----------
         save : str, optional
-            Filepath to save location, with ".png" extension, by default None
-            meaning the plot will not be saved to file.
+            Filepath to save location, by default None meaning the map will
+            not be saved to file. Accepted formats are 'eps', 'jpg','jpeg',
+            'pdf', 'pgf', 'png', 'ps', 'raw', 'rgba', 'svg', 'svgz', 'tif',
+            'tiff', 'webp'. If any other file extension is given, it will
+            default to '.png'.
         figsize : tuple, optional
             The matplotlib figursize width and height in inches, by default
             (6.4, 4.8).
@@ -735,9 +772,27 @@ class RasterPop:
         self._xds.plot(ax=ax)
         plt.tight_layout()
 
+        # list of allowed formats to save plot
+        formats = [
+            "." + n
+            for n in list(plt.gcf().canvas.get_supported_filetypes().keys())
+        ]
+
         # write to file if filepath is given
         if save is not None:
             _check_parent_dir_exists(save, "save", create=True)
+            # get extension for error messge
+            root, ext = os.path.splitext(save)
+            save = _enforce_file_extension(
+                save,
+                formats,
+                ".png",
+                "save",
+                msg=(
+                    f"Format '{ext}' not implemented. Writing matplotlib plot"
+                    " as '.png'"
+                ),
+            )
             fig.savefig(save)
             ax = None
 
