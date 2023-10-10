@@ -722,18 +722,22 @@ class TestGtfsInstance(object):
         # using data/gtfs/newport-20230613_gtfs.zip
         expected_df = pd.DataFrame(
             {
-                "day": {8: "friday", 9: "friday"},
-                "route_type": {8: 3, 9: 200},
-                "trip_count_max": {8: 151, 9: 22},
-                "trip_count_mean": {8: 151.0, 9: 22.0},
-                "trip_count_median": {8: 151.0, 9: 22.0},
-                "trip_count_min": {8: 151, 9: 22},
+                "day": {0: "friday", 1: "friday"},
+                "route_type": {0: 3, 1: 200},
+                "trip_count_max": {0: 151, 1: 22},
+                "trip_count_mean": {0: 151.0, 1: 22.0},
+                "trip_count_median": {0: 151.0, 1: 22.0},
+                "trip_count_min": {0: 151, 1: 22},
             }
         )
 
-        found_df = gtfs_fixture.daily_trip_summary[
-            gtfs_fixture.daily_trip_summary["day"] == "friday"
-        ].sort_values(by="route_type", ascending=True)
+        found_df = (
+            gtfs_fixture.daily_trip_summary[
+                gtfs_fixture.daily_trip_summary["day"] == "friday"
+            ]
+            .sort_values(by="route_type", ascending=True)
+            .reset_index(drop=True)
+        )
         try:
             pd.testing.assert_frame_equal(found_df, expected_df)
         except AssertionError as e:
@@ -798,18 +802,22 @@ class TestGtfsInstance(object):
         # using tests/data/gtfs/newport-20230613_gtfs.zip
         expected_df = pd.DataFrame(
             {
-                "day": {8: "friday", 9: "friday"},
-                "route_count_max": {8: 12, 9: 4},
-                "route_count_mean": {8: 12.0, 9: 4.0},
-                "route_count_median": {8: 12.0, 9: 4.0},
-                "route_count_min": {8: 12, 9: 4},
-                "route_type": {8: 3, 9: 200},
+                "day": {0: "friday", 1: "friday"},
+                "route_count_max": {0: 12, 1: 4},
+                "route_count_mean": {0: 12.0, 1: 4.0},
+                "route_count_median": {0: 12.0, 1: 4.0},
+                "route_count_min": {0: 12, 1: 4},
+                "route_type": {0: 3, 1: 200},
             }
         )
 
-        found_df = gtfs_fixture.daily_route_summary[
-            gtfs_fixture.daily_route_summary["day"] == "friday"
-        ].sort_values(by="route_type", ascending=True)
+        found_df = (
+            gtfs_fixture.daily_route_summary[
+                gtfs_fixture.daily_route_summary["day"] == "friday"
+            ]
+            .sort_values(by="route_type", ascending=True)
+            .reset_index(drop=True)
+        )
         try:
             pd.testing.assert_frame_equal(found_df, expected_df)
         except AssertionError as e:
