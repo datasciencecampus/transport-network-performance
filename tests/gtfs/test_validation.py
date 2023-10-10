@@ -729,9 +729,13 @@ class TestGtfsInstance(object):
             "trip_count_median": {8: 151.0, 9: 22.0},
         }
 
-        found_df = gtfs_fixture.daily_trip_summary[
-            gtfs_fixture.daily_trip_summary["day"] == "friday"
-        ].to_dict()
+        found_df = (
+            gtfs_fixture.daily_trip_summary[
+                gtfs_fixture.daily_trip_summary["day"] == "friday"
+            ]
+            .sort_values(by="route_type")
+            .to_dict()
+        )
         assert (
             found_df == expected_df
         ), f"Daily summary not as expected. Found {found_df}"
@@ -798,9 +802,13 @@ class TestGtfsInstance(object):
             "route_type": {8: 3, 9: 200},
         }
 
-        found_df = gtfs_fixture.daily_route_summary[
-            gtfs_fixture.daily_route_summary["day"] == "friday"
-        ].to_dict()
+        found_df = (
+            gtfs_fixture.daily_route_summary[
+                gtfs_fixture.daily_route_summary["day"] == "friday"
+            ]
+            .sort_values(by="route_type")
+            .to_dict()
+        )
         assert (
             found_df == expected_df
         ), f"Daily summary not as expected. Found {found_df}"
