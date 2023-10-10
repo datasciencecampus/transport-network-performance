@@ -215,7 +215,7 @@ def cluster_centre():
             "num",
             pytest.raises(
                 TypeError,
-                match=(r"`pth` expected .*'str'.*Path'.* Got .*'int'.*"),
+                match=(r"`pth` expected .*str.*Path.* Got .*int.*"),
             ),
         ),
     ],
@@ -264,7 +264,8 @@ def test_file(
         (
             "string",
             pytest.raises(
-                TypeError, match=(r"`bbox` expected GeoDataFrame, got str")
+                TypeError,
+                match=(r"`bbox` expected .*GeoDataFrame.* Got " r".*str.*"),
             ),
         ),
         # wrong format bbox
@@ -272,7 +273,7 @@ def test_file(
             pd.DataFrame(),
             pytest.raises(
                 TypeError,
-                match=(r"`bbox` expected GeoDataFrame, got DataFrame"),
+                match=(r"`bbox` expected .*GeoDataFrame.* Got .*DataFrame.*"),
             ),
         ),
         # badly defined bbox
@@ -384,14 +385,14 @@ def test_bbox(
             50,
             None,
             pytest.raises(
-                TypeError, match=(r"`centre` expected tuple, got int")
+                TypeError, match=(r"`centre` expected .*tuple.* Got .*int.*")
             ),
         ),
         (
             "(50, 3)",
             None,
             pytest.raises(
-                TypeError, match=(r"`centre` expected tuple, got str")
+                TypeError, match=(r"`centre` expected .*tuple.* Got .*str.*")
             ),
         ),
     ],
@@ -436,14 +437,14 @@ def test_centre(
         (
             1.5,
             pytest.raises(
-                TypeError, match=(r"`band_n` expected integer, got float")
+                TypeError, match=(r"`band_n` expected .*int.* Got .*float.*")
             ),
         ),
         (2, pytest.raises(IndexError, match=(r"band index 2 out of range"))),
         (
             "2",
             pytest.raises(
-                TypeError, match=(r"`band_n` expected integer, got str")
+                TypeError, match=(r"`band_n` expected .*int.* Got .*str.*")
             ),
         ),
     ],
@@ -490,7 +491,7 @@ def test_band_n(
             1500.5,
             pytest.raises(
                 TypeError,
-                match=(r"`cell_pop_threshold` expected integer, got float"),
+                match=(r"`cell_pop_threshold` expected .*int.* Got .*float.*"),
             ),
             [],
         ),
@@ -498,7 +499,7 @@ def test_band_n(
             "1500",
             pytest.raises(
                 TypeError,
-                match=(r"`cell_pop_threshold` expected integer, got str"),
+                match=(r"`cell_pop_threshold` expected .*int.* Got .*str.*"),
             ),
             [],
         ),
@@ -612,13 +613,17 @@ class TestCellPop:
         (False, does_not_raise(), 3, 4),
         (
             1,
-            pytest.raises(TypeError, match=(r"`diag` must be a boolean")),
+            pytest.raises(
+                TypeError, match=(r"`diag` expected .*bool.* Got " r".*int.*")
+            ),
             0,
             0,
         ),
         (
             "True",
-            pytest.raises(TypeError, match=(r"`diag` must be a boolean")),
+            pytest.raises(
+                TypeError, match=(r"`diag` expected .*bool.* Got " r".*str.*")
+            ),
             0,
             0,
         ),
@@ -725,7 +730,10 @@ class TestDiag:
             50000.5,
             pytest.raises(
                 TypeError,
-                match=(r"`cluster_pop_threshold` expected integer, got float"),
+                match=(
+                    r"`cluster_pop_threshold` expected .*int.* Got "
+                    r".*float.*"
+                ),
             ),
             [],
         ),
@@ -733,7 +741,9 @@ class TestDiag:
             "50000",
             pytest.raises(
                 TypeError,
-                match=(r"`cluster_pop_threshold` expected integer, got str"),
+                match=(
+                    r"`cluster_pop_threshold` expected .*int.* Got " r".*str.*"
+                ),
             ),
             [],
         ),
@@ -849,7 +859,9 @@ class TestClusterPop:
             5.5,
             pytest.raises(
                 TypeError,
-                match=(r"`cell_fill_threshold` expected integer, got float"),
+                match=(
+                    r"`cell_fill_threshold` expected .*int.* Got " r".*float.*"
+                ),
             ),
             [],
         ),
@@ -857,7 +869,9 @@ class TestClusterPop:
             "5",
             pytest.raises(
                 TypeError,
-                match=(r"`cell_fill_threshold` expected integer, got str"),
+                match=(
+                    r"`cell_fill_threshold` expected .*int.* Got " r".*str.*"
+                ),
             ),
             [],
         ),
@@ -988,13 +1002,13 @@ class TestFill:
         (
             -200.5,
             pytest.raises(
-                TypeError, match=(r"`nodata` expected integer, got float")
+                TypeError, match=(r"`nodata` expected .*int.* Got .*float.*")
             ),
         ),
         (
             "str",
             pytest.raises(
-                TypeError, match=(r"`nodata` expected integer, got str")
+                TypeError, match=(r"`nodata` expected .*int.* Got .*str.*")
             ),
         ),
     ],
@@ -1046,13 +1060,15 @@ def test_v_nodata(
         (
             10000.5,
             pytest.raises(
-                TypeError, match=(r"`buffer_size` expected int, got float")
+                TypeError,
+                match=(r"`buffer_size` expected .*int.* Got " r".*float.*"),
             ),
         ),
         (
             "str",
             pytest.raises(
-                TypeError, match=(r"`buffer_size` expected int, got str")
+                TypeError,
+                match=(r"`buffer_size` expected .*int.* Got " r".*str.*"),
             ),
         ),
     ],
@@ -1180,7 +1196,7 @@ def test_final_output(
     assert out.loc[2][1] == Polygon(bbox_coords)
 
     # type of output
-    assert type(out) == gpd.GeoDataFrame
+    assert type(out) is gpd.GeoDataFrame
 
     # shape of output
     assert out.shape == (3, 2)
@@ -1200,7 +1216,8 @@ def test__flag_cells_raises(dummy_pop_array):
     """Test _flag_cells raises expected exception."""
     uc = ucc.UrbanCentre(dummy_pop_array)
     with pytest.raises(
-        TypeError, match="`masked_rst` expected numpy array, got str."
+        TypeError,
+        match=(r"`masked_rst` expected .*numpy.ndarray.* Got " r".*str.*"),
     ):
         uc._flag_cells("not an array")
 
@@ -1209,7 +1226,8 @@ def test__cluster_cells_raises(dummy_pop_array):
     """Test _cluster_cells raises."""
     uc = ucc.UrbanCentre(dummy_pop_array)
     with pytest.raises(
-        TypeError, match="`flag_array` expected numpy array, got str."
+        TypeError,
+        match=(r"`flag_array` expected .*numpy.ndarray.* Got " r".*str.*"),
     ):
         uc._cluster_cells("not an array")
 
@@ -1218,13 +1236,14 @@ def test__check_cluster_pop_raises(dummy_pop_array):
     """Test _check_cluster_pop raises."""
     uc = ucc.UrbanCentre(dummy_pop_array)
     with pytest.raises(
-        TypeError, match="`band` expected numpy array, got str."
+        TypeError, match=(r"`band` expected .*numpy.ndarray.* Got .*str.*")
     ):
         uc._check_cluster_pop(
             band="not an array", labelled_array=1, num_clusters=2
         )
     with pytest.raises(
-        TypeError, match="`labelled_array` expected numpy array, got str."
+        TypeError,
+        match=(r"`labelled_array` expected .*numpy.ndarray.* Got " r".*str.*"),
     ):
         uc._check_cluster_pop(
             band=np.array([0, 1, 2]),
@@ -1232,7 +1251,7 @@ def test__check_cluster_pop_raises(dummy_pop_array):
             num_clusters=2,
         )
     with pytest.raises(
-        TypeError, match="`num_clusters` expected integer, got float"
+        TypeError, match=(r"`num_clusters` expected .*int.* Got .*float.*")
     ):
         uc._check_cluster_pop(
             band=np.array([0, 1, 2]),
@@ -1245,7 +1264,8 @@ def test__fill_gaps_raises(dummy_pop_array):
     """Test _fill_gaps raises."""
     uc = ucc.UrbanCentre(dummy_pop_array)
     with pytest.raises(
-        TypeError, match="`urban_centres` expected numpy array, got str."
+        TypeError,
+        match=(r"`urban_centres` expected .*numpy.ndarray.* Got " r".*str.*"),
     ):
         uc._fill_gaps(urban_centres="not an array")
 
@@ -1255,12 +1275,14 @@ def test__vectorize_uc_raises(dummy_pop_array):
     uc = ucc.UrbanCentre(dummy_pop_array)
     # crs = rio.crs.CRS.from_epsg(3005)
     with pytest.raises(
-        TypeError, match="`uc_array` expected numpy array, got str."
+        TypeError, match=(r"`uc_array` expected .*numpy.ndarray.* Got .*str.*")
     ):
         uc._vectorize_uc(
             uc_array="not an array", aff=1, raster_crs=2, centre=3
         )
-    with pytest.raises(TypeError, match="`aff` must be a valid Affine object"):
+    with pytest.raises(
+        TypeError, match=(r"`aff` expected .*affine.Affine.* Got .*str.*")
+    ):
         uc._vectorize_uc(
             uc_array=np.array([0, 1, 2]),
             aff="not Affine",
@@ -1268,7 +1290,8 @@ def test__vectorize_uc_raises(dummy_pop_array):
             centre=(1, 2),
         )
     with pytest.raises(
-        TypeError, match="`raster_crs` must be a valid rasterio.crs.CRS object"
+        TypeError,
+        match=(r"`raster_crs` expected .*rasterio.crs.CRS.* Got .*str.*"),
     ):
         uc._vectorize_uc(
             uc_array=np.array([0, 1, 2]),
