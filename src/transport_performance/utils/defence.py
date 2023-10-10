@@ -234,7 +234,7 @@ def _type_defence(some_object, param_nm, types) -> None:
 
 
 def _check_iter_length(iterable: Iterable, param_nm: str, length: int):
-    """Check the lenght of an iterable.
+    """Check the length of an iterable.
 
     Parameters
     ----------
@@ -256,13 +256,13 @@ def _check_iter_length(iterable: Iterable, param_nm: str, length: int):
     """
     # check if iterable
     _type_defence(iterable, param_nm, Iterable)
-    # check if lenght is int
+    # check if length is int
     _type_defence(length, "length", int)
 
     if len(iterable) != length:
         raise ValueError(
-            f"{param_nm} is of length {len(iterable)}. "
-            f"Expected lenght {length}"
+            f"`{param_nm}` is of length {len(iterable)}. "
+            f"Expected length {length}"
         )
 
     return None
@@ -328,7 +328,7 @@ def _check_iterable(
     else:
         _type_defence(exp_type, "exp_type", (type, tuple))
 
-    # check lenght
+    # check length
     if check_length is True:
         _check_iter_length(iterable, param_nm, length)
 

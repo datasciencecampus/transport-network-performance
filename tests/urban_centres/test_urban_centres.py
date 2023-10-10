@@ -382,7 +382,8 @@ def test_bbox(
             (50, 3, 3),
             None,
             pytest.raises(
-                ValueError, match=(r"`coords` expected a tuple of lenght 2")
+                ValueError,
+                match=(r"`coords` is of length 3.* Expected " r"length 2"),
             ),
         ),
         (

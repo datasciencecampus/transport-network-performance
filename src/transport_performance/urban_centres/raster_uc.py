@@ -467,10 +467,15 @@ class UrbanCentre:
             (row, col) position for provided parameters.
 
         """
-        if len(coords) != 2:
-            raise ValueError("`coords` expected a tuple of lenght 2.")
-
-        d._check_iterable(coords, "coords", tuple, True, float)
+        d._check_iterable(
+            iterable=coords,
+            param_nm="coords",
+            iterable_type=tuple,
+            check_elements=True,
+            exp_type=float,
+            check_length=True,
+            length=2,
+        )
 
         transformer = Transformer.from_crs(coords_crs, raster_crs)
         x, y = transformer.transform(*coords)
