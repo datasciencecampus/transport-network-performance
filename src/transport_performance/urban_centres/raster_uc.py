@@ -470,10 +470,7 @@ class UrbanCentre:
         if len(coords) != 2:
             raise ValueError("`coords` expected a tuple of lenght 2.")
 
-        if (not isinstance(coords[0], float)) and (
-            not isinstance(coords[1], float)
-        ):
-            raise TypeError("Elements of `coords` need to be float.")
+        d._check_iterable(coords, "coords", tuple, True, float)
 
         transformer = Transformer.from_crs(coords_crs, raster_crs)
         x, y = transformer.transform(*coords)

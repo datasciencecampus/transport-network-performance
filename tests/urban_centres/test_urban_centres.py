@@ -371,7 +371,11 @@ def test_bbox(
             (50, 3),
             None,
             pytest.raises(
-                TypeError, match=(r"Elements of `coords` need to be float")
+                TypeError,
+                match=(
+                    r"`coords` must contain .*float.* only"
+                    r".*Found .*int.*: 50"
+                ),
             ),
         ),
         (
