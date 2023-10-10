@@ -1,6 +1,6 @@
 """Defensive check utility funcs. Internals only."""
 from typing import Union
-from collections import Iterable
+from collections.abc import Iterable
 
 import pathlib
 import numpy as np
