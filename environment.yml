@@ -1,0 +1,9 @@
+name: transport-performance
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.6
+  - cartopy
+  - proj # Required to build cartopy (can't be installed with pip)
+# create your environment with the below line
+# conda env create -f environment.yml

@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools==65.6.3", "wheel"]
 
 [project]
 name = "transport_performance"
@@ -16,7 +16,7 @@ classifiers = [
     "Operating System :: MacOS",
     "Topic :: Scientific/Engineering :: GIS",
 ]
-requires-python = ">=3.9, <3.10"
+requires-python = "==3.11.6"
 version = "0.0.1"
 
 [tool.setuptools]

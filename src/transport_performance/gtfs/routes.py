@@ -14,12 +14,6 @@ from transport_performance.utils.defence import (
 )
 from transport_performance.utils.constants import PKG_PATH
 
-warnings.filterwarnings(
-    action="ignore", category=DeprecationWarning, module=".*pkg_resources"
-)
-# see https://github.com/datasciencecampus/transport-network-performance/
-# issues/19
-
 
 def _construct_extended_schema_table(
     some_soup: BeautifulSoup, cd_list: list, desc_list: list
