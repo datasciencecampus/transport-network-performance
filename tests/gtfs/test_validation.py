@@ -79,7 +79,11 @@ class TestGtfsInstance(object):
             GtfsInstance(gtfs_pth=GTFS_FIX_PTH, units=False)
         # non metric units
         with pytest.raises(
-            ValueError, match=r"`units` accepts metric only. Found: miles"
+            ValueError,
+            match=re.escape(
+                "'units' expected one of the following:"
+                "['m', 'km'] Got miles"
+            ),
         ):
             GtfsInstance(
                 gtfs_pth=GTFS_FIX_PTH, units="Miles"

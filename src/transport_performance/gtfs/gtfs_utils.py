@@ -143,6 +143,8 @@ def convert_pandas_to_plotly(
     # defences
     _type_defence(df, "df", pd.DataFrame)
     _type_defence(return_html, "return_html", bool)
+    # no use of _type_defence() here as IMO a more descriptive error message is
+    # required. in this case.
     if isinstance(df.columns, pd.MultiIndex) or isinstance(
         df.index, pd.MultiIndex
     ):

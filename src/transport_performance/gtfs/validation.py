@@ -261,8 +261,7 @@ class GtfsInstance:
             units = "km"
         accepted_units = ["m", "km"]
 
-        if units not in accepted_units:
-            raise ValueError(f"`units` accepts metric only. Found: {units}")
+        _check_item_in_list(units, accepted_units, "units")
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
