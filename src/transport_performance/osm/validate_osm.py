@@ -1,5 +1,6 @@
 """Validation of OSM pbf files."""
 import osmium
+import warnings
 
 PBF_FIX_PTH = "tests/data/newport-2023-06-13.osm.pbf"
 WALES_LATEST_PTH = "data/external/osm/wales-latest.osm.pbf"
@@ -113,7 +114,6 @@ class GenericHandler(osmium.SimpleHandler):
             An 'Area' feature.
 
         """
-        print(a)
         self.area_ids.append(a.id)
         tagdict = _compile_tags(a)
         self.area_tags[a.id] = tagdict
@@ -139,4 +139,94 @@ i.way_nodes[1181392035]
 i.way_tags[1181392039]
 
 i.area_tags[16417043]
-i.area_nrings
+
+
+class OsmCountFeatures(osmium.SimpleHandler):
+    """Count available features in an OSM file.
+
+    Parameters
+    ----------
+    osmium : class
+        Inherits from osmium.SimpleHandler
+
+    """
+
+    def __init__(self):
+        super(OsmCountFeatures, self).__init__()
+        self.node_ids = []
+        self.way_ids = []
+        self.relations_ids = []
+        self.area_ids = []
+
+    def node(self, n):
+        """Collate node IDs.
+
+        Parameters
+        ----------
+        n : osmium.osm.types.Node
+            A node feature.
+
+        """
+        self.node_ids.append(n.id)
+
+    def way(self, w):
+        """Collate way IDs.
+
+        Parameters
+        ----------
+        w : osmium.osm.types.Node
+            A way feature.
+
+        """
+        self.way_ids.append(w.id)
+
+    def relation(self, r):
+        """Collate relation IDs.
+
+        Parameters
+        ----------
+        r : osmium.osm.types.Relation
+            A relation feature.
+
+        """
+        self.relations_ids.append(r.id)
+
+    def area(self, a):
+        """Collate area IDs.
+
+        Parameters
+        ----------
+        a : osmium.osm.types.Area
+            An area feature (includes boundaries).
+
+        """
+        self.area_ids.append(a.id)
+
+    def count_features(self):
+        """Count numbers of each available feature type.
+
+        Returns
+        -------
+        counts: dict
+            Counts of nodes, ways, relations & areas in a pbf file.
+
+        """
+        counts = {
+            "n_nodes": len(self.node_ids),
+            "n_ways": len(self.way_ids),
+            "n_relations": len(self.relations_ids),
+            "n_areas": len(self.area_ids),
+        }
+        # in cases where the user has not ran the apply_file method, warn:
+        if all([count == 0 for count in counts.values()]):
+            warnings.warn(
+                "No counts were found, did you run `self.apply_file"
+                "(<INSERT PBF PATH>)`?",
+                UserWarning,
+            )
+        return counts
+
+
+count_obj = OsmCountFeatures()
+count_obj.apply_file(PBF_FIX_PTH)
+count_obj.count_features()
