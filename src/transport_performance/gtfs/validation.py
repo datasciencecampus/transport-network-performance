@@ -62,15 +62,8 @@ def _get_intermediate_dates(
 
     """
     # checks for start and end
-    if not isinstance(start, pd.Timestamp):
-        raise TypeError(
-            "'start' expected type pd.Timestamp."
-            f" Recieved type {type(start)}"
-        )
-    if not isinstance(end, pd.Timestamp):
-        raise TypeError(
-            "'end' expected type pd.Timestamp." f" Recieved type {type(end)}"
-        )
+    _type_defence(start, "start", pd.Timestamp)
+    _type_defence(end, "end", pd.Timestamp)
     result = []
     while start <= end:
         result.append(start)
@@ -237,7 +230,7 @@ class GtfsInstance:
     Raises
     ------
     TypeError
-        `pth` is not either of string or pathlib.PosixPath.
+        `pth` is not either of string or pathlib.Path.
     TypeError
         `units` is not of type str.
     FileExistsError
@@ -259,8 +252,7 @@ class GtfsInstance:
         _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
         # validate units param
-        if not isinstance(units, str):
-            raise TypeError(f"`units` expected a string. Found {type(units)}")
+        _type_defence(units, "units", str)
 
         units = units.lower().strip()
         if units in ["metres", "meters"]:
@@ -363,11 +355,11 @@ class GtfsInstance:
             No alerts of the specified `alert_type` were found.
 
         """
-        if not hasattr(self, "validity_df"):
-            raise AttributeError(
-                "`self.validity_df` is None, did you forget to use "
-                "`self.is_valid()`?"
-            )
+        missing_attr_msg = (
+            "`self.validity_df` is None, did you forget to use"
+            " `self.is_valid()`?"
+        )
+        _check_attribute(self, "validity_df", missing_attr_msg)
 
         try:
             # In cases where no alerts of alert_type are found, KeyError raised
@@ -579,13 +571,8 @@ class GtfsInstance:
 
         """
         # defences for parameters
-        if not isinstance(df, pd.DataFrame):
-            raise TypeError(f"'df' expected type pd.DataFrame, got {type(df)}")
-        if not isinstance(day_column_name, str):
-            raise TypeError(
-                "'day_column_name' expected type str, "
-                f"got {type(day_column_name)}"
-            )
+        _type_defence(df, "df", pd.DataFrame)
+        _type_defence(day_column_name, "day_column_name", str)
 
         # hard coded day order
         day_order = {
@@ -715,11 +702,8 @@ class GtfsInstance:
             `summ_ops` is a function not exported from numpy.
 
         """
-        if not isinstance(return_summary, bool):
-            raise TypeError(
-                "'return_summary' must be of type boolean."
-                f" Found {type(return_summary)} : {return_summary}"
-            )
+        # return_summary defence
+        _type_defence(return_summary, "return_summary", bool)
         # summ_ops defence
 
         if isinstance(summ_ops, list):
@@ -1412,9 +1396,10 @@ class GtfsInstance:
         _type_defence(overwrite, "overwrite", bool)
         _type_defence(summary_type, "summary_type", str)
         _set_up_report_dir(path=report_dir, overwrite=overwrite)
-        summary_type = summary_type.lower()
-        if summary_type not in ["mean", "min", "max", "median"]:
-            raise ValueError("'summary type' must be mean, median, min or max")
+        summary_type = summary_type.lower().strip()
+        _check_item_in_list(
+            summary_type, ["mean", "min", "max", "median"], "summary_type"
+        )
 
         # store todays date
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
