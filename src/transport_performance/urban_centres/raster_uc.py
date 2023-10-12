@@ -202,7 +202,10 @@ class UrbanCentre:
         return self.output
 
     def _window_raster(
-        self, file: Union[str, pathlib.Path], bbox: gpd.GeoDataFrame, band_n: int = 1
+        self,
+        file: Union[str, pathlib.Path],
+        bbox: gpd.GeoDataFrame,
+        band_n: int = 1,
     ) -> tuple:
         """Open file, load band and apply mask.
 
