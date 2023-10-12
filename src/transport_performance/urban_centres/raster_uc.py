@@ -202,13 +202,13 @@ class UrbanCentre:
         return self.output
 
     def _window_raster(
-        self, file: str, bbox: gpd.GeoDataFrame, band_n: int = 1
+        self, file: Union[str, pathlib.Path], bbox: gpd.GeoDataFrame, band_n: int = 1
     ) -> tuple:
         """Open file, load band and apply mask.
 
         Parameters
         ----------
-        file : str
+        file : Union[str, pathlib.Path]
             Path to geoTIFF file.
         bbox : gpd.GeoDataFrame
             A GeoPandas GeoDataFrame containing boundaries to filter the
@@ -388,10 +388,8 @@ class UrbanCentre:
         counter = Counter(win)
         mode_count = counter.most_common(1)[0]
         if (mode_count[1] >= threshold) & (win[len(win) // 2] == 0):
-            r = mode_count[0]
-        else:
-            r = win[len(win) // 2]
-        return r
+            return mode_count[0]
+        return win[len(win) // 2]
 
     def _fill_gaps(
         self, urban_centres: np.ndarray, cell_fill_threshold: int = 5
@@ -439,8 +437,7 @@ class UrbanCentre:
                 extra_keywords={"threshold": cell_fill_threshold},
             )
             if np.array_equal(filled, check):
-                break
-        return filled
+                return filled
 
     def _get_x_y(
         self,
