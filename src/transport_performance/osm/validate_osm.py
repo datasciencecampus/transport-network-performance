@@ -42,6 +42,8 @@ class GenericHandler(osmium.SimpleHandler):
         self.relations_ids = []
         self.relations_members = {}
         self.relations_tags = {}
+        self.area_ids = []
+        self.area_tags = {}
 
     # the methods you define must be called node, way, relation, area or
     # changeset
@@ -102,6 +104,20 @@ class GenericHandler(osmium.SimpleHandler):
         tagdict = _compile_tags(n)
         self.node_tags[n.id] = tagdict
 
+    def area(self, a):
+        """Process areas.
+
+        Parameters
+        ----------
+        a : osmium.osm.types.Area
+            An 'Area' feature.
+
+        """
+        print(a)
+        self.area_ids.append(a.id)
+        tagdict = _compile_tags(a)
+        self.area_tags[a.id] = tagdict
+
 
 i = GenericHandler()
 i.apply_file(PBF_FIX_PTH, locations=False)
@@ -110,6 +126,7 @@ i.apply_file(PBF_FIX_PTH, locations=False)
 len(i.node_ids)
 len(i.way_ids)
 len(i.relations_ids)
+len(i.area_ids)
 
 i.node_locs[10971292662]
 i.node_tags[10971292664]
@@ -120,3 +137,6 @@ i.relations_members[15775326]  # note that internally, osmium will prepend the
 # a node etc.
 i.way_nodes[1181392035]
 i.way_tags[1181392039]
+
+i.area_tags[16417043]
+i.area_nrings
