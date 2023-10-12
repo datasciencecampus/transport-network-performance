@@ -141,8 +141,8 @@ i.way_tags[1181392039]
 i.area_tags[16417043]
 
 
-class OsmCountFeatures(osmium.SimpleHandler):
-    """Count available features in an OSM file.
+class OsmGetIds(osmium.SimpleHandler):
+    """Count or return available feature IDs in an OSM file.
 
     Parameters
     ----------
@@ -152,7 +152,7 @@ class OsmCountFeatures(osmium.SimpleHandler):
     """
 
     def __init__(self) -> None:
-        super(OsmCountFeatures, self).__init__()
+        super(OsmGetIds, self).__init__()
         self.node_ids = []
         self.way_ids = []
         self.relations_ids = []
@@ -208,7 +208,7 @@ class OsmCountFeatures(osmium.SimpleHandler):
         Returns
         -------
         counts: dict
-            Counts of nodes, ways, relations & areas in a pbf file.
+            Counts of node, way, relation & area IDs in a pbf file.
 
         """
         counts = {
@@ -226,7 +226,26 @@ class OsmCountFeatures(osmium.SimpleHandler):
             )
         return counts
 
+    def get_ids(self) -> dict:
+        """Get a list of all available IDs in a pbf file for each feature type.
 
-count_obj = OsmCountFeatures()
-count_obj.apply_file(PBF_FIX_PTH)
-count_obj.count_features()
+        Returns
+        -------
+        id_dict: dict
+            Available IDs for nodes, ways, relations and areas.
+
+        """
+        id_dict = {
+            "node_ids": self.node_ids,
+            "way_ids": self.way_ids,
+            "relation_ids": self.relations_ids,
+            "area_ids": self.area_ids,
+        }
+        return id_dict
+
+
+ids = OsmGetIds()
+ids.apply_file(PBF_FIX_PTH)
+ids.count_features()
+all_ids = ids.get_ids()
+all_ids["way_ids"][0:11]
