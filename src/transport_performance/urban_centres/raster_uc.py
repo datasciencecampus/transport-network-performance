@@ -1,23 +1,23 @@
 """Functions to calculate urban centres following Eurostat definition."""
 from collections import Counter
 
+from typing import Union
+import pathlib
+
 import affine
 import geopandas as gpd
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
-import pathlib
 import rasterio
-import transport_performance.utils.defence as d
 import xarray as xr
-
 from geocube.vector import vectorize
 from pyproj import Transformer
 from rasterio.mask import raster_geometry_mask
 from rasterio.transform import rowcol
 from scipy.ndimage import generic_filter, label
-from typing import Union
 
+import transport_performance.utils.defence as d
 
 class UrbanCentre:
     """Object to create and store urban centres.
@@ -71,7 +71,7 @@ class UrbanCentre:
         exp_ext: list = [".tif", ".tiff", ".tff"],
     ):
 
-        # check that path is str or PosixPath
+        # check that path is str or pathlib.Path
         d._is_expected_filetype(path, "file", exp_ext=exp_ext)
         self.file = path
 
