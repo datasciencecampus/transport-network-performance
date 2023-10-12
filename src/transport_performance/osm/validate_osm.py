@@ -151,14 +151,14 @@ class OsmCountFeatures(osmium.SimpleHandler):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(OsmCountFeatures, self).__init__()
         self.node_ids = []
         self.way_ids = []
         self.relations_ids = []
         self.area_ids = []
 
-    def node(self, n):
+    def node(self, n: osmium.osm.types.Node) -> None:
         """Collate node IDs.
 
         Parameters
@@ -169,7 +169,7 @@ class OsmCountFeatures(osmium.SimpleHandler):
         """
         self.node_ids.append(n.id)
 
-    def way(self, w):
+    def way(self, w: osmium.osm.types.Way) -> None:
         """Collate way IDs.
 
         Parameters
@@ -180,7 +180,7 @@ class OsmCountFeatures(osmium.SimpleHandler):
         """
         self.way_ids.append(w.id)
 
-    def relation(self, r):
+    def relation(self, r: osmium.osm.types.Relation) -> None:
         """Collate relation IDs.
 
         Parameters
@@ -191,7 +191,7 @@ class OsmCountFeatures(osmium.SimpleHandler):
         """
         self.relations_ids.append(r.id)
 
-    def area(self, a):
+    def area(self, a: osmium.osm.types.Area) -> None:
         """Collate area IDs.
 
         Parameters
@@ -202,7 +202,7 @@ class OsmCountFeatures(osmium.SimpleHandler):
         """
         self.area_ids.append(a.id)
 
-    def count_features(self):
+    def count_features(self) -> dict:
         """Count numbers of each available feature type.
 
         Returns
