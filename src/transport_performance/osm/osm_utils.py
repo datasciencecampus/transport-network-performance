@@ -9,6 +9,7 @@ from transport_performance.utils.defence import (
     _check_list,
     _check_parent_dir_exists,
     _is_expected_filetype,
+    _enforce_file_extension,
 )
 
 
@@ -53,9 +54,7 @@ def filter_osm(
     """
     # defence
     _is_expected_filetype(pbf_pth, param_nm="pbf_pth", exp_ext=".pbf")
-    _is_expected_filetype(
-        out_pth, param_nm="out_pth", exp_ext=".pbf", check_existing=False
-    )
+    _enforce_file_extension(out_pth, ".pbf", ".pbf", "out_pth")
     for nm, val in {
         "tag_filter": tag_filter,
         "install_osmosis": install_osmosis,
