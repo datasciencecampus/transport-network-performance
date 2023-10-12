@@ -19,6 +19,7 @@ from scipy.ndimage import generic_filter, label
 
 import transport_performance.utils.defence as d
 
+
 class UrbanCentre:
     """Object to create and store urban centres.
 
