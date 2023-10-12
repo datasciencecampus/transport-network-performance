@@ -1,6 +1,7 @@
 """Validation of OSM pbf files."""
 import osmium
 import warnings
+from typing import Any
 
 PBF_FIX_PTH = "tests/data/newport-2023-06-13.osm.pbf"
 WALES_LATEST_PTH = "data/external/osm/wales-latest.osm.pbf"
@@ -19,6 +20,25 @@ def _compile_tags(osmium_feature):
                 v = tag
         tagdict[k] = v
     return tagdict
+
+
+def _check_dict_values_all_equal(a_dict: dict, a_value: Any) -> bool:
+    """Check if all dict values equal a_value.
+
+    Parameters
+    ----------
+    a_dict : dict
+        A dictionary.
+    a_value : Any
+        A value to check the dictionary values against.
+
+    Returns
+    -------
+    bool
+        True if all dictionary values equals `a_value`, else False.
+
+    """
+    return all([i == a_value for i in a_dict.values()])
 
 
 # ---- look at internals
@@ -218,7 +238,8 @@ class OsmGetIds(osmium.SimpleHandler):
             "n_areas": len(self.area_ids),
         }
         # in cases where the user has not ran the apply_file method, warn:
-        if all([count == 0 for count in counts.values()]):
+        if _check_dict_values_all_equal(counts, 0):
+            # if all([count == 0 for count in counts.values()]):
             warnings.warn(
                 "No counts were found, did you run `self.apply_file"
                 "(<INSERT PBF PATH>)`?",
@@ -241,11 +262,17 @@ class OsmGetIds(osmium.SimpleHandler):
             "relation_ids": self.relations_ids,
             "area_ids": self.area_ids,
         }
+        if _check_dict_values_all_equal(id_dict, []):
+            warnings.warn(
+                "No Ids were found. Did you run "
+                "`self.apply_file(<INSERT PBF PATH>)?`",
+                UserWarning,
+            )
         return id_dict
 
 
 ids = OsmGetIds()
-ids.apply_file(PBF_FIX_PTH)
+ids.apply_file(WALES_LATEST_PTH)
 ids.count_features()
 all_ids = ids.get_ids()
 all_ids["way_ids"][0:11]
