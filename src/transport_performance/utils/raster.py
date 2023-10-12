@@ -121,9 +121,6 @@ def merge_raster_files(
     _type_defence(output_filename, "output_filename", str)
     merged_dir = os.path.join(output_dir, output_filename)
     _check_parent_dir_exists(merged_dir, "merged_dir", create=True)
-    # _is_expected_filetype(
-    #     merged_dir, "merged_dir", check_existing=False, exp_ext=".tif"
-    # )
     merged_dir = _enforce_file_extension(
         merged_dir, ".tif", ".tif", "merged_dir"
     )
