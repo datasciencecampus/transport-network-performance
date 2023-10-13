@@ -911,14 +911,14 @@ class TestGtfsInstance(object):
             target_column="route_count_mean",
             return_html=True,
         )
-        assert type(test_html) == str, "Failed to return HTML for the plot"
+        assert type(test_html) is str, "Failed to return HTML for the plot"
 
         # test returning a plotly figure
         test_image = gtfs_fixture._plot_summary(
             which="route", target_column="route_count_mean"
         )
         assert (
-            type(test_image) == PlotlyFigure
+            type(test_image) is PlotlyFigure
         ), "Failed to return plotly.graph_objects.Figure type"
 
         # test returning a plotly for trips
@@ -927,7 +927,7 @@ class TestGtfsInstance(object):
             which="trip", target_column="trip_count_mean"
         )
         assert (
-            type(test_image) == PlotlyFigure
+            type(test_image) is PlotlyFigure
         ), "Failed to return plotly.graph_objects.Figure type"
 
         # test saving plots in html and png format
