@@ -422,7 +422,7 @@ class GtfsInstance:
         _type_defence(fast_travel, "fast_travel", bool)
         _type_defence(validate, "valiidate", bool)
         if validate:
-            self.validity_df = self.feed.validate()
+            self.is_valid(far_stops=fast_travel)
         try:
             # In cases where shape_id is missing, keyerror is raised.
             # https://developers.google.com/transit/gtfs/reference#shapestxt
