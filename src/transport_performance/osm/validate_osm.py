@@ -2,9 +2,10 @@
 import osmium
 import warnings
 from typing import Any
+from pyprojroot import here
 
-PBF_FIX_PTH = "tests/data/newport-2023-06-13.osm.pbf"
-WALES_LATEST_PTH = "data/external/osm/wales-latest.osm.pbf"
+PBF_FIX_PTH = here("tests/data/newport-2023-06-13.osm.pbf")
+WALES_LATEST_PTH = here("data/external/osm/wales-latest.osm.pbf")
 
 
 def _compile_tags(osmium_feature):
@@ -247,7 +248,7 @@ class OsmGetIds(osmium.SimpleHandler):
             )
         return counts
 
-    def get_ids(self) -> dict:
+    def get_feature_ids(self) -> dict:
         """Get a list of all available IDs in a pbf file for each feature type.
 
         Returns
@@ -272,7 +273,7 @@ class OsmGetIds(osmium.SimpleHandler):
 
 
 ids = OsmGetIds()
-ids.apply_file(WALES_LATEST_PTH)
+ids.apply_file(PBF_FIX_PTH)
 ids.count_features()
-all_ids = ids.get_ids()
+all_ids = ids.get_feature_ids()
 all_ids["way_ids"][0:11]
