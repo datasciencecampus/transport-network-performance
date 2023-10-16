@@ -3,11 +3,14 @@ import osmium
 import warnings
 from typing import Any
 from pyprojroot import here
+from pathlib import Path
+from typing import Union
 
 from transport_performance.utils.defence import (
     _check_item_in_list,
     _check_list,
     _type_defence,
+    _is_expected_filetype,
 )
 
 
@@ -169,8 +172,10 @@ i.way_tags[1181392039]
 i.area_tags[16417043]
 
 
-class IdHandler(osmium.SimpleHandler):
-    """Count or return available feature IDs in an OSM file.
+class _IdHandler(osmium.SimpleHandler):
+    """Collate Ids for OSM Features.
+
+    Internal class, method names must be fixed to integrate with pyosmium.
 
     Parameters
     ----------
@@ -180,7 +185,7 @@ class IdHandler(osmium.SimpleHandler):
     """
 
     def __init__(self) -> None:
-        super(IdHandler, self).__init__()
+        super().__init__()
         self.node_ids = list()
         self.way_ids = list()
         self.relations_ids = list()
@@ -229,53 +234,6 @@ class IdHandler(osmium.SimpleHandler):
 
         """
         self.area_ids.append(a.id)
-
-    def count_features(self) -> dict:
-        """Count numbers of each available feature type.
-
-        Returns
-        -------
-        counts: dict
-            Counts of node, way, relation & area IDs in a pbf file.
-
-        """
-        counts = {
-            "n_nodes": len(self.node_ids),
-            "n_ways": len(self.way_ids),
-            "n_relations": len(self.relations_ids),
-            "n_areas": len(self.area_ids),
-        }
-        # in cases where the user has not ran the apply_file method, warn:
-        if _check_dict_values_all_equal(counts, 0):
-            warnings.warn(
-                "No counts were found, did you run `self.apply_file"
-                "(<INSERT PBF PATH>)`?",
-                UserWarning,
-            )
-        return counts
-
-    def get_feature_ids(self) -> dict:
-        """Get a list of all available IDs in a pbf file for each feature type.
-
-        Returns
-        -------
-        id_dict: dict
-            Available IDs for nodes, ways, relations and areas.
-
-        """
-        id_dict = {
-            "node_ids": self.node_ids,
-            "way_ids": self.way_ids,
-            "relation_ids": self.relations_ids,
-            "area_ids": self.area_ids,
-        }
-        if _check_dict_values_all_equal(id_dict, []):
-            warnings.warn(
-                "No Ids were found. Did you run "
-                "`self.apply_file(<INSERT PBF PATH>)?`",
-                UserWarning,
-            )
-        return id_dict
 
 
 class TagHandler(osmium.SimpleHandler):
@@ -400,11 +358,90 @@ class TagHandler(osmium.SimpleHandler):
         return result
 
 
-ids = IdHandler()
-ids.apply_file(PBF_FIX_PTH)
+class FindIds(_IdHandler):
+    """Apply ID collation to an OSM file.
+
+    Count or return available feature IDs in an OSM file.
+
+    Parameters
+    ----------
+    _IdHandler : class
+        Internal class for handling IDs. Inherits from osmium.SimpleHandler.
+    osm_pth: Union[Path, str]
+        Path to osm file.
+
+    Raises
+    ------
+    TypeError:
+        `osm_pth` is not of type pathlib.Path or str.
+    FileNotFoundError:
+        `osm_pth` file not found on disk.
+    ValueError:
+        `osm_pth` does not have a .pbf extension.
+
+    """
+
+    def __init__(self, osm_pth: Union[Path, str]) -> None:
+        super().__init__()
+        _is_expected_filetype(
+            osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
+        )
+        self.apply_file(PBF_FIX_PTH)
+
+    def count_features(self) -> dict:
+        """Count numbers of each available feature type.
+
+        Returns
+        -------
+        counts: dict
+            Counts of node, way, relation & area IDs in a pbf file.
+
+        """
+        counts = {
+            "n_nodes": len(self.node_ids),
+            "n_ways": len(self.way_ids),
+            "n_relations": len(self.relations_ids),
+            "n_areas": len(self.area_ids),
+        }
+        # in cases where the user has not ran the apply_file method, warn:
+        if _check_dict_values_all_equal(counts, 0):
+            warnings.warn(
+                "No counts were found, did you run `self.apply_file"
+                "(<INSERT PBF PATH>)`?",
+                UserWarning,
+            )
+        self.counts = counts
+        return counts
+
+    def get_feature_ids(self) -> dict:
+        """Get a list of all available IDs in a pbf file for each feature type.
+
+        Returns
+        -------
+        id_dict: dict
+            Available IDs for nodes, ways, relations and areas.
+
+        """
+        id_dict = {
+            "node_ids": self.node_ids,
+            "way_ids": self.way_ids,
+            "relation_ids": self.relations_ids,
+            "area_ids": self.area_ids,
+        }
+        if _check_dict_values_all_equal(id_dict, []):
+            warnings.warn(
+                "No Ids were found. Did you run "
+                "`self.apply_file(<INSERT PBF PATH>)?`",
+                UserWarning,
+            )
+        self.id_dict = id_dict
+        return id_dict
+
+
+ids = FindIds(osm_pth=PBF_FIX_PTH)
 ids.count_features()
-all_ids = ids.get_feature_ids()
-all_ids["way_ids"][0:11]
+ids.get_feature_ids()
+ids.id_dict["way_ids"][0:11]
 
 tags = TagHandler()
 tags.apply_file(PBF_FIX_PTH)
@@ -413,10 +450,10 @@ tags.node_tags[10971292662]  # subset by a single ID of interest
 # return tags for found feature IDs, some with empty and some with populated
 # tag lists.
 # Get a sliced list of IDs to investigate
-tags.check_tags_for_ids(all_ids["node_ids"][23:38], "node")
+tags.check_tags_for_ids(ids.id_dict["node_ids"][23:38], "node")
 # get some way tags
-tags.check_tags_for_ids(all_ids["way_ids"][0:11], "way")
+tags.check_tags_for_ids(ids.id_dict["way_ids"][0:11], "way")
 # get some relation tags
-tags.check_tags_for_ids(all_ids["relation_ids"][0:11], "relation")
+tags.check_tags_for_ids(ids.id_dict["relation_ids"][0:11], "relation")
 # get some area tags
-tags.check_tags_for_ids(all_ids["area_ids"][0:11], "area")
+tags.check_tags_for_ids(ids.id_dict["area_ids"][0:11], "area")
