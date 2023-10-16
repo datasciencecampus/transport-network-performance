@@ -5,8 +5,11 @@ import numpy as np
 import pandas as pd
 from haversine import Unit, haversine_vector
 
-from transport_performance.gtfs.gtfs_utils import _add_validation_row
-from transport_performance.utils.defence import _gtfs_defence
+from transport_performance.gtfs.gtfs_utils import (
+    _add_validation_row,
+    _get_validation_warnings,
+)
+from transport_performance.utils.defence import _gtfs_defence, _check_attribute
 
 if TYPE_CHECKING:
     from transport_performance.gtfs.validation import GtfsInstance
@@ -265,3 +268,47 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
         )
 
     return far_stops_df
+
+
+def validate_route_type_warnings(gtfs) -> None:
+    """Valiidate that the route type warnings are reasonable and just.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GtfsInstance to validate the warnings of.
+
+    Returns
+    -------
+    None
+
+    """
+    # defences
+    _gtfs_defence(gtfs, "gtfs")
+    _check_attribute(gtfs, "validity_df")
+    # identify and clean warnings
+    warnings = _get_validation_warnings(gtfs, "Invalid route_type.*")
+    if len(warnings) <= 0:
+        return None
+    route_rows = gtfs.feed.routes.loc[warnings[0][3]].copy()
+    route_rows = route_rows[
+        ~route_rows.route_type.astype("str").isin(
+            gtfs.ROUTE_LKP["route_type"].unique()
+        )
+    ]
+
+    # TODO: Create function to remove validatiion row
+    gtfs.validity_df = gtfs.validity_df[
+        ~gtfs.validity_df.message.str.contains(
+            "Invalid route_type.*", regex=True, na=False
+        )
+    ]
+    if len(route_rows) > 0:
+        _add_validation_row(
+            gtfs,
+            _type="error",
+            message="Invalid route_type; maybe has extra space characters",
+            table="routes",
+            rows=list(route_rows.index),
+        )
+    return None

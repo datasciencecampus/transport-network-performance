@@ -15,6 +15,8 @@ from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_list,
     _type_defence,
+    _check_attribute,
+    _gtfs_defence,
 )
 from transport_performance.utils.constants import PKG_PATH
 
@@ -310,3 +312,26 @@ def convert_pandas_to_plotly(
     if return_html:
         return fig.to_html(full_html=False)
     return fig
+
+
+def _get_validation_warnings(gtfs, message: str) -> pd.DataFrame:
+    _gtfs_defence(gtfs, "gtfs")
+    _check_attribute(
+        gtfs,
+        "validity_df",
+        message=(
+            "The gtfs has not been validated, therefore no"
+            "warnings can be identified."
+        ),
+    )
+    _type_defence(message, "message", str)
+    needed_warnings = (
+        gtfs.validity_df[
+            gtfs.validity_df["message"].str.contains(
+                message, regex=True, na=False
+            )
+        ]
+        .copy()
+        .values
+    )
+    return needed_warnings

@@ -3,7 +3,11 @@ from typing import Union
 
 import numpy as np
 
-from transport_performance.utils.defence import _gtfs_defence, _check_list
+from transport_performance.utils.defence import (
+    _gtfs_defence,
+    _check_list,
+)
+from transport_performance.gtfs.gtfs_utils import _get_validation_warnings
 
 
 def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
@@ -88,13 +92,8 @@ def clean_consecutive_stop_fast_travel_warnings(
     if validate:
         gtfs.is_valid()
 
-    needed_warning = (
-        gtfs.validity_df[
-            gtfs.validity_df["message"]
-            == "Fast Travel Between Consecutive Stops"
-        ]
-        .copy()
-        .values
+    needed_warning = _get_validation_warnings(
+        gtfs, "Fast Travel Between Consecutive Stops"
     )
 
     if len(needed_warning) < 1:
@@ -143,12 +142,8 @@ def clean_multiple_stop_fast_travel_warnings(
     if validate:
         gtfs.is_valid()
 
-    needed_warning = (
-        gtfs.validity_df[
-            gtfs.validity_df["message"] == "Fast Travel Over Multiple Stops"
-        ]
-        .copy()
-        .values
+    needed_warning = _get_validation_warnings(
+        gtfs, "Fast Travel Over Multiple Stops"
     )
 
     if len(needed_warning) < 1:

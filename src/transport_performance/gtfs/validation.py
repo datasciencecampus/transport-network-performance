@@ -19,6 +19,7 @@ from plotly.graph_objects import Figure as PlotlyFigure
 from transport_performance.gtfs.validators import (
     validate_travel_over_multiple_stops,
     validate_travel_between_consecutive_stops,
+    validate_route_type_warnings,
 )
 from transport_performance.gtfs.cleaners import (
     clean_consecutive_stop_fast_travel_warnings,
@@ -337,11 +338,16 @@ class GtfsInstance:
         self.file_list = file_list
         return self.file_list
 
-    def is_valid(self, far_stops: bool = True) -> pd.DataFrame:
+    def is_valid(
+        self, route_types: bool = True, far_stops: bool = True
+    ) -> pd.DataFrame:
         """Check a feed is valid with `gtfs_kit`.
 
         Parameters
         ----------
+        route_types : bool, optional
+            Whether or not to validate that the 'invalid route_type...'
+            warnings are valid (if they route type is actually invalid)
         far_stops : bool, optional
             Whether or not to perform validation for far stops (both
             between consecutive stops and over multiple stops)
@@ -352,7 +358,11 @@ class GtfsInstance:
             Table of errors, warnings & their descriptions.
 
         """
+        _type_defence(route_types, "route_types", bool)
+        _type_defence(far_stops, "far_stops", bool)
         self.validity_df = self.feed.validate()
+        if route_types:
+            validate_route_type_warnings(self)
         if far_stops:
             validate_travel_between_consecutive_stops(self)
             validate_travel_over_multiple_stops(self)
