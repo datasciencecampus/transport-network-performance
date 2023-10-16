@@ -162,7 +162,7 @@ i.way_tags[1181392039]
 i.area_tags[16417043]
 
 
-class OsmGetIds(osmium.SimpleHandler):
+class IdHandler(osmium.SimpleHandler):
     """Count or return available feature IDs in an OSM file.
 
     Parameters
@@ -173,7 +173,7 @@ class OsmGetIds(osmium.SimpleHandler):
     """
 
     def __init__(self) -> None:
-        super(OsmGetIds, self).__init__()
+        super(IdHandler, self).__init__()
         self.node_ids = []
         self.way_ids = []
         self.relations_ids = []
@@ -272,7 +272,7 @@ class OsmGetIds(osmium.SimpleHandler):
         return id_dict
 
 
-ids = OsmGetIds()
+ids = IdHandler()
 ids.apply_file(PBF_FIX_PTH)
 ids.count_features()
 all_ids = ids.get_feature_ids()
