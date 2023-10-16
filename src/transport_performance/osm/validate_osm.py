@@ -379,6 +379,13 @@ class FindIds(_IdHandler):
     ValueError:
         `osm_pth` does not have a .pbf extension.
 
+    Attributes
+    ----------
+    counts: dict
+        Counts of feature IDs by feature type.
+    id_dict: dict
+        IDs of all found features by feature type.
+
     """
 
     def __init__(self, osm_pth: Union[Path, str]) -> None:
@@ -387,6 +394,8 @@ class FindIds(_IdHandler):
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
         self.apply_file(PBF_FIX_PTH)
+        self.counts = dict()
+        self.id_dict = dict()
 
     def count_features(self) -> dict:
         """Count numbers of each available feature type.
