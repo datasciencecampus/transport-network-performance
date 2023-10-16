@@ -273,6 +273,15 @@ def _check_list(ls, param_nm, check_elements=True, exp_type=str):
     return None
 
 
+def _gtfs_defence(gtfs, param_nm):
+    """Defence checking. not exported."""
+    if gtfs.__class__.__name__ != "GtfsInstance":
+        raise TypeError(
+            f"'{param_nm}' expected a GtfsInstance object. "
+            f"Got {type(gtfs)}"
+        )
+
+
 def _check_column_in_df(df: pd.DataFrame, column_name: str) -> None:
     """Defences to check that a column exists in a df.
 

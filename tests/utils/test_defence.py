@@ -12,6 +12,7 @@ from pyprojroot import here
 from transport_performance.utils.defence import (
     _check_list,
     _check_parent_dir_exists,
+    _gtfs_defence,
     _type_defence,
     _check_column_in_df,
     _check_item_in_list,
@@ -132,6 +133,17 @@ class Test_CheckParentDirExists(object):
             "_check_parent_dir_exists did not make parent dir"
             " when 'create=True' (multiple levels)"
         )
+
+
+def test__gtfs_defence():
+    """Tests for _gtfs_defence()."""
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "'test' expected a GtfsInstance object. " "Got <class 'str'>"
+        ),
+    ):
+        _gtfs_defence("tester", "test")
 
 
 class Test_TypeDefence(object):
