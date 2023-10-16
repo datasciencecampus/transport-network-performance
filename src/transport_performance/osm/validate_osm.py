@@ -4,12 +4,19 @@ import warnings
 from typing import Any
 from pyprojroot import here
 
+from transport_performance.utils.defence import (
+    _check_item_in_list,
+    _check_list,
+    _type_defence,
+)
+
+
 PBF_FIX_PTH = here("tests/data/newport-2023-06-13.osm.pbf")
 WALES_LATEST_PTH = here("data/external/osm/wales-latest.osm.pbf")
 
 
 def _compile_tags(osmium_feature):
-    tagdict = {}
+    tagdict = dict()
     for tag in osmium_feature.tags:
         # taglist.append(tag)
         for i, tag in enumerate(tag):
@@ -167,57 +174,57 @@ class IdHandler(osmium.SimpleHandler):
 
     Parameters
     ----------
-    osmium : class
+    osmium.SimpleHandler : class
         Inherits from osmium.SimpleHandler
 
     """
 
     def __init__(self) -> None:
         super(IdHandler, self).__init__()
-        self.node_ids = []
-        self.way_ids = []
-        self.relations_ids = []
-        self.area_ids = []
+        self.node_ids = list()
+        self.way_ids = list()
+        self.relations_ids = list()
+        self.area_ids = list()
 
-    def node(self, n: osmium.osm.types.Node) -> None:
+    def node(self, n: osmium.Node) -> None:
         """Collate node IDs.
 
         Parameters
         ----------
-        n : osmium.osm.types.Node
+        n : osmium.Node
             A node feature.
 
         """
         self.node_ids.append(n.id)
 
-    def way(self, w: osmium.osm.types.Way) -> None:
+    def way(self, w: osmium.Way) -> None:
         """Collate way IDs.
 
         Parameters
         ----------
-        w : osmium.osm.types.Node
+        w : osmium.Way
             A way feature.
 
         """
         self.way_ids.append(w.id)
 
-    def relation(self, r: osmium.osm.types.Relation) -> None:
+    def relation(self, r: osmium.Relation) -> None:
         """Collate relation IDs.
 
         Parameters
         ----------
-        r : osmium.osm.types.Relation
+        r : osmium.Relation
             A relation feature.
 
         """
         self.relations_ids.append(r.id)
 
-    def area(self, a: osmium.osm.types.Area) -> None:
+    def area(self, a: osmium.Area) -> None:
         """Collate area IDs.
 
         Parameters
         ----------
-        a : osmium.osm.types.Area
+        a : osmium.Area
             An area feature (includes boundaries).
 
         """
@@ -240,7 +247,6 @@ class IdHandler(osmium.SimpleHandler):
         }
         # in cases where the user has not ran the apply_file method, warn:
         if _check_dict_values_all_equal(counts, 0):
-            # if all([count == 0 for count in counts.values()]):
             warnings.warn(
                 "No counts were found, did you run `self.apply_file"
                 "(<INSERT PBF PATH>)`?",
@@ -272,8 +278,145 @@ class IdHandler(osmium.SimpleHandler):
         return id_dict
 
 
+class TagHandler(osmium.SimpleHandler):
+    """Collate tags and check them for specified IDs.
+
+    Parameters
+    ----------
+    osmium.SimpleHandler : class
+        Inherits from osmium.SimpleHandler
+
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.node_tags = dict()
+        self.way_tags = dict()
+        self.relation_tags = dict()
+        self.area_tags = dict()
+
+    def node(self, n: osmium.Node) -> None:
+        """Collate node tags.
+
+        Parameters
+        ----------
+        n : osmium.Node
+            A node feature.
+
+        """
+        # get tags for each node
+        tagdict = _compile_tags(n)
+        self.node_tags[n.id] = tagdict
+
+    def way(self, w: osmium.Way) -> None:
+        """Collate way tags.
+
+        Parameters
+        ----------
+        w : osmium.Way
+            A way feature.
+
+        """
+        # get tags for each way
+        tagdict = _compile_tags(w)
+        self.way_tags[w.id] = tagdict
+
+    def relation(self, r: osmium.Relation) -> None:
+        """Collate relation tags.
+
+        Parameters
+        ----------
+        r : osmium.Relation
+            A relation feature.
+
+        """
+        # get tags for each relation
+        tagdict = _compile_tags(r)
+        self.relation_tags[r.id] = tagdict
+
+    def area(self, a: osmium.Area) -> None:
+        """Collate area tags.
+
+        Parameters
+        ----------
+        a : osmium.Area
+            An area feature (includes boundaries).
+
+        """
+        # get tags for each area
+        tagdict = _compile_tags(a)
+        self.area_tags[a.id] = tagdict
+
+    def check_tags_for_ids(self, ids: list, feature_type: str) -> dict:
+        """Return tags for provided list of feature IDs.
+
+        Parameters
+        ----------
+        ids : list
+            A list of OSM feature IDs to check. IDs must be integer.
+        feature_type : str
+            The type of feature to which the IDS belong. Valid options are
+            ["node", "way", "relation", "area"].
+
+        Returns
+        -------
+        dict
+            ID: dict of tags, containing tag name : value.
+
+        Raises
+        ------
+        ValueError
+            `feature_type` is not one of "node", "way", "relation" or "area".
+        TypeError
+            `ids` is not a list.
+            Elements of `ids` are not integer.
+            `feature_type` is not a string.
+
+        """
+        # defence
+        _check_list(ids, "ids", exp_type=int)
+        _type_defence(feature_type, "feature_type", str)
+        t = feature_type.lower().strip()
+        _check_item_in_list(
+            t, ["node", "way", "relation", "area"], "feature_type"
+        )
+        # return the tags for the appropriate feature_type
+        if t == "node":
+            target = self.node_tags
+        elif t == "way":
+            target = self.way_tags
+        elif t == "relation":
+            target = self.relation_tags
+        else:
+            target = self.area_tags
+
+        result = dict((id, target[id]) for id in ids if id in target)
+
+        if len(result) == 0:
+            raise ValueError(
+                "No tags found. Did you specify the correct feature_type?"
+            )
+
+        return result
+
+
 ids = IdHandler()
 ids.apply_file(PBF_FIX_PTH)
 ids.count_features()
 all_ids = ids.get_feature_ids()
 all_ids["way_ids"][0:11]
+
+tags = TagHandler()
+tags.apply_file(PBF_FIX_PTH)
+tags.node_tags[10971292662]  # subset by a single ID of interest
+# many features come without tags, this slice of available nodes shows how to
+# return tags for found feature IDs, some with empty and some with populated
+# tag lists.
+# Get a sliced list of IDs to investigate
+tags.check_tags_for_ids(all_ids["node_ids"][23:38], "node")
+# get some way tags
+tags.check_tags_for_ids(all_ids["way_ids"][0:11], "way")
+# get some relation tags
+tags.check_tags_for_ids(all_ids["relation_ids"][0:11], "relation")
+# get some area tags
+tags.check_tags_for_ids(all_ids["area_ids"][0:11], "area")
