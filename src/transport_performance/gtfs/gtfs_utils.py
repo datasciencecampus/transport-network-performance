@@ -315,6 +315,21 @@ def convert_pandas_to_plotly(
 
 
 def _get_validation_warnings(gtfs, message: str) -> pd.DataFrame:
+    """Get warnings from the validity_df table based on a regex.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance()
+        The gtfs instance to obtain the warnings from.
+    message : str
+        The regex to use for filtering the warnings.
+
+    Returns
+    -------
+    pd.DataFrame
+        A dataframe containing all warnings matching the regex.
+
+    """
     _gtfs_defence(gtfs, "gtfs")
     _check_attribute(
         gtfs,
