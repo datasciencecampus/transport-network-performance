@@ -8,6 +8,7 @@ from haversine import Unit, haversine_vector
 from transport_performance.gtfs.gtfs_utils import (
     _add_validation_row,
     _get_validation_warnings,
+    _remove_validation_row,
 )
 from transport_performance.utils.defence import _gtfs_defence, _check_attribute
 
@@ -296,13 +297,7 @@ def validate_route_type_warnings(gtfs) -> None:
             gtfs.ROUTE_LKP["route_type"].unique()
         )
     ]
-
-    # TODO: Create function to remove validatiion row
-    gtfs.validity_df = gtfs.validity_df[
-        ~gtfs.validity_df.message.str.contains(
-            "Invalid route_type.*", regex=True, na=False
-        )
-    ]
+    _remove_validation_row(gtfs, "Invalid route_type.*")
     if len(route_rows) > 0:
         _add_validation_row(
             gtfs,

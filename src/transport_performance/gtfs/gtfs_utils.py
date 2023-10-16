@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 from typing import Union
 import pathlib
 from geopandas import GeoDataFrame
+import numpy as np
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
@@ -350,3 +351,64 @@ def _get_validation_warnings(gtfs, message: str) -> pd.DataFrame:
         .values
     )
     return needed_warnings
+
+
+def _remove_validation_row(
+    gtfs, message: str = None, index: Union[list, np.array] = None
+) -> None:
+    """Remove rows from the 'validity_df' attr of a GtfsInstance().
+
+    Both a regex on messages and index locations can be used to drop drops. If
+    values are passed to both the 'index' and 'message' params, rows will be
+    removed using the regex passed to the 'message' param.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GtfsInstance to remove the warnings/errors from.
+    message : str, optional
+        The regex to filter messages by, by default None.
+    index : Union[list, np.array], optional
+        The index locations of rows to be removed, by default None.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        Error raised if both 'message' and 'index' params are None.
+    UserWarning
+        A warning is raised if both 'message' and 'index' params are not None.
+
+    """
+    # defences
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(message, "message", (str, type(None)))
+    _type_defence(index, "index", (list, np.ndarray, type(None)))
+    _check_attribute(gtfs, "validity_df")
+    # remove row from validation table
+    if message is None and index is None:
+        raise ValueError(
+            "Both 'message' and 'index' are None, therefore no"
+            "warnings/errors are able to be cleaned."
+        )
+    if message is not None and index is not None:
+        raise UserWarning(
+            "Both 'index' and 'message' are not None. Warnings/"
+            "Errors have been cleaned on 'message'"
+        )
+
+    if message is not None:
+        gtfs.validity_df = gtfs.validity_df[
+            ~gtfs.validity_df.message.str.contains(
+                message, regex=True, na=False
+            )
+        ]
+        return None
+
+    gtfs.validity_df = gtfs.validity_df.loc[
+        list(set(gtfs.validity_df.index) - set(index))
+    ]
+    return None
