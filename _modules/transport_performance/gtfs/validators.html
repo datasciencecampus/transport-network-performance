@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>transport_performance.gtfs.validators &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html"><cite>transport-performance</cite> API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/coverage.html">Unit Test Coverage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">transport_performance.gtfs.validators</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for transport_performance.gtfs.validators</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A set of functions that validate the GTFS data.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">haversine</span> <span class="kn">import</span> <span class="n">Unit</span><span class="p">,</span> <span class="n">haversine_vector</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.gtfs_utils</span> <span class="kn">import</span> <span class="n">_add_validation_row</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="n">_gtfs_defence</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">transport_performance.gtfs.validation</span> <span class="kn">import</span> <span class="n">GtfsInstance</span>
+
+<span class="c1"># a constant containing the max acceptable speed of a route type (vehicle type)</span>
+<span class="n">VEHICLE_SPEED_BOUNDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="mi">6</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="mi">7</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="mi">11</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+    <span class="mi">12</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
+    <span class="mi">200</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="validate_travel_between_consecutive_stops">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validators.validate_travel_between_consecutive_stops.html#transport_performance.gtfs.validators.validate_travel_between_consecutive_stops">[docs]</a>
+<span class="k">def</span> <span class="nf">validate_travel_between_consecutive_stops</span><span class="p">(</span><span class="n">gtfs</span><span class="p">:</span> <span class="s2">&quot;GtfsInstance&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate the travel between consecutive stops in the GTFS data.</span>
+
+<span class="sd">    Ensures that a trip is valid by examining the duration and distance</span>
+<span class="sd">    of a trip. If a vehicle is travelling at an unusual speed, the trip can</span>
+<span class="sd">    be deemed invalid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_gtfs_defence</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">)</span>
+    <span class="c1"># check if the validity_df table exists</span>
+    <span class="k">if</span> <span class="s2">&quot;validity_df&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gtfs</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;The validity_df does not exist in as an &quot;</span>
+            <span class="s2">&quot;attribute of your GtfsInstance object, </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Did you forget to run the .is_valid() method?&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">stops</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">[[</span><span class="s2">&quot;stop_id&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_lat&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_lon&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">stops</span><span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">stops</span><span class="p">[</span><span class="s2">&quot;stop_lat&quot;</span><span class="p">],</span> <span class="n">stops</span><span class="p">[</span><span class="s2">&quot;stop_lon&quot;</span><span class="p">]))[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="p">]</span>
+    <span class="n">stops</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;stop_lat&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_lon&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">stop_sched</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+        <span class="n">stops</span><span class="p">,</span>
+        <span class="n">on</span><span class="o">=</span><span class="s2">&quot;stop_id&quot;</span><span class="p">,</span>
+        <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># create a new column with the lonn/lat of the following stop</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lead_lat_lon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># TODO: Decide how to handle these cases</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lead_lat_lon&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lead_lat_lon&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># sort values for correct calculations</span>
+    <span class="n">stop_sched</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_sequence&quot;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="c1"># calculate the distance between two stops in meters</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">haversine_vector</span><span class="p">(</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lat_lon&quot;</span><span class="p">]),</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lead_lat_lon&quot;</span><span class="p">]),</span>
+        <span class="n">unit</span><span class="o">=</span><span class="n">Unit</span><span class="o">.</span><span class="n">KILOMETERS</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># flag last stops on trips</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lead_trip_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;trip_end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;lead_trip_id&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># calculate time taken to reach next stop</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;arrival_time_s&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;arrival_time&quot;</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="p">)</span>
+
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;departure_time_s&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;departure_time&quot;</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="p">)</span>
+
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+        <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;departure_time_s&quot;</span><span class="p">],</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;arrival_time_s&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+
+    <span class="c1"># clean dataframe</span>
+    <span class="n">stop_sched</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;lead_lat_lon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lead_trip_id&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;departure_time_s&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;arrival_time_s&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># calculate speed</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">])),</span> <span class="mi">3600</span>
+    <span class="p">)</span>
+
+    <span class="c1"># clean rows for last stops of a trip</span>
+    <span class="n">stop_sched</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">stop_sched</span><span class="o">.</span><span class="n">trip_end</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;speed&quot;</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="s2">&quot;duration&quot;</span><span class="p">)</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># handle rows with infinite speed</span>
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="p">)</span>
+
+    <span class="c1"># create a route_type lookup table for trips</span>
+    <span class="n">route_type_lkp</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="p">[[</span><span class="s2">&quot;route_id&quot;</span><span class="p">,</span> <span class="s2">&quot;trip_id&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+        <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">routes</span><span class="p">[[</span><span class="s2">&quot;route_id&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;route_id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+    <span class="p">)[[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">]]</span>
+
+    <span class="n">stop_sched</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">route_type_lkp</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;trip_id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+
+    <span class="c1"># determine whether the speed is within the bounds for that transport mode</span>
+    <span class="k">def</span> <span class="nf">_join_max_speed</span><span class="p">(</span><span class="n">r_type</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">VEHICLE_SPEED_BOUNDS</span><span class="p">[</span><span class="n">r_type</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">200</span>
+
+    <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed_bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;route_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_join_max_speed</span><span class="p">(</span><span class="n">r_type</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">full_stop_schedule</span> <span class="o">=</span> <span class="n">stop_sched</span>
+    <span class="c1"># find the stops that exceed the speed boundary</span>
+    <span class="n">invalid_stops</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed_bound&quot;</span><span class="p">]]</span>
+
+    <span class="c1"># check if the impacted rows are 0</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">invalid_stops</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">invalid_stops</span>
+
+    <span class="c1"># add the error to the validation table</span>
+    <span class="c1"># TODO: After merge add full_stop_schedule to HTML output table keys</span>
+    <span class="n">_add_validation_row</span><span class="p">(</span>
+        <span class="n">gtfs</span><span class="o">=</span><span class="n">gtfs</span><span class="p">,</span>
+        <span class="n">_type</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Fast Travel Between Consecutive Stops&quot;</span><span class="p">,</span>
+        <span class="n">table</span><span class="o">=</span><span class="s2">&quot;full_stop_schedule&quot;</span><span class="p">,</span>
+        <span class="n">rows</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">invalid_stops</span><span class="o">.</span><span class="n">index</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">invalid_stops</span></div>
+
+
+
+<div class="viewcode-block" id="validate_travel_over_multiple_stops">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validators.validate_travel_over_multiple_stops.html#transport_performance.gtfs.validators.validate_travel_over_multiple_stops">[docs]</a>
+<span class="k">def</span> <span class="nf">validate_travel_over_multiple_stops</span><span class="p">(</span><span class="n">gtfs</span><span class="p">:</span> <span class="s2">&quot;GtfsInstance&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate travel over multiple stops in the GTFS data.&quot;&quot;&quot;</span>
+    <span class="c1"># defences</span>
+    <span class="n">_gtfs_defence</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;full_stop_schedule&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gtfs</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;&#39;full_stops_schedule&#39; table not found. Passing GtfsInstance to&quot;</span>
+            <span class="s2">&quot;validate_travel_between_consecutive_stops() first.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">validate_travel_between_consecutive_stops</span><span class="p">(</span><span class="n">gtfs</span><span class="p">)</span>
+
+    <span class="n">stop_sched</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">full_stop_schedule</span>
+
+    <span class="c1"># take a list of unique trip ids that have speeds greater than the limit</span>
+    <span class="n">invalid_rows</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">stop_sched</span><span class="p">[</span><span class="s2">&quot;speed_bound&quot;</span><span class="p">]]</span>
+    <span class="n">trip_ids</span> <span class="o">=</span> <span class="n">invalid_rows</span><span class="o">.</span><span class="n">trip_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="n">needed_sched</span> <span class="o">=</span> <span class="n">stop_sched</span><span class="p">[</span><span class="n">stop_sched</span><span class="o">.</span><span class="n">trip_id</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">trip_ids</span><span class="p">)]</span>
+
+    <span class="c1"># create lists to store relevant information</span>
+    <span class="n">sequences</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">durations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">avg_speeds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ovr_distances</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_trip_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">trip_id</span> <span class="ow">in</span> <span class="n">trip_ids</span><span class="p">:</span>
+        <span class="c1"># take a subset of the data</span>
+        <span class="n">trip</span> <span class="o">=</span> <span class="n">needed_sched</span><span class="p">[</span><span class="n">needed_sched</span><span class="o">.</span><span class="n">trip_id</span> <span class="o">==</span> <span class="n">trip_id</span><span class="p">]</span>
+        <span class="n">trip</span> <span class="o">=</span> <span class="n">trip</span><span class="p">[</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;stop_sequence&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;distance&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;speed&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;speed_bound&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;duration&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;stop_id&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">FAR_DISTANCE_KM</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">MAX_SPEED_KPH</span> <span class="o">=</span> <span class="n">trip</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+
+        <span class="n">num_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trip</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">end_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_rows</span><span class="p">):</span>
+
+            <span class="c1"># initialise variable</span>
+            <span class="n">cur_avg_speed</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+            <span class="c1"># reset values</span>
+            <span class="n">distance_to_end_idx</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">overall_duration</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">max_distance_hit</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># loop through each row above the end index</span>
+            <span class="k">for</span> <span class="n">start_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">end_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">distance_to_end_idx</span> <span class="o">+=</span> <span class="n">trip</span><span class="p">[</span><span class="n">start_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">overall_duration</span> <span class="o">+=</span> <span class="n">trip</span><span class="p">[</span><span class="n">start_idx</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+
+                <span class="c1"># if the cumulative threshold is exceeded</span>
+                <span class="k">if</span> <span class="n">distance_to_end_idx</span> <span class="o">&gt;=</span> <span class="n">FAR_DISTANCE_KM</span><span class="p">:</span>
+                    <span class="n">max_distance_hit</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">cur_avg_speed</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">distance_to_end_idx</span> <span class="o">/</span> <span class="n">overall_duration</span>
+                    <span class="p">)</span> <span class="o">*</span> <span class="mi">3600</span>
+                    <span class="k">break</span>
+
+            <span class="c1"># ensure that the distance limit is exceeded and the overall speed</span>
+            <span class="c1"># across the stops is out of bounds</span>
+            <span class="k">if</span> <span class="n">cur_avg_speed</span> <span class="o">&gt;=</span> <span class="n">MAX_SPEED_KPH</span> <span class="ow">and</span> <span class="n">max_distance_hit</span><span class="p">:</span>
+                <span class="n">sequences</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">([</span><span class="n">start_idx</span><span class="p">,</span> <span class="n">end_idx</span><span class="p">]))</span>
+                <span class="n">all_trip_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trip_id</span><span class="p">)</span>
+                <span class="n">durations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">overall_duration</span><span class="p">)</span>
+                <span class="n">avg_speeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_avg_speed</span><span class="p">)</span>
+                <span class="n">ovr_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">distance_to_end_idx</span><span class="p">)</span>
+                <span class="k">break</span>
+
+    <span class="n">far_stops_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;trip_id&quot;</span><span class="p">:</span> <span class="n">all_trip_ids</span><span class="p">,</span>
+            <span class="s2">&quot;stop_sequences&quot;</span><span class="p">:</span> <span class="n">sequences</span><span class="p">,</span>
+            <span class="s2">&quot;overall_distance&quot;</span><span class="p">:</span> <span class="n">ovr_distances</span><span class="p">,</span>
+            <span class="s2">&quot;avg_speed&quot;</span><span class="p">:</span> <span class="n">avg_speeds</span><span class="p">,</span>
+            <span class="s2">&quot;overall_duration&quot;</span><span class="p">:</span> <span class="n">durations</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="c1"># TODO: Add this table to the lookup once gtfs HTML is merged</span>
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">multiple_stops_invalid</span> <span class="o">=</span> <span class="n">far_stops_df</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gtfs</span><span class="o">.</span><span class="n">multiple_stops_invalid</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">_add_validation_row</span><span class="p">(</span>
+            <span class="n">gtfs</span><span class="o">=</span><span class="n">gtfs</span><span class="p">,</span>
+            <span class="n">_type</span><span class="o">=</span><span class="s2">&quot;warning&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Fast Travel Over Multiple Stops&quot;</span><span class="p">,</span>
+            <span class="n">table</span><span class="o">=</span><span class="s2">&quot;multiple_stops_invalid&quot;</span><span class="p">,</span>
+            <span class="n">rows</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">gtfs</span><span class="o">.</span><span class="n">multiple_stops_invalid</span><span class="o">.</span><span class="n">index</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">far_stops_df</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+
+    <br><br>
+
+    <div>
+        Checkout the
+        <a href="https://github.com/datasciencecampus/transport-network-performance">
+            codebase on GitHub.
+        </a>
+    </div>
+
+    <br>
+
+    <div>
+        For more ONS Data Science Campus news see the
+        <a href="https://datasciencecampus.ons.gov.uk/">
+            Campus' website
+        </a>
+        and
+        <a href="https://twitter.com/i/flow/login?redirect_after_login=%2FDataSciCampus">
+            follow us on Twitter.
+        </a>
+    </div>
+
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

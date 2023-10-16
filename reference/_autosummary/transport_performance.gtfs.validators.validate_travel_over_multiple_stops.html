@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>convert_pandas_to_plotly &mdash; transport-performance 0.0.1 documentation</title>
+  <title>validate_travel_over_multiple_stops &mdash; transport-performance 0.0.1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
@@ -21,8 +21,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="filter_gtfs_around_trip" href="transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip.html" />
-    <link rel="prev" title="bbox_filter_gtfs" href="transport_performance.gtfs.gtfs_utils.bbox_filter_gtfs.html" /> 
+    <link rel="next" title="transport_performance.osm" href="transport_performance.osm.html" />
+    <link rel="prev" title="validate_travel_between_consecutive_stops" href="transport_performance.gtfs.validators.validate_travel_between_consecutive_stops.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -56,15 +56,14 @@
 <li class="toctree-l2"><a class="reference internal" href="transport_performance.population.html">transport_performance.population</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="transport_performance.gtfs.html">transport_performance.gtfs</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.cleaners.html">transport_performance.gtfs.cleaners</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.bbox_filter_gtfs.html">bbox_filter_gtfs</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">convert_pandas_to_plotly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip.html">filter_gtfs_around_trip</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.routes.html">transport_performance.gtfs.routes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.validation.html">transport_performance.gtfs.validation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.validators.html">transport_performance.gtfs.validators</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="transport_performance.gtfs.validators.html">transport_performance.gtfs.validators</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.validators.validate_travel_between_consecutive_stops.html">validate_travel_between_consecutive_stops</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">validate_travel_over_multiple_stops</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="transport_performance.osm.html">transport_performance.osm</a></li>
@@ -97,10 +96,10 @@
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html"><cite>transport-performance</cite> API</a></li>
           <li class="breadcrumb-item"><a href="transport_performance.gtfs.html">transport_performance.gtfs</a></li>
-          <li class="breadcrumb-item"><a href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a></li>
-      <li class="breadcrumb-item active">convert_pandas_to_plotly</li>
+          <li class="breadcrumb-item"><a href="transport_performance.gtfs.validators.html">transport_performance.gtfs.validators</a></li>
+      <li class="breadcrumb-item active">validate_travel_over_multiple_stops</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/_autosummary/transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/_autosummary/transport_performance.gtfs.validators.validate_travel_over_multiple_stops.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -108,39 +107,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="convert-pandas-to-plotly">
-<h1>convert_pandas_to_plotly<a class="headerlink" href="#convert-pandas-to-plotly" title="Link to this heading"></a></h1>
+  <section id="validate-travel-over-multiple-stops">
+<h1>validate_travel_over_multiple_stops<a class="headerlink" href="#validate-travel-over-multiple-stops" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly">
-<span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.gtfs_utils.</span></span><span class="sig-name descname"><span class="pre">convert_pandas_to_plotly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_html</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/gtfs_utils.html#convert_pandas_to_plotly"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly" title="Link to this definition"></a></dt>
-<dd><p>Convert a pandas dataframe to a visual plotly figure.</p>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
-<dl class="simple">
-<dt>df<span class="classifier">pd.DataFrame</span></dt><dd><p>A pandas dataframe to convert to plotly
-(single index only)</p>
-</dd>
-<dt>return_html<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to return the html element,
-by default False</p>
-</dd>
-</dl>
-</section>
-<section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
-<dl class="simple">
-<dt>go.Figure</dt><dd><p>A plotly figure containing the drawn dataframe</p>
-</dd>
-</dl>
-</section>
-<section id="raises">
-<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
-<dl class="simple">
-<dt>LookupError</dt><dd><p>An error raised if an invalid colour scheme is passed</p>
-</dd>
-<dt>TypeError</dt><dd><p>An error raised if the given pandas dataframe is MultiIndex</p>
-</dd>
-</dl>
-</section>
+<dt class="sig sig-object py" id="transport_performance.gtfs.validators.validate_travel_over_multiple_stops">
+<span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.validators.</span></span><span class="sig-name descname"><span class="pre">validate_travel_over_multiple_stops</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance" title="transport_performance.gtfs.validation.GtfsInstance"><span class="pre">GtfsInstance</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/validators.html#validate_travel_over_multiple_stops"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.validators.validate_travel_over_multiple_stops" title="Link to this definition"></a></dt>
+<dd><p>Validate travel over multiple stops in the GTFS data.</p>
 </dd></dl>
 
 </section>
@@ -149,8 +121,8 @@ by default False</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="transport_performance.gtfs.gtfs_utils.bbox_filter_gtfs.html" class="btn btn-neutral float-left" title="bbox_filter_gtfs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip.html" class="btn btn-neutral float-right" title="filter_gtfs_around_trip" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="transport_performance.gtfs.validators.validate_travel_between_consecutive_stops.html" class="btn btn-neutral float-left" title="validate_travel_between_consecutive_stops" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="transport_performance.osm.html" class="btn btn-neutral float-right" title="transport_performance.osm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

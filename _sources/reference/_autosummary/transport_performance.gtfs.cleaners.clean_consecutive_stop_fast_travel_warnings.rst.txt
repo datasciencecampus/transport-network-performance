@@ -1,0 +1,9 @@
+..
+  base.rst
+
+clean\_consecutive\_stop\_fast\_travel\_warnings
+================================================
+
+.. currentmodule:: transport_performance.gtfs.cleaners
+
+.. autofunction:: clean_consecutive_stop_fast_travel_warnings

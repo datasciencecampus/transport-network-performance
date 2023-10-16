@@ -1,10 +1,10 @@
 ..
   module.rst
 
-transport\_performance.gtfs.gtfs\_utils
-=======================================
+transport\_performance.gtfs.validators
+======================================
 
-.. automodule:: transport_performance.gtfs.gtfs_utils
+.. automodule:: transport_performance.gtfs.validators
 
     
         
@@ -19,9 +19,8 @@ transport\_performance.gtfs.gtfs\_utils
                 :nosignatures:
                 :template: autosummary/base.rst
                 
-                    bbox_filter_gtfs
-                    convert_pandas_to_plotly
-                    filter_gtfs_around_trip
+                    validate_travel_between_consecutive_stops
+                    validate_travel_over_multiple_stops
         
     
 

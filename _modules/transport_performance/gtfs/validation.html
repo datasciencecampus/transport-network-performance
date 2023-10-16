@@ -103,6 +103,14 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">plotly.graph_objects</span> <span class="kn">import</span> <span class="n">Figure</span> <span class="k">as</span> <span class="n">PlotlyFigure</span>
 
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.validators</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">validate_travel_over_multiple_stops</span><span class="p">,</span>
+    <span class="n">validate_travel_between_consecutive_stops</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.cleaners</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">clean_consecutive_stop_fast_travel_warnings</span><span class="p">,</span>
+    <span class="n">clean_multiple_stop_fast_travel_warnings</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">transport_performance.gtfs.routes</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">scrape_route_type_lookup</span><span class="p">,</span>
     <span class="n">get_saved_route_type_lookup</span><span class="p">,</span>
@@ -423,8 +431,14 @@
 
 <div class="viewcode-block" id="GtfsInstance.is_valid">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.is_valid">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">far_stops</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check a feed is valid with `gtfs_kit`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        far_stops : bool, optional</span>
+<span class="sd">            Whether or not to perform validation for far stops (both</span>
+<span class="sd">            between consecutive stops and over multiple stops)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -433,6 +447,9 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">far_stops</span><span class="p">:</span>
+            <span class="n">validate_travel_between_consecutive_stops</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">validate_travel_over_multiple_stops</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span></div>
 
 
@@ -489,13 +506,31 @@
 
 <div class="viewcode-block" id="GtfsInstance.clean_feed">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.clean_feed">[docs]</a>
-    <span class="k">def</span> <span class="nf">clean_feed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attempt to clean feed using `gtfs_kit`.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">clean_feed</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">fast_travel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attempt to clean feed using `gtfs_kit`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        validate: bool, optional</span>
+<span class="sd">            Whether or not to validate the dataframe before cleaning</span>
+<span class="sd">        fast_travel: bool, optional</span>
+<span class="sd">            Whether or not to clean warnings related to fast travel.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">fast_travel</span><span class="p">,</span> <span class="s2">&quot;fast_travel&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">validate</span><span class="p">,</span> <span class="s2">&quot;valiidate&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">far_stops</span><span class="o">=</span><span class="n">fast_travel</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># In cases where shape_id is missing, keyerror is raised.</span>
             <span class="c1"># https://developers.google.com/transit/gtfs/reference#shapestxt</span>
             <span class="c1"># shows that shapes.txt is optional file.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">fast_travel</span><span class="p">:</span>
+                <span class="n">clean_consecutive_stop_fast_travel_warnings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="n">clean_multiple_stop_fast_travel_warnings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="c1"># TODO: Issue 74 - Improve this to clean feed when KeyError raised</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;KeyError. Feed was not cleaned.&quot;</span><span class="p">)</span></div>
@@ -1538,8 +1573,9 @@
         <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-%m-%Y&quot;</span><span class="p">)</span>
 
         <span class="c1"># feed evaluation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clean_feed</span><span class="p">()</span>
-        <span class="n">validation_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clean_feed</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fast_travel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># re-validate to clean any newly raised errors/warnings</span>
+        <span class="n">validation_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">far_stops</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># create extended reports if requested</span>
         <span class="k">if</span> <span class="n">extended_validation</span><span class="p">:</span>

@@ -1,10 +1,10 @@
 ..
   module.rst
 
-transport\_performance.gtfs.gtfs\_utils
-=======================================
+transport\_performance.gtfs.cleaners
+====================================
 
-.. automodule:: transport_performance.gtfs.gtfs_utils
+.. automodule:: transport_performance.gtfs.cleaners
 
     
         
@@ -19,9 +19,9 @@ transport\_performance.gtfs.gtfs\_utils
                 :nosignatures:
                 :template: autosummary/base.rst
                 
-                    bbox_filter_gtfs
-                    convert_pandas_to_plotly
-                    filter_gtfs_around_trip
+                    clean_consecutive_stop_fast_travel_warnings
+                    clean_multiple_stop_fast_travel_warnings
+                    drop_trips
         
     
 

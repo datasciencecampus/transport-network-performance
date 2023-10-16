@@ -1,0 +1,9 @@
+..
+  base.rst
+
+validate\_travel\_over\_multiple\_stops
+=======================================
+
+.. currentmodule:: transport_performance.gtfs.validators
+
+.. autofunction:: validate_travel_over_multiple_stops

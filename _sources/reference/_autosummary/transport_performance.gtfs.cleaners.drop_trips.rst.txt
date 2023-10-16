@@ -1,0 +1,9 @@
+..
+  base.rst
+
+drop\_trips
+===========
+
+.. currentmodule:: transport_performance.gtfs.cleaners
+
+.. autofunction:: drop_trips

@@ -90,12 +90,13 @@
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
 <span class="kn">from</span> <span class="nn">pyprojroot</span> <span class="kn">import</span> <span class="n">here</span>
-<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">from</span> <span class="nn">geopandas</span> <span class="kn">import</span> <span class="n">GeoDataFrame</span>
-<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_is_expected_filetype</span><span class="p">,</span>
@@ -177,7 +178,7 @@
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">_check_list</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;bbox_list&quot;</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">_check_list</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;bbox&quot;</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="c1"># create box polygon around provided coords, need to splat</span>
         <span class="n">bbox</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">bbox</span><span class="p">)</span>
         <span class="c1"># gtfs_kit expects gdf</span>
@@ -187,6 +188,136 @@
     <span class="n">restricted_feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">miscellany</span><span class="o">.</span><span class="n">restrict_to_area</span><span class="p">(</span><span class="n">feed</span><span class="o">=</span><span class="n">feed</span><span class="p">,</span> <span class="n">area</span><span class="o">=</span><span class="n">bbox</span><span class="p">)</span>
     <span class="n">restricted_feed</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_pth</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtered feed written to </span><span class="si">{</span><span class="n">out_pth</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_add_validation_row</span><span class="p">(</span>
+    <span class="n">gtfs</span><span class="p">,</span> <span class="n">_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a row to the validity_df dataframe.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gtfs : GtfsInstance</span>
+<span class="sd">        The gtfs instance containing the validity_df df</span>
+<span class="sd">    _type : str</span>
+<span class="sd">        The type of error/warning</span>
+<span class="sd">    message : str</span>
+<span class="sd">        The error/warning message</span>
+<span class="sd">    table : str</span>
+<span class="sd">        The impacted table</span>
+<span class="sd">    rows : list, optional</span>
+<span class="sd">        The impacted rows, by default []</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    AttributeError</span>
+<span class="sd">        An error is raised if the validity df does not exist</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: add dtype defences from defence.py once gtfs-html-new is merged</span>
+    <span class="k">if</span> <span class="s2">&quot;validity_df&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gtfs</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;The validity_df does not exist as an &quot;</span>
+            <span class="s2">&quot;attribute of your GtfsInstance object, </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Did you forget to run the .is_valid() method?&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">temp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_type</span><span class="p">],</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">message</span><span class="p">],</span>
+            <span class="s2">&quot;table&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">table</span><span class="p">],</span>
+            <span class="s2">&quot;rows&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">rows</span><span class="p">],</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">validity_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">gtfs</span><span class="o">.</span><span class="n">validity_df</span><span class="p">,</span> <span class="n">temp_df</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
+        <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="filter_gtfs_around_trip">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip.html#transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip">[docs]</a>
+<span class="k">def</span> <span class="nf">filter_gtfs_around_trip</span><span class="p">(</span>
+    <span class="n">gtfs</span><span class="p">,</span>
+    <span class="n">trip_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">buffer_dist</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="n">crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;27700&quot;</span><span class="p">,</span>
+    <span class="n">out_pth</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;external&quot;</span><span class="p">,</span> <span class="s2">&quot;trip_gtfs.zip&quot;</span><span class="p">),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter a GTFS file to an area around a given trip in the GTFS.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gtfs : GtfsInstance</span>
+<span class="sd">        The GtfsInstance object to crop</span>
+<span class="sd">    trip_id : str</span>
+<span class="sd">        The trip ID</span>
+<span class="sd">    buffer_dist : int, optional</span>
+<span class="sd">        The distance to create a buffer around the trip, by default 10000</span>
+<span class="sd">    units : str, optional</span>
+<span class="sd">        Distance units of the original GTFS, by default &quot;m&quot;</span>
+<span class="sd">    crs : str, optional</span>
+<span class="sd">        The CRS to use for adding a buffer, by default &quot;27700&quot;</span>
+<span class="sd">    out_pth : _type_, optional</span>
+<span class="sd">        Where to save the new GTFS file,</span>
+<span class="sd">          by default os.path.join(&quot;data&quot;, &quot;external&quot;, &quot;trip_gtfs.zip&quot;)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        An error is raised if a shapeID is not available</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: Add datatype defences once merged</span>
+    <span class="n">trips</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span>
+    <span class="n">shapes</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">shapes</span>
+
+    <span class="n">shape_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">trips</span><span class="p">[</span><span class="n">trips</span><span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">trip_id</span><span class="p">][</span><span class="s2">&quot;shape_id&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># defence</span>
+    <span class="c1"># try/except for math.isnan() returning TypeError for strings</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">shape_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;&#39;shape_id&#39; not available for trip with trip_id: &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trip_id</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># create a buffer around the trip</span>
+    <span class="n">trip_shape</span> <span class="o">=</span> <span class="n">shapes</span><span class="p">[</span><span class="n">shapes</span><span class="p">[</span><span class="s2">&quot;shape_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">shape_id</span><span class="p">]</span>
+    <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+        <span class="n">trip_shape</span><span class="p">,</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">points_from_xy</span><span class="p">(</span>
+            <span class="n">trip_shape</span><span class="o">.</span><span class="n">shape_pt_lon</span><span class="p">,</span> <span class="n">trip_shape</span><span class="o">.</span><span class="n">shape_pt_lat</span>
+        <span class="p">),</span>
+        <span class="n">crs</span><span class="o">=</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">buffered_trip</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">buffer_dist</span><span class="p">)</span>
+    <span class="n">bbox</span> <span class="o">=</span> <span class="n">buffered_trip</span><span class="o">.</span><span class="n">total_bounds</span>
+
+    <span class="c1"># filter the gtfs to the new bbox</span>
+    <span class="n">bbox_filter_gtfs</span><span class="p">(</span>
+        <span class="n">in_pth</span><span class="o">=</span><span class="n">gtfs</span><span class="o">.</span><span class="n">gtfs_path</span><span class="p">,</span>
+        <span class="n">bbox</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">bbox</span><span class="p">),</span>
+        <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span>
+        <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+        <span class="n">out_pth</span><span class="o">=</span><span class="n">out_pth</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="kc">None</span></div>
 

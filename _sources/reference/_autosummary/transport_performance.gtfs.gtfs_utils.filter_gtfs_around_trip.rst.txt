@@ -1,0 +1,9 @@
+..
+  base.rst
+
+filter\_gtfs\_around\_trip
+==========================
+
+.. currentmodule:: transport_performance.gtfs.gtfs_utils
+
+.. autofunction:: filter_gtfs_around_trip

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>transport_performance.gtfs.cleaners &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html"><cite>transport-performance</cite> API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/coverage.html">Unit Test Coverage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">transport_performance.gtfs.cleaners</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for transport_performance.gtfs.cleaners</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A set of functions that clean the gtfs data.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="n">_gtfs_defence</span><span class="p">,</span> <span class="n">_check_list</span>
+
+
+<div class="viewcode-block" id="drop_trips">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.cleaners.drop_trips.html#transport_performance.gtfs.cleaners.drop_trips">[docs]</a>
+<span class="k">def</span> <span class="nf">drop_trips</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="n">trip_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Drop trip{s} from a GtfsInstance object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gtfs : GtfsInstance</span>
+<span class="sd">        The GtfsInstance object to drop the trip(s) from</span>
+<span class="sd">    trip_id : Union[str, list, np.ndarray]</span>
+<span class="sd">        The trip ID(s) of the trip to be dropped from the gtfs data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># defences</span>
+    <span class="n">_gtfs_defence</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trip_id</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;trip_id&#39; received type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">trip_id</span><span class="p">)</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;Expected types: [str, list, np.ndarray]&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># ensure trip ID is an iterable</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trip_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">trip_id</span> <span class="o">=</span> <span class="p">[</span><span class="n">trip_id</span><span class="p">]</span>
+
+    <span class="c1"># _check_list only takes lists, therefore convert numpy arrays</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trip_id</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="n">trip_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">trip_id</span><span class="p">)</span>
+
+    <span class="c1"># ensure trip ids are string</span>
+    <span class="n">_check_list</span><span class="p">(</span>
+        <span class="n">ls</span><span class="o">=</span><span class="n">trip_id</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;trip_id&quot;</span><span class="p">,</span> <span class="n">check_elements</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="nb">str</span>
+    <span class="p">)</span>
+
+    <span class="c1"># drop relevant records from tables</span>
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="p">[</span>
+        <span class="o">~</span><span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">trip_id</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="p">[</span>
+        <span class="o">~</span><span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">trip_id</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="c1"># finish cleaning up deleted trips</span>
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">drop_zombies</span><span class="p">()</span>
+
+    <span class="c1"># re-run so that summaries can be updated</span>
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">pre_processed_trips</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">_preprocess_trips_and_routes</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="clean_consecutive_stop_fast_travel_warnings">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.cleaners.clean_consecutive_stop_fast_travel_warnings.html#transport_performance.gtfs.cleaners.clean_consecutive_stop_fast_travel_warnings">[docs]</a>
+<span class="k">def</span> <span class="nf">clean_consecutive_stop_fast_travel_warnings</span><span class="p">(</span>
+    <span class="n">gtfs</span><span class="p">,</span> <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean &#39;Fast Travel Between Consecutive Stops&#39; warnings from validity_df.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gtfs : GtfsInstance</span>
+<span class="sd">        The GtfsInstance to clean warnings within</span>
+<span class="sd">    validate : bool, optional</span>
+<span class="sd">        Whether or not to validate the gtfs before carrying out this cleaning</span>
+<span class="sd">        operation</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># defences</span>
+    <span class="n">_gtfs_defence</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;validity_df&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gtfs</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">validate</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;The gtfs has not been validated, therefore no&quot;</span>
+            <span class="s2">&quot;warnings can be identified. You can pass &quot;</span>
+            <span class="s2">&quot;validate=True to this function to validate the &quot;</span>
+            <span class="s2">&quot;gtfs.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+        <span class="n">gtfs</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+
+    <span class="n">needed_warning</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">gtfs</span><span class="o">.</span><span class="n">validity_df</span><span class="p">[</span>
+            <span class="n">gtfs</span><span class="o">.</span><span class="n">validity_df</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
+            <span class="o">==</span> <span class="s2">&quot;Fast Travel Between Consecutive Stops&quot;</span>
+        <span class="p">]</span>
+        <span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">values</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">needed_warning</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">trip_ids</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">full_stop_schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">needed_warning</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">trip_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="c1"># drop trips from tables</span>
+    <span class="n">drop_trips</span><span class="p">(</span><span class="n">gtfs</span><span class="o">=</span><span class="n">gtfs</span><span class="p">,</span> <span class="n">trip_id</span><span class="o">=</span><span class="n">trip_ids</span><span class="p">)</span>
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">full_stop_schedule</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">full_stop_schedule</span><span class="p">[</span>
+        <span class="o">~</span><span class="n">gtfs</span><span class="o">.</span><span class="n">full_stop_schedule</span><span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">trip_ids</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="clean_multiple_stop_fast_travel_warnings">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.cleaners.clean_multiple_stop_fast_travel_warnings.html#transport_performance.gtfs.cleaners.clean_multiple_stop_fast_travel_warnings">[docs]</a>
+<span class="k">def</span> <span class="nf">clean_multiple_stop_fast_travel_warnings</span><span class="p">(</span>
+    <span class="n">gtfs</span><span class="p">,</span> <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean &#39;Fast Travel Over Multiple Stops&#39; warnings from validity_df.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gtfs : GtfsInstance</span>
+<span class="sd">        The GtfsInstance to clean warnings within</span>
+<span class="sd">    validate : bool, optional</span>
+<span class="sd">        Whether or not to validate the gtfs before carrying out this cleaning</span>
+<span class="sd">        operation</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># defences</span>
+    <span class="n">_gtfs_defence</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;validity_df&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gtfs</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">validate</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;The gtfs has not been validated, therefore no&quot;</span>
+            <span class="s2">&quot;warnings can be identified. You can pass &quot;</span>
+            <span class="s2">&quot;validate=True to this function to validate the &quot;</span>
+            <span class="s2">&quot;gtfs.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+        <span class="n">gtfs</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+
+    <span class="n">needed_warning</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">gtfs</span><span class="o">.</span><span class="n">validity_df</span><span class="p">[</span>
+            <span class="n">gtfs</span><span class="o">.</span><span class="n">validity_df</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Fast Travel Over Multiple Stops&quot;</span>
+        <span class="p">]</span>
+        <span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">values</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">needed_warning</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">trip_ids</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">multiple_stops_invalid</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="n">needed_warning</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">trip_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="c1"># drop trips from tables</span>
+    <span class="n">drop_trips</span><span class="p">(</span><span class="n">gtfs</span><span class="o">=</span><span class="n">gtfs</span><span class="p">,</span> <span class="n">trip_id</span><span class="o">=</span><span class="n">trip_ids</span><span class="p">)</span>
+    <span class="n">gtfs</span><span class="o">.</span><span class="n">multiple_stops_invalid</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">multiple_stops_invalid</span><span class="p">[</span>
+        <span class="o">~</span><span class="n">gtfs</span><span class="o">.</span><span class="n">multiple_stops_invalid</span><span class="p">[</span><span class="s2">&quot;trip_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">trip_ids</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+
+    <br><br>
+
+    <div>
+        Checkout the
+        <a href="https://github.com/datasciencecampus/transport-network-performance">
+            codebase on GitHub.
+        </a>
+    </div>
+
+    <br>
+
+    <div>
+        For more ONS Data Science Campus news see the
+        <a href="https://datasciencecampus.ons.gov.uk/">
+            Campus' website
+        </a>
+        and
+        <a href="https://twitter.com/i/flow/login?redirect_after_login=%2FDataSciCampus">
+            follow us on Twitter.
+        </a>
+    </div>
+
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

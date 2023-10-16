@@ -1,0 +1,9 @@
+..
+  base.rst
+
+validate\_travel\_between\_consecutive\_stops
+=============================================
+
+.. currentmodule:: transport_performance.gtfs.validators
+
+.. autofunction:: validate_travel_between_consecutive_stops

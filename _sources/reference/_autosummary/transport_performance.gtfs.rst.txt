@@ -31,7 +31,9 @@ transport\_performance.gtfs
             :template: autosummary/module.rst
             :recursive:
             
+                transport_performance.gtfs.cleaners
                 transport_performance.gtfs.gtfs_utils
                 transport_performance.gtfs.routes
                 transport_performance.gtfs.validation
+                transport_performance.gtfs.validators
     
