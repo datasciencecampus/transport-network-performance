@@ -532,7 +532,7 @@ class UrbanCentre:
         d._type_defence(aff, "aff", affine.Affine)
         d._type_defence(raster_crs, "raster_crs", rasterio.crs.CRS)
         d._type_defence(nodata, "nodata", int)
-        d._type_defence(centre_crs, "centre_crs", (None, str))
+        d._type_defence(centre_crs, "centre_crs", (type(None), str))
 
         if centre_crs is None:
             centre_crs = raster_crs
