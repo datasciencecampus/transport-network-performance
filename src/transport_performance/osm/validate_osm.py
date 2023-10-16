@@ -435,6 +435,8 @@ class FindTags(_TagHandler):
         ------
         ValueError
             `feature_type` is not one of "node", "way", "relation" or "area".
+            `found_tags` is empty. No tags for the combination of `ids` and
+            `feature_type` were found.
         TypeError
             `ids` is not a list.
             Elements of `ids` are not integer.
