@@ -233,7 +233,7 @@ def _type_defence(some_object, param_nm, types) -> None:
     return None
 
 
-def _check_iter_length(iterable: Iterable, param_nm: str, length: int):
+def _check_iter_length(iterable: Iterable, param_nm: str, length: int) -> None:
     """Check the length of an iterable.
 
     Parameters
@@ -276,7 +276,7 @@ def _check_iterable(
     exp_type: Union[tuple, type] = str,
     check_length: bool = False,
     length: int = 0,
-):
+) -> None:
     """Check an iterable and its elements for type.
 
     Parameters
@@ -290,18 +290,21 @@ def _check_iterable(
     check_elements : bool, optional
         Whether to check the list element types. Defaults to True.
     exp_type : Union[tuple, type], optional:
-        The expected type of the elements. Defaults to str. If using a tuple,
-        it should be a tuple of types.
+        The expected type of the elements. If using a tuple, it should be a
+        tuple of types. Defaults to str.
     check_length: bool, optional
         Wether to check the length of the iterable. Defaults to False.
     length: int, optional
-        Expected length of the iterable.
+        Expected length of the iterable. Defaults to 0.
 
     Raises
     ------
-        TypeError: `iterable` is not iterable.
-        TypeError: `exp_type` contains elements that are not type.
-        TypeError: Elements of `iterable` are not of the expected type(s).
+        TypeError
+            `iterable` is not iterable.
+        TypeError
+            `exp_type` contains elements that are not type.
+        TypeError
+            Elements of `iterable` are not of the expected type(s).
 
     Returns
     -------
@@ -329,7 +332,7 @@ def _check_iterable(
         _type_defence(exp_type, "exp_type", (type, tuple))
 
     # check length
-    if check_length is True:
+    if check_length:
         _check_iter_length(iterable, param_nm, length)
 
     # check if elements are of the expected types

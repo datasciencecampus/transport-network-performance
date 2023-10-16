@@ -74,6 +74,7 @@ class UrbanCentre:
 
         # check that path is str or pathlib.Path
         d._is_expected_filetype(path, "file", exp_ext=exp_ext)
+        d._check_iterable(exp_ext, "exp_ext", list, True, str)
         self.file = path
 
     def get_urban_centre(
@@ -307,10 +308,10 @@ class UrbanCentre:
         d._type_defence(flag_array, "flag_array", np.ndarray)
         d._type_defence(diag, "diag", bool)
 
-        if diag is False:
-            s = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
-        elif diag is True:
+        if diag:
             s = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
+        else:
+            s = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
 
         labelled_array, num_clusters = label(flag_array, s)
 
@@ -531,6 +532,7 @@ class UrbanCentre:
         d._type_defence(aff, "aff", affine.Affine)
         d._type_defence(raster_crs, "raster_crs", rasterio.crs.CRS)
         d._type_defence(nodata, "nodata", int)
+        d._type_defence(centre_crs, "centre_crs", (None, str))
 
         if centre_crs is None:
             centre_crs = raster_crs
