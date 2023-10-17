@@ -115,9 +115,9 @@ def _filter_target_dict_with_list(
 
     """
     _type_defence(targets, "targets", dict)
-    _type_defence(search_key, "feature_type", str)
+    _type_defence(search_key, "search_key", str)
     _check_list(_list, "_list", exp_type=int)
-    _check_list(accepted_keys, "accepted_features", exp_type=str)
+    _check_list(accepted_keys, "accepted_keys", exp_type=str)
     _check_item_in_list(search_key, accepted_keys, "search_key")
 
     feat = search_key.lower().strip()
