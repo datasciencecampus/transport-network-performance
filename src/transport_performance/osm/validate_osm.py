@@ -1,4 +1,16 @@
-"""Validation of OSM pbf files."""
+"""Validation of OSM pbf files.
+
+pyosmium requires handler classes that inherit from their API. The methods of
+these handlers must be named `node`, `way`, `relation` or `area`. Exposing
+these methods would offer no functionality, therefore internal handler classes
+are used to collect and process the feature information.
+
+A separate group of classes are then defined, inheriting from these internal
+handlers. These API classes are used to apply the logic of the handler classes
+to an osm.pbf file. The API classes also define methods associated with the
+user requirements, eg 'find way Ids', 'find the coordinates for this list of
+node IDs' or similar.
+"""
 import osmium
 import warnings
 from typing import Any
@@ -11,6 +23,8 @@ from transport_performance.utils.defence import (
     _type_defence,
     _is_expected_filetype,
 )
+
+# ---------utilities-----------
 
 
 def _compile_tags(osmium_feature):
@@ -125,102 +139,7 @@ def _filter_target_dict_with_list(
     return {feat: filtered_dict}
 
 
-# ---- look at internals
-class GenericHandler(osmium.SimpleHandler):
-    """Placeholder.
-
-    Parameters
-    ----------
-    osmium : class
-        Inherits from osmium.SimpleHandler
-
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.node_ids = []
-        self.node_locs = {}
-        self.node_tags = {}
-        self.way_ids = []
-        self.way_nodes = {}
-        self.way_tags = {}
-        self.relations_ids = []
-        self.relations_members = {}
-        self.relations_tags = {}
-        self.area_ids = []
-        self.area_tags = {}
-
-    # the methods you define must be called node, way, relation, area or
-    # changeset
-
-    def way(self, w):
-        """Process ways.
-
-        Parameters
-        ----------
-        w : osmium.osm.types.Way
-            A 'way' feature.
-
-        """
-        self.way_ids.append(w.id)
-        # compile the member nodes of each way
-        nodelist = []
-        for node in w.nodes:
-            nodelist.append(node.ref)
-        self.way_nodes[w.id] = nodelist
-        # compile tags for each way
-        tags_dict = _compile_tags(w)
-        self.way_tags[w.id] = tags_dict
-
-    def relation(self, r):
-        """Process relations.
-
-        Parameters
-        ----------
-        r : osmium.osm.types.Relation
-            A 'relation' feature.
-
-        """
-        self.relations_ids.append(r.id)
-        members_list = []
-        # compile the relation members
-        for member in r.members:
-            members_list.append(member)
-        self.relations_members[r.id] = members_list
-        # compile the relation tags
-        tags_dict = _compile_tags(r)
-        self.relations_tags[r.id] = tags_dict
-
-    def node(self, n):
-        """Process nodes.
-
-        Parameters
-        ----------
-        n : osmium.osm.types.Node
-            A 'node' feature.
-
-        """
-        self.node_ids.append(n.id)
-        # extract x,y
-        x, y = str(n.location).split("/")
-        # store representative point for each node
-        self.node_locs[n.id] = {"lon": x, "lat": y}
-        # get tags for each node
-        tagdict = _compile_tags(n)
-        self.node_tags[n.id] = tagdict
-
-    def area(self, a):
-        """Process areas.
-
-        Parameters
-        ----------
-        a : osmium.osm.types.Area
-            An 'Area' feature.
-
-        """
-        self.area_ids.append(a.id)
-        tagdict = _compile_tags(a)
-        self.area_tags[a.id] = tagdict
+# ---------Internal Classes-----------
 
 
 class _IdHandler(osmium.SimpleHandler):
@@ -405,6 +324,9 @@ class _LocHandler(osmium.SimpleHandler):
         self.way_node_locs[w.id] = nodelist
 
 
+# ---------API classes-----------
+
+
 class FindIds(_IdHandler):
     """Apply ID collation to an OSM file.
 
@@ -432,6 +354,33 @@ class FindIds(_IdHandler):
         Counts of feature IDs by feature type.
     id_dict: dict
         IDs of all found features by feature type.
+    node_ids: list
+        List of available OSM node feature IDs. Inheroted from _IdHandler.
+    way_ids: list
+        List of available OSM way feature IDs. Inheroted from _IdHandler.
+    relations_ids: list
+        List of available OSM relation feature IDs. Inheroted from _IdHandler.
+    area_ids: list
+        List of available OSM area feature IDs. Inheroted from _IdHandler.
+
+    Methods
+    -------
+    count_features()
+        Count of feature IDs by feature type.
+    get_feature_ids()
+        Return feature IDs by available feature type.
+    node()
+        Collates available OSM node feature IDs. Creates the node_ids
+        attribute. Inherited from _IdHandler.
+    way()
+        Collates available OSM way feature IDs. Creates the way_ids attribute.
+        Inherited from _IdHandler.
+    relation()
+        Collates available OSM relation feature IDs. Creates the relations_ids
+        attribute. Inherited from _IdHandler.
+    area()
+        Collates available OSM area feature IDs. Creates the area_ids
+        attribute. Inherited from _IdHandler.
 
     """
 
@@ -517,6 +466,31 @@ class FindTags(_TagHandler):
     ----------
     found_tags: dict
         Found tags for specified feature IDs.
+    node_tags: dict
+        Tags found for OSM node features. Inherited from _TagHandler.
+    way_tags: dict
+        Tags found for OSM way features. Inherited from _TagHandler.
+    relation_tags: dict
+        Tags found for OSM relation features. Inherited from _TagHandler.
+    area_tags: dict
+        Tags found for OSM area features. Inherited from _TagHandler.
+
+    Methods
+    -------
+    check_tags_for_ids()
+        Filter tags to the given list of IDs. Updates `found_tags` attribute.
+    node()
+        Compiles all available tag data for OSM node features. Creates the
+        node_tags attribute. Inherited from _TagHandler.
+    way()
+        Compiles all available tag data for OSM way features. Creates the
+        way_tags attribute. Inherited from _TagHandler.
+    relation()
+        Compiles all available tag data for OSM relation features. Creates the
+        relation_tags attribute. Inherited from _TagHandler.
+    area()
+        Compiles all available tag data for OSM area features. Creates the
+        area_tags attribute. Inherited from _TagHandler.
 
     """
 
@@ -583,6 +557,23 @@ class FindLocations(_LocHandler):
     ----------
     found_locs: dict
         Found locations for specified feature IDs.
+    node_locs: dict
+        Node coordinates. Inherited from class _LocHandler.
+    way_node_locs: dict
+        Member node coordinates for each way feature. Inherited from class
+        _LocHandler.
+
+    Methods
+    -------
+    check_locs_for_ids()
+        Filter locations to the given list of IDs. Updates `found_locs`
+        attribute.
+    node()
+        Gets coordinate data from a node. Creates the `node_locs` attribute.
+        Inherited from class _LocHandler.
+    way()
+        Gets coordinate data for each node member of a way. Creates the
+        `way_node_locs` attribute. Inherited from class _LocHandler.
 
     """
 
