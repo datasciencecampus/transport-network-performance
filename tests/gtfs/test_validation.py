@@ -354,8 +354,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'geoms' expected one of the following:"
-                "['point', 'hull'] Got foobar"
+                "'geoms' expected one of the following: "
+                "['point', 'hull']. Got foobar: <class 'str'>"
             ),
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
@@ -863,8 +863,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'orientation' expected one of the following:"
-                f"{options} Got i"
+                "'orientation' expected one of the following: "
+                f"{options}. Got i: <class 'str'>"
             ),
         ):
             gtfs_fixture._plot_summary(
@@ -894,8 +894,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'which' expected one of the following:"
-                "['trip', 'route'] Got tester"
+                "'which' expected one of the following: "
+                "['trip', 'route']. Got tester: <class 'str'>"
             ),
         ):
             gtfs_fixture._plot_summary(which="tester", target_column="tester")
