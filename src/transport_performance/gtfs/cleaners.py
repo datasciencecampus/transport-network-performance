@@ -160,3 +160,6 @@ def clean_multiple_stop_fast_travel_warnings(
         ~gtfs.multiple_stops_invalid["trip_id"].isin(trip_ids)
     ]
     return None
+
+
+# TODO: add core_cleaner
