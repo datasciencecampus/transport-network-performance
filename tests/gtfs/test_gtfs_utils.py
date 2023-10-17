@@ -17,6 +17,7 @@ from transport_performance.gtfs.gtfs_utils import (
     filter_gtfs_around_trip,
     convert_pandas_to_plotly,
     _get_validation_warnings,
+    _remove_validation_row,
 )
 
 # location of GTFS test fixture
@@ -283,3 +284,50 @@ class TestGetValidationWarnings(object):
             gtfs, "This is a test!!!", return_type="Dataframe"
         )
         assert len(no_match) == 0, "No matches expected. Matched found"
+
+
+class TestRemoveValidationRow(object):
+    """Tests for _remove_validation_row."""
+
+    def test__remove_validation_row_defence(self):
+        """Tests the defences of _remove_validation_row."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid()
+        # no message or index provided
+        with pytest.raises(
+            ValueError, match=r"Both .* and .* are None, .* to be cleaned"
+        ):
+            _remove_validation_row(gtfs)
+        # both provided
+        with pytest.warns(
+            UserWarning,
+            match=r"Both .* and .* are not None.* cleaned on 'message'",
+        ):
+            _remove_validation_row(gtfs, message="test", index=[0, 1])
+
+    def test__remove_validation_row_on_pass(self):
+        """Tests for _remove_validation_row on pass."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid()
+        # with message
+        msg = "Unrecognized column agency_noc"
+        _remove_validation_row(gtfs, message=msg)
+        assert len(gtfs.validity_df) == 5, "DF is incorrect size"
+        found_cols = _get_validation_warnings(
+            gtfs, message=msg, return_type="dataframe"
+        )
+        assert (
+            len(found_cols) == 0
+        ), "Invalid errors/warnings still in validity_df"
+        # with index (removing the same error)
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid()
+        ind = [0]
+        _remove_validation_row(gtfs, index=ind)
+        assert len(gtfs.validity_df) == 5, "DF is incorrect size"
+        found_cols = _get_validation_warnings(
+            gtfs, message=msg, return_type="dataframe"
+        )
+        assert (
+            len(found_cols) == 0
+        ), "Invalid errors/warnings still in validity_df"

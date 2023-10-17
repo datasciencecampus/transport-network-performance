@@ -11,6 +11,7 @@ from typing import Union
 import pathlib
 from geopandas import GeoDataFrame
 import numpy as np
+import warnings
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
@@ -400,18 +401,19 @@ def _remove_validation_row(
     _type_defence(message, "message", (str, type(None)))
     _type_defence(index, "index", (list, np.ndarray, type(None)))
     _check_attribute(gtfs, "validity_df")
-    # remove row from validation table
     if message is None and index is None:
         raise ValueError(
             "Both 'message' and 'index' are None, therefore no"
             "warnings/errors are able to be cleaned."
         )
     if message is not None and index is not None:
-        raise UserWarning(
-            "Both 'index' and 'message' are not None. Warnings/"
-            "Errors have been cleaned on 'message'"
+        warnings.warn(
+            UserWarning(
+                "Both 'index' and 'message' are not None. Warnings/"
+                "Errors have been cleaned on 'message'"
+            )
         )
-
+    # remove row from validation table
     if message is not None:
         gtfs.validity_df = gtfs.validity_df[
             ~gtfs.validity_df.message.str.contains(
