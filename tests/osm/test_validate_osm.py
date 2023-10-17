@@ -154,3 +154,19 @@ class Test_FilterTargetDictWithList(object):
                 search_key="some_dict",
                 accepted_keys=["some_dict"],
             )
+
+    def test__filter_target_dict_with_list_returns(self):
+        """Assert that target dict is filtered."""
+        target_dicts = {
+            "choose_me": {1: "keep", 2: "keep", 3: "keep", 4: "remove"},
+            "do_not_choose_me": {1: "should", 2: "not", 3: "appear"},
+        }
+        out = _filter_target_dict_with_list(
+            targets=target_dicts,
+            _list=[1, 2, 3],
+            search_key="choose_me",
+            accepted_keys=["choose_me", "do_not_choose_me"],
+        )
+        assert isinstance(out, dict)
+        assert list(out.keys()) == ["choose_me"]
+        assert "remove" not in out.values()
