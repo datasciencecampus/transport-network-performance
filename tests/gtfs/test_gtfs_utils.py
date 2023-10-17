@@ -1,21 +1,26 @@
 """Test GTFS utility functions."""
 
-from pyprojroot import here
 import os
 import pytest
-import pathlib
 import re
-
+import pathlib
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
 from plotly.graph_objects import Figure as PlotlyFigure
 
+from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.gtfs_utils import (
     bbox_filter_gtfs,
+    _add_validation_row,
+    filter_gtfs_around_trip,
     convert_pandas_to_plotly,
 )
-from transport_performance.gtfs.validation import GtfsInstance
+
+# location of GTFS test fixture
+GTFS_FIX_PTH = os.path.join(
+    "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
+)
 
 
 class TestBboxFilterGtfs(object):
@@ -40,7 +45,9 @@ class TestBboxFilterGtfs(object):
             tmpdir, "newport-train-station-bboxlist_gtfs.zip"
         )
         bbox_filter_gtfs(
-            in_pth=here("tests/data/newport-20230613_gtfs.zip"),
+            in_pth=os.path.join(
+                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
+            ),
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_list,
         )
@@ -64,7 +71,9 @@ class TestBboxFilterGtfs(object):
         )
 
         bbox_filter_gtfs(
-            in_pth=here("tests/data/newport-20230613_gtfs.zip"),
+            in_pth=os.path.join(
+                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
+            ),
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_gdf,
         )
@@ -74,6 +83,77 @@ class TestBboxFilterGtfs(object):
         ), f"Expected {tmp_out} to exist but it did not."
         # check the output gtfs can be read
         feed = GtfsInstance(gtfs_pth=pathlib.Path(tmp_out))
+        assert isinstance(
+            feed, GtfsInstance
+        ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
+
+
+class Test_AddValidationRow(object):
+    """Tests for _add_validation_row()."""
+
+    def test__add_validation_row_defence(self):
+        """Defensive tests for _add_test_validation_row()."""
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+        with pytest.raises(
+            AttributeError,
+            match=re.escape(
+                "The validity_df does not exist as an "
+                "attribute of your GtfsInstance object, \n"
+                "Did you forget to run the .is_valid() method?"
+            ),
+        ):
+            _add_validation_row(
+                gtfs, _type="warning", message="test", table="stops"
+            )
+
+    def test__add_validation_row_on_pass(self):
+        """General tests for _add_test_validation_row()."""
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+        gtfs.is_valid(far_stops=False)
+
+        _add_validation_row(
+            gtfs=gtfs, _type="warning", message="test", table="stops"
+        )
+
+        expected_row = ["warning", "test", "stops", []]
+        found_row = list(gtfs.validity_df.iloc[-1].values)
+
+        assert expected_row == found_row, (
+            "_add_validation_row() failed to add the correct data to the "
+            "validity df (GtfsInstance().validity_df)."
+        )
+
+
+class Test_FilterGtfsAroundTrip(object):
+    """Tests for filter_gtfs_around_trip()."""
+
+    def test_filter_gtfs_around_trip_defence(self):
+        """Defensive tests for filter_gtfs_around_trip()."""
+        # check trips with no shape id are filtered
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+        with pytest.raises(
+            ValueError,
+            match="'shape_id' not available for trip with trip_id: "
+            "VJe1fb5120f04b2e3699a133007032117aed104794",
+        ):
+            filter_gtfs_around_trip(
+                gtfs, trip_id="VJe1fb5120f04b2e3699a133007032117aed104794"
+            )
+
+    def test_filter_gtfs_around_trip_on_pass(self, tmpdir):
+        """General tests for filter_gtfs_around_trip()."""
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+        out_pth = os.path.join(tmpdir, "test_gtfs.zip")
+
+        # check gtfs can be created
+        filter_gtfs_around_trip(
+            gtfs,
+            trip_id="VJbedb4cfd0673348e017d42435abbdff3ddacbf82",
+            out_pth=out_pth,
+        )
+        assert os.path.exists(out_pth), "Failed to filtere GTFS around trip."
+        # check the new gtfs can be read
+        feed = GtfsInstance(gtfs_pth=out_pth)
         assert isinstance(
             feed, GtfsInstance
         ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
