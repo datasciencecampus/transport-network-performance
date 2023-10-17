@@ -43,15 +43,16 @@ def _compile_tags(osmium_feature):
     """
     tagdict = dict()
     for tag in osmium_feature.tags:
-        # taglist.append(tag)
         for i, tag in enumerate(tag):
             if i % 2 == 0:
                 # even tags are keys
                 k = tag
+                v = "_placeholder"
             else:
                 # odd tags are values
                 v = tag
-        tagdict[k] = v
+            if v != "_placeholder":
+                tagdict[k] = v
     return tagdict
 
 
