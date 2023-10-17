@@ -3,7 +3,7 @@ from typing import Union
 
 import numpy as np
 
-from transport_performance.utils.defence import _gtfs_defence, _check_list
+from transport_performance.utils.defence import _gtfs_defence, _check_iterable
 
 
 def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
@@ -32,13 +32,17 @@ def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
     if isinstance(trip_id, str):
         trip_id = [trip_id]
 
-    # _check_list only takes lists, therefore convert numpy arrays
+    # _check_iterable only takes lists, therefore convert numpy arrays
     if isinstance(trip_id, np.ndarray):
         trip_id = list(trip_id)
 
     # ensure trip ids are string
-    _check_list(
-        ls=trip_id, param_nm="trip_id", check_elements=True, exp_type=str
+    _check_iterable(
+        iterable=trip_id,
+        param_nm="trip_id",
+        iterable_type=list,
+        check_elements=True,
+        exp_type=str,
     )
 
     # drop relevant records from tables

@@ -13,7 +13,7 @@ from geopandas import GeoDataFrame
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
-    _check_list,
+    _check_iterable,
     _type_defence,
 )
 from transport_performance.utils.constants import PKG_PATH
@@ -89,7 +89,12 @@ def bbox_filter_gtfs(
     )
 
     if isinstance(bbox, list):
-        _check_list(ls=bbox, param_nm="bbox", exp_type=float)
+        _check_iterable(
+            iterable=bbox,
+            param_nm="bbox_list",
+            iterable_type=list,
+            exp_type=float,
+        )
         # create box polygon around provided coords, need to splat
         bbox = box(*bbox)
         # gtfs_kit expects gdf
