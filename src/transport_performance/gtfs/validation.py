@@ -475,8 +475,9 @@ class GtfsInstance:
         """
         _type_defence(fast_travel, "fast_travel", bool)
         _type_defence(validate, "valiidate", bool)
+        # TODO: refactor function to be like is_valid()
         if validate:
-            self.is_valid(far_stops=fast_travel)
+            self.is_valid()
         try:
             # In cases where shape_id is missing, keyerror is raised.
             # https://developers.google.com/transit/gtfs/reference#shapestxt
@@ -1512,9 +1513,10 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
+        # TODO: make this optional
         self.clean_feed(validate=True, fast_travel=True)
         # re-validate to clean any newly raised errors/warnings
-        validation_dataframe = self.is_valid(far_stops=True)
+        validation_dataframe = self.is_valid()
 
         # create extended reports if requested
         if extended_validation:

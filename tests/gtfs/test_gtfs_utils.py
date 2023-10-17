@@ -112,7 +112,7 @@ class Test_AddValidationRow(object):
     def test__add_validation_row_on_pass(self):
         """General tests for _add_test_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
-        gtfs.is_valid(far_stops=False)
+        gtfs.is_valid(validators={"core_validation": None})
 
         _add_validation_row(
             gtfs=gtfs, _type="warning", message="test", table="stops"
@@ -308,11 +308,11 @@ class TestRemoveValidationRow(object):
     def test__remove_validation_row_on_pass(self):
         """Tests for _remove_validation_row on pass."""
         gtfs = GtfsInstance(GTFS_FIX_PTH)
-        gtfs.is_valid()
+        gtfs.is_valid(validators={"core_validation": None})
         # with message
         msg = "Unrecognized column agency_noc"
         _remove_validation_row(gtfs, message=msg)
-        assert len(gtfs.validity_df) == 5, "DF is incorrect size"
+        assert len(gtfs.validity_df) == 6, "DF is incorrect size"
         found_cols = _get_validation_warnings(
             gtfs, message=msg, return_type="dataframe"
         )
@@ -321,13 +321,14 @@ class TestRemoveValidationRow(object):
         ), "Invalid errors/warnings still in validity_df"
         # with index (removing the same error)
         gtfs = GtfsInstance(GTFS_FIX_PTH)
-        gtfs.is_valid()
-        ind = [0]
+        gtfs.is_valid(validators={"core_validation": None})
+        ind = [1]
         _remove_validation_row(gtfs, index=ind)
-        assert len(gtfs.validity_df) == 5, "DF is incorrect size"
+        assert len(gtfs.validity_df) == 6, "DF is incorrect size"
         found_cols = _get_validation_warnings(
             gtfs, message=msg, return_type="dataframe"
         )
+        print(gtfs.validity_df)
         assert (
             len(found_cols) == 0
         ), "Invalid errors/warnings still in validity_df"

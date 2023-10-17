@@ -48,7 +48,7 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
         self, chest_gtfs_fixture
     ):
         """General tests for validating travel between consecutive stops."""
-        chest_gtfs_fixture.is_valid(far_stops=False)
+        chest_gtfs_fixture.is_valid(validators={"core_validation": None})
         validate_travel_between_consecutive_stops(gtfs=chest_gtfs_fixture)
 
         expected_validation = {
@@ -85,7 +85,7 @@ class Test_ValidateTravelOverMultipleStops(object):
 
     def test_validate_travel_over_multiple_stops(self, chest_gtfs_fixture):
         """General tests for validate_travel_over_multiple_stops()."""
-        chest_gtfs_fixture.is_valid(far_stops=False)
+        chest_gtfs_fixture.is_valid(validators={"core_validation": None})
         validate_travel_over_multiple_stops(gtfs=chest_gtfs_fixture)
 
         expected_validation = {
@@ -143,7 +143,7 @@ class TestValidateRouteTypeWarnings(object):
 
     def test_validate_route_type_warnings_on_pass(self, newp_gtfs_fixture):
         """Tests for validate_route_type_warnings on pass."""
-        newp_gtfs_fixture.is_valid(False)
+        newp_gtfs_fixture.is_valid(validators={"core_validation": None})
         route_errors = _get_validation_warnings(
             newp_gtfs_fixture, message="Invalid route_type"
         )

@@ -311,7 +311,7 @@ class TestGtfsInstance(object):
     @patch("builtins.print")  # testing print statements
     def test_print_alerts_single_case(self, mocked_print, gtfs_fixture):
         """Check alerts print as expected without truncation."""
-        gtfs_fixture.is_valid(False)
+        gtfs_fixture.is_valid(validators={"core_validation": None})
         gtfs_fixture.print_alerts()
         # fixture contains single error
         fun_out = mocked_print.mock_calls
