@@ -60,6 +60,28 @@ def _check_dict_values_all_equal(a_dict: dict, a_value: Any) -> bool:
     return all([i == a_value for i in a_dict.values()])
 
 
+def _filter_target_dict_with_list(
+    targets: dict, _list: list, feature_type: str
+) -> dict:
+    _type_defence(feature_type, "feature_type", str)
+    _type_defence(targets, "targets", dict)
+    _check_list(_list, "_list", exp_type=int)
+    feat = feature_type.lower().strip()
+    try:
+        targ_dict = targets[feat]
+    except KeyError:
+        raise KeyError(
+            f"`feature_type`: {feat} did not match keys in "
+            f"`targets`: {targets.keys()}"
+        )
+
+    filtered_dict = dict(
+        (id, targ_dict[id]) for id in _list if id in targ_dict
+    )
+
+    return {feat: filtered_dict}
+
+
 # ---- look at internals
 class GenericHandler(osmium.SimpleHandler):
     """Placeholder.
@@ -223,7 +245,7 @@ class _IdHandler(osmium.SimpleHandler):
 
 
 class _TagHandler(osmium.SimpleHandler):
-    """Collate tags and check them for specified IDs.
+    """Collate tags for OSM features.
 
     Parameters
     ----------
@@ -290,6 +312,54 @@ class _TagHandler(osmium.SimpleHandler):
         # get tags for each area
         tagdict = _compile_tags(a)
         self.area_tags[a.id] = tagdict
+
+
+class _LocHandler(osmium.SimpleHandler):
+    """Collate coordinates for nodes or ways.
+
+    Parameters
+    ----------
+    osmium.SimpleHandler : class
+        Inherits from osmium.SimpleHandler
+
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.node_locs = dict()
+        self.way_node_locs = dict()
+
+    def node(self, n):
+        """Collate node coordinates.
+
+        Parameters
+        ----------
+        n : osmium.Node
+            A node feature.
+
+        """
+        # extract x,y
+        x, y = str(n.location).split("/")
+        # store representative point for each node
+        self.node_locs[n.id] = {"lon": x, "lat": y}
+
+    def way(self, w):
+        """Collate coordinates for member nodes of a way.
+
+        Parameters
+        ----------
+        w : osmium.Way
+            A way feature.
+
+        """
+        # compile the member nodes of each way
+        nodelist = []
+        for node in w.nodes:
+            id, coords = str(node).split("@")
+            coords = coords.replace("]", "")
+            x, y = coords.split("/")
+            nodelist.append({node.ref: {"x": float(x), "y": float(y)}})
+        self.way_node_locs[w.id] = nodelist
 
 
 class FindIds(_IdHandler):
@@ -382,7 +452,7 @@ class FindIds(_IdHandler):
 
 
 class FindTags(_TagHandler):
-    """Applies tag collation to OSM file. Option to check tags for given IDs.
+    """Applies tag collation to OSM file.
 
     Parameters
     ----------
@@ -424,7 +494,7 @@ class FindTags(_TagHandler):
             A list of OSM feature IDs to check. IDs must be integer.
         feature_type : str
             The type of feature to which the IDS belong. Valid options are
-            ["node", "way", "relation", "area"].
+            "node", "way", "relation", or "area".
 
         Returns
         -------
@@ -446,26 +516,105 @@ class FindTags(_TagHandler):
         # defence
         _check_list(ids, "ids", exp_type=int)
         _type_defence(feature_type, "feature_type", str)
-        t = feature_type.lower().strip()
+        feature_type = feature_type.lower().strip()
         _check_item_in_list(
-            t, ["node", "way", "relation", "area"], "feature_type"
+            feature_type, ["node", "way", "relation", "area"], "feature_type"
         )
         # return the tags for the appropriate feature_type
-        if t == "node":
-            target = self.node_tags
-        elif t == "way":
-            target = self.way_tags
-        elif t == "relation":
-            target = self.relation_tags
-        else:
-            target = self.area_tags
+        self.found_tags = _filter_target_dict_with_list(
+            targets={
+                "node": self.node_tags,
+                "way": self.way_tags,
+                "relation": self.relation_tags,
+                "area": self.area_tags,
+            },
+            _list=ids,
+            feature_type=feature_type,
+        )
 
-        found_tags = dict((id, target[id]) for id in ids if id in target)
-
-        if len(found_tags) == 0:
+        if len(self.found_tags[feature_type]) == 0:
             raise ValueError(
                 "No tags found. Did you specify the correct feature_type?"
             )
-        self.found_tags = found_tags
 
-        return found_tags
+        return self.found_tags
+
+
+class FindLocations(_LocHandler):
+    """Applies location collation to OSM file.
+
+    Parameters
+    ----------
+    _LocHandler : class
+        Internal class for handling locations. Inherits from
+        osmium.SimpleHandler.
+    osm_pth: Union[Path, str]
+        Path to osm file.
+
+    Raises
+    ------
+    TypeError:
+        `osm_pth` is not of type pathlib.Path or str.
+    FileNotFoundError:
+        `osm_pth` file not found on disk.
+    ValueError:
+        `osm_pth` does not have a .pbf extension.
+
+    Attributes
+    ----------
+    found_locs: dict
+        Found locations for specified feature IDs.
+
+    """
+
+    def __init__(self, osm_pth) -> None:
+        super().__init__()
+        _is_expected_filetype(osm_pth, "osm_pth", exp_ext=".pbf")
+        self.apply_file(osm_pth, locations=True)
+        self.found_locs = dict()
+
+    def check_locs_for_ids(self, ids: list, feature_type: str):
+        """Return coordinates for provided list of feature IDs.
+
+        Parameters
+        ----------
+        ids : list
+            A list of OSM feature IDs to check. IDs must be integer.
+        feature_type : str
+            The type of feature to which the IDS belong. Valid options are
+            "node" or "way".
+
+        Returns
+        -------
+        found_locs: dict
+            ID: dict of tags, containing ID : location.
+
+        Raises
+        ------
+        ValueError
+            `feature_type` is not one of "node" or "way".
+            `found_locs` is empty. No coords for the combination of `ids` and
+            `feature_type` were found.
+        TypeError
+            `ids` is not a list.
+            Elements of `ids` are not integer.
+            `feature_type` is not a string.
+
+        """
+        _type_defence(feature_type, "feature_type", str)
+        feature_type = feature_type.lower().strip()
+        _check_item_in_list(feature_type, ["node", "way"], "feature_type")
+        _check_list(ids, "ids", exp_type=int)
+        # return the filtered dict of locations
+        self.found_locs = _filter_target_dict_with_list(
+            targets={"node": self.node_locs, "way": self.way_node_locs},
+            _list=ids,
+            feature_type=feature_type,
+        )
+
+        if len(self.found_locs[feature_type]) == 0:
+            raise ValueError(
+                "No tags found. Did you specify the correct feature_type?"
+            )
+
+        return self.found_locs
