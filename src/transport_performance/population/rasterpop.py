@@ -22,6 +22,7 @@ from transport_performance.utils.defence import (
     _handle_path_like,
     _check_parent_dir_exists,
     _enforce_file_extension,
+    _check_iter_length,
 )
 
 
@@ -287,10 +288,7 @@ class RasterPop:
         )
 
         # checks that array has only two dimensions
-        if len(self._xds.shape) != 2:
-            raise ValueError(
-                f"Shape of array should be exactly 2, got {self._xds.shape}"
-            )
+        _check_iter_length(self._xds.shape, "_xds.shape", 2)
 
         # set the variable name - set internal variable for reuse in class
         self._xds.name = var_name
