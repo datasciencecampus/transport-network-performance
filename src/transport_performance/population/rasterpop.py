@@ -282,8 +282,8 @@ class RasterPop:
         # cell touched and `from_disk` for improved reading speeds.
         self._xds = (
             rioxarray.open_rasterio(self.__filepath, masked=True)
-            .sel(band=band)
             .rio.clip([aoi_bounds], from_disk=True, all_touched=True)
+            .sel(band=band)
         )
 
         # checks that array has only two dimensions
