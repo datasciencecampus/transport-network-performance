@@ -121,7 +121,7 @@
     <span class="n">_check_parent_dir_exists</span><span class="p">,</span>
     <span class="n">_check_column_in_df</span><span class="p">,</span>
     <span class="n">_type_defence</span><span class="p">,</span>
-    <span class="n">_check_item_in_list</span><span class="p">,</span>
+    <span class="n">_check_item_in_iter</span><span class="p">,</span>
     <span class="n">_check_attribute</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -674,7 +674,7 @@
         <span class="c1"># geoms defence</span>
         <span class="n">geoms</span> <span class="o">=</span> <span class="n">geoms</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="n">ACCEPT_VALS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;point&quot;</span><span class="p">,</span> <span class="s2">&quot;hull&quot;</span><span class="p">]</span>
-        <span class="n">_check_item_in_list</span><span class="p">(</span><span class="n">geoms</span><span class="p">,</span> <span class="n">ACCEPT_VALS</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">)</span>
+        <span class="n">_check_item_in_iter</span><span class="p">(</span><span class="n">geoms</span><span class="p">,</span> <span class="n">ACCEPT_VALS</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_produce_stops_map</span><span class="p">(</span>
@@ -1190,8 +1190,8 @@
         <span class="n">which</span> <span class="o">=</span> <span class="n">which</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
         <span class="c1"># ensure &#39;which&#39; is valid</span>
-        <span class="n">_check_item_in_list</span><span class="p">(</span>
-            <span class="n">item</span><span class="o">=</span><span class="n">which</span><span class="p">,</span> <span class="n">_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;trip&quot;</span><span class="p">,</span> <span class="s2">&quot;route&quot;</span><span class="p">],</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;which&quot;</span>
+        <span class="n">_check_item_in_iter</span><span class="p">(</span>
+            <span class="n">item</span><span class="o">=</span><span class="n">which</span><span class="p">,</span> <span class="n">iterable</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;trip&quot;</span><span class="p">,</span> <span class="s2">&quot;route&quot;</span><span class="p">],</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;which&quot;</span>
         <span class="p">)</span>
 
         <span class="n">raw_pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -1201,8 +1201,8 @@
         <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">raw_pth</span><span class="p">,</span> <span class="s2">&quot;save_pth&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># orientation input defences</span>
-        <span class="n">_check_item_in_list</span><span class="p">(</span>
-            <span class="n">item</span><span class="o">=</span><span class="n">orientation</span><span class="p">,</span> <span class="n">_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;orientation&quot;</span>
+        <span class="n">_check_item_in_iter</span><span class="p">(</span>
+            <span class="n">item</span><span class="o">=</span><span class="n">orientation</span><span class="p">,</span> <span class="n">iterable</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;orientation&quot;</span>
         <span class="p">)</span>
 
         <span class="c1"># assign the correct values depending on which breakdown has been</span>

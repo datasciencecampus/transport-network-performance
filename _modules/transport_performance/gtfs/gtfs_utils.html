@@ -100,7 +100,7 @@
 
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_is_expected_filetype</span><span class="p">,</span>
-    <span class="n">_check_list</span><span class="p">,</span>
+    <span class="n">_check_iterable</span><span class="p">,</span>
     <span class="n">_type_defence</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">transport_performance.utils.constants</span> <span class="kn">import</span> <span class="n">PKG_PATH</span>
@@ -178,7 +178,12 @@
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">_check_list</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;bbox&quot;</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">_check_iterable</span><span class="p">(</span>
+            <span class="n">iterable</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
+            <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;bbox_list&quot;</span><span class="p">,</span>
+            <span class="n">iterable_type</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
+            <span class="n">exp_type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="c1"># create box polygon around provided coords, need to splat</span>
         <span class="n">bbox</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">bbox</span><span class="p">)</span>
         <span class="c1"># gtfs_kit expects gdf</span>
