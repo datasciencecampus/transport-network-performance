@@ -7,13 +7,22 @@ from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.validators import (
     validate_travel_between_consecutive_stops,
     validate_travel_over_multiple_stops,
+    validate_route_type_warnings,
 )
+from transport_performance.gtfs.gtfs_utils import _get_validation_warnings
 
 
 @pytest.fixture(scope="function")
-def gtfs_fixture():
+def chest_gtfs_fixture():
     """Fixture for test funcs expecting a valid feed object."""
     gtfs = GtfsInstance(here("tests/data/chester-20230816-small_gtfs.zip"))
+    return gtfs
+
+
+@pytest.fixture(scope="function")
+def newp_gtfs_fixture():
+    """Fixture for test funcs expecting a valid feed object."""
+    gtfs = GtfsInstance(here("tests/data/gtfs/newport-20230613_gtfs.zip"))
     return gtfs
 
 
@@ -21,7 +30,7 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
     """Tests for the validate_travel_between_consecutive_stops function()."""
 
     def test_validate_travel_between_consecutive_stops_defences(
-        self, gtfs_fixture
+        self, chest_gtfs_fixture
     ):
         """Defensive tests for validating travel between consecutive stops."""
         with pytest.raises(
@@ -32,13 +41,15 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
                 "Did you forget to run the .is_valid() method?"
             ),
         ):
-            validate_travel_between_consecutive_stops(gtfs_fixture)
+            validate_travel_between_consecutive_stops(chest_gtfs_fixture)
         pass
 
-    def test_validate_travel_between_consecutive_stops(self, gtfs_fixture):
+    def test_validate_travel_between_consecutive_stops(
+        self, chest_gtfs_fixture
+    ):
         """General tests for validating travel between consecutive stops."""
-        gtfs_fixture.is_valid(far_stops=False)
-        validate_travel_between_consecutive_stops(gtfs=gtfs_fixture)
+        chest_gtfs_fixture.is_valid(far_stops=False)
+        validate_travel_between_consecutive_stops(gtfs=chest_gtfs_fixture)
 
         expected_validation = {
             "type": {0: "warning", 1: "warning", 2: "warning", 3: "warning"},
@@ -62,7 +73,7 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
             },
         }
 
-        found_dataframe = gtfs_fixture.validity_df
+        found_dataframe = chest_gtfs_fixture.validity_df
         assert expected_validation == found_dataframe.to_dict(), (
             "'_validate_travel_between_consecutive_stops()' failed to raise "
             "warnings in the validity df"
@@ -72,10 +83,10 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
 class Test_ValidateTravelOverMultipleStops(object):
     """Tests for validate_travel_over_multiple_stops()."""
 
-    def test_validate_travel_over_multiple_stops(self, gtfs_fixture):
+    def test_validate_travel_over_multiple_stops(self, chest_gtfs_fixture):
         """General tests for validate_travel_over_multiple_stops()."""
-        gtfs_fixture.is_valid(far_stops=False)
-        validate_travel_over_multiple_stops(gtfs=gtfs_fixture)
+        chest_gtfs_fixture.is_valid(far_stops=False)
+        validate_travel_over_multiple_stops(gtfs=chest_gtfs_fixture)
 
         expected_validation = {
             "type": {
@@ -108,9 +119,41 @@ class Test_ValidateTravelOverMultipleStops(object):
             },
         }
 
-        found_dataframe = gtfs_fixture.validity_df
+        found_dataframe = chest_gtfs_fixture.validity_df
 
         assert expected_validation == found_dataframe.to_dict(), (
             "'_validate_travel_over_multiple_stops()' failed to raise "
             "warnings in the validity df"
         )
+
+
+class TestValidateRouteTypeWarnings(object):
+    """Tests for valdate_route_type_warnings."""
+
+    def test_validate_route_type_warnings_defence(self, newp_gtfs_fixture):
+        """Tests for validate_route_type_warnings on fail."""
+        with pytest.raises(
+            TypeError, match=r".* expected a GtfsInstance object. Got .*"
+        ):
+            validate_route_type_warnings(1)
+        with pytest.raises(
+            AttributeError, match=r".* has no attribute validity_df"
+        ):
+            validate_route_type_warnings(newp_gtfs_fixture)
+
+    def test_validate_route_type_warnings_on_pass(self, newp_gtfs_fixture):
+        """Tests for validate_route_type_warnings on pass."""
+        newp_gtfs_fixture.is_valid(False)
+        route_errors = _get_validation_warnings(
+            newp_gtfs_fixture, message="Invalid route_type"
+        )
+        assert len(route_errors) == 1, "No route_type warnings found"
+        # clean the route_type errors
+        newp_gtfs_fixture.is_valid()
+        validate_route_type_warnings(newp_gtfs_fixture)
+        new_route_errors = _get_validation_warnings(
+            newp_gtfs_fixture, message="Invalid route_type"
+        )
+        assert (
+            len(new_route_errors) == 0
+        ), "Found route_type errors after cleaning"
