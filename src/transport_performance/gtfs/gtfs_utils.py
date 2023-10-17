@@ -320,7 +320,9 @@ def convert_pandas_to_plotly(
     return fig
 
 
-def _get_validation_warnings(gtfs, message: str) -> pd.DataFrame:
+def _get_validation_warnings(
+    gtfs, message: str, return_type: str = "values"
+) -> pd.DataFrame:
     """Get warnings from the validity_df table based on a regex.
 
     Parameters
@@ -329,6 +331,9 @@ def _get_validation_warnings(gtfs, message: str) -> pd.DataFrame:
         The gtfs instance to obtain the warnings from.
     message : str
         The regex to use for filtering the warnings.
+    return_type : str, optional
+        The return type of the warnings. Can be eithher 'values' or 'dataframe'
+         by default 'values'
 
     Returns
     -------
@@ -346,16 +351,18 @@ def _get_validation_warnings(gtfs, message: str) -> pd.DataFrame:
         ),
     )
     _type_defence(message, "message", str)
-    needed_warnings = (
-        gtfs.validity_df[
-            gtfs.validity_df["message"].str.contains(
-                message, regex=True, na=False
-            )
-        ]
-        .copy()
-        .values
-    )
-    return needed_warnings
+    return_type = return_type.lower().strip()
+    if return_type not in ["values", "dataframe"]:
+        raise ValueError(
+            "'return_type' expected one of ['values', 'dataframe]"
+            f". Got {return_type}"
+        )
+    needed_warnings = gtfs.validity_df[
+        gtfs.validity_df["message"].str.contains(message, regex=True, na=False)
+    ].copy()
+    if return_type == "dataframe":
+        return needed_warnings
+    return needed_warnings.values
 
 
 def _remove_validation_row(

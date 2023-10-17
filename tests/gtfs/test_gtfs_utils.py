@@ -8,6 +8,7 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
 from plotly.graph_objects import Figure as PlotlyFigure
+import numpy as np
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.gtfs_utils import (
@@ -15,6 +16,7 @@ from transport_performance.gtfs.gtfs_utils import (
     _add_validation_row,
     filter_gtfs_around_trip,
     convert_pandas_to_plotly,
+    _get_validation_warnings,
 )
 
 # location of GTFS test fixture
@@ -203,3 +205,81 @@ class TestConvertPandasToPlotly(object):
             "Expected type plotly.graph_objects.Figure but "
             f"{type(fig_return)} found"
         )
+
+
+class TestGetValidationWarnings(object):
+    """Tests for _get_validation_warnings."""
+
+    def test__get_validation_warnings_defence(self):
+        """Test thhe defences of _get_validation_warnings."""
+        with pytest.raises(
+            TypeError, match=".* expected a GtfsInstance object"
+        ):
+            _get_validation_warnings(True, "test_msg")
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+        with pytest.raises(
+            AttributeError, match="The gtfs has not been validated.*"
+        ):
+            _get_validation_warnings(gtfs, "test")
+        gtfs.is_valid()
+        with pytest.raises(
+            ValueError, match=r"'return_type' expected one of \[.*\]\. Got .*"
+        ):
+            _get_validation_warnings(gtfs, "tester", "tester")
+
+    def test__get_validation_warnings(self):
+        """Test _get_validation_warnings on pass."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid()
+        # test return types
+        df_exp = _get_validation_warnings(
+            gtfs, "test", return_type="dataframe"
+        )
+        assert isinstance(
+            df_exp, pd.DataFrame
+        ), f"Expected df, got {type(df_exp)}"
+        ndarray_exp = _get_validation_warnings(gtfs, "test")
+        assert isinstance(
+            ndarray_exp, np.ndarray
+        ), f"Expected np.ndarray, got {type(ndarray_exp)}"
+        # test with valld regex (assertions on DF data without DF)
+        regex_matches = _get_validation_warnings(
+            gtfs, "Unrecognized column *.", return_type="dataframe"
+        )
+        assert len(regex_matches) == 5, (
+            "Getting validaiton warnings returned"
+            "unexpected number of warnings"
+        )
+        assert list(regex_matches["type"].unique()) == [
+            "warning"
+        ], "Dataframe type column not asd expected"
+        assert list(regex_matches.table) == [
+            "agency",
+            "stop_times",
+            "stops",
+            "trips",
+            "trips",
+        ], "Dataframe table column not as expected"
+        # test with matching message (no regex)
+        exact_match = _get_validation_warnings(
+            gtfs, "Unrecognized column agency_noc", return_type="Dataframe"
+        )
+        assert list(exact_match.values[0]) == [
+            "warning",
+            "Unrecognized column agency_noc",
+            "agency",
+            [],
+        ], "Dataframe values not as expected"
+        assert (
+            len(exact_match) == 1
+        ), f"Expected one match, found {len(exact_match)}"
+        # test with no matches (regex)
+        regex_no_match = _get_validation_warnings(
+            gtfs, ".*This is a test.*", return_type="Dataframe"
+        )
+        assert len(regex_no_match) == 0, "No matches expected. Matches found"
+        # test with no match (no regex)
+        no_match = _get_validation_warnings(
+            gtfs, "This is a test!!!", return_type="Dataframe"
+        )
+        assert len(no_match) == 0, "No matches expected. Matched found"
