@@ -61,23 +61,66 @@ def _check_dict_values_all_equal(a_dict: dict, a_value: Any) -> bool:
 
 
 def _filter_target_dict_with_list(
-    targets: dict, _list: list, feature_type: str
+    targets: dict, _list: list, search_key: str, accepted_keys: list
 ) -> dict:
-    _type_defence(feature_type, "feature_type", str)
+    """Select a target dictionary and filter it with a list of keys.
+
+    Parameters
+    ----------
+    targets : dict
+        A dictionary of feature_type: attribute dicts.
+    _list : list
+        A list of keys, OSM IDs in this context. Integer keys are expected.
+    search_key : str
+        The key value to search with.
+    accepted_keys : list
+        Valid key values specific to the context of the method calling this
+        function.
+
+    Returns
+    -------
+    dict
+        search_key: filtered_dict. Dictionary with keys filtered to IDs
+        available in `_list`.
+
+    Raises
+    ------
+    ValueError
+        `search_key` is not in `accepted_keys`.
+        `filtered_dict` is empty. No tags for the combination of `_list` and
+        `search_key` were found.
+    TypeError
+        `_list` is not a list.
+        `accepted_keys` is not a list.
+        Elements of `_list` are not integer.
+        Elements of `accepted_keys` are not string.
+        `search_key` is not a string.
+    KeyError
+        `search_key` is not present in `targets.keys()`
+
+    """
     _type_defence(targets, "targets", dict)
+    _type_defence(search_key, "feature_type", str)
     _check_list(_list, "_list", exp_type=int)
-    feat = feature_type.lower().strip()
+    _check_list(accepted_keys, "accepted_features", exp_type=str)
+    _check_item_in_list(search_key, accepted_keys, "search_key")
+
+    feat = search_key.lower().strip()
     try:
         targ_dict = targets[feat]
     except KeyError:
         raise KeyError(
-            f"`feature_type`: {feat} did not match keys in "
+            f"`search_key`: {feat} did not match keys in "
             f"`targets`: {targets.keys()}"
         )
 
     filtered_dict = dict(
         (id, targ_dict[id]) for id in _list if id in targ_dict
     )
+    if len(filtered_dict) == 0:
+        raise ValueError(
+            "No tags found. Did you specify the correct search_key?"
+        )
 
     return {feat: filtered_dict}
 
@@ -501,26 +544,7 @@ class FindTags(_TagHandler):
         found_tags: dict
             ID: dict of tags, containing tag name : value.
 
-        Raises
-        ------
-        ValueError
-            `feature_type` is not one of "node", "way", "relation" or "area".
-            `found_tags` is empty. No tags for the combination of `ids` and
-            `feature_type` were found.
-        TypeError
-            `ids` is not a list.
-            Elements of `ids` are not integer.
-            `feature_type` is not a string.
-
         """
-        # defence
-        _check_list(ids, "ids", exp_type=int)
-        _type_defence(feature_type, "feature_type", str)
-        feature_type = feature_type.lower().strip()
-        _check_item_in_list(
-            feature_type, ["node", "way", "relation", "area"], "feature_type"
-        )
-        # return the tags for the appropriate feature_type
         self.found_tags = _filter_target_dict_with_list(
             targets={
                 "node": self.node_tags,
@@ -529,14 +553,9 @@ class FindTags(_TagHandler):
                 "area": self.area_tags,
             },
             _list=ids,
-            feature_type=feature_type,
+            search_key=feature_type,
+            accepted_keys=["node", "way", "relation", "area"],
         )
-
-        if len(self.found_tags[feature_type]) == 0:
-            raise ValueError(
-                "No tags found. Did you specify the correct feature_type?"
-            )
-
         return self.found_tags
 
 
@@ -589,32 +608,11 @@ class FindLocations(_LocHandler):
         found_locs: dict
             ID: dict of tags, containing ID : location.
 
-        Raises
-        ------
-        ValueError
-            `feature_type` is not one of "node" or "way".
-            `found_locs` is empty. No coords for the combination of `ids` and
-            `feature_type` were found.
-        TypeError
-            `ids` is not a list.
-            Elements of `ids` are not integer.
-            `feature_type` is not a string.
-
         """
-        _type_defence(feature_type, "feature_type", str)
-        feature_type = feature_type.lower().strip()
-        _check_item_in_list(feature_type, ["node", "way"], "feature_type")
-        _check_list(ids, "ids", exp_type=int)
-        # return the filtered dict of locations
         self.found_locs = _filter_target_dict_with_list(
             targets={"node": self.node_locs, "way": self.way_node_locs},
             _list=ids,
-            feature_type=feature_type,
+            search_key=feature_type,
+            accepted_keys=["node", "way"],
         )
-
-        if len(self.found_locs[feature_type]) == 0:
-            raise ValueError(
-                "No tags found. Did you specify the correct feature_type?"
-            )
-
         return self.found_locs
