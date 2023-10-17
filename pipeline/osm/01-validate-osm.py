@@ -8,7 +8,11 @@
 
 import toml
 from pyprojroot import here
-from transport_performance.osm.validate_osm import FindIds, FindTags
+from transport_performance.osm.validate_osm import (
+    FindIds,
+    FindTags,
+    FindLocations,
+)
 
 CONFIG = toml.load(here("pipeline/osm/config/01-validate-osm.toml"))
 OSM_PTH = CONFIG["OSM"]["PATH"]
@@ -31,3 +35,13 @@ tags.check_tags_for_ids(ids.id_dict["way_ids"][0:11], "way")
 tags.check_tags_for_ids(ids.id_dict["relation_ids"][0:11], "relation")
 # get some area tags
 tags.check_tags_for_ids(ids.id_dict["area_ids"][0:11], "area")
+
+# get node coordinates for node or way features:
+locs = FindLocations(OSM_PTH)
+locs.node_locs[10971292664]  # get a known node ID's coord
+# get a known way ID's member node coords
+locs.way_node_locs[1181392037]
+# get the locs for a list of IDs. Firstly node features.
+locs.check_locs_for_ids(ids.id_dict["node_ids"][0:11], feature_type="node")
+# Also way features.
+locs.check_locs_for_ids(ids.id_dict["way_ids"][0:11], feature_type="way")
