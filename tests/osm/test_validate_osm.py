@@ -234,3 +234,16 @@ class TestFindIds(object):
                 method
             ), f"The expected method `{expected_methods[i]}`"
             f" in {ids} is not callable"
+        # check feature ID counts in osm test fixture
+        e_nod = 256508
+        f_nod = len(ids.node_ids)
+        assert f_nod == e_nod, f"Expected {e_nod} nodes, found {f_nod} nodes."
+        e_way = 51231
+        f_way = len(ids.way_ids)
+        assert f_way == e_way, f"Expected {e_way} ways, found {f_way} ways."
+        e_rel = 286
+        f_rel = len(ids.relations_ids)
+        assert f_rel == e_rel, f"Expected {e_rel} rels, found {f_rel} rels."
+        e_are = 37841
+        f_are = len(ids.area_ids)
+        assert f_are == e_are, f"Expected {e_are} areas, found {f_are} areas."
