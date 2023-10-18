@@ -283,7 +283,7 @@ class _LocHandler(osmium.SimpleHandler):
         # extract x,y
         x, y = str(n.location).split("/")
         # store representative point for each node
-        self.node_locs[n.id] = {"lon": x, "lat": y}
+        self.node_locs[n.id] = {"lon": float(x), "lat": float(y)}
 
     def way(self, w):
         """Collate coordinates for member nodes of a way.
