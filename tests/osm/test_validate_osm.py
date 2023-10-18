@@ -7,8 +7,8 @@ from transport_performance.osm.validate_osm import (
     _compile_tags,
     _filter_target_dict_with_list,
     FindIds,
-    FindLocations,
-    FindTags,
+    # FindLocations,
+    # FindTags,
 )
 
 
@@ -296,142 +296,145 @@ class TestFindIds(object):
         ], "First 5 area IDs not as expected"
 
 
-class TestFindLocations(object):
-    """Tests for FindLocations api class."""
+# # @pytest.mark.runinteg
+# @pytest.mark.skip(reason="Very costly even with runexpensive flag.")
+# class TestFindLocations(object):
+#     """Tests for FindLocations api class."""
 
-    locs = FindLocations(osm_pth)
+#     locs = FindLocations(osm_pth)
 
-    def test_find_locations_init(self):
-        """Test for FindLocations init behaviour."""
-        exp_attrs = ["found_locs", "node_locs", "way_node_locs"]
-        exp_methods = ["check_locs_for_ids", "node", "way"]
-        _class_atttribute_assertions(self.locs, exp_attrs, exp_methods)
-        assert self.locs.node_locs[10971292664] == {
-            "lon": -3.0019690,
-            "lat": 51.5804167,
-        }
-        # 29 node locations for way ID 1881332
-        assert len(self.locs.way_node_locs[1881332]) == 29
+#     def test_find_locations_init(self):
+#         """Test for FindLocations init behaviour."""
+#         exp_attrs = ["found_locs", "node_locs", "way_node_locs"]
+#         exp_methods = ["check_locs_for_ids", "node", "way"]
+#         _class_atttribute_assertions(self.locs, exp_attrs, exp_methods)
+#         assert self.locs.node_locs[10971292664] == {
+#             "lon": -3.0019690,
+#             "lat": 51.5804167,
+#         }
+#         # 29 node locations for way ID 1881332
+#         assert len(self.locs.way_node_locs[1881332]) == 29
 
-    def test_check_locs_for_ids(self):
-        """Assert check_locs_for_ids."""
-        ids.get_feature_ids()
-        # check that the expected coordinates are returned for list of node IDs
-        id_list = sorted(ids.id_dict["node_ids"])[0:5]
-        self.locs.check_locs_for_ids(ids=id_list, feature_type="node")
-        assert list(self.locs.found_locs.keys()) == ["node"]
-        assert len(self.locs.found_locs["node"]) == 5
-        # in all 5 nodes, check that floats are returned
-        for n in self.locs.found_locs["node"]:
-            for k, v in self.locs.found_locs["node"][n].items():
-                assert isinstance(
-                    v, float
-                ), f"Expected coord {v} to be type float. got {type(v)}"
-        # now check coordinates for a list of way IDs
-        way_ids = sorted(ids.id_dict["way_ids"])[0:3]
-        self.locs.check_locs_for_ids(ids=way_ids, feature_type="way")
-        assert list(self.locs.found_locs.keys()) == ["way"]
-        assert len(self.locs.found_locs["way"]) == 3
-        # coords are nested deeper for ways than nodes as you need to access
-        # way members' coordinates
-        for w in self.locs.found_locs["way"]:
-            for x in self.locs.found_locs["way"][w]:
-                for k, v in x.items():
-                    for coord in list(v.values()):
-                        assert isinstance(
-                            coord, float
-                        ), f"Expected coord {coord} to be type float."
-                        " got {type(coord)}"
+#     def test_check_locs_for_ids(self):
+#         """Assert check_locs_for_ids."""
+#         ids.get_feature_ids()
+#         # check that the expected coordinates are returned for node IDs
+#         id_list = sorted(ids.id_dict["node_ids"])[0:5]
+#         self.locs.check_locs_for_ids(ids=id_list, feature_type="node")
+#         assert list(self.locs.found_locs.keys()) == ["node"]
+#         assert len(self.locs.found_locs["node"]) == 5
+#         # in all 5 nodes, check that floats are returned
+#         for n in self.locs.found_locs["node"]:
+#             for k, v in self.locs.found_locs["node"][n].items():
+#                 assert isinstance(
+#                     v, float
+#                 ), f"Expected coord {v} to be type float. got {type(v)}"
+#         # now check coordinates for a list of way IDs
+#         way_ids = sorted(ids.id_dict["way_ids"])[0:3]
+#         self.locs.check_locs_for_ids(ids=way_ids, feature_type="way")
+#         assert list(self.locs.found_locs.keys()) == ["way"]
+#         assert len(self.locs.found_locs["way"]) == 3
+#         # coords are nested deeper for ways than nodes as you need to access
+#         # way members' coordinates
+#         for w in self.locs.found_locs["way"]:
+#             for x in self.locs.found_locs["way"][w]:
+#                 for k, v in x.items():
+#                     for coord in list(v.values()):
+#                         assert isinstance(
+#                             coord, float
+#                         ), f"Expected coord {coord} to be type float."
+#                         " got {type(coord)}"
 
+# # @pytest.mark.runexpensive
+# @pytest.mark.skip(reason="Very costly even with runexpensive flag.")
+# class TestFindTags(object):
+#     """Test FindTags API class."""
 
-class TestFindTags(object):
-    """Test FindTags API class."""
+#     tags = FindTags(osm_pth)
 
-    tags = FindTags(osm_pth)
+#     def test_find_tags_init(self):
+#         """Check init behaviour for FindTags."""
+#         expected_attrs = [
+#             "found_tags",
+#             "node_tags",
+#             "way_tags",
+#             "relation_tags",
+#             "area_tags",
+#         ]
+#         expected_methods = [
+#             "check_tags_for_ids",
+#             "node",
+#             "way",
+#             "relation",
+#             "area",
+#         ]
+#         _class_atttribute_assertions(
+#             self.tags, expected_attrs, expected_methods
+#         )
 
-    def test_find_tags_init(self):
-        """Check init behaviour for FindTags."""
-        expected_attrs = [
-            "found_tags",
-            "node_tags",
-            "way_tags",
-            "relation_tags",
-            "area_tags",
-        ]
-        expected_methods = [
-            "check_tags_for_ids",
-            "node",
-            "way",
-            "relation",
-            "area",
-        ]
-        _class_atttribute_assertions(
-            self.tags, expected_attrs, expected_methods
-        )
+#     def test_find_tags_check_tags_for_ids(self):
+#         """Test FindTags.check_tags_for_ids()."""
+#         ids.get_feature_ids()
+#         way_ids = ids.id_dict["way_ids"][0:4]
+#         rel_ids = ids.id_dict["relation_ids"][0:3]
+#         area_ids = ids.id_dict["area_ids"][0:2]
+#         # many node IDs are empty, so check a known ID for tags instead
+#         self.tags.check_tags_for_ids(ids=[10797072547], feature_type="node")
+#         target_node = self.tags.found_tags["node"][10797072547]
+#         tag_value_map = {
+#             "addr:city": "Newport",
+#             "amenity": "pub",
+#             "source:postcode": "FHRS Open Data",
+#         }
+#         for k, v in tag_value_map.items():
+#             f = target_node[k]
+#             assert f == v, f"Expected node tag value {v} but found {f}"
 
-    def test_find_tags_check_tags_for_ids(self):
-        """Test FindTags.check_tags_for_ids()."""
-        ids.get_feature_ids()
-        way_ids = ids.id_dict["way_ids"][0:4]
-        rel_ids = ids.id_dict["relation_ids"][0:3]
-        area_ids = ids.id_dict["area_ids"][0:2]
-        # many node IDs are empty, so check a known ID for tags instead
-        self.tags.check_tags_for_ids(ids=[10797072547], feature_type="node")
-        target_node = self.tags.found_tags["node"][10797072547]
-        tag_value_map = {
-            "addr:city": "Newport",
-            "amenity": "pub",
-            "source:postcode": "FHRS Open Data",
-        }
-        for k, v in tag_value_map.items():
-            f = target_node[k]
-            assert f == v, f"Expected node tag value {v} but found {f}"
+#         # check way tags
+#         self.tags.check_tags_for_ids(ids=way_ids, feature_type="way")
+#         target_way = self.tags.found_tags["way"][2954415]
+#         assert len(self.tags.found_tags["way"]) == 4
+#         tag_value_map = {
+#             "bicycle": "no",
+#             "foot": "no",
+#             "highway": "motorway",
+#             "oneway": "yes",
+#             "operator": "Welsh Government",
+#             "ref": "M4",
+#             "surface": "asphalt",
+#         }
+#         for k, v in tag_value_map.items():
+#             f = target_way[k]
+#             assert f == v, f"Expected way tag value {v} but found {f}"
+#         # check relation tags
+#         self.tags.check_tags_for_ids(ids=rel_ids, feature_type="relation")
+#         target_rel = self.tags.found_tags["relation"][rel_ids[0]]
+#         tag_value_map = {
+#             "name": "European route E 30",
+#             "route": "road",
+#             "wikipedia": "en:European route E30",
+#         }
+#         for k, v in tag_value_map.items():
+#             f = target_rel[k]
+#             assert f == v, f"Expected relation tag value {v} but found {f}"
 
-        # check way tags
-        self.tags.check_tags_for_ids(ids=way_ids, feature_type="way")
-        target_way = self.tags.found_tags["way"][2954415]
-        assert len(self.tags.found_tags["way"]) == 4
-        tag_value_map = {
-            "bicycle": "no",
-            "foot": "no",
-            "highway": "motorway",
-            "oneway": "yes",
-            "operator": "Welsh Government",
-            "ref": "M4",
-            "surface": "asphalt",
-        }
-        for k, v in tag_value_map.items():
-            f = target_way[k]
-            assert f == v, f"Expected way tag value {v} but found {f}"
-        # check relation tags
-        self.tags.check_tags_for_ids(ids=rel_ids, feature_type="relation")
-        target_rel = self.tags.found_tags["relation"][rel_ids[0]]
-        tag_value_map = {
-            "name": "European route E 30",
-            "route": "road",
-            "wikipedia": "en:European route E30",
-        }
-        for k, v in tag_value_map.items():
-            f = target_rel[k]
-            assert f == v, f"Expected relation tag value {v} but found {f}"
-
-        # check area tags
-        self.tags.check_tags_for_ids(ids=area_ids, feature_type="area")
-        target_area = self.tags.found_tags["area"][area_ids[0]]
-        tag_value_map = {
-            "highway": "primary",
-            "junction": "roundabout",
-            "lanes": "2",
-            "lit": "yes",
-            "maxspeed": "50 mph",
-            "name": "Balfe Road",
-            "old_ref": "A455",
-            "oneway": "yes",
-            "postal_code": "NP19",
-            "ref": "A48",
-            "surface": "asphalt",
-        }
-        for k, v in tag_value_map.items():
-            f = target_area[k]
-            assert f == v, f"Expected area tag value {v} but found {f}"
-        assert len(self.tags.found_tags["area"]) == 2
+#         # check area tags
+#         self.tags.check_tags_for_ids(ids=area_ids, feature_type="area")
+#         target_area = self.tags.found_tags["area"][area_ids[0]]
+#         tag_value_map = {
+#             "highway": "primary",
+#             "junction": "roundabout",
+#             "lanes": "2",
+#             "lit": "yes",
+#             "maxspeed": "50 mph",
+#             "name": "Balfe Road",
+#             "old_ref": "A455",
+#             "oneway": "yes",
+#             "postal_code": "NP19",
+#             "ref": "A48",
+#             "surface": "asphalt",
+#         }
+#         for k, v in tag_value_map.items():
+#             f = target_area[k]
+#             assert f == v, f"Expected area tag value {v} but found {f}"
+#         assert len(self.tags.found_tags["area"]) == 2
