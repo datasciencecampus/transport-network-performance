@@ -356,13 +356,13 @@ class FindIds(_IdHandler):
     id_dict: dict
         IDs of all found features by feature type.
     node_ids: list
-        List of available OSM node feature IDs. Inheroted from _IdHandler.
+        List of available OSM node feature IDs. Inherited from _IdHandler.
     way_ids: list
-        List of available OSM way feature IDs. Inheroted from _IdHandler.
+        List of available OSM way feature IDs. Inherited from _IdHandler.
     relations_ids: list
-        List of available OSM relation feature IDs. Inheroted from _IdHandler.
+        List of available OSM relation feature IDs. Inherited from _IdHandler.
     area_ids: list
-        List of available OSM area feature IDs. Inheroted from _IdHandler.
+        List of available OSM area feature IDs. Inherited from _IdHandler.
 
     Methods
     -------
