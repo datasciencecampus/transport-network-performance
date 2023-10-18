@@ -293,11 +293,10 @@ class TestFindIds(object):
         ], "First 5 area IDs not as expected"
 
 
-locs = FindLocations(osm_pth)
-
-
 class TestFindLocations(object):
     """Tests for FindLocations api class."""
+
+    locs = FindLocations(osm_pth)
 
     def test_find_locations_init(self):
         """Test for FindLocations init behaviour."""
@@ -308,25 +307,32 @@ class TestFindLocations(object):
         ]
         for attr in expected_attrs:
             assert hasattr(
-                locs, attr
-            ), f"The expected attribute `{attr}` was not found in {locs}"
+                self.locs, attr
+            ), f"The expected attribute `{attr}` was not found in {self.locs}"
         expected_methods = [
             "check_locs_for_ids",
             "node",
             "way",
         ]
         found_methods = [
-            getattr(locs, m, "not_found") for m in expected_methods
+            getattr(self.locs, m, "not_found") for m in expected_methods
         ]
         # check all these methods were found
         for i, method in enumerate(found_methods):
             assert (
                 method != "not_found"
             ), f"The expected method `{expected_methods[i]}`"
-            f" was not found in {locs}"
+            f" was not found in {self.locs}"
         # assert they are methods
         for i, method in enumerate(found_methods):
             assert callable(
                 method
             ), f"The expected method `{expected_methods[i]}`"
-            f" in {locs} is not callable"
+            f" in {self.locs} is not callable"
+
+        assert self.locs.node_locs[10971292664] == {
+            "lon": "-3.0019690",
+            "lat": "51.5804167",
+        }
+        # 29 node locations for way ID 1881332
+        assert len(self.locs.way_node_locs[1881332]) == 29
