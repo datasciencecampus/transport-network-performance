@@ -8,6 +8,7 @@ from transport_performance.osm.validate_osm import (
     _filter_target_dict_with_list,
     FindIds,
     FindLocations,
+    FindTags,
 )
 
 
@@ -360,3 +361,46 @@ class TestFindLocations(object):
                             coord, float
                         ), f"Expected coord {coord} to be type float."
                         " got {type(coord)}"
+
+
+class TestFindTags(object):
+    """Test FindTags API class."""
+
+    tags = FindTags(osm_pth)
+
+    def test_find_tags_init(self):
+        """Check init behaviour for FindTags."""
+        expected_attrs = [
+            "found_tags",
+            "node_tags",
+            "way_tags",
+            "relation_tags",
+            "area_tags",
+        ]
+        for attr in expected_attrs:
+            assert hasattr(
+                self.tags, attr
+            ), f"The expected attribute `{attr}` was not found in {self.tags}"
+
+        expected_methods = [
+            "check_tags_for_ids",
+            "node",
+            "way",
+            "relation",
+            "area",
+        ]
+        found_methods = [
+            getattr(self.tags, m, "not_found") for m in expected_methods
+        ]
+        # check all these methods were found
+        for i, method in enumerate(found_methods):
+            assert (
+                method != "not_found"
+            ), f"The expected method `{expected_methods[i]}`"
+            f" was not found in {self.tags}"
+        # assert they are methods
+        for i, method in enumerate(found_methods):
+            assert callable(
+                method
+            ), f"The expected method `{expected_methods[i]}`"
+            f" in {self.tags} is not callable"
