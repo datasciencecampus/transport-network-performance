@@ -5,7 +5,6 @@ from pyprojroot import here
 
 from transport_performance.osm.validate_osm import (
     _compile_tags,
-    _check_dict_values_all_equal,
     _filter_target_dict_with_list,
     FindIds,
 )
@@ -46,17 +45,6 @@ class Test_CompileTags(object):
             "buzz",
             "fizzbuzz",
         ]
-
-
-class Test_CheckDictValuesAllEqual(object):
-    """Tests for _check_dict_values_all_equal internal."""
-
-    def test__check_dict_values_all_equal(self):
-        """Assert outcomes for dictionary value checks."""
-        equal_dict = {"a": "foo", "b": "foo"}
-        unequal_dict = {"a": "foo", "b": "bar"}
-        assert _check_dict_values_all_equal(equal_dict, "foo")
-        assert not _check_dict_values_all_equal(unequal_dict, "bar")
 
 
 class Test_FilterTargetDictWithList(object):

@@ -12,8 +12,6 @@ user requirements, eg 'find way Ids', 'find the coordinates for this list of
 node IDs' or similar.
 """
 import osmium
-import warnings
-from typing import Any
 from pathlib import Path
 from typing import Union
 
@@ -54,25 +52,6 @@ def _compile_tags(osmium_feature):
             if v != "_placeholder":
                 tagdict[k] = v
     return tagdict
-
-
-def _check_dict_values_all_equal(a_dict: dict, a_value: Any) -> bool:
-    """Check if all dict values equal a_value.
-
-    Parameters
-    ----------
-    a_dict : dict
-        A dictionary.
-    a_value : Any
-        A value to check the dictionary values against.
-
-    Returns
-    -------
-    bool
-        True if all dictionary values equals `a_value`, else False.
-
-    """
-    return all([i == a_value for i in a_dict.values()])
 
 
 def _filter_target_dict_with_list(
@@ -409,13 +388,6 @@ class FindIds(_IdHandler):
             "n_relations": len(self.relations_ids),
             "n_areas": len(self.area_ids),
         }
-        # in cases where the user has not ran the apply_file method, warn:
-        if _check_dict_values_all_equal(counts, 0):
-            warnings.warn(
-                "No counts were found, did you run `self.apply_file"
-                "(<INSERT PBF PATH>)`?",
-                UserWarning,
-            )
         self.counts = counts
         return counts
 
@@ -434,12 +406,6 @@ class FindIds(_IdHandler):
             "relation_ids": self.relations_ids,
             "area_ids": self.area_ids,
         }
-        if _check_dict_values_all_equal(id_dict, []):
-            warnings.warn(
-                "No Ids were found. Did you run "
-                "`self.apply_file(<INSERT PBF PATH>)?`",
-                UserWarning,
-            )
         self.id_dict = id_dict
         return id_dict
 
