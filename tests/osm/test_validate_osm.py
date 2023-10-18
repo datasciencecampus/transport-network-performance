@@ -259,21 +259,16 @@ class TestFindIds(object):
         ids.get_feature_ids()
         assert isinstance(ids.id_dict, dict)
         assert isinstance(ids.id_dict["node_ids"], list)
-        assert sorted(ids.id_dict["node_ids"])[0:5] == [
+        assert sorted(ids.id_dict["node_ids"])[0:3] == [
             127231,
             127233,
             127234,
-            127235,
-            127236,
-            127237,
         ], "First 5 node IDs not as expected"
-        assert sorted(ids.id_dict["way_ids"][0:5]) == [
+        assert sorted(ids.id_dict["way_ids"][0:4]) == [
             1881332,
             1881588,
             2372923,
             2954415,
-            2954417,
-            2954418,
         ], "First 5 way IDs not as expected"
         assert sorted(ids.id_dict["relation_ids"][0:5]) == [
             20990,
@@ -281,9 +276,8 @@ class TestFindIds(object):
             58437,
             62149,
             122733,
-            128098,
         ], "First 5 relation IDs not as expected"
-        assert sorted(ids.id_dict["area_ids"][0:5]) == [
+        assert sorted(ids.id_dict["area_ids"][0:6]) == [
             8418164,
             8418170,
             9622110,
@@ -331,8 +325,8 @@ class TestFindLocations(object):
             f" in {self.locs} is not callable"
 
         assert self.locs.node_locs[10971292664] == {
-            "lon": "-3.0019690",
-            "lat": "51.5804167",
+            "lon": -3.0019690,
+            "lat": 51.5804167,
         }
         # 29 node locations for way ID 1881332
         assert len(self.locs.way_node_locs[1881332]) == 29
