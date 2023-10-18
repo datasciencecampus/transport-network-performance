@@ -170,10 +170,11 @@ ids = FindIds(osm_pth)
 
 def _class_atttribute_assertions(
     some_object, some_attributes: list, some_methods: list
-):
+) -> None:
     """Util for checking class internals.
 
-    Asserts that the object contains the specified attributes & methods.
+    Asserts that the object contains the specified attributes & methods. Used
+    for side effects - raising AssertionError.
     """
     for attr in some_attributes:
         assert hasattr(
