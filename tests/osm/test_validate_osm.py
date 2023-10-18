@@ -173,8 +173,8 @@ def _class_atttribute_assertions(
 ) -> None:
     """Util for checking class internals.
 
-    Asserts that the object contains the specified attributes & methods. Used
-    for side effects - raising AssertionError.
+    Asserts that the object contains the specified attributes & methods. Raises
+    AssertionError if specified attributes & methods not found within object.
     """
     for attr in some_attributes:
         assert hasattr(
@@ -368,3 +368,70 @@ class TestFindTags(object):
         _class_atttribute_assertions(
             self.tags, expected_attrs, expected_methods
         )
+
+    def test_find_tags_check_tags_for_ids(self):
+        """Test FindTags.check_tags_for_ids()."""
+        ids.get_feature_ids()
+        way_ids = ids.id_dict["way_ids"][0:4]
+        rel_ids = ids.id_dict["relation_ids"][0:3]
+        area_ids = ids.id_dict["area_ids"][0:2]
+        # many node IDs are empty, so check a known ID for tags instead
+        self.tags.check_tags_for_ids(ids=[10797072547], feature_type="node")
+        target_node = self.tags.found_tags["node"][10797072547]
+        tag_value_map = {
+            "addr:city": "Newport",
+            "amenity": "pub",
+            "source:postcode": "FHRS Open Data",
+        }
+        for k, v in tag_value_map.items():
+            f = target_node[k]
+            assert f == v, f"Expected node tag value {v} but found {f}"
+
+        # check way tags
+        self.tags.check_tags_for_ids(ids=way_ids, feature_type="way")
+        target_way = self.tags.found_tags["way"][2954415]
+        assert len(self.tags.found_tags["way"]) == 4
+        tag_value_map = {
+            "bicycle": "no",
+            "foot": "no",
+            "highway": "motorway",
+            "oneway": "yes",
+            "operator": "Welsh Government",
+            "ref": "M4",
+            "surface": "asphalt",
+        }
+        for k, v in tag_value_map.items():
+            f = target_way[k]
+            assert f == v, f"Expected way tag value {v} but found {f}"
+        # check relation tags
+        self.tags.check_tags_for_ids(ids=rel_ids, feature_type="relation")
+        target_rel = self.tags.found_tags["relation"][rel_ids[0]]
+        tag_value_map = {
+            "name": "European route E 30",
+            "route": "road",
+            "wikipedia": "en:European route E30",
+        }
+        for k, v in tag_value_map.items():
+            f = target_rel[k]
+            assert f == v, f"Expected relation tag value {v} but found {f}"
+
+        # check area tags
+        self.tags.check_tags_for_ids(ids=area_ids, feature_type="area")
+        target_area = self.tags.found_tags["area"][area_ids[0]]
+        tag_value_map = {
+            "highway": "primary",
+            "junction": "roundabout",
+            "lanes": "2",
+            "lit": "yes",
+            "maxspeed": "50 mph",
+            "name": "Balfe Road",
+            "old_ref": "A455",
+            "oneway": "yes",
+            "postal_code": "NP19",
+            "ref": "A48",
+            "surface": "asphalt",
+        }
+        for k, v in tag_value_map.items():
+            f = target_area[k]
+            assert f == v, f"Expected area tag value {v} but found {f}"
+        assert len(self.tags.found_tags["area"]) == 2
