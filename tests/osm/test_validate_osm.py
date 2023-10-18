@@ -343,7 +343,6 @@ class TestFindLocations(object):
         # check that the expected coordinates are returned for list of node IDs
         id_list = sorted(ids.id_dict["node_ids"])[0:5]
         self.locs.check_locs_for_ids(ids=id_list, feature_type="node")
-        # len(locs.found_locs["node"])
         assert list(self.locs.found_locs.keys()) == ["node"]
         assert len(self.locs.found_locs["node"]) == 5
         # in all 5 nodes, check that floats are returned
@@ -351,4 +350,19 @@ class TestFindLocations(object):
             for k, v in self.locs.found_locs["node"][n].items():
                 assert isinstance(
                     v, float
-                ), f"Expected value{v} to be type float. got {type(v)}"
+                ), f"Expected coord {v} to be type float. got {type(v)}"
+        # now check coordinates for a list of way IDs
+        way_ids = sorted(ids.id_dict["way_ids"])[0:3]
+        self.locs.check_locs_for_ids(ids=way_ids, feature_type="way")
+        assert list(self.locs.found_locs.keys()) == ["way"]
+        assert len(self.locs.found_locs["way"]) == 3
+        # coords are nested deeper for ways than nodes as you need to access
+        # way members' coordinates
+        for w in self.locs.found_locs["way"]:
+            for x in self.locs.found_locs["way"][w]:
+                for k, v in x.items():
+                    for coord in list(v.values()):
+                        assert isinstance(
+                            coord, float
+                        ), f"Expected coord {coord} to be type float."
+                        " got {type(coord)}"
