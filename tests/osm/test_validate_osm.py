@@ -1,11 +1,13 @@
 """Test validate_osm."""
 import pytest
 import re
+from pyprojroot import here
 
 from transport_performance.osm.validate_osm import (
     _compile_tags,
     _check_dict_values_all_equal,
     _filter_target_dict_with_list,
+    FindIds,
 )
 
 
@@ -170,3 +172,65 @@ class Test_FilterTargetDictWithList(object):
         assert isinstance(out, dict)
         assert list(out.keys()) == ["choose_me"]
         assert "remove" not in out.values()
+
+
+# osm path
+OSM_PTH = here("tests/data/newport-2023-06-13.osm.pbf")
+# classes are costly, so instantiate only once
+ids = FindIds(OSM_PTH)
+
+
+@pytest.fixture(scope="function")
+def _IDsFixture():
+    """Return an instance of FindIds."""
+    return ids
+
+
+class TestFindIds(object):
+    """Tests for FindIds api class."""
+
+    def test_findids_init(self, _IDsFixture):
+        """Test init behaviour for FindIds.
+
+        Parameters
+        ----------
+        IDsFixture : pytest.fixture
+            Object of class FindIds.
+
+        """
+        # check all the expected attributes
+        expected_attrs = [
+            "counts",
+            "id_dict",
+            "node_ids",
+            "way_ids",
+            "relations_ids",
+            "area_ids",
+        ]
+        for attr in expected_attrs:
+            assert hasattr(
+                ids, attr
+            ), f"The expected attribute `{attr}` was not found in {ids}"
+        expected_methods = [
+            "count_features",
+            "get_feature_ids",
+            "node",
+            "way",
+            "relation",
+            "area",
+        ]
+        found_methods = [
+            getattr(ids, m, "not_found") for m in expected_methods
+        ]
+        # check all these methods were found
+        for i, method in enumerate(found_methods):
+            assert (
+                method != "not_found"
+            ), f"The expected method `{expected_methods[i]}`"
+            f" was not found in {ids}"
+        # assert they are methods
+        for i, method in enumerate(found_methods):
+            assert callable(
+                method
+            ), f"The expected method `{expected_methods[i]}`"
+            f" in {ids} is not callable"
