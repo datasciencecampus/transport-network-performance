@@ -7,6 +7,7 @@ from transport_performance.osm.validate_osm import (
     _compile_tags,
     _filter_target_dict_with_list,
     FindIds,
+    FindLocations,
 )
 
 
@@ -290,3 +291,42 @@ class TestFindIds(object):
             9625854,
             10172568,
         ], "First 5 area IDs not as expected"
+
+
+locs = FindLocations(osm_pth)
+
+
+class TestFindLocations(object):
+    """Tests for FindLocations api class."""
+
+    def test_find_locations_init(self):
+        """Test for FindLocations init behaviour."""
+        expected_attrs = [
+            "found_locs",
+            "node_locs",
+            "way_node_locs",
+        ]
+        for attr in expected_attrs:
+            assert hasattr(
+                locs, attr
+            ), f"The expected attribute `{attr}` was not found in {locs}"
+        expected_methods = [
+            "check_locs_for_ids",
+            "node",
+            "way",
+        ]
+        found_methods = [
+            getattr(locs, m, "not_found") for m in expected_methods
+        ]
+        # check all these methods were found
+        for i, method in enumerate(found_methods):
+            assert (
+                method != "not_found"
+            ), f"The expected method `{expected_methods[i]}`"
+            f" was not found in {locs}"
+        # assert they are methods
+        for i, method in enumerate(found_methods):
+            assert callable(
+                method
+            ), f"The expected method `{expected_methods[i]}`"
+            f" in {locs} is not callable"
