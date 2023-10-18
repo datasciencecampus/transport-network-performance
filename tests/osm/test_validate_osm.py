@@ -252,3 +252,41 @@ class TestFindIds(object):
         assert (
             f_area == self.e_area
         ), f"Expected {self.e_area} areas, found {f_area} areas."
+
+    def test_get_feature_ids(self):
+        """get_feature_ids returns correct IDs."""
+        ids.get_feature_ids()
+        assert isinstance(ids.id_dict, dict)
+        assert isinstance(ids.id_dict["node_ids"], list)
+        assert sorted(ids.id_dict["node_ids"])[0:6] == [
+            127231,
+            127233,
+            127234,
+            127235,
+            127236,
+            127237,
+        ], "First 5 node IDs not as expected"
+        assert sorted(ids.id_dict["way_ids"][0:6]) == [
+            1881332,
+            1881588,
+            2372923,
+            2954415,
+            2954417,
+            2954418,
+        ], "First 5 way IDs not as expected"
+        assert sorted(ids.id_dict["relation_ids"][0:6]) == [
+            20990,
+            22696,
+            58437,
+            62149,
+            122733,
+            128098,
+        ], "First 5 relation IDs not as expected"
+        assert sorted(ids.id_dict["area_ids"][0:6]) == [
+            8418164,
+            8418170,
+            9622110,
+            9622112,
+            9625854,
+            10172568,
+        ], "First 5 area IDs not as expected"
