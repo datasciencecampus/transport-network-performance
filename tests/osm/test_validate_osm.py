@@ -259,7 +259,7 @@ class TestFindIds(object):
         ids.get_feature_ids()
         assert isinstance(ids.id_dict, dict)
         assert isinstance(ids.id_dict["node_ids"], list)
-        assert sorted(ids.id_dict["node_ids"])[0:6] == [
+        assert sorted(ids.id_dict["node_ids"])[0:5] == [
             127231,
             127233,
             127234,
@@ -267,7 +267,7 @@ class TestFindIds(object):
             127236,
             127237,
         ], "First 5 node IDs not as expected"
-        assert sorted(ids.id_dict["way_ids"][0:6]) == [
+        assert sorted(ids.id_dict["way_ids"][0:5]) == [
             1881332,
             1881588,
             2372923,
@@ -275,7 +275,7 @@ class TestFindIds(object):
             2954417,
             2954418,
         ], "First 5 way IDs not as expected"
-        assert sorted(ids.id_dict["relation_ids"][0:6]) == [
+        assert sorted(ids.id_dict["relation_ids"][0:5]) == [
             20990,
             22696,
             58437,
@@ -283,7 +283,7 @@ class TestFindIds(object):
             122733,
             128098,
         ], "First 5 relation IDs not as expected"
-        assert sorted(ids.id_dict["area_ids"][0:6]) == [
+        assert sorted(ids.id_dict["area_ids"][0:5]) == [
             8418164,
             8418170,
             9622110,
@@ -336,3 +336,19 @@ class TestFindLocations(object):
         }
         # 29 node locations for way ID 1881332
         assert len(self.locs.way_node_locs[1881332]) == 29
+
+    def test_check_locs_for_ids(self):
+        """Assert check_locs_for_ids."""
+        ids.get_feature_ids()
+        # check that the expected coordinates are returned for list of node IDs
+        id_list = sorted(ids.id_dict["node_ids"])[0:5]
+        self.locs.check_locs_for_ids(ids=id_list, feature_type="node")
+        # len(locs.found_locs["node"])
+        assert list(self.locs.found_locs.keys()) == ["node"]
+        assert len(self.locs.found_locs["node"]) == 5
+        # in all 5 nodes, check that floats are returned
+        for n in self.locs.found_locs["node"]:
+            for k, v in self.locs.found_locs["node"][n].items():
+                assert isinstance(
+                    v, float
+                ), f"Expected value{v} to be type float. got {type(v)}"
