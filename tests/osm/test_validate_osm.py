@@ -168,6 +168,32 @@ osm_pth = here("tests/data/newport-2023-06-13.osm.pbf")
 ids = FindIds(osm_pth)
 
 
+def _class_atttribute_assertions(
+    some_object, some_attributes: list, some_methods: list
+):
+    """Util for checking class internals.
+
+    Asserts that the object contains the specified attributes & methods.
+    """
+    for attr in some_attributes:
+        assert hasattr(
+            some_object, attr
+        ), f"The expected attribute `{attr}` was not found in {some_object}"
+        found_methods = [
+            getattr(some_object, m, "not_found") for m in some_methods
+        ]
+        # check all these methods were found
+        for i, method in enumerate(found_methods):
+            assert (
+                method != "not_found"
+            ), f"The expected method `{some_methods[i]}`"
+            f" was not found in {some_object}"
+        # assert they are methods
+        for i, method in enumerate(found_methods):
+            assert callable(method), f"The expected method `{some_methods[i]}`"
+            f" in {some_object} is not callable"
+
+
 class TestFindIds(object):
     """Tests for FindIds api class."""
 
@@ -189,10 +215,6 @@ class TestFindIds(object):
             "relations_ids",
             "area_ids",
         ]
-        for attr in expected_attrs:
-            assert hasattr(
-                ids, attr
-            ), f"The expected attribute `{attr}` was not found in {ids}"
         expected_methods = [
             "count_features",
             "get_feature_ids",
@@ -201,22 +223,7 @@ class TestFindIds(object):
             "relation",
             "area",
         ]
-        found_methods = [
-            getattr(ids, m, "not_found") for m in expected_methods
-        ]
-        # check all these methods were found
-        for i, method in enumerate(found_methods):
-            assert (
-                method != "not_found"
-            ), f"The expected method `{expected_methods[i]}`"
-            f" was not found in {ids}"
-        # assert they are methods
-        for i, method in enumerate(found_methods):
-            assert callable(
-                method
-            ), f"The expected method `{expected_methods[i]}`"
-            f" in {ids} is not callable"
-        # check feature ID counts in osm test fixture
+        _class_atttribute_assertions(ids, expected_attrs, expected_methods)
         f_nod = len(ids.node_ids)
         assert (
             f_nod == self.e_nod
@@ -295,36 +302,9 @@ class TestFindLocations(object):
 
     def test_find_locations_init(self):
         """Test for FindLocations init behaviour."""
-        expected_attrs = [
-            "found_locs",
-            "node_locs",
-            "way_node_locs",
-        ]
-        for attr in expected_attrs:
-            assert hasattr(
-                self.locs, attr
-            ), f"The expected attribute `{attr}` was not found in {self.locs}"
-        expected_methods = [
-            "check_locs_for_ids",
-            "node",
-            "way",
-        ]
-        found_methods = [
-            getattr(self.locs, m, "not_found") for m in expected_methods
-        ]
-        # check all these methods were found
-        for i, method in enumerate(found_methods):
-            assert (
-                method != "not_found"
-            ), f"The expected method `{expected_methods[i]}`"
-            f" was not found in {self.locs}"
-        # assert they are methods
-        for i, method in enumerate(found_methods):
-            assert callable(
-                method
-            ), f"The expected method `{expected_methods[i]}`"
-            f" in {self.locs} is not callable"
-
+        exp_attrs = ["found_locs", "node_locs", "way_node_locs"]
+        exp_methods = ["check_locs_for_ids", "node", "way"]
+        _class_atttribute_assertions(self.locs, exp_attrs, exp_methods)
         assert self.locs.node_locs[10971292664] == {
             "lon": -3.0019690,
             "lat": 51.5804167,
@@ -377,11 +357,6 @@ class TestFindTags(object):
             "relation_tags",
             "area_tags",
         ]
-        for attr in expected_attrs:
-            assert hasattr(
-                self.tags, attr
-            ), f"The expected attribute `{attr}` was not found in {self.tags}"
-
         expected_methods = [
             "check_tags_for_ids",
             "node",
@@ -389,18 +364,6 @@ class TestFindTags(object):
             "relation",
             "area",
         ]
-        found_methods = [
-            getattr(self.tags, m, "not_found") for m in expected_methods
-        ]
-        # check all these methods were found
-        for i, method in enumerate(found_methods):
-            assert (
-                method != "not_found"
-            ), f"The expected method `{expected_methods[i]}`"
-            f" was not found in {self.tags}"
-        # assert they are methods
-        for i, method in enumerate(found_methods):
-            assert callable(
-                method
-            ), f"The expected method `{expected_methods[i]}`"
-            f" in {self.tags} is not callable"
+        _class_atttribute_assertions(
+            self.tags, expected_attrs, expected_methods
+        )
