@@ -185,6 +185,7 @@ class TestGtfsInstance(object):
                 },
                 (6, 4),
             ),
+            # fast travel validators
             (
                 "c",
                 {
@@ -194,6 +195,8 @@ class TestGtfsInstance(object):
                 },
                 (5, 4),
             ),
+            # all validators
+            ("n", None, (6, 4)),
         ],
     )
     def test_is_valid_on_pass(
