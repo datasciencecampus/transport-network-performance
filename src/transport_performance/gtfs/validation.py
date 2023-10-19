@@ -48,7 +48,7 @@ from transport_performance.utils.constants import (
 # THESE MAPPINGS CAN NOT BE MOVED TO CONSTANTS AS THEY INTRODUCE DEPENDENCY
 # ISSUES.
 CLEAN_FEED_FUNCTION_MAP = {
-    # "core_cleaners" : cleaners.core_cleaners,
+    "core_cleaners": cleaners.core_cleaners,
     "clean_consecutive_stop_fast_travel_warnings": (
         cleaners.clean_consecutive_stop_fast_travel_warnings
     ),
