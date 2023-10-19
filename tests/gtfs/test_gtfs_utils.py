@@ -10,7 +10,10 @@ from shapely.geometry import box
 from plotly.graph_objects import Figure as PlotlyFigure
 import numpy as np
 
-from transport_performance.gtfs.validation import GtfsInstance
+from transport_performance.gtfs.validation import (
+    GtfsInstance,
+    VALIDATE_FEED_FUNC_MAP,
+)
 from transport_performance.gtfs.gtfs_utils import (
     bbox_filter_gtfs,
     _add_validation_row,
@@ -18,6 +21,7 @@ from transport_performance.gtfs.gtfs_utils import (
     convert_pandas_to_plotly,
     _get_validation_warnings,
     _remove_validation_row,
+    _function_pipeline,
 )
 
 # location of GTFS test fixture
@@ -332,3 +336,42 @@ class TestRemoveValidationRow(object):
         assert (
             len(found_cols) == 0
         ), "Invalid errors/warnings still in validity_df"
+
+
+class TestFunctionPipeline(object):
+    """Tests for _function_pipeline.
+
+    Notes
+    -----
+    Not testing on pass here as better cases can be found in the tests for
+    GtfsInstance's is_valid() and clean_feed() methods.
+
+    """
+
+    @pytest.mark.parametrize(
+        "operations, raises, match",
+        [
+            # invalid type for 'validators'
+            (True, TypeError, ".*expected .*dict.*. Got .*bool.*"),
+            # invalid validator
+            (
+                {"not_a_valid_validator": None},
+                KeyError,
+                (
+                    r"'not_a_valid_validator' function passed to 'operations'"
+                    r" is not a known operation.*"
+                ),
+            ),
+            # invalid type for kwargs for validator
+            (
+                {"core_validation": pd.DataFrame()},
+                TypeError,
+                ".* expected .*dict.*NoneType.*",
+            ),
+        ],
+    )
+    def test_function_pipeline_defence(self, operations, raises, match):
+        """Defensive test for _function_pipeline."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        with pytest.raises(raises, match=match):
+            _function_pipeline(gtfs, VALIDATE_FEED_FUNC_MAP, operations)

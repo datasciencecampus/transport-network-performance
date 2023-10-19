@@ -216,19 +216,19 @@ def core_cleaners(
     _type_defence(drop_zombies, "drop_zombies", bool)
     # cleaning
     if clean_ids:
-        clean_ids_gk(gtfs)
+        clean_ids_gk(gtfs.feed)
     if clean_times:
-        clean_times_gk(gtfs)
+        clean_times_gk(gtfs.feed)
     if clean_route_short_names:
-        clean_route_short_names_gk(gtfs)
+        clean_route_short_names_gk(gtfs.feed)
     if drop_zombies:
         try:
-            drop_zombies_gk(gtfs)
+            drop_zombies_gk(gtfs.feed)
         except KeyError:
             warnings.warn(
                 UserWarning(
                     "The drop_zombies cleaner was unable to operate on "
-                    "clean_feed as the trips table ahs no sape_id column"
+                    "clean_feed as the trips table has no shape_id column"
                 )
             )
     return None

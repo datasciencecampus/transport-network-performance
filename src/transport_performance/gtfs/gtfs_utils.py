@@ -426,3 +426,36 @@ def _remove_validation_row(
         list(set(gtfs.validity_df.index) - set(index))
     ]
     return None
+
+
+def _function_pipeline(
+    gtfs, func_map: dict, operations: Union[dict, type(None)]
+) -> None:
+    """Iterate through and act on a functional pipeline."""
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(func_map, "func_map", dict)
+    _type_defence(operations, "oeprations", (dict, type(None)))
+    if operations:
+        for key in operations.keys():
+            if key not in func_map.keys():
+                raise KeyError(
+                    f"'{key}' function passed to 'operations' is not a "
+                    "known operation. Known operation include: "
+                    f"{func_map.keys()}"
+                )
+        for operation in operations:
+            # check value is dict or none (for kwargs)
+            _type_defence(
+                operations[operation],
+                f"operations[{operation}]",
+                (dict, type(None)),
+            )
+            operations[operation] = (
+                {} if operations[operation] is None else operations[operation]
+            )
+            func_map[operation](gtfs=gtfs, **operations[operation])
+    # if no operations passed, carry out all operations
+    else:
+        for operation in func_map:
+            func_map[operation](gtfs=gtfs)
+    return None

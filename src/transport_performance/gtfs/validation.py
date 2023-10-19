@@ -16,10 +16,6 @@ import pathlib
 from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
 
-from transport_performance.gtfs.cleaners import (
-    clean_consecutive_stop_fast_travel_warnings,
-    clean_multiple_stop_fast_travel_warnings,
-)
 import transport_performance.gtfs.cleaners as cleaners
 import transport_performance.gtfs.validators as gtfs_validators
 
@@ -27,6 +23,8 @@ from transport_performance.gtfs.routes import (
     scrape_route_type_lookup,
     get_saved_route_type_lookup,
 )
+
+from transport_performance.gtfs.gtfs_utils import _function_pipeline
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_namespace_export,
@@ -382,35 +380,9 @@ class GtfsInstance:
         self.validity_df = pd.DataFrame(
             columns=["type", "message", "table", "rows"]
         )
-        # carry out additional validators
-        if validators is not None:
-            # check all keys are known validators
-            for key in validators.keys():
-                if key not in VALIDATE_FEED_FUNC_MAP.keys():
-                    raise KeyError(
-                        f"'{key}' function passed to 'validators' is not a "
-                        "known validator. Known validators include: "
-                        f"{VALIDATE_FEED_FUNC_MAP.keys()}"
-                    )
-            for validator in validators:
-                # check value is dict or none (for kwargs)
-                _type_defence(
-                    validators[validator],
-                    f"validators[{validator}]",
-                    (dict, type(None)),
-                )
-                validators[validator] = (
-                    {}
-                    if validators[validator] is None
-                    else validators[validator]
-                )
-                VALIDATE_FEED_FUNC_MAP[validator](
-                    gtfs=self, **validators[validator]
-                )
-        # if no validators passed, carry out all validators
-        else:
-            for validator in VALIDATE_FEED_FUNC_MAP:
-                VALIDATE_FEED_FUNC_MAP[validator](gtfs=self)
+        _function_pipeline(
+            gtfs=self, func_map=VALIDATE_FEED_FUNC_MAP, operations=validators
+        )
         return self.validity_df
 
     def print_alerts(self, alert_type: str = "error") -> None:
@@ -461,35 +433,27 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(
-        self, validate: bool = False, fast_travel: bool = True
-    ) -> None:
-        """Attempt to clean feed using `gtfs_kit`.
+    def clean_feed(self, cleansers: dict = None) -> None:
+        """Clean the gtfs feed.
 
         Parameters
         ----------
-        validate: bool, optional
-            Whether or not to validate the dataframe before cleaning
-        fast_travel: bool, optional
-            Whether or not to clean warnings related to fast travel.
+        cleansers : dict, optional
+            A mapping of cleansing functions and kwargs, by default None
+
+        Returns
+        -------
+        None
 
         """
-        _type_defence(fast_travel, "fast_travel", bool)
-        _type_defence(validate, "valiidate", bool)
-        # TODO: refactor function to be like is_valid()
-        if validate:
-            self.is_valid()
-        try:
-            # In cases where shape_id is missing, keyerror is raised.
-            # https://developers.google.com/transit/gtfs/reference#shapestxt
-            # shows that shapes.txt is optional file.
-            self.feed = self.feed.clean()
-            if fast_travel:
-                clean_consecutive_stop_fast_travel_warnings(self)
-                clean_multiple_stop_fast_travel_warnings(self)
-        except KeyError:
-            # TODO: Issue 74 - Improve this to clean feed when KeyError raised
-            print("KeyError. Feed was not cleaned.")
+        # DEV NOTE: Opting not to allow for validation in clean_feed().
+        #           .is_valid() should be used before hand.
+        # DEV NOTE 2: Use of parm name 'cleansers' is to avoid conflicts
+        _type_defence(cleansers, "cleansers", (dict, type(None)))
+        _function_pipeline(
+            gtfs=self, func_map=CLEAN_FEED_FUNCTION_MAP, operations=cleansers
+        )
+        return None
 
     def _produce_stops_map(
         self, what_geoms: str, is_filtered: bool, crs: Union[int, str]
@@ -1514,8 +1478,9 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        # TODO: make this optional
-        self.clean_feed(validate=True, fast_travel=True)
+        # TODO: make this optional (and allow params)
+        self.is_valid()
+        self.clean_feed()
         # re-validate to clean any newly raised errors/warnings
         validation_dataframe = self.is_valid()
 

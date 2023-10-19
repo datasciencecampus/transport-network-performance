@@ -143,35 +143,6 @@ class TestGtfsInstance(object):
         "found: {foundf}"
 
     @pytest.mark.parametrize(
-        "validators, raises, match",
-        [
-            # invalid type for 'validators'
-            (True, TypeError, ".*expected .*dict.*. Got .*bool.*"),
-            # invalid validator
-            (
-                {"not_a_valid_validator": None},
-                KeyError,
-                (
-                    r"'not_a_valid_validator' function passed to 'validators'"
-                    r" is not a known validator.*"
-                ),
-            ),
-            # invalid type for kwargs for validator
-            (
-                {"core_validation": pd.DataFrame()},
-                TypeError,
-                ".* expected .*dict.*NoneType.*",
-            ),
-        ],
-    )
-    def test_is_valid_defence(
-        self, newp_gtfs_fixture, validators, raises, match
-    ):
-        """Defensive tests for GtfsInstance.is_valid()."""
-        with pytest.raises(raises, match=match):
-            newp_gtfs_fixture.is_valid(validators=validators)
-
-    @pytest.mark.parametrize(
         "which, validators, shape",
         [
             # only core validation
@@ -742,16 +713,14 @@ class TestGtfsInstance(object):
         ):
             newp_gtfs_fixture.summarise_routes(return_summary="true")
 
-    @patch("builtins.print")
-    def test_clean_feed_defence(self, mock_print, newp_gtfs_fixture):
+    def test_clean_feed_defence(self, newp_gtfs_fixture):
         """Check defensive behaviours of clean_feed()."""
-        # Simulate condition where shapes.txt has no shape_id
-        newp_gtfs_fixture.feed.shapes.drop("shape_id", axis=1, inplace=True)
-        newp_gtfs_fixture.clean_feed()
-        fun_out = mock_print.mock_calls
-        assert fun_out == [
-            call("KeyError. Feed was not cleaned.")
-        ], f"Expected print statement about KeyError. Found: {fun_out}."
+        with pytest.raises(
+            TypeError, match=r".*expected .*dict.* Got .*int.*"
+        ):
+            fixt = newp_gtfs_fixture
+            fixt.is_valid(validators={"core_validation": None})
+            fixt.clean_feed(cleansers=1)
 
     def test_summarise_trips_on_pass(self, newp_gtfs_fixture):
         """Assertions about the outputs from summarise_trips()."""
