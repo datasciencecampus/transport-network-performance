@@ -156,4 +156,23 @@ class TestValidateRouteTypeWarnings(object):
         )
         assert (
             len(new_route_errors) == 0
-        ), "Found route_type errors after cleaning"
+        ), "Found route_type warnings after cleaning"
+
+    def test_validate_route_type_warnings_creates_warnings(
+        self, newp_gtfs_fixture
+    ):
+        """Test validate_route_type_warnings re-raises route_type warnings."""
+        newp_gtfs_fixture.feed.routes[
+            "route_type"
+        ] = newp_gtfs_fixture.feed.routes["route_type"].apply(
+            lambda x: 310030 if x == 200 else 200
+        )
+        newp_gtfs_fixture.is_valid(
+            {"core_validation": None, "validate_route_type_warnings": None}
+        )
+        new_route_errors = _get_validation_warnings(
+            newp_gtfs_fixture, message="Invalid route_type"
+        )
+        assert (
+            len(new_route_errors) == 1
+        ), "route_type warnings not found after cleaning"

@@ -26,9 +26,16 @@ GTFS_FIX_PTH = os.path.join(
 
 
 @pytest.fixture(scope="function")  # some funcs expect cleaned feed others dont
-def gtfs_fixture():
+def newp_gtfs_fixture():
     """Fixture for test funcs expecting a valid feed object."""
     gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+    return gtfs
+
+
+@pytest.fixture(scope="function")
+def chest_gtfs_fixture():
+    """Fixture for test funcs expecting a valid feed object."""
+    gtfs = GtfsInstance(here("tests/data/chester-20230816-small_gtfs.zip"))
     return gtfs
 
 
@@ -113,7 +120,7 @@ class TestGtfsInstance(object):
             without_pth.to_dict() == with_pth.to_dict()
         ), "Failed to get route type lookup correctly"
 
-    def test_get_gtfs_files(self, gtfs_fixture):
+    def test_get_gtfs_files(self, newp_gtfs_fixture):
         """Assert files that make up the GTFS."""
         expected_files = [
             # smaller filter has resulted in a GTFS with no calendar dates /
@@ -129,40 +136,103 @@ class TestGtfsInstance(object):
             "calendar.txt",
             "routes.txt",
         ]
-        foundf = gtfs_fixture.get_gtfs_files()
+        foundf = newp_gtfs_fixture.get_gtfs_files()
         assert (
             foundf == expected_files
         ), f"GTFS files not as expected. Expected {expected_files},"
         "found: {foundf}"
 
-    def test_is_valid(self, gtfs_fixture):
-        """Assertions about validity_df table."""
-        gtfs_fixture.is_valid()
-        assert isinstance(
-            gtfs_fixture.validity_df, pd.core.frame.DataFrame
-        ), f"Expected DataFrame. Found: {type(gtfs_fixture.validity_df)}"
-        shp = gtfs_fixture.validity_df.shape
-        assert shp == (
-            6,
-            4,
-        ), f"Attribute `validity_df` expected a shape of (6,4). Found: {shp}"
-        exp_cols = pd.Index(["type", "message", "table", "rows"])
-        found_cols = gtfs_fixture.validity_df.columns
-        assert (
-            found_cols == exp_cols
-        ).all(), f"Expected columns {exp_cols}. Found: {found_cols}"
+    @pytest.mark.parametrize(
+        "validators, raises, match",
+        [
+            # invalid type for 'validators'
+            (True, TypeError, ".*expected .*dict.*. Got .*bool.*"),
+            # invalid validator
+            (
+                {"not_a_valid_validator": None},
+                KeyError,
+                (
+                    r"'not_a_valid_validator' function passed to 'validators'"
+                    r" is not a known validator.*"
+                ),
+            ),
+            # invalid type for kwargs for validator
+            (
+                {"core_validation": pd.DataFrame()},
+                TypeError,
+                ".* expected .*dict.*NoneType.*",
+            ),
+        ],
+    )
+    def test_is_valid_defence(
+        self, newp_gtfs_fixture, validators, raises, match
+    ):
+        """Defensive tests for GtfsInstance.is_valid()."""
+        with pytest.raises(raises, match=match):
+            newp_gtfs_fixture.is_valid(validators=validators)
+
+    @pytest.mark.parametrize(
+        "which, validators, shape",
+        [
+            # only core validation
+            ("n", {"core_validation": None}, (7, 4)),
+            # route type warning validation
+            (
+                "n",
+                {
+                    "core_validation": None,
+                    "validate_route_type_warnings": None,
+                },
+                (6, 4),
+            ),
+            (
+                "c",
+                {
+                    "core_validation": None,
+                    "validate_travel_between_consecutive_stops": None,
+                    "validate_travel_over_multiple_stops": None,
+                },
+                (5, 4),
+            ),
+        ],
+    )
+    def test_is_valid_on_pass(
+        self, newp_gtfs_fixture, chest_gtfs_fixture, which, validators, shape
+    ):
+        """Tests/assertions for is_valid() while passing.
+
+        Notes
+        -----
+        These tests are mostly to assure that the validators are being
+        identified and run, and that the validation df returned is as expected.
+
+        I will be refraining from over testing here as it would essentially be
+        testing the validators again, which occurs in test_validators.py.
+
+        Tests for validators with kwargs would be useful, once they are added.
+
+        """
+        # Bypassing any defensive checks for wich.
+        # Correct inputs are assured as tese are internal tests.
+        if which.lower().strip() == "n":
+            fixture = newp_gtfs_fixture
+        else:
+            fixture = chest_gtfs_fixture
+        df = fixture.is_valid(validators=validators)
+        assert isinstance(df, pd.DataFrame), "is_valid() failed to return df"
+        assert shape == df.shape, "validity_df not as expected"
 
     @pytest.mark.sanitycheck
-    def test_trips_unmatched_ids(self, gtfs_fixture):
+    def test_trips_unmatched_ids(self, newp_gtfs_fixture):
         """Tests to evaluate gtfs-klt's reaction to invalid IDs in trips.
 
         Parameters
         ----------
-        gtfs_fixture : GtfsInstance
+        newp_gtfs_fixture : GtfsInstance
             a GtfsInstance test fixure
 
         """
-        feed = gtfs_fixture.feed
+        feed = newp_gtfs_fixture.feed
 
         # add row to tripas table with invald trip_id, route_id, service_id
         feed.trips = pd.concat(
@@ -203,16 +273,16 @@ class TestGtfsInstance(object):
         assert len(new_valid) == 10, "Validation table not expected size"
 
     @pytest.mark.sanitycheck
-    def test_routes_unmatched_ids(self, gtfs_fixture):
+    def test_routes_unmatched_ids(self, newp_gtfs_fixture):
         """Tests to evaluate gtfs-klt's reaction to invalid IDs in routes.
 
         Parameters
         ----------
-        gtfs_fixture : GtfsInstance
+        newp_gtfs_fixture : GtfsInstance
             a GtfsInstance test fixure
 
         """
-        feed = gtfs_fixture.feed
+        feed = newp_gtfs_fixture.feed
 
         # add row to tripas table with invald trip_id, route_id, service_id
         feed.routes = pd.concat(
@@ -242,12 +312,12 @@ class TestGtfsInstance(object):
         assert len(new_valid) == 9, "Validation table not expected size"
 
     @pytest.mark.sanitycheck
-    def test_unmatched_service_id_behaviour(self, gtfs_fixture):
+    def test_unmatched_service_id_behaviour(self, newp_gtfs_fixture):
         """Tests to evaluate gtfs-klt's reaction to invalid IDs in calendar.
 
         Parameters
         ----------
-        gtfs_fixture : GtfsInstance
+        newp_gtfs_fixture : GtfsInstance
             a GtfsInstance test fixure
 
         Notes
@@ -258,7 +328,7 @@ class TestGtfsInstance(object):
         calendar table contains duplicate service_ids.
 
         """
-        feed = gtfs_fixture.feed
+        feed = newp_gtfs_fixture.feed
         original_error_count = len(feed.validate())
 
         # introduce a dummy row with a non matching service_id
@@ -294,25 +364,25 @@ class TestGtfsInstance(object):
             len(new_valid[new_valid.message == "Undefined service_id"]) == 1
         ), "gtfs-kit failed to identify missing service_id"
 
-    def test_print_alerts_defence(self, gtfs_fixture):
+    def test_print_alerts_defence(self, newp_gtfs_fixture):
         """Check defensive behaviour of print_alerts()."""
         with pytest.raises(
             AttributeError,
             match=r"is None, did you forget to use `self.is_valid()`?",
         ):
-            gtfs_fixture.print_alerts()
+            newp_gtfs_fixture.print_alerts()
 
-        gtfs_fixture.is_valid()
+        newp_gtfs_fixture.is_valid()
         with pytest.warns(
             UserWarning, match="No alerts of type doesnt_exist were found."
         ):
-            gtfs_fixture.print_alerts(alert_type="doesnt_exist")
+            newp_gtfs_fixture.print_alerts(alert_type="doesnt_exist")
 
     @patch("builtins.print")  # testing print statements
-    def test_print_alerts_single_case(self, mocked_print, gtfs_fixture):
+    def test_print_alerts_single_case(self, mocked_print, newp_gtfs_fixture):
         """Check alerts print as expected without truncation."""
-        gtfs_fixture.is_valid(validators={"core_validation": None})
-        gtfs_fixture.print_alerts()
+        newp_gtfs_fixture.is_valid(validators={"core_validation": None})
+        newp_gtfs_fixture.print_alerts()
         # fixture contains single error
         fun_out = mocked_print.mock_calls
         assert fun_out == [
@@ -320,11 +390,11 @@ class TestGtfsInstance(object):
         ], f"Expected a print about invalid route type. Found {fun_out}"
 
     @patch("builtins.print")
-    def test_print_alerts_multi_case(self, mocked_print, gtfs_fixture):
+    def test_print_alerts_multi_case(self, mocked_print, newp_gtfs_fixture):
         """Check multiple alerts are printed as expected."""
-        gtfs_fixture.is_valid()
+        newp_gtfs_fixture.is_valid()
         # fixture contains several warnings
-        gtfs_fixture.print_alerts(alert_type="warning")
+        newp_gtfs_fixture.print_alerts(alert_type="warning")
         fun_out = mocked_print.mock_calls
         assert fun_out == [
             call("Unrecognized column agency_noc"),
@@ -335,7 +405,7 @@ class TestGtfsInstance(object):
             call("Unrecognized column vehicle_journey_code"),
         ], f"Expected print statements about GTFS warnings. Found: {fun_out}"
 
-    def test_viz_stops_defence(self, tmpdir, gtfs_fixture):
+    def test_viz_stops_defence(self, tmpdir, newp_gtfs_fixture):
         """Check defensive behaviours of viz_stops()."""
         tmp = os.path.join(tmpdir, "somefile.html")
         with pytest.raises(
@@ -345,12 +415,12 @@ class TestGtfsInstance(object):
                 "Got <class 'bool'>"
             ),
         ):
-            gtfs_fixture.viz_stops(out_pth=True)
+            newp_gtfs_fixture.viz_stops(out_pth=True)
         with pytest.raises(
             TypeError,
             match="`geoms` expected <class 'str'>. Got <class 'int'>",
         ):
-            gtfs_fixture.viz_stops(out_pth=tmp, geoms=38)
+            newp_gtfs_fixture.viz_stops(out_pth=tmp, geoms=38)
         with pytest.raises(
             ValueError,
             match=re.escape(
@@ -358,7 +428,7 @@ class TestGtfsInstance(object):
                 "['point', 'hull']. Got foobar: <class 'str'>"
             ),
         ):
-            gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
+            newp_gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
         with pytest.raises(
             TypeError,
             match=re.escape(
@@ -366,28 +436,28 @@ class TestGtfsInstance(object):
                 "<class 'float'>"
             ),
         ):
-            gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
+            newp_gtfs_fixture.viz_stops(out_pth=tmp, geom_crs=1.1)
         # check missing stop_id results in an informative error message
-        gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
+        newp_gtfs_fixture.feed.stops.drop("stop_id", axis=1, inplace=True)
         with pytest.raises(
             KeyError,
             match="The stops table has no 'stop_code' column. While "
             "this is an optional field in a GTFS file, it "
             "raises an error through the gtfs-kit package.",
         ):
-            gtfs_fixture.viz_stops(out_pth=tmp, filtered_only=False)
+            newp_gtfs_fixture.viz_stops(out_pth=tmp, filtered_only=False)
 
     @patch("builtins.print")
-    def test_viz_stops_point(self, mock_print, tmpdir, gtfs_fixture):
+    def test_viz_stops_point(self, mock_print, tmpdir, newp_gtfs_fixture):
         """Check behaviour of viz_stops when plotting point geom."""
         tmp = os.path.join(tmpdir, "points.html")
-        gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp))
+        newp_gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp))
         assert os.path.exists(
             tmp
         ), f"{tmp} was expected to exist but it was not found."
         # check behaviour when parent directory doesn't exist
         no_parent_pth = os.path.join(tmpdir, "notfound", "points1.html")
-        gtfs_fixture.viz_stops(
+        newp_gtfs_fixture.viz_stops(
             out_pth=pathlib.Path(no_parent_pth), create_out_parent=True
         )
         assert os.path.exists(
@@ -399,7 +469,7 @@ class TestGtfsInstance(object):
             UserWarning,
             match=".svg format not implemented. Saving as .html",
         ):
-            gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
+            newp_gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
         # need to use regex for the first print statement, as tmpdir will
         # change.
         start_pat = re.compile(r"Creating parent directory:.*")
@@ -412,20 +482,22 @@ class TestGtfsInstance(object):
             write_pth
         ), f"Map should have been written to {write_pth} but was not found."
 
-    def test_viz_stops_hull(self, tmpdir, gtfs_fixture):
+    def test_viz_stops_hull(self, tmpdir, newp_gtfs_fixture):
         """Check viz_stops behaviour when plotting hull geom."""
         tmp = os.path.join(tmpdir, "hull.html")
-        gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp), geoms="hull")
+        newp_gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp), geoms="hull")
         assert os.path.exists(tmp), f"Map file not found at {tmp}."
         # assert file created when not filtering the hull
         tmp1 = os.path.join(tmpdir, "filtered_hull.html")
-        gtfs_fixture.viz_stops(out_pth=tmp1, geoms="hull", filtered_only=False)
+        newp_gtfs_fixture.viz_stops(
+            out_pth=tmp1, geoms="hull", filtered_only=False
+        )
         assert os.path.exists(tmp1), f"Map file not found at {tmp1}."
 
-    def test__create_map_title_text_defence(self, gtfs_fixture):
+    def test__create_map_title_text_defence(self, newp_gtfs_fixture):
         """Test the defences for _create_map_title_text()."""
         # CRS without m or km units
-        gtfs_hull = gtfs_fixture.feed.compute_convex_hull()
+        gtfs_hull = newp_gtfs_fixture.feed.compute_convex_hull()
         gdf = GeoDataFrame({"geometry": gtfs_hull}, index=[0], crs="epsg:4326")
         with pytest.raises(ValueError), pytest.warns(UserWarning):
             _create_map_title_text(gdf=gdf, units="m", geom_crs=4326)
@@ -494,24 +566,24 @@ class TestGtfsInstance(object):
             expected_cols.remove(col)
         assert len(expected_cols) == 0, "Not all expected cols in output cols"
 
-    def test__order_dataframe_by_day_defence(self, gtfs_fixture):
+    def test__order_dataframe_by_day_defence(self, newp_gtfs_fixture):
         """Test __order_dataframe_by_day defences."""
         with pytest.raises(
             TypeError,
             match="'df' expected type pd.DataFrame, got <class 'str'>",
         ):
-            (gtfs_fixture._order_dataframe_by_day(df="test"))
+            (newp_gtfs_fixture._order_dataframe_by_day(df="test"))
         with pytest.raises(
             TypeError,
             match="'day_column_name' expected type str, got <class 'int'>",
         ):
             (
-                gtfs_fixture._order_dataframe_by_day(
+                newp_gtfs_fixture._order_dataframe_by_day(
                     df=pd.DataFrame(), day_column_name=5
                 )
             )
 
-    def test_get_route_modes(self, gtfs_fixture, mocker):
+    def test_get_route_modes(self, newp_gtfs_fixture, mocker):
         """Assertions about the table returned by get_route_modes()."""
         patch_scrape_lookup = mocker.patch(
             "transport_performance.gtfs.validation.scrape_route_type_lookup",
@@ -520,25 +592,28 @@ class TestGtfsInstance(object):
                 {"route_type": ["3"], "desc": ["Mocked bus"]}
             ),
         )
-        gtfs_fixture.get_route_modes()
+        newp_gtfs_fixture.get_route_modes()
         # check mocker was called
         assert (
             patch_scrape_lookup.called
         ), "mocker.patch `patch_scrape_lookup` was not called."
-        found = gtfs_fixture.route_mode_summary_df["desc"][0]
+        found = newp_gtfs_fixture.route_mode_summary_df["desc"][0]
         assert found == "Mocked bus", f"Expected 'Mocked bus', found: {found}"
         assert isinstance(
-            gtfs_fixture.route_mode_summary_df, pd.core.frame.DataFrame
-        ), f"Expected pd df. Found: {type(gtfs_fixture.route_mode_summary_df)}"
+            newp_gtfs_fixture.route_mode_summary_df, pd.core.frame.DataFrame
+        ), (
+            "Expected pd df. "
+            f"Found: {type(newp_gtfs_fixture.route_mode_summary_df)}"
+        )
         exp_cols = pd.Index(["route_type", "desc", "n_routes", "prop_routes"])
-        found_cols = gtfs_fixture.route_mode_summary_df.columns
+        found_cols = newp_gtfs_fixture.route_mode_summary_df.columns
         assert (
             found_cols == exp_cols
         ).all(), f"Expected columns are different. Found: {found_cols}"
 
-    def test__preprocess_trips_and_routes(self, gtfs_fixture):
+    def test__preprocess_trips_and_routes(self, newp_gtfs_fixture):
         """Check the outputs of _pre_process_trips_and_route() (test data)."""
-        returned_df = gtfs_fixture._preprocess_trips_and_routes()
+        returned_df = newp_gtfs_fixture._preprocess_trips_and_routes()
         assert isinstance(returned_df, pd.core.frame.DataFrame), (
             "Expected DF for _preprocess_trips_and_routes() return,"
             f"found {type(returned_df)}"
@@ -572,13 +647,13 @@ class TestGtfsInstance(object):
             f"Found {returned_df.shape}",
         )
 
-    def test_summarise_trips_defence(self, gtfs_fixture):
+    def test_summarise_trips_defence(self, newp_gtfs_fixture):
         """Defensive checks for summarise_trips()."""
         with pytest.raises(
             TypeError,
             match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
         ):
-            gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
+            newp_gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
         # case where is function but not exported from numpy
 
         def dummy_func():
@@ -592,39 +667,39 @@ class TestGtfsInstance(object):
                 " <class 'function'> : dummy_func"
             ),
         ):
-            gtfs_fixture.summarise_trips(summ_ops=[np.min, dummy_func])
+            newp_gtfs_fixture.summarise_trips(summ_ops=[np.min, dummy_func])
         # case where a single non-numpy func is being passed
         with pytest.raises(
             NotImplementedError,
             match="`summ_ops` expects numpy functions only.",
         ):
-            gtfs_fixture.summarise_trips(summ_ops=dummy_func)
+            newp_gtfs_fixture.summarise_trips(summ_ops=dummy_func)
         with pytest.raises(
             TypeError,
             match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
         ):
-            gtfs_fixture.summarise_trips(summ_ops=38)
+            newp_gtfs_fixture.summarise_trips(summ_ops=38)
         # cases where return_summary are not of type boolean
         with pytest.raises(
             TypeError,
             match="'return_summary' must be of type boolean."
             " Found <class 'int'> : 5",
         ):
-            gtfs_fixture.summarise_trips(return_summary=5)
+            newp_gtfs_fixture.summarise_trips(return_summary=5)
         with pytest.raises(
             TypeError,
             match="'return_summary' must be of type boolean."
             " Found <class 'str'> : true",
         ):
-            gtfs_fixture.summarise_trips(return_summary="true")
+            newp_gtfs_fixture.summarise_trips(return_summary="true")
 
-    def test_summarise_routes_defence(self, gtfs_fixture):
+    def test_summarise_routes_defence(self, newp_gtfs_fixture):
         """Defensive checks for summarise_routes()."""
         with pytest.raises(
             TypeError,
             match="Each item in `summ_ops`.*. Found <class 'str'> : np.mean",
         ):
-            gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
+            newp_gtfs_fixture.summarise_trips(summ_ops=[np.mean, "np.mean"])
         # case where is function but not exported from numpy
 
         def dummy_func():
@@ -638,55 +713,55 @@ class TestGtfsInstance(object):
                 " <class 'function'> : dummy_func"
             ),
         ):
-            gtfs_fixture.summarise_routes(summ_ops=[np.min, dummy_func])
+            newp_gtfs_fixture.summarise_routes(summ_ops=[np.min, dummy_func])
         # case where a single non-numpy func is being passed
         with pytest.raises(
             NotImplementedError,
             match="`summ_ops` expects numpy functions only.",
         ):
-            gtfs_fixture.summarise_routes(summ_ops=dummy_func)
+            newp_gtfs_fixture.summarise_routes(summ_ops=dummy_func)
         with pytest.raises(
             TypeError,
             match="`summ_ops` expects a numpy function.*. Found <class 'int'>",
         ):
-            gtfs_fixture.summarise_routes(summ_ops=38)
+            newp_gtfs_fixture.summarise_routes(summ_ops=38)
         # cases where return_summary are not of type boolean
         with pytest.raises(
             TypeError,
             match="'return_summary' must be of type boolean."
             " Found <class 'int'> : 5",
         ):
-            gtfs_fixture.summarise_routes(return_summary=5)
+            newp_gtfs_fixture.summarise_routes(return_summary=5)
         with pytest.raises(
             TypeError,
             match="'return_summary' must be of type boolean."
             " Found <class 'str'> : true",
         ):
-            gtfs_fixture.summarise_routes(return_summary="true")
+            newp_gtfs_fixture.summarise_routes(return_summary="true")
 
     @patch("builtins.print")
-    def test_clean_feed_defence(self, mock_print, gtfs_fixture):
+    def test_clean_feed_defence(self, mock_print, newp_gtfs_fixture):
         """Check defensive behaviours of clean_feed()."""
         # Simulate condition where shapes.txt has no shape_id
-        gtfs_fixture.feed.shapes.drop("shape_id", axis=1, inplace=True)
-        gtfs_fixture.clean_feed()
+        newp_gtfs_fixture.feed.shapes.drop("shape_id", axis=1, inplace=True)
+        newp_gtfs_fixture.clean_feed()
         fun_out = mock_print.mock_calls
         assert fun_out == [
             call("KeyError. Feed was not cleaned.")
         ], f"Expected print statement about KeyError. Found: {fun_out}."
 
-    def test_summarise_trips_on_pass(self, gtfs_fixture):
+    def test_summarise_trips_on_pass(self, newp_gtfs_fixture):
         """Assertions about the outputs from summarise_trips()."""
-        gtfs_fixture.summarise_trips()
+        newp_gtfs_fixture.summarise_trips()
         # tests the daily_routes_summary return schema
         assert isinstance(
-            gtfs_fixture.daily_trip_summary, pd.core.frame.DataFrame
+            newp_gtfs_fixture.daily_trip_summary, pd.core.frame.DataFrame
         ), (
             "Expected DF for daily_summary,"
-            f"found {type(gtfs_fixture.daily_trip_summary)}"
+            f"found {type(newp_gtfs_fixture.daily_trip_summary)}"
         )
 
-        found_ds = gtfs_fixture.daily_trip_summary.columns
+        found_ds = newp_gtfs_fixture.daily_trip_summary.columns
         exp_cols_ds = pd.Index(
             [
                 "day",
@@ -705,13 +780,13 @@ class TestGtfsInstance(object):
 
         # tests the self.dated_route_counts return schema
         assert isinstance(
-            gtfs_fixture.dated_trip_counts, pd.core.frame.DataFrame
+            newp_gtfs_fixture.dated_trip_counts, pd.core.frame.DataFrame
         ), (
             "Expected DF for dated_route_counts,"
-            f"found {type(gtfs_fixture.dated_trip_counts)}"
+            f"found {type(newp_gtfs_fixture.dated_trip_counts)}"
         )
 
-        found_drc = gtfs_fixture.dated_trip_counts.columns
+        found_drc = newp_gtfs_fixture.dated_trip_counts.columns
         exp_cols_drc = pd.Index(["date", "route_type", "trip_count", "day"])
 
         assert (
@@ -732,8 +807,8 @@ class TestGtfsInstance(object):
         )
 
         found_df = (
-            gtfs_fixture.daily_trip_summary[
-                gtfs_fixture.daily_trip_summary["day"] == "friday"
+            newp_gtfs_fixture.daily_trip_summary[
+                newp_gtfs_fixture.daily_trip_summary["day"] == "friday"
             ]
             .sort_values(by="route_type", ascending=True)
             .reset_index(drop=True)
@@ -749,24 +824,26 @@ class TestGtfsInstance(object):
 
         # test that the dated_trip_counts can be returned
         expected_size = (504, 4)
-        found_size = gtfs_fixture.summarise_trips(return_summary=False).shape
+        found_size = newp_gtfs_fixture.summarise_trips(
+            return_summary=False
+        ).shape
         assert expected_size == found_size, (
             "Size of date_route_counts not as expected. "
             "Expected {expected_size}"
         )
 
-    def test_summarise_routes_on_pass(self, gtfs_fixture):
+    def test_summarise_routes_on_pass(self, newp_gtfs_fixture):
         """Assertions about the outputs from summarise_routes()."""
-        gtfs_fixture.summarise_routes()
+        newp_gtfs_fixture.summarise_routes()
         # tests the daily_routes_summary return schema
         assert isinstance(
-            gtfs_fixture.daily_route_summary, pd.core.frame.DataFrame
+            newp_gtfs_fixture.daily_route_summary, pd.core.frame.DataFrame
         ), (
             "Expected DF for daily_summary,"
-            f"found {type(gtfs_fixture.daily_route_summary)}"
+            f"found {type(newp_gtfs_fixture.daily_route_summary)}"
         )
 
-        found_ds = gtfs_fixture.daily_route_summary.columns
+        found_ds = newp_gtfs_fixture.daily_route_summary.columns
         exp_cols_ds = pd.Index(
             [
                 "day",
@@ -785,13 +862,13 @@ class TestGtfsInstance(object):
 
         # tests the self.dated_route_counts return schema
         assert isinstance(
-            gtfs_fixture.dated_route_counts, pd.core.frame.DataFrame
+            newp_gtfs_fixture.dated_route_counts, pd.core.frame.DataFrame
         ), (
             "Expected DF for dated_route_counts,"
-            f"found {type(gtfs_fixture.dated_route_counts)}"
+            f"found {type(newp_gtfs_fixture.dated_route_counts)}"
         )
 
-        found_drc = gtfs_fixture.dated_route_counts.columns
+        found_drc = newp_gtfs_fixture.dated_route_counts.columns
         exp_cols_drc = pd.Index(["date", "route_type", "day", "route_count"])
 
         assert (
@@ -812,8 +889,8 @@ class TestGtfsInstance(object):
         )
 
         found_df = (
-            gtfs_fixture.daily_route_summary[
-                gtfs_fixture.daily_route_summary["day"] == "friday"
+            newp_gtfs_fixture.daily_route_summary[
+                newp_gtfs_fixture.daily_route_summary["day"] == "friday"
             ]
             .sort_values(by="route_type", ascending=True)
             .reset_index(drop=True)
@@ -829,13 +906,15 @@ class TestGtfsInstance(object):
 
         # test that the dated_route_counts can be returned
         expected_size = (504, 4)
-        found_size = gtfs_fixture.summarise_routes(return_summary=False).shape
+        found_size = newp_gtfs_fixture.summarise_routes(
+            return_summary=False
+        ).shape
         assert expected_size == found_size, (
             "Size of date_route_counts not as expected. "
             "Expected {expected_size}"
         )
 
-    def test__plot_summary_defences(self, tmp_path, gtfs_fixture):
+    def test__plot_summary_defences(self, tmp_path, newp_gtfs_fixture):
         """Test defences for _plot_summary()."""
         # test defences for checks summaries exist
         with pytest.raises(
@@ -845,7 +924,7 @@ class TestGtfsInstance(object):
                 " Did you forget to call '.summarise_trips()' first?"
             ),
         ):
-            gtfs_fixture._plot_summary(which="trip", target_column="mean")
+            newp_gtfs_fixture._plot_summary(which="trip", target_column="mean")
 
         with pytest.raises(
             AttributeError,
@@ -854,9 +933,11 @@ class TestGtfsInstance(object):
                 " Did you forget to call '.summarise_routes()' first?"
             ),
         ):
-            gtfs_fixture._plot_summary(which="route", target_column="mean")
+            newp_gtfs_fixture._plot_summary(
+                which="route", target_column="mean"
+            )
 
-        gtfs_fixture.summarise_routes()
+        newp_gtfs_fixture.summarise_routes()
 
         # test parameters that are yet to be tested
         options = ["v", "h"]
@@ -867,7 +948,7 @@ class TestGtfsInstance(object):
                 f"{options}. Got i: <class 'str'>"
             ),
         ):
-            gtfs_fixture._plot_summary(
+            newp_gtfs_fixture._plot_summary(
                 which="route",
                 target_column="route_count_mean",
                 orientation="i",
@@ -882,7 +963,7 @@ class TestGtfsInstance(object):
                 f"include {valid_img_formats}"
             ),
         ):
-            gtfs_fixture._plot_summary(
+            newp_gtfs_fixture._plot_summary(
                 which="route",
                 target_column="route_count_mean",
                 save_image=True,
@@ -898,15 +979,17 @@ class TestGtfsInstance(object):
                 "['trip', 'route']. Got tester: <class 'str'>"
             ),
         ):
-            gtfs_fixture._plot_summary(which="tester", target_column="tester")
+            newp_gtfs_fixture._plot_summary(
+                which="tester", target_column="tester"
+            )
 
-    def test__plot_summary_on_pass(self, gtfs_fixture, tmp_path):
+    def test__plot_summary_on_pass(self, newp_gtfs_fixture, tmp_path):
         """Test plotting a summary when defences are passed."""
-        current_fixture = gtfs_fixture
+        current_fixture = newp_gtfs_fixture
         current_fixture.summarise_routes()
 
         # test returning a html string
-        test_html = gtfs_fixture._plot_summary(
+        test_html = newp_gtfs_fixture._plot_summary(
             which="route",
             target_column="route_count_mean",
             return_html=True,
@@ -914,7 +997,7 @@ class TestGtfsInstance(object):
         assert type(test_html) is str, "Failed to return HTML for the plot"
 
         # test returning a plotly figure
-        test_image = gtfs_fixture._plot_summary(
+        test_image = newp_gtfs_fixture._plot_summary(
             which="route", target_column="route_count_mean"
         )
         assert (
@@ -922,8 +1005,8 @@ class TestGtfsInstance(object):
         ), "Failed to return plotly.graph_objects.Figure type"
 
         # test returning a plotly for trips
-        gtfs_fixture.summarise_trips()
-        test_image = gtfs_fixture._plot_summary(
+        newp_gtfs_fixture.summarise_trips()
+        test_image = newp_gtfs_fixture._plot_summary(
             which="trip", target_column="trip_count_mean"
         )
         assert (
@@ -931,7 +1014,7 @@ class TestGtfsInstance(object):
         ), "Failed to return plotly.graph_objects.Figure type"
 
         # test saving plots in html and png format
-        gtfs_fixture._plot_summary(
+        newp_gtfs_fixture._plot_summary(
             which="route",
             target_column="mean",
             width=1200,
@@ -960,7 +1043,7 @@ class TestGtfsInstance(object):
         assert counts["html"] == 1, "Failed to save plot as HTML"
         assert counts["png"] == 1, "Failed to save plot as png"
 
-    def test__create_extended_repeated_pair_table(self, gtfs_fixture):
+    def test__create_extended_repeated_pair_table(self, newp_gtfs_fixture):
         """Test _create_extended_repeated_pair_table()."""
         test_table = pd.DataFrame(
             {
@@ -979,30 +1062,32 @@ class TestGtfsInstance(object):
             }
         ).to_dict()
 
-        returned_table = gtfs_fixture._create_extended_repeated_pair_table(
-            table=test_table,
-            join_vars=["trip_name", "trip_abbrev"],
-            original_rows=[0],
-        ).to_dict()
+        returned_table = (
+            newp_gtfs_fixture._create_extended_repeated_pair_table(
+                table=test_table,
+                join_vars=["trip_name", "trip_abbrev"],
+                original_rows=[0],
+            ).to_dict()
+        )
 
         assert (
             expected_table == returned_table
         ), "_create_extended_repeated_pair_table() failed"
 
-    def test_html_report_defences(self, gtfs_fixture, tmp_path):
+    def test_html_report_defences(self, newp_gtfs_fixture, tmp_path):
         """Test the defences whilst generating a HTML report."""
         with pytest.raises(
             ValueError, match="'summary type' must be mean, median, min or max"
         ):
-            gtfs_fixture.html_report(
+            newp_gtfs_fixture.html_report(
                 report_dir=tmp_path,
                 overwrite=True,
                 summary_type="test_sum",
             )
 
-    def test_html_report_on_pass(self, gtfs_fixture, tmp_path):
+    def test_html_report_on_pass(self, newp_gtfs_fixture, tmp_path):
         """Test that a HTML report is generated if defences are passed."""
-        gtfs_fixture.html_report(report_dir=pathlib.Path(tmp_path))
+        newp_gtfs_fixture.html_report(report_dir=pathlib.Path(tmp_path))
 
         # assert that the report has been completely generated
         assert os.path.exists(

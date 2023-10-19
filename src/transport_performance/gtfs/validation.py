@@ -45,6 +45,8 @@ from transport_performance.utils.constants import (
     PKG_PATH,
 )
 
+# THESE MAPPINGS CAN NOT BE MOVED TO CONSTANTS AS THEY INTRODUCE DEPENDENCY
+# ISSUES.
 CLEAN_FEED_FUNCTION_MAP = {
     "clean_consecutive_stop_fast_travel_warnings": (
         cleaners.clean_consecutive_stop_fast_travel_warnings
@@ -385,13 +387,11 @@ class GtfsInstance:
             for key in validators.keys():
                 if key not in VALIDATE_FEED_FUNC_MAP.keys():
                     raise KeyError(
-                        "Function name passed to 'validators' is not a known "
-                        "validator. Known validators include: "
+                        f"'{key}' function passed to 'validators' is not a "
+                        "known validator. Known validators include: "
                         f"{VALIDATE_FEED_FUNC_MAP.keys()}"
                     )
             for validator in validators:
-                # check key is str
-                _type_defence(validator, "Key of validators", str)
                 # check value is dict or none (for kwargs)
                 _type_defence(
                     validators[validator],
