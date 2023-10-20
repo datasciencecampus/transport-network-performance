@@ -359,8 +359,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'geoms' expected one of the following:"
-                "['point', 'hull'] Got foobar"
+                "'geoms' expected one of the following: "
+                "['point', 'hull']. Got foobar: <class 'str'>"
             ),
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
@@ -886,8 +886,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'orientation' expected one of the following:"
-                f"{options} Got i"
+                "'orientation' expected one of the following: "
+                f"{options}. Got i: <class 'str'>"
             ),
         ):
             gtfs_fixture._plot_summary(
@@ -917,8 +917,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'which' expected one of the following:"
-                "['trip', 'route'] Got tester"
+                "'which' expected one of the following: "
+                "['trip', 'route']. Got tester: <class 'str'>"
             ),
         ):
             gtfs_fixture._plot_summary(which="tester", target_column="tester")
@@ -934,14 +934,14 @@ class TestGtfsInstance(object):
             target_column="route_count_mean",
             return_html=True,
         )
-        assert type(test_html) == str, "Failed to return HTML for the plot"
+        assert type(test_html) is str, "Failed to return HTML for the plot"
 
         # test returning a plotly figure
         test_image = gtfs_fixture._plot_summary(
             which="route", target_column="route_count_mean"
         )
         assert (
-            type(test_image) == PlotlyFigure
+            type(test_image) is PlotlyFigure
         ), "Failed to return plotly.graph_objects.Figure type"
 
         # test returning a plotly for trips
@@ -950,7 +950,7 @@ class TestGtfsInstance(object):
             which="trip", target_column="trip_count_mean"
         )
         assert (
-            type(test_image) == PlotlyFigure
+            type(test_image) is PlotlyFigure
         ), "Failed to return plotly.graph_objects.Figure type"
 
         # test saving plots in html and png format

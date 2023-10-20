@@ -16,6 +16,14 @@ import pathlib
 from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
 
+from transport_performance.gtfs.validators import (
+    validate_travel_over_multiple_stops,
+    validate_travel_between_consecutive_stops,
+)
+from transport_performance.gtfs.cleaners import (
+    clean_consecutive_stop_fast_travel_warnings,
+    clean_multiple_stop_fast_travel_warnings,
+)
 from transport_performance.gtfs.routes import (
     scrape_route_type_lookup,
     get_saved_route_type_lookup,
@@ -26,7 +34,7 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
     _check_column_in_df,
     _type_defence,
-    _check_item_in_list,
+    _check_item_in_iter,
     _check_attribute,
     _enforce_file_extension,
 )
@@ -321,8 +329,14 @@ class GtfsInstance:
         self.file_list = file_list
         return self.file_list
 
-    def is_valid(self) -> pd.DataFrame:
+    def is_valid(self, far_stops: bool = True) -> pd.DataFrame:
         """Check a feed is valid with `gtfs_kit`.
+
+        Parameters
+        ----------
+        far_stops : bool, optional
+            Whether or not to perform validation for far stops (both
+            between consecutive stops and over multiple stops)
 
         Returns
         -------
@@ -331,6 +345,9 @@ class GtfsInstance:
 
         """
         self.validity_df = self.feed.validate()
+        if far_stops:
+            validate_travel_between_consecutive_stops(self)
+            validate_travel_over_multiple_stops(self)
         return self.validity_df
 
     def print_alerts(self, alert_type: str = "error") -> None:
@@ -381,13 +398,31 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(self) -> None:
-        """Attempt to clean feed using `gtfs_kit`."""
+    def clean_feed(
+        self, validate: bool = False, fast_travel: bool = True
+    ) -> None:
+        """Attempt to clean feed using `gtfs_kit`.
+
+        Parameters
+        ----------
+        validate: bool, optional
+            Whether or not to validate the dataframe before cleaning
+        fast_travel: bool, optional
+            Whether or not to clean warnings related to fast travel.
+
+        """
+        _type_defence(fast_travel, "fast_travel", bool)
+        _type_defence(validate, "valiidate", bool)
+        if validate:
+            self.is_valid(far_stops=fast_travel)
         try:
             # In cases where shape_id is missing, keyerror is raised.
             # https://developers.google.com/transit/gtfs/reference#shapestxt
             # shows that shapes.txt is optional file.
             self.feed = self.feed.clean()
+            if fast_travel:
+                clean_consecutive_stop_fast_travel_warnings(self)
+                clean_multiple_stop_fast_travel_warnings(self)
         except KeyError:
             # TODO: Issue 74 - Improve this to clean feed when KeyError raised
             print("KeyError. Feed was not cleaned.")
@@ -522,7 +557,7 @@ class GtfsInstance:
         # geoms defence
         geoms = geoms.lower().strip()
         ACCEPT_VALS = ["point", "hull"]
-        _check_item_in_list(geoms, ACCEPT_VALS, "geoms")
+        _check_item_in_iter(geoms, ACCEPT_VALS, "geoms")
 
         try:
             m = self._produce_stops_map(
@@ -1020,8 +1055,8 @@ class GtfsInstance:
         which = which.lower()
 
         # ensure 'which' is valid
-        _check_item_in_list(
-            item=which, _list=["trip", "route"], param_nm="which"
+        _check_item_in_iter(
+            item=which, iterable=["trip", "route"], param_nm="which"
         )
 
         raw_pth = os.path.join(
@@ -1031,8 +1066,8 @@ class GtfsInstance:
         _check_parent_dir_exists(raw_pth, "save_pth", create=True)
 
         # orientation input defences
-        _check_item_in_list(
-            item=orientation, _list=["v", "h"], param_nm="orientation"
+        _check_item_in_iter(
+            item=orientation, iterable=["v", "h"], param_nm="orientation"
         )
 
         # assign the correct values depending on which breakdown has been
@@ -1404,8 +1439,9 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed()
-        validation_dataframe = self.is_valid()
+        self.clean_feed(validate=True, fast_travel=True)
+        # re-validate to clean any newly raised errors/warnings
+        validation_dataframe = self.is_valid(far_stops=True)
 
         # create extended reports if requested
         if extended_validation:

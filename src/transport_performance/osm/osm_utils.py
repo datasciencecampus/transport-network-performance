@@ -6,7 +6,7 @@ import pathlib
 
 from transport_performance.utils.defence import (
     _type_defence,
-    _check_list,
+    _check_iterable,
     _check_parent_dir_exists,
     _is_expected_filetype,
     _enforce_file_extension,
@@ -76,7 +76,13 @@ def filter_osm(
             )
         )
 
-    _check_list(bbox, param_nm="bbox", check_elements=True, exp_type=float)
+    _check_iterable(
+        bbox,
+        param_nm="bbox",
+        iterable_type=list,
+        check_elements=True,
+        exp_type=float,
+    )
     _check_parent_dir_exists(out_pth, param_nm="out_pth", create=True)
     # Compile the osmosis command
     cmd = [
