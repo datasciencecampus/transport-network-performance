@@ -269,7 +269,7 @@ class GtfsInstance:
             units = "km"
         accepted_units = ["m", "km"]
 
-        _check_item_in_list(units, accepted_units, "units")
+        _check_item_in_iter(units, accepted_units, "units")
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
@@ -1431,7 +1431,7 @@ class GtfsInstance:
         _type_defence(summary_type, "summary_type", str)
         _set_up_report_dir(path=report_dir, overwrite=overwrite)
         summary_type = summary_type.lower().strip()
-        _check_item_in_list(
+        _check_item_in_iter(
             summary_type, ["mean", "min", "max", "median"], "summary_type"
         )
 

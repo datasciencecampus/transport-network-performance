@@ -81,8 +81,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'units' expected one of the following:"
-                "['m', 'km'] Got miles"
+                "'units' expected one of the following: ['m', 'km']. "
+                "Got miles: <class 'str'>"
             ),
         ):
             GtfsInstance(
@@ -1017,8 +1017,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'summary_type' expected one of the following:"
-                "['mean', 'min', 'max', 'median'] Got test_sum"
+                "'summary_type' expected one of the following: "
+                "['mean', 'min', 'max', 'median']. Got test_sum: <class 'str'>"
             ),
         ):
             gtfs_fixture.html_report(
