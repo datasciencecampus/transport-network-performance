@@ -25,7 +25,24 @@ from transport_performance.utils.defence import (
     _enforce_file_extension,
     _check_iter_length,
 )
-from transport_performance.utils.constants import ATTR_LOC
+
+# make attribution location dictionary
+ATTR_LOC = {
+    "bottom_left": {
+        "x": 0.01,
+        "y": 0.01,
+        "ha": "left",
+        "va": "bottom",
+    },
+    "bottom_right": {
+        "x": 0.99,
+        "y": 0.01,
+        "ha": "right",
+        "va": "bottom",
+    },
+    "top_right": {"x": 0.99, "y": 0.99, "ha": "right", "va": "top"},
+    "top_left": {"x": 0.01, "y": 0.99, "ha": "left", "va": "top"},
+}
 
 
 class RasterPop:

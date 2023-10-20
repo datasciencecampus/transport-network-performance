@@ -42,10 +42,40 @@ from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
 )
-from transport_performance.utils.constants import (
-    PKG_PATH,
-    GTFS_UNNEEDED_COLUMNS,
-)
+from transport_performance.utils.constants import PKG_PATH
+
+# Constant to remove non needed columns from repeated
+# pair error information.
+# This is a messy method however it is the only
+# way to ensure that the error report remains
+# dynamic and can adadpt to different tables
+# in the GTFS file.
+GTFS_UNNEEDED_COLUMNS = {
+    "routes": [],
+    "agency": ["agency_phone", "agency_lang"],
+    "stop_times": [
+        "stop_headsign",
+        "pickup_type",
+        "drop_off_type",
+        "shape_dist_traveled",
+        "timepoint",
+    ],
+    "stops": [
+        "wheelchair_boarding",
+        "location_type",
+        "parent_station",
+        "platform_code",
+    ],
+    "calendar_dates": [],
+    "calendar": [],
+    "trips": [
+        "trip_headsign",
+        "block_id",
+        "shape_id",
+        "wheelchair_accessible",
+    ],
+    "shapes": [],
+}
 
 
 def _get_intermediate_dates(

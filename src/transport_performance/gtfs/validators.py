@@ -7,10 +7,24 @@ from haversine import Unit, haversine_vector
 
 from transport_performance.gtfs.gtfs_utils import _add_validation_row
 from transport_performance.utils.defence import _gtfs_defence
-from transport_performance.utils.constants import GTFS_VEHICLE_SPEED_BOUNDS
 
 if TYPE_CHECKING:
     from transport_performance.gtfs.validation import GtfsInstance
+
+# a constant containing the max acceptable speed of a route type (vehicle type)
+GTFS_VEHICLE_SPEED_BOUNDS = {
+    0: 100,
+    1: 150,
+    2: 500,
+    3: 150,
+    4: 80,
+    5: 30,
+    6: 50,
+    7: 50,
+    11: 150,
+    12: 150,
+    200: 120,
+}
 
 
 def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
