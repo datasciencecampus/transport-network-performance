@@ -53,3 +53,23 @@ GTFS_VEHICLE_SPEED_BOUNDS = {
     12: 150,
     200: 120,
 }
+
+# POPULATION
+
+# make attribution location dictionary
+ATTR_LOC = {
+    "bottom_left": {
+        "x": 0.01,
+        "y": 0.01,
+        "ha": "left",
+        "va": "bottom",
+    },
+    "bottom_right": {
+        "x": 0.99,
+        "y": 0.01,
+        "ha": "right",
+        "va": "bottom",
+    },
+    "top_right": {"x": 0.99, "y": 0.99, "ha": "right", "va": "top"},
+    "top_left": {"x": 0.01, "y": 0.99, "ha": "left", "va": "top"},
+}

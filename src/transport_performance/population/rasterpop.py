@@ -1,7 +1,8 @@
 """Class to handle raster population data."""
 
-import geopandas as gpd
 import os
+
+import geopandas as gpd
 import numpy as np
 import rasterio as rio
 import rioxarray
@@ -9,13 +10,13 @@ import folium
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import matplotlib.pyplot as plt
-
 from datetime import datetime
 from geocube.vector import vectorize
 from typing import Union, Type, Tuple
 from shapely.geometry.polygon import Polygon
 from matplotlib import colormaps
 from cartopy.mpl.geoaxes import GeoAxes
+
 from transport_performance.utils.defence import (
     _is_expected_filetype,
     _type_defence,
@@ -24,6 +25,7 @@ from transport_performance.utils.defence import (
     _enforce_file_extension,
     _check_iter_length,
 )
+from transport_performance.utils.constants import ATTR_LOC
 
 
 class RasterPop:
@@ -642,24 +644,6 @@ class RasterPop:
         _type_defence(base_map_attr, "base_map_attr", str)
         _type_defence(attr_font_size, "attr_font_size", float)
         _type_defence(attr_location, "attr_location", str)
-
-        # make attribution location dictionary
-        ATTR_LOC = {
-            "bottom_left": {
-                "x": 0.01,
-                "y": 0.01,
-                "ha": "left",
-                "va": "bottom",
-            },
-            "bottom_right": {
-                "x": 0.99,
-                "y": 0.01,
-                "ha": "right",
-                "va": "bottom",
-            },
-            "top_right": {"x": 0.99, "y": 0.99, "ha": "right", "va": "top"},
-            "top_left": {"x": 0.01, "y": 0.99, "ha": "left", "va": "top"},
-        }
 
         # get OpenStreetMap tile layer object in greyscale
         map_tile = cimgt.OSM(desired_tile_form="L")
