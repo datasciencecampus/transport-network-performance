@@ -1,5 +1,6 @@
 """A set of functions that validate the GTFS data."""
 from typing import TYPE_CHECKING
+import os
 
 import numpy as np
 import pandas as pd
@@ -353,4 +354,36 @@ def validate_gtfs_files(gtfs: "GtfsInstance") -> None:
     None
 
     """
-    pass
+    _gtfs_defence(gtfs, "gtfs")
+    files = gtfs.get_gtfs_files()
+    invalid_extensions = []
+    non_implemented_files = []
+    for fname in files:
+        root, ext = os.path.splitext(fname)
+        # check for instances of invalid file extensions (only .txt accepted)
+        if ext.lower() != ".txt":
+            invalid_extensions.append(fname)
+        # check that each file is within the GTFS specification.
+        # NOTE: The 'levels' and 'translation' tables are in the GTFS spec
+        #       but aren't used by gtfs-kit.
+        # GTFS REFERENCE: https://developers.google.com/transit/gtfs/reference
+        if root not in ACCEPTED_GTFS_TABLES:
+            non_implemented_files.append(fname)
+    # raise warnings
+    if len(invalid_extensions) > 0:
+        msg = (
+            "GTFS zip includes files not of type '.txt'. These files "
+            f"include {invalid_extensions}"
+        )
+        _add_validation_row(
+            gtfs, _type="warning", message=msg, table="", rows=[]
+        )
+    if len(non_implemented_files) > 0:
+        msg = (
+            "GTFS zip includes files that aren't recognised by the GTFS "
+            f"spec. These include {non_implemented_files}"
+        )
+        _add_validation_row(
+            gtfs, _type="warning", message=msg, table="", rows=[]
+        )
+    return None
