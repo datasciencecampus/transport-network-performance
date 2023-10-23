@@ -30,6 +30,28 @@ VEHICLE_SPEED_BOUNDS = {
     200: 120,
 }
 
+# EXPECTED GTFS FILES
+# DESC: USED TO RAISE WARNINGS WHEN .TXT FILES INCLUDED IN THE ZIP PASSED TO
+#       GTFSINSTANCE AREN'T A RECOGNISED GTFS TABLE#
+# NOTE: 'Levels' and 'Translation' tables are ignored by gtfs-kit
+
+ACCEPTED_GTFS_TABLES = [
+    "agency",
+    "attributions",
+    "calendar",
+    "calendar_dates",
+    "fare_attributes",
+    "fare_rules",
+    "feed_info",
+    "frequencies",
+    "routes",
+    "shapes",
+    "stops",
+    "stop_times",
+    "transfers",
+    "trips",
+]
+
 
 def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
     """Validate the travel between consecutive stops in the GTFS data.
@@ -309,10 +331,26 @@ def validate_route_type_warnings(gtfs: "GtfsInstance") -> None:
     return None
 
 
-def core_validation(gtfs):
+def core_validation(gtfs: "GtfsInstance"):
     """Carry out the main validators of gtfs-kit."""
     _gtfs_defence(gtfs, "gtfs")
     validation_df = gtfs.feed.validate()
     gtfs.validity_df = pd.concat(
         [validation_df, gtfs.validity_df], axis=0
     ).reset_index(drop=True)
+
+
+def validate_gtfs_files(gtfs: "GtfsInstance") -> None:
+    """Validate to raise warnings if tables in GTFS zip aren't being read.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The gtfs instance to run the validation on.
+
+    Returns
+    -------
+    None
+
+    """
+    pass
