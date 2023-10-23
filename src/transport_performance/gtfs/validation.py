@@ -47,6 +47,9 @@ from transport_performance.utils.constants import (
 # ISSUES.
 CLEAN_FEED_FUNCTION_MAP = {
     "core_cleaners": cleaners.core_cleaners,
+    "clean_unrecognised_column_warnings": (
+        cleaners.clean_unrecognised_column_warnings
+    ),
     "clean_consecutive_stop_fast_travel_warnings": (
         cleaners.clean_consecutive_stop_fast_travel_warnings
     ),

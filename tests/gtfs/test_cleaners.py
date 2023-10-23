@@ -11,6 +11,7 @@ from transport_performance.gtfs.cleaners import (
     clean_consecutive_stop_fast_travel_warnings,
     clean_multiple_stop_fast_travel_warnings,
     core_cleaners,
+    clean_unrecognised_column_warnings,
 )
 
 
@@ -361,3 +362,41 @@ class TestCoreCleaner(object):
         ):
             gtfs_fixture.is_valid(validators={"core_validation": None})
             gtfs_fixture.clean_feed()
+
+
+class TestCleanUnrecognisedColumnWarnings(object):
+    """Tests for clean_unrecognised_column_warnings."""
+
+    def test_clean_unrecognised_column_warnings(self, gtfs_fixture):
+        """Tests for clean_unrecognised_column_warnings."""
+        # initial assertions to ensure test data is correct
+        gtfs_fixture.is_valid(validators={"core_validation": None})
+        assert len(gtfs_fixture.validity_df) == 3, "validity_df wrong length"
+        assert np.array_equal(
+            gtfs_fixture.feed.trips.columns,
+            [
+                "route_id",
+                "service_id",
+                "trip_id",
+                "trip_headsign",
+                "block_id",
+                "shape_id",
+                "wheelchair_accessible",
+                "vehicle_journey_code",
+            ],
+        ), "Initial trips columns not as expected"
+        # clean warnings
+        clean_unrecognised_column_warnings(gtfs_fixture)
+        assert len(gtfs_fixture.validity_df) == 0, "Warnings no cleaned"
+        assert np.array_equal(
+            gtfs_fixture.feed.trips.columns,
+            [
+                "route_id",
+                "service_id",
+                "trip_id",
+                "trip_headsign",
+                "block_id",
+                "shape_id",
+                "wheelchair_accessible",
+            ],
+        ), "Failed to drop unrecognised columns"
