@@ -96,6 +96,51 @@ class TestBboxFilterGtfs(object):
                 filter_dates=["30000101"],
             )
 
+    def test_bbox_filter_gtfs_filters_to_date(self, bbox_list, tmpdir):
+        """Test filtered GTFS behaves as expected."""
+        out_pth = os.path.join(tmpdir, "out.zip")
+        # filter to date of fixture ingest
+        bbox_filter_gtfs(
+            in_pth=GTFS_FIX_PTH,
+            out_pth=out_pth,
+            bbox=bbox_list,
+            filter_dates=["20230613"],
+        )
+        assert os.path.exists(
+            out_pth
+        ), f"Expected filtered GTFS was not found at {out_pth}"
+        # compare dates
+        fix = GtfsInstance(GTFS_FIX_PTH)
+        fix_stops_count = len(fix.feed.stops)
+        filtered = GtfsInstance(out_pth)
+        filtered_stops_count = len(filtered.feed.stops)
+        assert (
+            fix_stops_count > filtered_stops_count
+        ), f"Expected fewer than {fix_stops_count} in filtered GTFS but"
+        " found {filtered_stops_count}"
+
+    @pytest.mark.runinteg
+    def test_bbox_filter_gtfs_to_date_builds_network(self, bbox_list, tmpdir):
+        """Having this flagged as integration test as Java dependency."""
+        # import goes here to avoid Java warnings as in test_setup.py
+        import r5py
+
+        out_pth = os.path.join(tmpdir, "out.zip")
+        # filter to date of fixture ingest
+        bbox_filter_gtfs(
+            in_pth=GTFS_FIX_PTH,
+            out_pth=out_pth,
+            bbox=bbox_list,
+            filter_dates=["20230613"],
+        )
+        net = r5py.TransportNetwork(
+            osm_pbf=os.path.join(
+                "tests", "data", "newport-2023-06-13.osm.pbf"
+            ),
+            gtfs=[out_pth],
+        )
+        assert isinstance(net, r5py.TransportNetwork)
+
 
 class Test_AddValidationRow(object):
     """Tests for _add_validation_row()."""
