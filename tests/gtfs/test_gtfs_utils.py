@@ -15,6 +15,7 @@ from transport_performance.gtfs.gtfs_utils import (
     _add_validation_row,
     filter_gtfs_around_trip,
     convert_pandas_to_plotly,
+    _validate_datestring,
 )
 
 # location of GTFS test fixture
@@ -203,3 +204,15 @@ class TestConvertPandasToPlotly(object):
             "Expected type plotly.graph_objects.Figure but "
             f"{type(fig_return)} found"
         )
+
+
+class Test_ValidateDatestring(object):
+    """Tests for _validate_datestring."""
+
+    def test_validate_datestring_raises(self):
+        """Check incompatible datestrings raise."""
+        with pytest.raises(
+            ValueError,
+            match="Incorrect date format, 2023-10-23 should be %Y%m%d",
+        ):
+            _validate_datestring("2023-10-23")
