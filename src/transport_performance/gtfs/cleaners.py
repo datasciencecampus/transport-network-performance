@@ -11,7 +11,10 @@ from gtfs_kit.cleaners import (
     drop_zombies as drop_zombies_gk,
 )
 
-from transport_performance.gtfs.gtfs_utils import _get_validation_warnings
+from transport_performance.gtfs.gtfs_utils import (
+    _get_validation_warnings,
+    _remove_validation_row,
+)
 from transport_performance.utils.defence import (
     _gtfs_defence,
     _check_iterable,
@@ -231,4 +234,30 @@ def core_cleaners(
                     "clean_feed as the trips table has no shape_id column"
                 )
             )
+    return None
+
+
+def clean_unrecognised_column_warnings(gtfs) -> None:
+    """Clean warnings for unrecognised columns.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GtfsInstance to clean warnings from
+
+    Returns
+    -------
+    None
+
+    """
+    _gtfs_defence(gtfs, "gtfs")
+    warnings = _get_validation_warnings(
+        gtfs=gtfs, message="Unrecognized column .*"
+    )
+    for warning in warnings:
+        tbl = gtfs.table_map[warning[2]]
+        # parse column from warning message
+        column = warning[1].split("column")[1].strip()
+        tbl.drop(column, inplace=True, axis=1)
+        _remove_validation_row(gtfs, warning[1])
     return None

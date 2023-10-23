@@ -349,6 +349,16 @@ class GtfsInstance:
             "shapes": [],
         }
 
+        # CONSTANT TO LINK TO GTFS TABLES USING STRINGS
+        self.table_map = {
+            "agency": self.feed.agency,
+            "routes": self.feed.routes,
+            "stop_times": self.feed.stop_times,
+            "stops": self.feed.stops,
+            "trips": self.feed.trips,
+            "calendar": self.feed.calendar,
+        }
+
     def get_gtfs_files(self) -> list:
         """Return a list of files making up the GTFS file.
 
@@ -1311,15 +1321,6 @@ class GtfsInstance:
         None
 
         """
-        table_map = {
-            "agency": self.feed.agency,
-            "routes": self.feed.routes,
-            "stop_times": self.feed.stop_times,
-            "stops": self.feed.stops,
-            "trips": self.feed.trips,
-            "calendar": self.feed.calendar,
-        }
-
         # determine which errors/warnings have rows that can be located
         validation_table = self.is_valid()
         validation_table["valid_row"] = validation_table["rows"].apply(
@@ -1348,7 +1349,9 @@ class GtfsInstance:
                     for col in self.GTFS_UNNEEDED_COLUMNS[table]
                     if col not in join_vars
                 ]
-                filtered_tbl = table_map[table].copy().drop(drop_cols, axis=1)
+                filtered_tbl = (
+                    self.table_map[table].copy().drop(drop_cols, axis=1)
+                )
                 impacted_rows = self._create_extended_repeated_pair_table(
                     table=filtered_tbl,
                     join_vars=join_vars,
@@ -1366,7 +1369,7 @@ class GtfsInstance:
                         == impacted_rows[f"{col}_duplicate"]
                     ].shape[0]
             else:
-                impacted_rows = table_map[table].copy().iloc[rows]
+                impacted_rows = self.table_map[table].copy().iloc[rows]
 
             # create the html to display the impacted rows (clean possibly)
             table_html = f"""
