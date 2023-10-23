@@ -57,6 +57,7 @@ CLEAN_FEED_FUNCTION_MAP = {
 
 VALIDATE_FEED_FUNC_MAP = {
     "core_validation": gtfs_validators.core_validation,
+    "validate_gtfs_files": gtfs_validators.validate_gtfs_files,
     "validate_travel_between_consecutive_stops": (
         gtfs_validators.validate_travel_between_consecutive_stops
     ),

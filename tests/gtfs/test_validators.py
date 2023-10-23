@@ -2,12 +2,17 @@
 from pyprojroot import here
 import pytest
 import re
+import shutil
+import os
+import zipfile
+import pathlib
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.validators import (
     validate_travel_between_consecutive_stops,
     validate_travel_over_multiple_stops,
     validate_route_type_warnings,
+    validate_gtfs_files,
 )
 from transport_performance.gtfs.gtfs_utils import _get_validation_warnings
 
@@ -176,3 +181,67 @@ class TestValidateRouteTypeWarnings(object):
         assert (
             len(new_route_errors) == 1
         ), "route_type warnings not found after cleaning"
+
+
+@pytest.fixture(scope="function")
+def create_test_zip(tmp_path) -> pathlib.Path:
+    """Create a gtfs zip with invalid files."""
+    gtfs_pth = here("tests/data/chester-20230816-small_gtfs.zip")
+    # create dir for unzipped gtfs contents
+    gtfs_contents_pth = os.path.join(tmp_path, "gtfs_contents")
+    os.mkdir(gtfs_contents_pth)
+    # extract unzipped gtfs file to new dir
+    with zipfile.ZipFile(gtfs_pth, "r") as gtfs_zip:
+        gtfs_zip.extractall(gtfs_contents_pth)
+    # write some dummy files with test cases
+    with open(os.path.join(gtfs_contents_pth, "not_in_spec.txt"), "w") as f:
+        f.write("test_date")
+    with open(os.path.join(gtfs_contents_pth, "routes.invalid"), "w") as f:
+        f.write("test_date")
+    # zip contents
+    new_zip_pth = os.path.join(tmp_path, "gtfs_zip")
+    shutil.make_archive(new_zip_pth, "zip", gtfs_contents_pth)
+    full_zip_pth = pathlib.Path(new_zip_pth + ".zip")
+    return full_zip_pth
+
+
+class TestValidateGtfsFile(object):
+    """Tests for validate_gtfs_files."""
+
+    def test_validate_gtfs_files_defence(self):
+        """Defensive tests for validate_gtfs_files."""
+        with pytest.raises(
+            TypeError, match="'gtfs' expected a GtfsInstance object.*"
+        ):
+            validate_gtfs_files(False)
+
+    def test_validate_gtfs_files_on_pass(self, create_test_zip):
+        """General tests for validte_gtfs_files."""
+        gtfs = GtfsInstance(create_test_zip)
+        gtfs.is_valid(validators={"core_validation": None})
+        validate_gtfs_files(gtfs)
+        # tests for invalid extensions
+        warnings = _get_validation_warnings(
+            gtfs, r".*files not of type .*txt.*", return_type="dataframe"
+        )
+        assert (
+            len(warnings) == 1
+        ), "More warnings than expected for invalid extension"
+        assert warnings.loc[3]["message"] == (
+            "GTFS zip includes files not of type '.txt'. These files include "
+            "['routes.invalid']"
+        ), "Warnings not appearing as expected"
+
+        # tests for unrecognised files
+        warnings = _get_validation_warnings(
+            gtfs,
+            r".*files that aren't recognised by the GTFS.*",
+            return_type="dataframe",
+        )
+        assert (
+            len(warnings) == 1
+        ), "More warnings than expected for not implemented tables"
+        assert warnings.loc[4]["message"] == (
+            "GTFS zip includes files that aren't recognised by the GTFS "
+            "spec. These include ['not_in_spec.txt']"
+        )
