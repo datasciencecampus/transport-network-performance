@@ -88,6 +88,18 @@ class TestBboxFilterGtfs(object):
             feed, GtfsInstance
         ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
 
+    def test_bbox_filter_gtfs_raises_date_not_in_gtfs(self, bbox_list, tmpdir):
+        """Test raises if filter date is not found within the GTFS calendar."""
+        with pytest.raises(
+            ValueError, match="{'30000101'} not present in feed dates."
+        ):
+            bbox_filter_gtfs(
+                in_pth=GTFS_FIX_PTH,
+                out_pth=os.path.join(tmpdir, "foobar.zip"),
+                bbox=bbox_list,
+                filter_dates=["30000101"],
+            )
+
 
 class Test_AddValidationRow(object):
     """Tests for _add_validation_row()."""
@@ -216,3 +228,8 @@ class Test_ValidateDatestring(object):
             match="Incorrect date format, 2023-10-23 should be %Y%m%d",
         ):
             _validate_datestring("2023-10-23")
+
+    def test_validate_datestring_on_pass(self):
+        """Test that func passes if datestring matches specified form."""
+        out = _validate_datestring("2023-10-23", form="%Y-%m-%d")
+        assert isinstance(out, type(None))
