@@ -10,13 +10,16 @@ Call in script wide imports and the configuration information.
 """
 
 # %%
+import geopandas as gpd
 import os
 import pandas as pd
+import pathlib
 import pickle
 
 from haversine import haversine_vector
 from pyprojroot import here
 from tqdm import tqdm
+from typing import Union
 
 from transport_performance.utils.defence import (
     _check_parent_dir_exists,
@@ -103,6 +106,124 @@ with open(RP_PATH, "rb") as f:
     rp = pickle.load(f)
     pop_gdf = rp.pop_gdf
     centroid_gdf = rp.centroid_gdf
+
+# %%
+
+
+def _transport_performance_pandas(
+    filepath_or_dirpath: Union[str, pathlib.Path],
+    centroids: gpd.GeoDataFrame,
+    populations: gpd.GeoDataFrame,
+    travel_time_threshold: int = 45,
+    distance_threshold: float = 11.25,
+) -> pd.DataFrame:
+    """Calculate transport performance using `pandas`.
+
+    Parameters
+    ----------
+    filepath_or_dirpath : Union[str, pathlib.Path]
+        Input filepath or directory to parquet file(s).
+    centroids : gpd.GeoDataFrame
+        A dataframe containing the centroid of each cell ID. "centroid" must
+        be in "EPSG:4326"/WGS84.
+    populations : gpd.GeoDataFrame
+        A dataframe containing the "population" of each cell ID.
+    travel_time_threshold : int, optional
+        Maximum travel time, in minutes, by default 45.
+    distance_threshold : float, optional
+        Maximum distance from the destination, in kilometers, by default 11.25.
+
+    Returns
+    -------
+    pd.DataFrame
+        The transport performance for each "to_id" cell, and the corresponding
+        accesible and proximity populations.
+
+    """
+    # convert centroid shapley object to tuple
+    centroids["centroid_tuple"] = centroids["centroid"].apply(
+        lambda coord: (coord.y, coord.x)
+    )
+
+    # read in travel time matrix
+    tts = pd.read_parquet(filepath_or_dirpath).reset_index(drop=True)
+
+    # merge on centroid coordinates tuples
+    tts = (
+        tts.merge(
+            centroids[["id", "centroid_tuple"]],
+            left_on="from_id",
+            right_on="id",
+            how="left",
+        )
+        .drop(["id"], axis=1)
+        .rename(columns={"centroid_tuple": "from_centroid_tuple"})
+        .merge(
+            centroids[["id", "centroid_tuple"]],
+            left_on="to_id",
+            right_on="id",
+            how="left",
+        )
+        .drop(["id"], axis=1)
+        .rename(columns={"centroid_tuple": "to_centroid_tuple"})
+        .merge(
+            populations[["id", "population"]],
+            left_on="from_id",
+            right_on="id",
+            how="left",
+        )
+        .drop(["id"], axis=1)
+        .rename(columns={"population": "from_population"})
+    )
+
+    # calculate distance between centroids
+    tts["inter_centroid_distance"] = haversine_vector(
+        tts.from_centroid_tuple.to_list(),
+        tts.to_centroid_tuple.to_list(),
+    )
+
+    # calculate the accessibility - total pop within time and distance
+    accessibility = (
+        tts[
+            (tts.inter_centroid_distance <= distance_threshold)
+            & (tts.travel_time <= travel_time_threshold)
+        ]
+        .groupby("to_id")["from_population"]
+        .sum()
+        .reset_index()
+        .rename(columns={"from_population": "accessible_population"})
+    )
+
+    # calculate the proximity - total pop within distance
+    proximity = (
+        tts[(tts.inter_centroid_distance <= distance_threshold)]
+        .groupby("to_id")["from_population"]
+        .sum()
+        .reset_index()
+        .rename(columns={"from_population": "proximity_population"})
+    )
+
+    # merge together to start forming the results
+    perf_df = accessibility.merge(proximity, on="to_id", validate="one_to_one")
+
+    # calculate the transport performance
+    perf_df["transport_performance"] = (
+        perf_df.accessible_population.divide(perf_df.proximity_population)
+        * 100
+    )
+
+    return perf_df
+
+
+# %%
+function_df = _transport_performance_pandas(
+    metrics_input_dir,
+    centroid_gdf,
+    pop_gdf,
+    travel_time_threshold=MAX_TIME,
+    distance_threshold=MAX_DISTANCE,
+)
+
 
 # %%
 # convert centroid shapley object to tuple
