@@ -123,6 +123,7 @@
     <span class="n">_type_defence</span><span class="p">,</span>
     <span class="n">_check_item_in_iter</span><span class="p">,</span>
     <span class="n">_check_attribute</span><span class="p">,</span>
+    <span class="n">_enforce_file_extension</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.gtfs.report.report_utils</span> <span class="kn">import</span> <span class="p">(</span>
@@ -156,15 +157,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># checks for start and end</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s2">&quot;&#39;start&#39; expected type pd.Timestamp.&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot; Recieved type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s2">&quot;&#39;end&#39; expected type pd.Timestamp.&quot;</span> <span class="sa">f</span><span class="s2">&quot; Recieved type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">:</span>
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
@@ -333,7 +327,7 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    TypeError</span>
-<span class="sd">        `pth` is not either of string or pathlib.PosixPath.</span>
+<span class="sd">        `pth` is not either of string or pathlib.Path.</span>
 <span class="sd">    TypeError</span>
 <span class="sd">        `units` is not of type str.</span>
 <span class="sd">    FileExistsError</span>
@@ -355,8 +349,7 @@
         <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">pth</span><span class="o">=</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;gtfs_pth&quot;</span><span class="p">)</span>
 
         <span class="c1"># validate units param</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`units` expected a string. Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">units</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
 
         <span class="n">units</span> <span class="o">=</span> <span class="n">units</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">units</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;metres&quot;</span><span class="p">,</span> <span class="s2">&quot;meters&quot;</span><span class="p">]:</span>
@@ -365,8 +358,7 @@
             <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;km&quot;</span>
         <span class="n">accepted_units</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;km&quot;</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">units</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">accepted_units</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`units` accepts metric only. Found: </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_check_item_in_iter</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">accepted_units</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gk</span><span class="o">.</span><span class="n">read_feed</span><span class="p">(</span><span class="n">gtfs_pth</span><span class="p">,</span> <span class="n">dist_units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gtfs_path</span> <span class="o">=</span> <span class="n">gtfs_pth</span>
@@ -476,11 +468,11 @@
 <span class="sd">            No alerts of the specified `alert_type` were found.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;validity_df&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
-                <span class="s2">&quot;`self.validity_df` is None, did you forget to use &quot;</span>
-                <span class="s2">&quot;`self.is_valid()`?&quot;</span>
-            <span class="p">)</span>
+        <span class="n">missing_attr_msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;`self.validity_df` is None, did you forget to use&quot;</span>
+            <span class="s2">&quot; `self.is_valid()`?&quot;</span>
+        <span class="p">)</span>
+        <span class="n">_check_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;validity_df&quot;</span><span class="p">,</span> <span class="n">missing_attr_msg</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># In cases where no alerts of alert_type are found, KeyError raised</span>
@@ -663,13 +655,7 @@
         <span class="n">_check_parent_dir_exists</span><span class="p">(</span>
             <span class="n">pth</span><span class="o">=</span><span class="n">out_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;out_pth&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="n">create_out_parent</span>
         <span class="p">)</span>
-
-        <span class="n">pre</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">out_pth</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ext</span> <span class="o">!=</span> <span class="s2">&quot;.html&quot;</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2"> format not implemented. Saving as .html&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span>
-            <span class="p">)</span>
-            <span class="n">out_pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">pre</span> <span class="o">+</span> <span class="s2">&quot;.html&quot;</span><span class="p">)</span>
+        <span class="n">out_pth</span> <span class="o">=</span> <span class="n">_enforce_file_extension</span><span class="p">(</span><span class="n">out_pth</span><span class="p">,</span> <span class="s2">&quot;.html&quot;</span><span class="p">,</span> <span class="s2">&quot;.html&quot;</span><span class="p">,</span> <span class="s2">&quot;out_pth&quot;</span><span class="p">)</span>
 
         <span class="c1"># geoms defence</span>
         <span class="n">geoms</span> <span class="o">=</span> <span class="n">geoms</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -723,13 +709,8 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># defences for parameters</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;df&#39; expected type pd.DataFrame, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">day_column_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;&#39;day_column_name&#39; expected type str, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">day_column_name</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;df&quot;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">day_column_name</span><span class="p">,</span> <span class="s2">&quot;day_column_name&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
 
         <span class="c1"># hard coded day order</span>
         <span class="n">day_order</span> <span class="o">=</span> <span class="p">{</span>
@@ -859,11 +840,8 @@
 <span class="sd">            `summ_ops` is a function not exported from numpy.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">return_summary</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;&#39;return_summary&#39; must be of type boolean.&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; Found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">return_summary</span><span class="p">)</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">return_summary</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># return_summary defence</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">return_summary</span><span class="p">,</span> <span class="s2">&quot;return_summary&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="c1"># summ_ops defence</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summ_ops</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -1335,16 +1313,18 @@
                 <span class="s2">&quot;webp&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;svg&quot;</span><span class="p">,</span>
             <span class="p">]</span>
-            <span class="k">if</span> <span class="n">img_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_img_formats</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Please specify a valid image format. Valid formats &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;include </span><span class="si">{</span><span class="n">valid_img_formats</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-            <span class="n">plotly_io</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span>
-                <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
-                <span class="n">file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">_enforce_file_extension</span><span class="p">(</span>
+                <span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span>
                     <span class="n">raw_pth</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">img_type</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">),</span>
+                <span class="n">exp_ext</span><span class="o">=</span><span class="n">valid_img_formats</span><span class="p">,</span>
+                <span class="n">default_ext</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
+                <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;img_type&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">plotly_io</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span>
+                <span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">return_html</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">plotly_io</span><span class="o">.</span><span class="n">to_html</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">full_html</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1565,9 +1545,10 @@
         <span class="n">_type_defence</span><span class="p">(</span><span class="n">overwrite</span><span class="p">,</span> <span class="s2">&quot;overwrite&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="n">_type_defence</span><span class="p">(</span><span class="n">summary_type</span><span class="p">,</span> <span class="s2">&quot;summary_type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="n">_set_up_report_dir</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">report_dir</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
-        <span class="n">summary_type</span> <span class="o">=</span> <span class="n">summary_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">summary_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;summary type&#39; must be mean, median, min or max&quot;</span><span class="p">)</span>
+        <span class="n">summary_type</span> <span class="o">=</span> <span class="n">summary_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">_check_item_in_iter</span><span class="p">(</span>
+            <span class="n">summary_type</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">],</span> <span class="s2">&quot;summary_type&quot;</span>
+        <span class="p">)</span>
 
         <span class="c1"># store todays date</span>
         <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-%m-%Y&quot;</span><span class="p">)</span>
