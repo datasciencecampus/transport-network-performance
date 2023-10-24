@@ -5,7 +5,6 @@ from shapely.geometry import box
 from pyprojroot import here
 import pandas as pd
 import os
-import math
 import plotly.graph_objects as go
 from typing import Union
 import pathlib
@@ -214,14 +213,10 @@ def filter_gtfs_around_trip(
     shape_id = list(trips[trips["trip_id"] == trip_id]["shape_id"])[0]
 
     # defence
-    # try/except for math.isnan() returning TypeError for strings
-    try:
-        if math.isnan(shape_id):
-            raise ValueError(
-                "'shape_id' not available for trip with trip_id: " f"{trip_id}"
-            )
-    except TypeError:
-        pass
+    if pd.isna(shape_id):
+        raise ValueError(
+            "'shape_id' not available for trip with trip_id: " f"{trip_id}"
+        )
 
     # create a buffer around the trip
     trip_shape = shapes[shapes["shape_id"] == shape_id]
