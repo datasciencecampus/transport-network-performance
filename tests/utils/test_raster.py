@@ -472,7 +472,6 @@ class TestUtilsRaster:
         output_filepath,
         resample_factor,
         expected: Type[RaisesContext],
-        tmp_path: pathlib.Path,
     ) -> None:
         """Test sum_resample_file in failing cases.
 
@@ -486,8 +485,6 @@ class TestUtilsRaster:
             resample factor to pass to `sum_resample_file`
         expected : Type[RaisesContext]
             exception to test with
-        tmp_path : pathlib.Path
-            path to temporary pytest directory.
 
         Notes
         -----
@@ -496,8 +493,6 @@ class TestUtilsRaster:
 
         """
         with expected:
-            if isinstance(output_filepath, (str, pathlib.Path)):
-                output_filepath = os.path.join(tmp_path, output_filepath)
             sum_resample_file(
                 input_filepath=input_filepath,
                 output_filepath=output_filepath,
