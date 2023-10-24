@@ -478,7 +478,6 @@ class UrbanCentre:
             check_length=True,
             length=2,
         )
-
         transformer = Transformer.from_crs(coords_crs, raster_crs)
         x, y = transformer.transform(*coords)
         row, col = rowcol(aff, x, y)

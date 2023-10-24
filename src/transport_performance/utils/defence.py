@@ -474,17 +474,23 @@ def _enforce_file_extension(
         The path with the correct file extension
 
     """
+    _handle_path_like(path, "path")
     root, ext = os.path.splitext(path)
     if isinstance(exp_ext, str):
         exp_ext = [exp_ext]
+    # formatting assurances
+    exp_ext = [x.replace(".", "").lower() for x in exp_ext]
+    default_ext = default_ext.replace(".", "")
+    ext = ext.replace(".", "")
+    # check if path in acceptable format
     if ext.lower() not in exp_ext:
         # format warning message
         if not msg:
             msg = (
-                f"Format {ext} provided. Expected {exp_ext} for path given "
-                f"to '{param_nm}'"
+                f"Format .{ext} provided. Expected {exp_ext} for path given "
+                f"to '{param_nm}'. Path defaulted to .{default_ext}"
             )
         # warn user
         warnings.warn(msg, UserWarning)
-        path = os.path.normpath(root + default_ext)
+        path = os.path.normpath(root + f".{default_ext}")
     return pathlib.Path(path)
