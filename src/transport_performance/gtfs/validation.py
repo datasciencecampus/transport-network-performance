@@ -205,6 +205,8 @@ class GtfsInstance:
         A gtfs_kit feed produced using the files at `gtfs_pth` on init.
     gtfs_path : Union[str, pathlib.Path]
         The path to the GTFS archive.
+    units : str
+         Spatial units of the GTFS file, defaults to "km".
     file_list: list
         Files in the GTFS archive.
     validity_df: pd.DataFrame
@@ -298,7 +300,7 @@ class GtfsInstance:
         accepted_units = ["m", "km"]
 
         _check_item_in_iter(units, accepted_units, "units")
-
+        self.units = units
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
         if route_lookup_pth is not None:

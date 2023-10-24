@@ -48,18 +48,20 @@ def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
     if isinstance(trip_id, str):
         trip_id = [trip_id]
 
-    # _check_iterable only takes lists, therefore convert numpy arrays
-    if isinstance(trip_id, np.ndarray):
-        trip_id = list(trip_id)
-
     # ensure trip ids are string
     _check_iterable(
         iterable=trip_id,
         param_nm="trip_id",
-        iterable_type=list,
+        iterable_type=type(trip_id),
         check_elements=True,
         exp_type=str,
     )
+
+    # warn users if passed one of the passed trip_id's is not present in the
+    # GTFS.
+    for _id in trip_id:
+        if _id not in gtfs.feed.trips.trip_id.unique():
+            warnings.warn(UserWarning(f"trip_id '{_id}' not found in GTFS"))
 
     # drop relevant records from tables
     gtfs.feed.trips = gtfs.feed.trips[

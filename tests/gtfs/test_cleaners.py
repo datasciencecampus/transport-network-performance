@@ -66,6 +66,10 @@ class Test_DropTrips(object):
         ]
         assert len(found_df) == 0, "Failed to drop trip in format 'string'"
 
+        # test dropping non existent trip
+        with pytest.warns(UserWarning, match="trip_id .* not found in GTFS"):
+            drop_trips(gtfs_fixture, ["NOT_AT_TRIP_ID"])
+
     def test_drop_trips_on_pass(self, gtfs_fixture):
         """General tests for drop_trips()."""
         fixture = gtfs_fixture

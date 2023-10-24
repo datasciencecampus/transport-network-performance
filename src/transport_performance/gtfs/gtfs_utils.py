@@ -21,6 +21,7 @@ from transport_performance.utils.defence import (
     _gtfs_defence,
     _enforce_file_extension,
     _check_parent_dir_exists,
+    _check_item_in_iter,
 )
 from transport_performance.utils.constants import PKG_PATH
 
@@ -153,6 +154,7 @@ def _add_validation_row(
             "Did you forget to run the .is_valid() method?"
         ),
     )
+    _check_item_in_iter(_type, ["warning", "error"], "_type")
     temp_df = pd.DataFrame(
         {
             "type": [_type],
@@ -172,7 +174,6 @@ def filter_gtfs_around_trip(
     gtfs,
     trip_id: str,
     buffer_dist: int = 10000,
-    units: str = "m",
     crs: str = "27700",
     out_pth=os.path.join("data", "external", "trip_gtfs.zip"),
 ) -> None:
@@ -186,8 +187,6 @@ def filter_gtfs_around_trip(
         The trip ID
     buffer_dist : int, optional
         The distance to create a buffer around the trip, by default 10000
-    units : str, optional
-        Distance units of the original GTFS, by default "m"
     crs : str, optional
         The CRS to use for adding a buffer, by default "27700"
     out_pth : _type_, optional
@@ -207,7 +206,6 @@ def filter_gtfs_around_trip(
     _gtfs_defence(gtfs, "gtfs")
     _type_defence(trip_id, "trip_id", str)
     _type_defence(buffer_dist, "buffer_dist", int)
-    _type_defence(units, "units", str)
     _type_defence(crs, "crs", str)
     _check_parent_dir_exists(out_pth, "out_pth", create=True)
     trips = gtfs.feed.trips
@@ -242,7 +240,7 @@ def filter_gtfs_around_trip(
         in_pth=gtfs.gtfs_path,
         bbox=list(bbox),
         crs=crs,
-        units=units,
+        units=gtfs.units,
         out_pth=out_pth,
     )
 
