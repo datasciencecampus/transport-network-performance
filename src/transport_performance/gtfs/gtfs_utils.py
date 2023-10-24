@@ -19,6 +19,7 @@ from transport_performance.utils.defence import (
     _type_defence,
     _check_attribute,
     _gtfs_defence,
+    _enforce_file_extension,
 )
 from transport_performance.utils.constants import PKG_PATH
 
@@ -88,9 +89,7 @@ def bbox_filter_gtfs(
 
     # check paths have valid zip extensions
     _is_expected_filetype(pth=in_pth, param_nm="in_pth")
-    _is_expected_filetype(
-        pth=out_pth, param_nm="out_pth", check_existing=False
-    )
+    _enforce_file_extension(out_pth, ".zip", ".zip", "out_pth")
 
     if isinstance(bbox, list):
         _check_iterable(
@@ -281,6 +280,8 @@ def convert_pandas_to_plotly(
     # defences
     _type_defence(df, "df", pd.DataFrame)
     _type_defence(return_html, "return_html", bool)
+    # no use of _type_defence() here as IMO a more descriptive error message is
+    # required. in this case.
     if isinstance(df.columns, pd.MultiIndex) or isinstance(
         df.index, pd.MultiIndex
     ):
