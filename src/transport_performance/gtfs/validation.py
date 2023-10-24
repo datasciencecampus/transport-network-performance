@@ -1504,7 +1504,7 @@ class GtfsInstance:
             )
             validation_dataframe["info"] = [
                 f"""<a href="{href}"> Further Info</a>"""
-                if len(rows) > 1
+                if len(rows) > 0
                 else "Unavailable"
                 for href, rows in zip(info_href, validation_dataframe["rows"])
             ]
