@@ -172,6 +172,8 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
     )
 
     gtfs.full_stop_schedule = stop_sched
+    gtfs.table_map["full_stop_schedule"] = gtfs.full_stop_schedule
+
     # find the stops that exceed the speed boundary
     invalid_stops = stop_sched[stop_sched["speed"] > stop_sched["speed_bound"]]
 
@@ -180,7 +182,6 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
         return invalid_stops
 
     # add the error to the validation table
-    # TODO: After merge add full_stop_schedule to HTML output table keys
     _add_validation_row(
         gtfs=gtfs,
         _type="warning",
@@ -279,9 +280,8 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
         }
     )
 
-    # TODO: Add this table to the lookup once gtfs HTML is merged
     gtfs.multiple_stops_invalid = far_stops_df
-
+    gtfs.table_map["multiple_stops_invalid"] = gtfs.multiple_stops_invalid
     if len(gtfs.multiple_stops_invalid) > 0:
         _add_validation_row(
             gtfs=gtfs,
