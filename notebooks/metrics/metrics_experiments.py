@@ -216,7 +216,7 @@ def _transport_performance_pandas(
 
 
 # %%
-function_df = _transport_performance_pandas(
+perf_df = _transport_performance_pandas(
     metrics_input_dir,
     centroid_gdf,
     pop_gdf,
