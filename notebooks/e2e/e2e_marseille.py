@@ -186,10 +186,13 @@ then GTFS data.
 
 ### Data Sources
 
-In this example a whole of England GTFS data source is used, provided by the
-[Department for Transport's BODS ](https://data.bus-data.dft.gov.uk/). The
-`itm_england_gtfs.zip` file is expected to be within the directory set by
-`config['gtfs']['input_path']`.
+In this example we use a GTFS including the region of Métropole
+d'Aix-Marseille-Provence et des Bouches-du-Rhône from the
+[Aix-Marseille regional government](https://www.lepilote.com/fr/open-data/83).
+The download contains multiple files, and not all of them include routes within
+our urban centre and buffer.
+The folder containing all the GTFZ zip files `Gtfs_marseille_2023-10-24` file
+is expected to be within the directory set by `config['gtfs']['input_path']`.
 """
 
 # %%
@@ -296,10 +299,10 @@ Clip the OSM data to the buffered urban centre area.
 
 ### Data Sources
 
-In this example a whole of England OSM data source is used, provided by the
-[Geofabrik](https://download.geofabrik.de/europe/great-britain.html). The
-`england-latest.osm.pbf` file is expected to be within the directory set by
-`config['osm']['input_path']`.
+In this example a OSM file from the region of Provence Alpes-Cote d'Azur is
+used, provided by [Geofabrik](https://download.geofabrik.de/europe/france.html)
+. The `provence-alpes-cote-d-azur-latest.osm.pbf` file is expected to be within
+the directory set by `config['osm']['input_path']`.
 """
 
 # %%
