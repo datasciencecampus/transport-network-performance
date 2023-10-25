@@ -11,7 +11,7 @@ title = "Config for an E2E example around the Leeds area"
 [urban_centre]  # configuration section for urban centre
 override = true
 input_dir = "data/external/urban_centre/"
-merged_path = "data/processed/urban_centre/uc_merged.tif"
+merged_path = "data/processed/urban_centre/leeds_uc_merged.tif"
 bbox = [
     -145000.0,
     6247000.0,
@@ -30,7 +30,7 @@ merged_path = "data/interim/population/pop_merged.tif"
 merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
 threshold = 1  # set small and positive, to remove 0 pop cells
 write_outputs = true
-output_map_path = "outputs/e2e/population/population_map.html"
+output_map_path = "outputs/e2e/population/leeds/population_map.html"
 
 [gtfs] # configuration section for gtfs
 override = true
@@ -61,7 +61,7 @@ write_outputs = true
 outputs_dir = "outputs/e2e/leeds/analyse_network/"
 qa_travel_times = false  # set to true to qa results with `qa_path`
 qa_path = "outputs/e2e/leeds/analyse_network/travel_times.pkl"
-save_travel_times_for_qa = false  # set to true to write to `save_qa_path`
+save_travel_times_for_qa = true  # set to true to write to `save_qa_path`
 save_qa_path = "outputs/e2e/leeds/analyse_network/travel_times.pkl"
 
 [metrics]  # configuration for the metrics stage

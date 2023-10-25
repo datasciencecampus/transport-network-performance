@@ -12,7 +12,7 @@ title = "Config for an E2E example around the London area"
 [urban_centre]  # configuration section for urban centre
 override = true
 input_dir = "data/external/urban_centre/"
-merged_path = "data/processed/urban_centre/uc_merged.tif"
+merged_path = "data/processed/urban_centre/london_uc_merged.tif"
 bbox = [
     -79012.62418,
     5991761.479714964,
@@ -31,7 +31,7 @@ merged_path = "data/interim/population/pop_merged.tif"
 merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
 threshold = 1  # set small and positive, to remove 0 pop cells
 write_outputs = true
-output_map_path = "outputs/e2e/london/population/population_map_london.html"
+output_map_path = "outputs/e2e/london/population/london/population_map_london.html"
 
 [gtfs] # configuration section for gtfs
 override = true
