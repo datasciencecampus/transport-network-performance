@@ -48,9 +48,6 @@ def _tiny_osm_locs(_tiny_osm):
     return locs
 
 
-locs = _tiny_osm_locs
-
-
 class Test_CompileTags(object):
     """Tests for _compile_tags internal."""
 
