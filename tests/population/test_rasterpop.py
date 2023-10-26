@@ -96,13 +96,11 @@ def xarr_1_aoi(xarr_1: xr.DataArray) -> Tuple[Type[Polygon], dict]:
 
     # expected result after reading and clipping the array
     # set nan values in corners to match post aoi clipping expectations
-    # add extra dimension to match reading of a band in rioxarray
     exp_post_clip = np.copy(xarr_1.to_numpy())
     exp_post_clip[0, 0] = np.nan
     exp_post_clip[0, -1] = np.nan
     exp_post_clip[-1, 0] = np.nan
     exp_post_clip[-1, -1] = np.nan
-    exp_post_clip = np.expand_dims(exp_post_clip, axis=0)
 
     # expected results after converting to geopandas dataframe
     # flatten to get 1-d array, and remove nans as per _to_geopandas()
@@ -324,6 +322,7 @@ class TestRasterPop:
         assert np.array_equal(
             rp._xds.to_numpy(), xarr_1_aoi[1]["post_clip"], equal_nan=True
         )
+        assert len(rp._xds.shape) == 2
 
         # call and test _to_geopandas and assert to geopandas expectations
         rp._to_geopandas()
@@ -459,7 +458,7 @@ class TestRasterPop:
 
     @pytest.mark.parametrize(
         "aoi_bounds, aoi_crs, round, threshold, var_name, urban_centre_bounds,"
-        " urban_centre_crs, expected",
+        " urban_centre_crs, band, expected",
         [
             # test aoi_bounds incorrect type
             (
@@ -470,6 +469,7 @@ class TestRasterPop:
                 "population",
                 lazy_fixture("xarr_1_uc"),
                 None,
+                1,
                 pytest.raises(
                     TypeError,
                     match="^`aoi_bounds` expected .*Polygon.*. Got .*str.*",
@@ -484,6 +484,7 @@ class TestRasterPop:
                 "population",
                 lazy_fixture("xarr_1_uc"),
                 None,
+                1,
                 pytest.raises(
                     TypeError,
                     match="^`aoi_crs` expected .*str.*. Got .*float.*",
@@ -498,6 +499,7 @@ class TestRasterPop:
                 "population",
                 lazy_fixture("xarr_1_uc"),
                 None,
+                1,
                 pytest.raises(
                     TypeError,
                     match="^`round` expected .*bool.*. Got .*str.*",
@@ -512,6 +514,7 @@ class TestRasterPop:
                 "population",
                 lazy_fixture("xarr_1_uc"),
                 None,
+                1,
                 pytest.raises(
                     TypeError,
                     match=(
@@ -529,6 +532,7 @@ class TestRasterPop:
                 1.0,
                 lazy_fixture("xarr_1_uc"),
                 None,
+                1,
                 pytest.raises(
                     TypeError,
                     match="^`var_name` expected .*str.*. Got .*float.*",
@@ -543,6 +547,7 @@ class TestRasterPop:
                 "population",
                 "test",
                 None,
+                1,
                 pytest.raises(
                     TypeError,
                     match=(
@@ -560,10 +565,29 @@ class TestRasterPop:
                 "population",
                 lazy_fixture("xarr_1_uc"),
                 1.0,
+                1,
                 pytest.raises(
                     TypeError,
                     match=(
                         "^`urban_centre_crs` expected .*str.*. Got .*float.*"
+                    ),
+                ),
+            ),
+            # test non-existent band
+            (
+                lazy_fixture("xarr_1_aoi"),
+                None,
+                False,
+                None,
+                "population",
+                lazy_fixture("xarr_1_uc"),
+                None,
+                0,
+                pytest.raises(
+                    IndexError,
+                    match=(
+                        "Band number .* not contained in raster. Bands "
+                        "available: .*"
                     ),
                 ),
             ),
@@ -579,6 +603,7 @@ class TestRasterPop:
         var_name,
         urban_centre_bounds: tuple,
         urban_centre_crs,
+        band,
         expected: Type[RaisesContext],
     ) -> None:
         """Test raises statements in RasterPop `get_population()` method.
@@ -591,18 +616,20 @@ class TestRasterPop:
             Area of interest bounds, as a tuple where the 0th index is used (
             for consistency with the `xarr_1_aoi` fixture).
         aoi_crs
-            see `get_data()` docstring
+            see `get_pop()` docstring
         round
-            see `get_data()` docstring
+            see `get_pop()` docstring
         threshold
-            see `get_data()` docstring
+            see `get_pop()` docstring
         var_name
-            see `get_data()` docstring
+            see `get_pop()` docstring
         urban_centre_bounds : tuple
             Urban centre bounds test, as a tuple where the 0th index is used (
             for consistency with the `xarr_1_uc` fixture).
         urban_centre_crs
-            see `get_data()` docstring
+            see `get_pop()` docstring
+        band
+            see `get_pop()` docstring
         expected : Type[RaisesContext]
             Expected raise result.
 
@@ -629,6 +656,7 @@ class TestRasterPop:
                 var_name=var_name,
                 urban_centre_bounds=urban_centre_bounds[0],
                 urban_centre_crs=urban_centre_crs,
+                band=band,
             )
 
     def test_rasterpop_crs_conversion(
@@ -920,7 +948,7 @@ class TestRasterPop:
                 boundary_weight=boundary_weight,
             )
 
-    def test_plot_foliumn_no_uc(
+    def test_plot_folium_no_uc(
         self,
         xarr_1_fpath: str,
         xarr_1_aoi: tuple,

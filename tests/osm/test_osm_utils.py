@@ -10,7 +10,7 @@ from transport_performance.osm.osm_utils import filter_osm
 class TestFilterOsm(object):
     """Testing filter_osm()."""
 
-    def test_filter_osm_defence(self):
+    def test_filter_osm_defence(self, tmp_path):
         """Defensive behaviour for filter_osm."""
         with pytest.raises(
             FileNotFoundError,
@@ -34,8 +34,7 @@ class TestFilterOsm(object):
         with pytest.raises(
             TypeError,
             match=re.escape(
-                "`pth` expected (<class 'str'>, <class 'pathlib.Path'>). Got <"
-                "class 'bool'>"
+                "`path` expected path-like, found <class 'bool'>."
             ),
         ):
             # out_pth is not a path_like
@@ -70,6 +69,7 @@ class TestFilterOsm(object):
         ):
             # type problems with bbox
             filter_osm(bbox=[0, 1.1, 0.1, 1.2])
+        # TODO: Add better testing for OSM on MacOS if possible
 
     @patch("builtins.print")
     def test_filter_osm_defence_missing_osmosis(
