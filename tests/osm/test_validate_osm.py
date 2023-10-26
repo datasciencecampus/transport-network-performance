@@ -1,6 +1,7 @@
 """Test validate_osm."""
 import pytest
 import re
+import os
 from pyprojroot import here
 
 from transport_performance.osm.validate_osm import (
@@ -10,6 +11,26 @@ from transport_performance.osm.validate_osm import (
     # FindLocations,
     # FindTags,
 )
+
+from transport_performance.osm.osm_utils import filter_osm
+
+
+@pytest.fixture(scope="function")
+def _tiny_osm_ids(tmpdir):
+    """Too costly on the standard fixture.
+
+    This filtered fixtures saved in a tmpdir are smaller again, a bbox around
+    a single junction on an A road.
+    """
+    osm_pth = here("tests/data/newport-2023-06-13.osm.pbf")
+    out = os.path.join(tmpdir, "tiny-osm.pbf")
+    filter_osm(
+        pbf_pth=osm_pth,
+        out_pth=out,
+        bbox=[-3.0224023262, 51.5668731118, -3.0199831413, 51.5685191918],
+    )
+    ids = FindIds(out)
+    yield ids
 
 
 class Test_CompileTags(object):
@@ -164,10 +185,6 @@ class Test_FilterTargetDictWithList(object):
         assert "remove" not in out.values()
 
 
-osm_pth = here("tests/data/newport-2023-06-13.osm.pbf")
-ids = FindIds(osm_pth)
-
-
 def _class_atttribute_assertions(
     some_object, some_attributes: list, some_methods: list
 ) -> None:
@@ -198,15 +215,15 @@ def _class_atttribute_assertions(
 class TestFindIds(object):
     """Tests for FindIds api class."""
 
-    # classes are costly, so instantiate only once
+    # the expected number of features within the _tiny_osm_ids
+    e_nod = 1669
+    e_way = 227
+    e_rel = 12
+    e_area = 11
 
-    e_nod = 256508
-    e_way = 51231
-    e_rel = 286
-    e_area = 37841
-
-    def test_findids_init(self):
+    def test_findids_init(self, _tiny_osm_ids):
         """Test init behaviour for FindIds."""
+        ids = _tiny_osm_ids
         # check all the expected attributes
         expected_attrs = [
             "counts",
@@ -242,8 +259,9 @@ class TestFindIds(object):
             f_area == self.e_area
         ), f"Expected {self.e_area} areas, found {f_area} areas."
 
-    def test_find_ids_count_features(self):
+    def test_find_ids_count_features(self, _tiny_osm_ids):
         """Test count_features method."""
+        ids = _tiny_osm_ids
         ids.count_features()
         assert isinstance(ids.counts, dict)
         f_nod = ids.counts["n_nodes"]
@@ -263,41 +281,40 @@ class TestFindIds(object):
             f_area == self.e_area
         ), f"Expected {self.e_area} areas, found {f_area} areas."
 
-    def test_get_feature_ids(self):
+    def test_get_feature_ids(self, _tiny_osm_ids):
         """get_feature_ids returns correct IDs."""
+        ids = _tiny_osm_ids
         ids.get_feature_ids()
         assert isinstance(ids.id_dict, dict)
         assert isinstance(ids.id_dict["node_ids"], list)
         assert sorted(ids.id_dict["node_ids"])[0:3] == [
-            127231,
-            127233,
-            127234,
-        ], "First 5 node IDs not as expected"
+            7727955,
+            7727957,
+            7727958,
+        ], "First 3 node IDs not as expected"
         assert sorted(ids.id_dict["way_ids"][0:4]) == [
-            1881332,
-            1881588,
-            2372923,
-            2954415,
-        ], "First 5 way IDs not as expected"
+            4811009,
+            4812745,
+            4812746,
+            4812791,
+        ], "First 4 way IDs not as expected"
         assert sorted(ids.id_dict["relation_ids"][0:5]) == [
-            20990,
-            22696,
-            58437,
-            62149,
-            122733,
+            305815,
+            368267,
+            368270,
+            8200260,
+            8208502,
         ], "First 5 relation IDs not as expected"
         assert sorted(ids.id_dict["area_ids"][0:6]) == [
-            8418164,
-            8418170,
-            9622110,
-            9622112,
             9625854,
             10172568,
+            10172570,
+            51392038,
+            53588532,
+            77922346,
         ], "First 5 area IDs not as expected"
 
 
-# # @pytest.mark.runinteg
-# @pytest.mark.skip(reason="Very costly even with runexpensive flag.")
 # class TestFindLocations(object):
 #     """Tests for FindLocations api class."""
 
@@ -345,8 +362,6 @@ class TestFindIds(object):
 #                         ), f"Expected coord {coord} to be type float."
 #                         " got {type(coord)}"
 
-# # @pytest.mark.runexpensive
-# @pytest.mark.skip(reason="Very costly even with runexpensive flag.")
 # class TestFindTags(object):
 #     """Test FindTags API class."""
 
