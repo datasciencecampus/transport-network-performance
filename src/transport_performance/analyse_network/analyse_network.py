@@ -7,10 +7,12 @@ import numpy as np
 import pandas as pd
 
 from haversine import Unit, haversine_vector
-from r5py import TransportNetwork, TravelTimeMatrixComputer
-from typing import Union
-from tqdm import tqdm
 from math import ceil
+from r5py import TransportNetwork, TravelTimeMatrixComputer
+from tqdm import tqdm
+from typing import Union
+
+import transport_performance.utils.defence as d
 
 
 class AnalyseNetwork:
@@ -27,10 +29,15 @@ class AnalyseNetwork:
 
     Attributes
     ----------
-    gdf : gpd.GeoDataFrame
+    gdf
+    transport_network : TransportNetwork
+        R5py object that contains a transport network initialised with data
+        from OpenStreetMap and GTFS.
 
-
-    TODO: finish docstring.
+    Methods
+    -------
+    od_matrix
+        Method that calculates the full O-D matrix and saves it as parquet.
 
     """
 
@@ -38,7 +45,17 @@ class AnalyseNetwork:
         self, gdf: gpd.GeoDataFrame, osm: Union[str, pathlib.Path], gtfs: list
     ):
         """Initialise AnalyseNetwork class."""
-        # TODO: add defences.
+        # defences
+        d._type_defence(gdf, "gdf", gpd.GeoDataFrame)
+        d._type_defence(osm, "osm", (str, pathlib.Path))
+        d._check_iterable(
+            iterable=gtfs,
+            param_nm="gtfs",
+            iterable_type=list,
+            check_elements=True,
+            exp_type=(str, pathlib.Path),
+        )
+
         self.gdf = gdf
         self.transport_network = TransportNetwork(osm, gtfs)
 
@@ -49,7 +66,7 @@ class AnalyseNetwork:
         partition_size: int = 200,
         **kwargs,
     ) -> None:
-        """Calculate full O-D matrix and saves as parquet.
+        """Calculate full O-D matrix and save as parquet.
 
         Parameters
         ----------
@@ -65,15 +82,15 @@ class AnalyseNetwork:
         partition_size : int
             Maximum size of each individual parquet files. If data would
             exceed this size, it will be split in several parquet files.
-
-        Returns
-        -------
-        None
+        **kwargs
+            Any valid argument for r5py TravelTimeMatrixComputer object.
+            E.g. `departure`, `max_time`, `transport_modes`.
 
         Notes
         -----
-        This function will work with any number of origins between 1 and all.
-        However, this is not currently optimised and performance will be poor.
+        This function will work with any number of origins. However, this is
+        not currently optimised and performance may be poor if using values
+        other than 1 or all.
 
         """
         for sel_orig, sel_dest in tqdm(
@@ -118,17 +135,12 @@ class AnalyseNetwork:
             A TransportNetwork instance with the osm and gtfs information for
             the required region.
         origins : gpd.GeoDataFrame
-            TODO: complete docstrings.
+            Geodataframe containing the point(s) to use as origin.
         destinations : gpd.GeoDataFrame
-            TODO: complete docstrings.
-        num_origins: int
-            Number of origins to consider. Note that more origins will greatly
-            increase the cartesian product of origins and destinations, which
-            may slow down processing or exceed available memory. To use all
-            possible origins, use `len(gdf)`.
-            # TODO: consider replacing this by a flag to use either 1 or all.
-        **kwargs: dict, optional
-            Optional arguments for TravelTimeMatrixComputer
+            Geodataframe contianing the point(s) to use as destination.
+        **kwargs
+            Any valid argument for r5py TravelTimeMatrixComputer object.
+            E.g. `departure`, `max_time`, `transport_modes`.
 
         Returns
         -------
@@ -137,7 +149,12 @@ class AnalyseNetwork:
             combinations.
 
         """
-        # TODO: add defences.
+        # defences
+        d._type_defence(
+            transport_network, "transport_network", TransportNetwork
+        )
+        d._type_defence(origins, "origins", gpd.GeoDataFrame)
+        d._type_defence(destinations, "destinations", gpd.GeoDataFrame)
 
         travel_time_matrix_computer = TravelTimeMatrixComputer(
             transport_network,
@@ -154,7 +171,7 @@ class AnalyseNetwork:
         destination_col: str = "within_urban_centre",
         distance: float = 11.25,
         num_origins: int = 1,
-    ) -> (int, gpd.GeoDataFrame):
+    ) -> (list, list):
         """Split geopandas.DataFrame into batches of a single origin.
 
         Parameters
@@ -181,6 +198,12 @@ class AnalyseNetwork:
         sel_dest : list
             Id numbers of the destinations in a given iteration.
 
+        Raises
+        ------
+        ValueError
+            If the number of origins provided is not between 1 and the total
+            number of origins in the geodataframe.
+
         Notes
         -----
         This function will filter out pairs of origins and destinations that
@@ -192,7 +215,16 @@ class AnalyseNetwork:
         provided, which may include pairs that are beyond the threshold.
 
         """
-        # TODO: add defences.
+        # defences
+        d._type_defence(gdf, "gdf", gpd.GeoDataFrame)
+        d._type_defence(destination_col, "destination_col", str)
+        d._type_defence(distance, "distance", float)
+        d._type_defence(num_origins, "num_origins", int)
+        if 1 > num_origins > len(gdf):
+            raise ValueError(
+                f"`num_origins should be between 1 and {len(gdf)},"
+                f", got {num_origins}"
+            )
 
         # get sources and destinations
         # define destinations when `destination_col` is true
@@ -255,7 +287,10 @@ class AnalyseNetwork:
             Array with row-wise distances.
 
         """
-        # TODO: add defences.
+        # defences
+        d._check_column_in_df(gdf, orig)
+        d._check_column_in_df(gdf, dest)
+        d._type_defence(unit, "unit", Unit)
 
         lat_long_orig = gdf[orig].apply(lambda x: (x.y, x.x))
         lat_long_dest = gdf[dest].apply(lambda x: (x.y, x.x))
@@ -285,12 +320,14 @@ class AnalyseNetwork:
             Required partitions for the parquet file.
 
         """
-        # TODO: add defences.
+        # defences
+        d._type_defence(df, "df", pd.DataFrame)
+        d._type_defence(partition_size, "partition_size", int)
 
         mem_usage = sum(df.memory_usage(deep=True, index=False))
-        est_parts = np.ceil(mem_usage / (partition_size * 1e6))
+        est_parts = ceil(mem_usage / (partition_size * 1e6))
 
-        return int(est_parts)
+        return est_parts
 
     def _save_to_parquet(
         self,
@@ -299,7 +336,28 @@ class AnalyseNetwork:
         out_path: Union[str, pathlib.Path],
         npartitions: int = 1,
     ) -> None:
-        """Save O-D matrix to parquet."""
+        """Save O-D matrix to parquet.
+
+        Parameters
+        ----------
+        od_matrix : pd.DataFrame
+            O-D matrix, including columns `from_id`, `to_id` and `travel_time`.
+        out_name_func : str
+            String to include in the parquet files for each batch. Needed so
+            each batch has a different name than the following so they are not
+            overwritten.
+        out_path : Union[str, pathlib.Path]
+            Path where to save parquet files.
+        npartitions : int
+            Number of partitions required for the parquet file from each batch.
+
+        """
+        # defences
+        d._type_defence(od_matrix, "od_matrix", pd.DataFrame)
+        d._type_defence(out_name_func, "out_name_func", str)
+        d._type_defence(out_path, "out_path", (str, pathlib.Path))
+        d._type_defence(npartitions, "npartitions", int)
+
         ddf = dd.from_pandas(od_matrix, npartitions=npartitions)
 
         filename = f"batch-{out_name_func}"
