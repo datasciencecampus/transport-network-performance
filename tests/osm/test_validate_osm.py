@@ -9,7 +9,7 @@ from transport_performance.osm.validate_osm import (
     _filter_target_dict_with_list,
     FindIds,
     FindLocations,
-    # FindTags,
+    FindTags,
 )
 
 from transport_performance.osm.osm_utils import filter_osm
@@ -46,6 +46,13 @@ def _tiny_osm_locs(_tiny_osm):
     """Locations found within the _tiny_osm fixture."""
     locs = FindLocations(_tiny_osm)
     return locs
+
+
+@pytest.fixture(scope="module")
+def _tiny_osm_tags(_tiny_osm):
+    """Tags found within the _tiny_osm fixture."""
+    tags = FindTags(_tiny_osm)
+    return tags
 
 
 class Test_CompileTags(object):
@@ -379,94 +386,93 @@ class TestFindLocations(object):
                         " got {type(coord)}"
 
 
-# class TestFindTags(object):
-#     """Test FindTags API class."""
+class TestFindTags(object):
+    """Test FindTags API class."""
 
-#     tags = FindTags(osm_pth)
+    def test_find_tags_init(self, _tiny_osm_tags):
+        """Check init behaviour for FindTags."""
+        tags = _tiny_osm_tags
+        expected_attrs = [
+            "found_tags",
+            "node_tags",
+            "way_tags",
+            "relation_tags",
+            "area_tags",
+        ]
+        expected_methods = [
+            "check_tags_for_ids",
+            "node",
+            "way",
+            "relation",
+            "area",
+        ]
+        _class_atttribute_assertions(tags, expected_attrs, expected_methods)
 
-#     def test_find_tags_init(self):
-#         """Check init behaviour for FindTags."""
-#         expected_attrs = [
-#             "found_tags",
-#             "node_tags",
-#             "way_tags",
-#             "relation_tags",
-#             "area_tags",
-#         ]
-#         expected_methods = [
-#             "check_tags_for_ids",
-#             "node",
-#             "way",
-#             "relation",
-#             "area",
-#         ]
-#         _class_atttribute_assertions(
-#             self.tags, expected_attrs, expected_methods
-#         )
+    def test_find_tags_check_tags_for_ids(self, _tiny_osm_tags, _tiny_osm_ids):
+        """Test FindTags.check_tags_for_ids()."""
+        ids = _tiny_osm_ids
+        tags = _tiny_osm_tags
+        ids.get_feature_ids()
+        node_ids = ids.id_dict["node_ids"][20:50]
+        way_ids = ids.id_dict["way_ids"][0:4]
+        rel_ids = ids.id_dict["relation_ids"][0:3]
+        area_ids = ids.id_dict["area_ids"][0:2]
+        # many node IDs are empty, so check a known ID for tags instead
+        tags.check_tags_for_ids(ids=node_ids, feature_type="node")
+        target_node = tags.found_tags["node"][7728862]
+        tag_value_map = {
+            "highway": "traffic_signals",
+        }
+        for k, v in tag_value_map.items():
+            f = target_node[k]
+            assert f == v, f"Expected node tag value {v} but found {f}"
 
-#     def test_find_tags_check_tags_for_ids(self):
-#         """Test FindTags.check_tags_for_ids()."""
-#         ids.get_feature_ids()
-#         way_ids = ids.id_dict["way_ids"][0:4]
-#         rel_ids = ids.id_dict["relation_ids"][0:3]
-#         area_ids = ids.id_dict["area_ids"][0:2]
-#         # many node IDs are empty, so check a known ID for tags instead
-#         self.tags.check_tags_for_ids(ids=[10797072547], feature_type="node")
-#         target_node = self.tags.found_tags["node"][10797072547]
-#         tag_value_map = {
-#             "addr:city": "Newport",
-#             "amenity": "pub",
-#             "source:postcode": "FHRS Open Data",
-#         }
-#         for k, v in tag_value_map.items():
-#             f = target_node[k]
-#             assert f == v, f"Expected node tag value {v} but found {f}"
+        # check way tags
+        tags.check_tags_for_ids(ids=way_ids, feature_type="way")
+        # raise ValueError(way_ids)
+        target_way = tags.found_tags["way"][4811009]
+        # raise ValueError(target_way)
+        assert len(tags.found_tags["way"]) == 4
+        tag_value_map = {
+            "highway": "primary",
+            "lanes": "2",
+            "name": "Kingsway",
+            "oneway": "yes",
+            "postal_code": "NP20",
+            "ref": "A4042",
+        }
+        for k, v in tag_value_map.items():
+            f = target_way[k]
+            assert f == v, f"Expected way tag value {v} but found {f}"
+        # check relation tags
+        tags.check_tags_for_ids(ids=rel_ids, feature_type="relation")
+        target_rel = tags.found_tags["relation"][rel_ids[0]]
+        # raise ValueError(target_rel)
+        tag_value_map = {
+            "colour": "#5d2491",
+            "name": "Cardiff-Newport 30",
+            "operator": "Cardiff Bus;Newport Bus",
+            "ref": "30",
+            "route": "bus",
+            "type": "route",
+        }
+        for k, v in tag_value_map.items():
+            f = target_rel[k]
+            assert f == v, f"Expected relation tag value {v} but found {f}"
 
-#         # check way tags
-#         self.tags.check_tags_for_ids(ids=way_ids, feature_type="way")
-#         target_way = self.tags.found_tags["way"][2954415]
-#         assert len(self.tags.found_tags["way"]) == 4
-#         tag_value_map = {
-#             "bicycle": "no",
-#             "foot": "no",
-#             "highway": "motorway",
-#             "oneway": "yes",
-#             "operator": "Welsh Government",
-#             "ref": "M4",
-#             "surface": "asphalt",
-#         }
-#         for k, v in tag_value_map.items():
-#             f = target_way[k]
-#             assert f == v, f"Expected way tag value {v} but found {f}"
-#         # check relation tags
-#         self.tags.check_tags_for_ids(ids=rel_ids, feature_type="relation")
-#         target_rel = self.tags.found_tags["relation"][rel_ids[0]]
-#         tag_value_map = {
-#             "name": "European route E 30",
-#             "route": "road",
-#             "wikipedia": "en:European route E30",
-#         }
-#         for k, v in tag_value_map.items():
-#             f = target_rel[k]
-#             assert f == v, f"Expected relation tag value {v} but found {f}"
-
-#         # check area tags
-#         self.tags.check_tags_for_ids(ids=area_ids, feature_type="area")
-#         target_area = self.tags.found_tags["area"][area_ids[0]]
-#         tag_value_map = {
-#             "highway": "primary",
-#             "junction": "roundabout",
-#             "lanes": "2",
-#             "lit": "yes",
-#             "maxspeed": "50 mph",
-#             "name": "Balfe Road",
-#             "old_ref": "A455",
-#             "oneway": "yes",
-#             "postal_code": "NP19",
-#             "ref": "A48",
-#             "surface": "asphalt",
-#         }
-#         for k, v in tag_value_map.items():
-#             f = target_area[k]
-#             assert f == v, f"Expected area tag value {v} but found {f}"
-#         assert len(self.tags.found_tags["area"]) == 2
+        # check area tags
+        tags.check_tags_for_ids(ids=area_ids, feature_type="area")
+        target_area = tags.found_tags["area"][area_ids[0]]
+        # raise ValueError(target_area)
+        tag_value_map = {
+            "highway": "primary",
+            "junction": "roundabout",
+            "maxspeed": "40 mph",
+            "name": "Cardiff Road",
+            "oneway": "yes",
+            "postal_code": "NP10",
+        }
+        for k, v in tag_value_map.items():
+            f = target_area[k]
+            assert f == v, f"Expected area tag value {v} but found {f}"
+        assert len(tags.found_tags["area"]) == 2
