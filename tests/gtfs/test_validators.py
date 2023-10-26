@@ -7,6 +7,8 @@ import os
 import zipfile
 import pathlib
 
+import numpy as np
+
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.validators import (
     validate_travel_between_consecutive_stops,
@@ -83,6 +85,37 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
             "'_validate_travel_between_consecutive_stops()' failed to raise "
             "warnings in the validity df"
         )
+
+    def test__join_max_speed(self, newp_gtfs_fixture):
+        """Tests for the _join_max_speed function."""
+        newp_gtfs_fixture.is_valid(validators={"core_validation": None})
+        # assert route_type's beforehand
+        existing_types = newp_gtfs_fixture.feed.routes.route_type.unique()
+        assert np.array_equal(
+            existing_types, [3, 200]
+        ), "Existing route types not as expected."
+        # replace 3 with an invlid route_type
+        newp_gtfs_fixture.feed.routes.route_type = (
+            newp_gtfs_fixture.feed.routes.route_type.apply(
+                lambda x: 12345 if x == 200 else x
+            )
+        )
+        new_types = newp_gtfs_fixture.feed.routes.route_type.unique()
+        assert np.array_equal(
+            new_types, [3, 12345]
+        ), "Route types of 200 not replaced correctly"
+        # validate and assert a speed bound of 150 is set for these cases
+        validate_travel_between_consecutive_stops(newp_gtfs_fixture)
+        cases = newp_gtfs_fixture.full_stop_schedule[
+            newp_gtfs_fixture.full_stop_schedule.route_type == 12345
+        ]
+        print(cases.speed_bound)
+        assert np.array_equal(
+            cases.route_type.unique(), [12345]
+        ), "Dataframe filter to cases did not work"
+        assert np.array_equal(
+            cases.speed_bound.unique(), [200]
+        ), "Obtaining max speed for unrecognised route_type failed"
 
 
 class Test_ValidateTravelOverMultipleStops(object):
