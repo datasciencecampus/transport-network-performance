@@ -9,6 +9,8 @@ import pandas as pd
 from haversine import Unit, haversine_vector
 from r5py import TransportNetwork, TravelTimeMatrixComputer
 from typing import Union
+from tqdm import tqdm
+from math import ceil
 
 
 class AnalyseNetwork:
@@ -25,6 +27,9 @@ class AnalyseNetwork:
 
     Attributes
     ----------
+    gdf : gpd.GeoDataFrame
+
+
     TODO: finish docstring.
 
     """
@@ -43,10 +48,32 @@ class AnalyseNetwork:
         out_path: Union[str, pathlib.Path],
         partition_size: int = 200,
         **kwargs,
-    ):
-        """Calculate full O-D matrix and saves as parquet."""
-        for sel_orig, sel_dest in self._gdf_batch_origins(
-            self.gdf, num_origins=num_origins
+    ) -> None:
+        """Calculate full O-D matrix and saves as parquet.
+
+        Parameters
+        ----------
+        num_origins : int
+            Number of origins to consider when batching the transport network
+            calculation. A value of 1 would loop through each origin and all
+            the destinations within the distance threshold. This is recommended
+            for large areas where the full O-D matrix would not fit in memory
+            (e.g. London). A value of len(gdf) would run only once using all
+            destinations.
+        out_path : Union[str, pathlib.Path]
+            Path to save the O-D matrix as parquet files.
+        partition_size : int
+            Maximum size of each individual parquet files. If data would
+            exceed this size, it will be split in several parquet files.
+
+        Returns
+        -------
+        None
+
+        """
+        for sel_orig, sel_dest in tqdm(
+            self._gdf_batch_origins(self.gdf, num_origins=num_origins),
+            total=ceil(len(self.gdf) / num_origins),
         ):
 
             origin_gdf = self.gdf[self.gdf["id"].isin(sel_orig)]
