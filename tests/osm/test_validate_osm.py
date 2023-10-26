@@ -8,7 +8,7 @@ from transport_performance.osm.validate_osm import (
     _compile_tags,
     _filter_target_dict_with_list,
     FindIds,
-    # FindLocations,
+    FindLocations,
     # FindTags,
 )
 
@@ -39,6 +39,16 @@ def _tiny_osm_ids(_tiny_osm):
     """Findids too costly on standard fixture, so use _tiny_osm instead."""
     ids = FindIds(_tiny_osm)
     return ids
+
+
+@pytest.fixture(scope="module")
+def _tiny_osm_locs(_tiny_osm):
+    """Locations found within the _tiny_osm fixture."""
+    locs = FindLocations(_tiny_osm)
+    return locs
+
+
+locs = _tiny_osm_locs
 
 
 class Test_CompileTags(object):
@@ -323,52 +333,54 @@ class TestFindIds(object):
         ], "First 5 area IDs not as expected"
 
 
-# class TestFindLocations(object):
-#     """Tests for FindLocations api class."""
+class TestFindLocations(object):
+    """Tests for FindLocations api class."""
 
-#     locs = FindLocations(osm_pth)
+    def test_find_locations_init(self, _tiny_osm_locs):
+        """Test for FindLocations init behaviour."""
+        locs = _tiny_osm_locs
+        exp_attrs = ["found_locs", "node_locs", "way_node_locs"]
+        exp_methods = ["check_locs_for_ids", "node", "way"]
+        _class_atttribute_assertions(locs, exp_attrs, exp_methods)
+        assert locs.node_locs[7727955] == {
+            "lon": -3.0034452,
+            "lat": 51.5677329,
+        }
+        # 2 node locations for way ID 4811009
+        assert len(locs.way_node_locs[4811009]) == 2
 
-#     def test_find_locations_init(self):
-#         """Test for FindLocations init behaviour."""
-#         exp_attrs = ["found_locs", "node_locs", "way_node_locs"]
-#         exp_methods = ["check_locs_for_ids", "node", "way"]
-#         _class_atttribute_assertions(self.locs, exp_attrs, exp_methods)
-#         assert self.locs.node_locs[10971292664] == {
-#             "lon": -3.0019690,
-#             "lat": 51.5804167,
-#         }
-#         # 29 node locations for way ID 1881332
-#         assert len(self.locs.way_node_locs[1881332]) == 29
+    def test_check_locs_for_ids(self, _tiny_osm_locs, _tiny_osm_ids):
+        """Assert check_locs_for_ids."""
+        ids = _tiny_osm_ids
+        ids.get_feature_ids()
+        locs = _tiny_osm_locs
+        # check that the expected coordinates are returned for node IDs
+        id_list = sorted(ids.id_dict["node_ids"])[0:5]
+        locs.check_locs_for_ids(ids=id_list, feature_type="node")
+        assert list(locs.found_locs.keys()) == ["node"]
+        assert len(locs.found_locs["node"]) == 5
+        # in all 5 nodes, check that floats are returned
+        for n in locs.found_locs["node"]:
+            for k, v in locs.found_locs["node"][n].items():
+                assert isinstance(
+                    v, float
+                ), f"Expected coord {v} to be type float. got {type(v)}"
+        # now check coordinates for a list of way IDs
+        way_ids = sorted(ids.id_dict["way_ids"])[0:3]
+        locs.check_locs_for_ids(ids=way_ids, feature_type="way")
+        assert list(locs.found_locs.keys()) == ["way"]
+        assert len(locs.found_locs["way"]) == 3
+        # coords are nested deeper for ways than nodes as you need to access
+        # way members' coordinates
+        for w in locs.found_locs["way"]:
+            for x in locs.found_locs["way"][w]:
+                for k, v in x.items():
+                    for coord in list(v.values()):
+                        assert isinstance(
+                            coord, float
+                        ), f"Expected coord {coord} to be type float."
+                        " got {type(coord)}"
 
-#     def test_check_locs_for_ids(self):
-#         """Assert check_locs_for_ids."""
-#         ids.get_feature_ids()
-#         # check that the expected coordinates are returned for node IDs
-#         id_list = sorted(ids.id_dict["node_ids"])[0:5]
-#         self.locs.check_locs_for_ids(ids=id_list, feature_type="node")
-#         assert list(self.locs.found_locs.keys()) == ["node"]
-#         assert len(self.locs.found_locs["node"]) == 5
-#         # in all 5 nodes, check that floats are returned
-#         for n in self.locs.found_locs["node"]:
-#             for k, v in self.locs.found_locs["node"][n].items():
-#                 assert isinstance(
-#                     v, float
-#                 ), f"Expected coord {v} to be type float. got {type(v)}"
-#         # now check coordinates for a list of way IDs
-#         way_ids = sorted(ids.id_dict["way_ids"])[0:3]
-#         self.locs.check_locs_for_ids(ids=way_ids, feature_type="way")
-#         assert list(self.locs.found_locs.keys()) == ["way"]
-#         assert len(self.locs.found_locs["way"]) == 3
-#         # coords are nested deeper for ways than nodes as you need to access
-#         # way members' coordinates
-#         for w in self.locs.found_locs["way"]:
-#             for x in self.locs.found_locs["way"][w]:
-#                 for k, v in x.items():
-#                     for coord in list(v.values()):
-#                         assert isinstance(
-#                             coord, float
-#                         ), f"Expected coord {coord} to be type float."
-#                         " got {type(coord)}"
 
 # class TestFindTags(object):
 #     """Test FindTags API class."""
