@@ -39,7 +39,7 @@ from transport_performance.utils.raster import (
 
 # %%
 # config filepath, and loading
-CONFIG_FILE = here("notebooks/e2e/config/e2e.toml")
+CONFIG_FILE = here("notebooks/e2e/config/e2e_leeds.toml")
 config = toml.load(CONFIG_FILE)
 
 # split out into separate configs to minimise line length
@@ -93,7 +93,6 @@ uc_gdf = uc.get_urban_centre(
     bbox_gdf,
     centre=tuple(uc_config["centre"]),
     buffer_size=uc_config["buffer_size"],
-    centre_crs="epsg: 4326",
 )
 
 # set the index to the label column to make filtering easier
@@ -164,6 +163,11 @@ pop_gdf, centroid_gdf = rp.get_pop(
     urban_centre_bounds=urban_centre_bounds,
 )
 
+centroid_gdf.to_file(
+    here("data/processed/population/newport_centroid_gdf.json"),
+    drop_id=True,
+    driver="GeoJSON",
+)
 # %%
 # write interactive visual to file
 if pop_config["write_outputs"]:
@@ -181,9 +185,9 @@ then GTFS data.
 
 ### Data Sources
 
-In this example a whole of Wales GTFS data source is used, provided by the
+In this example a whole of England GTFS data source is used, provided by the
 [Department for Transport's BODS ](https://data.bus-data.dft.gov.uk/). The
-`itm_wales_gtfs.zip` file is expected to be within the directory set by
+`itm_england_gtfs.zip` file is expected to be within the directory set by
 `config['gtfs']['input_path']`.
 """
 
@@ -271,9 +275,9 @@ Clip the OSM data to the buffered urban centre area.
 
 ### Data Sources
 
-In this example a whole of Wales OSM data source is used, provided by the
+In this example a whole of England OSM data source is used, provided by the
 [Geofabrik](https://download.geofabrik.de/europe/great-britain.html). The
-`wales-latest.osm.pbf` file is expected to be within the directory set by
+`england-latest.osm.pbf` file is expected to be within the directory set by
 `config['osm']['input_path']`.
 """
 
@@ -543,7 +547,7 @@ def plot(
 
 # %%
 # visualise for an ID within the UC
-UC_ID = 4110
+UC_ID = 4259
 assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
@@ -591,7 +595,7 @@ plot(
 
 # %%
 # visualise for an ID within the UC
-UC_ID = 3974
+UC_ID = 11307
 assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
@@ -735,7 +739,7 @@ plot(
 
 # %%
 # QA ID
-ID = 4110
+ID = 11307
 
 # filter distance df to only this id and select a sub-set of columns
 snippet_df = distance_df[distance_df.to_id == ID]
@@ -892,7 +896,7 @@ tp_results = pd.DataFrame(
 ).T[["min", "25%", "50%", "75%", "max"]]
 
 # add in area and name columns, reset the index to make it a column
-tp_results.index = ["Newport"]
+tp_results.index = ["Leeds"]
 tp_results.index.name = "urban centre name"
 tp_results = tp_results.reset_index()
 
