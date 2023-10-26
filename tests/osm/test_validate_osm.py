@@ -38,6 +38,9 @@ def _tiny_osm(tmp_path_factory):
 def _tiny_osm_ids(_tiny_osm):
     """Findids too costly on standard fixture, so use _tiny_osm instead."""
     ids = FindIds(_tiny_osm)
+    # many of the test classes here will depend on the get_feature_ids method
+    # calculate now once rather than several times in test classes
+    ids.get_feature_ids()
     return ids
 
 
@@ -306,7 +309,6 @@ class TestFindIds(object):
     def test_get_feature_ids(self, _tiny_osm_ids):
         """get_feature_ids returns correct IDs."""
         ids = _tiny_osm_ids
-        ids.get_feature_ids()
         assert isinstance(ids.id_dict, dict)
         assert isinstance(ids.id_dict["node_ids"], list)
         assert sorted(ids.id_dict["node_ids"])[0:3] == [
@@ -356,7 +358,6 @@ class TestFindLocations(object):
     def test_check_locs_for_ids(self, _tiny_osm_locs, _tiny_osm_ids):
         """Assert check_locs_for_ids."""
         ids = _tiny_osm_ids
-        ids.get_feature_ids()
         locs = _tiny_osm_locs
         # check that the expected coordinates are returned for node IDs
         id_list = sorted(ids.id_dict["node_ids"])[0:5]
@@ -412,7 +413,6 @@ class TestFindTags(object):
         """Test FindTags.check_tags_for_ids()."""
         ids = _tiny_osm_ids
         tags = _tiny_osm_tags
-        ids.get_feature_ids()
         node_ids = ids.id_dict["node_ids"][20:50]
         way_ids = ids.id_dict["way_ids"][0:4]
         rel_ids = ids.id_dict["relation_ids"][0:3]
