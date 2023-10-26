@@ -2,6 +2,7 @@
 from typing import Union
 
 import numpy as np
+import pandas as pd
 import warnings
 
 from gtfs_kit.cleaners import (
@@ -19,6 +20,7 @@ from transport_performance.utils.defence import (
     _gtfs_defence,
     _check_iterable,
     _type_defence,
+    _check_attribute,
 )
 
 
@@ -79,18 +81,49 @@ def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
     return None
 
 
-def clean_consecutive_stop_fast_travel_warnings(
-    gtfs, validate: bool = False
-) -> None:
+def _clean_fast_travel_preperation(gtfs, warning_re: str) -> pd.DataFrame:
+    """Prepare to clean fast travel errors.
+
+    At the beggining of both of the fast travel cleaners, the gtfs is type
+    checked, attr checked and then warnings are obtained. Because of this, this
+     has been functionalised
+
+    Parameters
+    ----------
+    gtfs : _type_
+        The GtfsInstance.
+    warning_re : str
+        Regex used to obtain warnings.
+
+    Returns
+    -------
+    pd.DataFrame
+        A dataframe containing warnings.
+
+    """
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(warning_re, "warning_re", str)
+    _check_attribute(
+        gtfs,
+        "validity_df",
+        message=(
+            "The gtfs has not been validated, therefore no"
+            "warnings can be identified. You can pass "
+            "validate=True to this function to validate the "
+            "gtfs."
+        ),
+    )
+    needed_warning = _get_validation_warnings(gtfs, warning_re)
+    return needed_warning
+
+
+def clean_consecutive_stop_fast_travel_warnings(gtfs) -> None:
     """Clean 'Fast Travel Between Consecutive Stops' warnings from validity_df.
 
     Parameters
     ----------
     gtfs : GtfsInstance
         The GtfsInstance to clean warnings within
-    validate : bool, optional
-        Whether or not to validate the gtfs before carrying out this cleaning
-        operation
 
     Returns
     -------
@@ -98,19 +131,7 @@ def clean_consecutive_stop_fast_travel_warnings(
 
     """
     # defences
-    _gtfs_defence(gtfs, "gtfs")
-    if "validity_df" not in gtfs.__dict__.keys() and not validate:
-        raise AttributeError(
-            "The gtfs has not been validated, therefore no"
-            "warnings can be identified. You can pass "
-            "validate=True to this function to validate the "
-            "gtfs."
-        )
-
-    if validate:
-        gtfs.is_valid()
-
-    needed_warning = _get_validation_warnings(
+    needed_warning = _clean_fast_travel_preperation(
         gtfs, "Fast Travel Between Consecutive Stops"
     )
 
@@ -129,41 +150,22 @@ def clean_consecutive_stop_fast_travel_warnings(
     return None
 
 
-def clean_multiple_stop_fast_travel_warnings(
-    gtfs, validate: bool = False
-) -> None:
+def clean_multiple_stop_fast_travel_warnings(gtfs) -> None:
     """Clean 'Fast Travel Over Multiple Stops' warnings from validity_df.
 
     Parameters
     ----------
     gtfs : GtfsInstance
         The GtfsInstance to clean warnings within
-    validate : bool, optional
-        Whether or not to validate the gtfs before carrying out this cleaning
-        operation
 
     Returns
     -------
     None
 
     """
-    # defences
-    _gtfs_defence(gtfs, "gtfs")
-    if "validity_df" not in gtfs.__dict__.keys() and not validate:
-        raise AttributeError(
-            "The gtfs has not been validated, therefore no"
-            "warnings can be identified. You can pass "
-            "validate=True to this function to validate the "
-            "gtfs."
-        )
-
-    if validate:
-        gtfs.is_valid()
-
-    needed_warning = _get_validation_warnings(
+    needed_warning = _clean_fast_travel_preperation(
         gtfs, "Fast Travel Over Multiple Stops"
     )
-
     if len(needed_warning) < 1:
         return None
 
