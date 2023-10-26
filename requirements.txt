@@ -30,5 +30,5 @@ kaleido
 numpy>=1.25.0 # test suite will fail if user installed lower than this
 sphinx
 sphinx-rtd-theme
-osmium
+osmium # has dependencies on `cmake` and `boost` which require brew install
 -e .
