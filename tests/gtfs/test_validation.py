@@ -73,12 +73,17 @@ class TestGtfsInstance(object):
             )
         # handling units
         with pytest.raises(
-            TypeError, match=r"`units` expected a string. Found <class 'bool'>"
+            TypeError,
+            match=(r"`units` expected <class 'str'>. Got <class " r"'bool'>"),
         ):
             GtfsInstance(gtfs_pth=GTFS_FIX_PTH, units=False)
         # non metric units
         with pytest.raises(
-            ValueError, match=r"`units` accepts metric only. Found: miles"
+            ValueError,
+            match=re.escape(
+                "'units' expected one of the following: ['m', 'km']. "
+                "Got miles: <class 'str'>"
+            ),
         ):
             GtfsInstance(
                 gtfs_pth=GTFS_FIX_PTH, units="Miles"
@@ -354,8 +359,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'geoms' expected one of the following:"
-                "['point', 'hull'] Got foobar"
+                "'geoms' expected one of the following: "
+                "['point', 'hull']. Got foobar: <class 'str'>"
             ),
         ):
             gtfs_fixture.viz_stops(out_pth=tmp, geoms="foobar")
@@ -397,7 +402,10 @@ class TestGtfsInstance(object):
         tmp1 = os.path.join(tmpdir, "points2.svg")
         with pytest.warns(
             UserWarning,
-            match=".svg format not implemented. Saving as .html",
+            match=re.escape(
+                "Format .svg provided. Expected ['html'] for path given "
+                "to 'out_pth'. Path defaulted to .html"
+            ),
         ):
             gtfs_fixture.viz_stops(out_pth=pathlib.Path(tmp1))
         # need to use regex for the first print statement, as tmpdir will
@@ -444,16 +452,20 @@ class TestGtfsInstance(object):
         # invalid arguments
         with pytest.raises(
             TypeError,
-            match="'start' expected type pd.Timestamp."
-            " Recieved type <class 'str'>",
+            match=re.escape(
+                "`start` expected <class '"
+                "pandas._libs.tslibs.timestamps.Timestamp'>. Got <class 'str'>"
+            ),
         ):
             _get_intermediate_dates(
                 start="2023-05-02", end=pd.Timestamp("2023-05-08")
             )
         with pytest.raises(
             TypeError,
-            match="'end' expected type pd.Timestamp."
-            " Recieved type <class 'str'>",
+            match=re.escape(
+                "`end` expected <class '"
+                "pandas._libs.tslibs.timestamps.Timestamp'>. Got <class 'str'>"
+            ),
         ):
             _get_intermediate_dates(
                 start=pd.Timestamp("2023-05-02"), end="2023-05-08"
@@ -498,12 +510,18 @@ class TestGtfsInstance(object):
         """Test __order_dataframe_by_day defences."""
         with pytest.raises(
             TypeError,
-            match="'df' expected type pd.DataFrame, got <class 'str'>",
+            match=re.escape(
+                "`df` expected <class 'pandas.core.frame.DataFrame'>. "
+                "Got <class 'str'>"
+            ),
         ):
             (gtfs_fixture._order_dataframe_by_day(df="test"))
         with pytest.raises(
             TypeError,
-            match="'day_column_name' expected type str, got <class 'int'>",
+            match=re.escape(
+                "`day_column_name` expected <class 'str'>. Got <class "
+                "'int'>"
+            ),
         ):
             (
                 gtfs_fixture._order_dataframe_by_day(
@@ -607,14 +625,17 @@ class TestGtfsInstance(object):
         # cases where return_summary are not of type boolean
         with pytest.raises(
             TypeError,
-            match="'return_summary' must be of type boolean."
-            " Found <class 'int'> : 5",
+            match=re.escape(
+                "`return_summary` expected <class 'bool'>. Got <class 'int'>"
+            ),
         ):
             gtfs_fixture.summarise_trips(return_summary=5)
         with pytest.raises(
             TypeError,
-            match="'return_summary' must be of type boolean."
-            " Found <class 'str'> : true",
+            match=re.escape(
+                "`return_summary` expected <class 'bool'>. Got <class "
+                "'str'>"
+            ),
         ):
             gtfs_fixture.summarise_trips(return_summary="true")
 
@@ -653,14 +674,16 @@ class TestGtfsInstance(object):
         # cases where return_summary are not of type boolean
         with pytest.raises(
             TypeError,
-            match="'return_summary' must be of type boolean."
-            " Found <class 'int'> : 5",
+            match=re.escape(
+                "`return_summary` expected <class 'bool'>. Got <class 'int'>"
+            ),
         ):
             gtfs_fixture.summarise_routes(return_summary=5)
         with pytest.raises(
             TypeError,
-            match="'return_summary' must be of type boolean."
-            " Found <class 'str'> : true",
+            match=re.escape(
+                "`return_summary` expected <class 'bool'>. Got <class 'str'>"
+            ),
         ):
             gtfs_fixture.summarise_routes(return_summary="true")
 
@@ -863,8 +886,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'orientation' expected one of the following:"
-                f"{options} Got i"
+                "'orientation' expected one of the following: "
+                f"{options}. Got i: <class 'str'>"
             ),
         ):
             gtfs_fixture._plot_summary(
@@ -875,11 +898,11 @@ class TestGtfsInstance(object):
 
         # save test for an image with invalid file extension
         valid_img_formats = ["png", "pdf", "jpg", "jpeg", "webp", "svg"]
-        with pytest.raises(
-            ValueError,
+        with pytest.warns(
+            UserWarning,
             match=re.escape(
-                "Please specify a valid image format. Valid formats "
-                f"include {valid_img_formats}"
+                f"Format .test provided. Expected {valid_img_formats} for path"
+                " given to 'img_type'. Path defaulted to .png"
             ),
         ):
             gtfs_fixture._plot_summary(
@@ -894,8 +917,8 @@ class TestGtfsInstance(object):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "'which' expected one of the following:"
-                "['trip', 'route'] Got tester"
+                "'which' expected one of the following: "
+                "['trip', 'route']. Got tester: <class 'str'>"
             ),
         ):
             gtfs_fixture._plot_summary(which="tester", target_column="tester")
@@ -992,7 +1015,11 @@ class TestGtfsInstance(object):
     def test_html_report_defences(self, gtfs_fixture, tmp_path):
         """Test the defences whilst generating a HTML report."""
         with pytest.raises(
-            ValueError, match="'summary type' must be mean, median, min or max"
+            ValueError,
+            match=re.escape(
+                "'summary_type' expected one of the following: "
+                "['mean', 'min', 'max', 'median']. Got test_sum: <class 'str'>"
+            ),
         ):
             gtfs_fixture.html_report(
                 report_dir=tmp_path,

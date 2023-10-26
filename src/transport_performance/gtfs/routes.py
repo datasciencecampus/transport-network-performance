@@ -178,7 +178,10 @@ def get_saved_route_type_lookup(
     )
     lookup = pd.read_pickle(path)
     ACCEPTED_TYPES = (dict, pd.DataFrame)
-    # check unserialized .pkl file is of correct type
+    # Check unserialized .pkl file is of correct type.
+    # The rationale for not implementing _type_defence() here is that a more
+    # informative error message provides better detail to the user in this
+    # instance
     if not isinstance(lookup, ACCEPTED_TYPES):
         raise TypeError(
             "Serialized object in specified .pkl file is of type: "
