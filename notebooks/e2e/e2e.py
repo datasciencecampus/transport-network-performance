@@ -93,6 +93,7 @@ uc_gdf = uc.get_urban_centre(
     bbox_gdf,
     centre=tuple(uc_config["centre"]),
     buffer_size=uc_config["buffer_size"],
+    centre_crs="epsg: 4326",
 )
 
 # set the index to the label column to make filtering easier

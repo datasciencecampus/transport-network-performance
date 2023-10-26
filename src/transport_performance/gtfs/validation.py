@@ -16,6 +16,14 @@ import pathlib
 from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
 
+from transport_performance.gtfs.validators import (
+    validate_travel_over_multiple_stops,
+    validate_travel_between_consecutive_stops,
+)
+from transport_performance.gtfs.cleaners import (
+    clean_consecutive_stop_fast_travel_warnings,
+    clean_multiple_stop_fast_travel_warnings,
+)
 from transport_performance.gtfs.routes import (
     scrape_route_type_lookup,
     get_saved_route_type_lookup,
@@ -26,8 +34,9 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
     _check_column_in_df,
     _type_defence,
-    _check_item_in_list,
+    _check_item_in_iter,
     _check_attribute,
+    _enforce_file_extension,
 )
 
 from transport_performance.gtfs.report.report_utils import (
@@ -61,15 +70,8 @@ def _get_intermediate_dates(
 
     """
     # checks for start and end
-    if not isinstance(start, pd.Timestamp):
-        raise TypeError(
-            "'start' expected type pd.Timestamp."
-            f" Recieved type {type(start)}"
-        )
-    if not isinstance(end, pd.Timestamp):
-        raise TypeError(
-            "'end' expected type pd.Timestamp." f" Recieved type {type(end)}"
-        )
+    _type_defence(start, "start", pd.Timestamp)
+    _type_defence(end, "end", pd.Timestamp)
     result = []
     while start <= end:
         result.append(start)
@@ -236,7 +238,7 @@ class GtfsInstance:
     Raises
     ------
     TypeError
-        `pth` is not either of string or pathlib.PosixPath.
+        `pth` is not either of string or pathlib.Path.
     TypeError
         `units` is not of type str.
     FileExistsError
@@ -258,8 +260,7 @@ class GtfsInstance:
         _is_expected_filetype(pth=gtfs_pth, param_nm="gtfs_pth")
 
         # validate units param
-        if not isinstance(units, str):
-            raise TypeError(f"`units` expected a string. Found {type(units)}")
+        _type_defence(units, "units", str)
 
         units = units.lower().strip()
         if units in ["metres", "meters"]:
@@ -268,8 +269,7 @@ class GtfsInstance:
             units = "km"
         accepted_units = ["m", "km"]
 
-        if units not in accepted_units:
-            raise ValueError(f"`units` accepts metric only. Found: {units}")
+        _check_item_in_iter(units, accepted_units, "units")
 
         self.feed = gk.read_feed(gtfs_pth, dist_units=units)
         self.gtfs_path = gtfs_pth
@@ -329,8 +329,14 @@ class GtfsInstance:
         self.file_list = file_list
         return self.file_list
 
-    def is_valid(self) -> pd.DataFrame:
+    def is_valid(self, far_stops: bool = True) -> pd.DataFrame:
         """Check a feed is valid with `gtfs_kit`.
+
+        Parameters
+        ----------
+        far_stops : bool, optional
+            Whether or not to perform validation for far stops (both
+            between consecutive stops and over multiple stops)
 
         Returns
         -------
@@ -339,6 +345,9 @@ class GtfsInstance:
 
         """
         self.validity_df = self.feed.validate()
+        if far_stops:
+            validate_travel_between_consecutive_stops(self)
+            validate_travel_over_multiple_stops(self)
         return self.validity_df
 
     def print_alerts(self, alert_type: str = "error") -> None:
@@ -362,11 +371,11 @@ class GtfsInstance:
             No alerts of the specified `alert_type` were found.
 
         """
-        if not hasattr(self, "validity_df"):
-            raise AttributeError(
-                "`self.validity_df` is None, did you forget to use "
-                "`self.is_valid()`?"
-            )
+        missing_attr_msg = (
+            "`self.validity_df` is None, did you forget to use"
+            " `self.is_valid()`?"
+        )
+        _check_attribute(self, "validity_df", missing_attr_msg)
 
         try:
             # In cases where no alerts of alert_type are found, KeyError raised
@@ -389,13 +398,31 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(self) -> None:
-        """Attempt to clean feed using `gtfs_kit`."""
+    def clean_feed(
+        self, validate: bool = False, fast_travel: bool = True
+    ) -> None:
+        """Attempt to clean feed using `gtfs_kit`.
+
+        Parameters
+        ----------
+        validate: bool, optional
+            Whether or not to validate the dataframe before cleaning
+        fast_travel: bool, optional
+            Whether or not to clean warnings related to fast travel.
+
+        """
+        _type_defence(fast_travel, "fast_travel", bool)
+        _type_defence(validate, "valiidate", bool)
+        if validate:
+            self.is_valid(far_stops=fast_travel)
         try:
             # In cases where shape_id is missing, keyerror is raised.
             # https://developers.google.com/transit/gtfs/reference#shapestxt
             # shows that shapes.txt is optional file.
             self.feed = self.feed.clean()
+            if fast_travel:
+                clean_consecutive_stop_fast_travel_warnings(self)
+                clean_multiple_stop_fast_travel_warnings(self)
         except KeyError:
             # TODO: Issue 74 - Improve this to clean feed when KeyError raised
             print("KeyError. Feed was not cleaned.")
@@ -525,18 +552,12 @@ class GtfsInstance:
         _check_parent_dir_exists(
             pth=out_pth, param_nm="out_pth", create=create_out_parent
         )
-
-        pre, ext = os.path.splitext(out_pth)
-        if ext != ".html":
-            warnings.warn(
-                f"{ext} format not implemented. Saving as .html", UserWarning
-            )
-            out_pth = os.path.normpath(pre + ".html")
+        out_pth = _enforce_file_extension(out_pth, ".html", ".html", "out_pth")
 
         # geoms defence
         geoms = geoms.lower().strip()
         ACCEPT_VALS = ["point", "hull"]
-        _check_item_in_list(geoms, ACCEPT_VALS, "geoms")
+        _check_item_in_iter(geoms, ACCEPT_VALS, "geoms")
 
         try:
             m = self._produce_stops_map(
@@ -584,13 +605,8 @@ class GtfsInstance:
 
         """
         # defences for parameters
-        if not isinstance(df, pd.DataFrame):
-            raise TypeError(f"'df' expected type pd.DataFrame, got {type(df)}")
-        if not isinstance(day_column_name, str):
-            raise TypeError(
-                "'day_column_name' expected type str, "
-                f"got {type(day_column_name)}"
-            )
+        _type_defence(df, "df", pd.DataFrame)
+        _type_defence(day_column_name, "day_column_name", str)
 
         # hard coded day order
         day_order = {
@@ -720,11 +736,8 @@ class GtfsInstance:
             `summ_ops` is a function not exported from numpy.
 
         """
-        if not isinstance(return_summary, bool):
-            raise TypeError(
-                "'return_summary' must be of type boolean."
-                f" Found {type(return_summary)} : {return_summary}"
-            )
+        # return_summary defence
+        _type_defence(return_summary, "return_summary", bool)
         # summ_ops defence
 
         if isinstance(summ_ops, list):
@@ -1042,8 +1055,8 @@ class GtfsInstance:
         which = which.lower()
 
         # ensure 'which' is valid
-        _check_item_in_list(
-            item=which, _list=["trip", "route"], param_nm="which"
+        _check_item_in_iter(
+            item=which, iterable=["trip", "route"], param_nm="which"
         )
 
         raw_pth = os.path.join(
@@ -1053,8 +1066,8 @@ class GtfsInstance:
         _check_parent_dir_exists(raw_pth, "save_pth", create=True)
 
         # orientation input defences
-        _check_item_in_list(
-            item=orientation, _list=["v", "h"], param_nm="orientation"
+        _check_item_in_iter(
+            item=orientation, iterable=["v", "h"], param_nm="orientation"
         )
 
         # assign the correct values depending on which breakdown has been
@@ -1187,16 +1200,18 @@ class GtfsInstance:
                 "webp",
                 "svg",
             ]
-            if img_type.lower().replace(".", "") not in valid_img_formats:
-                raise ValueError(
-                    "Please specify a valid image format. Valid formats "
-                    f"include {valid_img_formats}"
-                )
-            plotly_io.write_image(
-                fig=fig,
-                file=os.path.normpath(
+            path = _enforce_file_extension(
+                path=os.path.normpath(
                     raw_pth + f".{img_type.replace('.', '')}"
                 ),
+                exp_ext=valid_img_formats,
+                default_ext="png",
+                param_nm="img_type",
+            )
+
+            plotly_io.write_image(
+                fig=fig,
+                file=path,
             )
         if return_html:
             return plotly_io.to_html(fig, full_html=False)
@@ -1415,16 +1430,18 @@ class GtfsInstance:
         _type_defence(overwrite, "overwrite", bool)
         _type_defence(summary_type, "summary_type", str)
         _set_up_report_dir(path=report_dir, overwrite=overwrite)
-        summary_type = summary_type.lower()
-        if summary_type not in ["mean", "min", "max", "median"]:
-            raise ValueError("'summary type' must be mean, median, min or max")
+        summary_type = summary_type.lower().strip()
+        _check_item_in_iter(
+            summary_type, ["mean", "min", "max", "median"], "summary_type"
+        )
 
         # store todays date
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed()
-        validation_dataframe = self.is_valid()
+        self.clean_feed(validate=True, fast_travel=True)
+        # re-validate to clean any newly raised errors/warnings
+        validation_dataframe = self.is_valid(far_stops=True)
 
         # create extended reports if requested
         if extended_validation:

@@ -9,7 +9,9 @@ function by making assertions on the bounds of the inputs and merged output.
 """
 
 import os
+import re
 import pytest
+import pathlib
 import numpy as np
 import rasterio as rio
 import xarray as xr
@@ -290,11 +292,11 @@ class TestUtilsRaster:
                 "",
                 "test.txt",
                 None,
-                pytest.raises(
-                    ValueError,
-                    match=(
-                        "`merged_dir` expected file extension .tif. "
-                        "Found .txt"
+                pytest.warns(
+                    UserWarning,
+                    match=re.escape(
+                        "Format .txt provided. Expected ['tif'] for path given"
+                        " to 'merged_dir'. Path defaulted to .tif"
                     ),
                 ),
             ),
@@ -335,6 +337,7 @@ class TestUtilsRaster:
         output_filename,
         subset_regex,
         expected: Type[RaisesContext],
+        tmp_path: pathlib.Path,
     ) -> None:
         """Test `merge_raster_files` when raises occur.
 
@@ -350,6 +353,8 @@ class TestUtilsRaster:
             Regex str to select subset of input files within `input_dir`
         expected : Type[RaisesContext]
             exception to test with
+        tmp_path : pathlib.Path
+            path to temporary pytest directory.
 
         Notes
         -----
@@ -358,6 +363,8 @@ class TestUtilsRaster:
 
         """
         with expected:
+            if isinstance(output_dir, (str, pathlib.Path)):
+                output_dir = os.path.join(tmp_path, output_dir)
             merge_raster_files(
                 input_dir=input_dir,
                 output_dir=output_dir,
@@ -420,9 +427,9 @@ class TestUtilsRaster:
             ),
             # test input_filepath that does not exist
             (
-                "test.tif",
-                None,
-                None,
+                "test/test/test/test.tif",
+                "tester.tif",
+                5,
                 pytest.raises(FileNotFoundError, match="not found on file."),
             ),
             # test input_filepath that does not have correct file extension
