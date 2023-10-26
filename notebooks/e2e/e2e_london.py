@@ -37,10 +37,10 @@ from transport_performance.gtfs.gtfs_utils import bbox_filter_gtfs
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.osm.osm_utils import filter_osm
 
-# from transport_performance.utils.raster import (
-#     merge_raster_files,
-#     sum_resample_file,
-# )
+from transport_performance.utils.raster import (
+    merge_raster_files,
+    # sum_resample_file,
+)
 
 # %%
 # config filepath, and loading
@@ -78,13 +78,13 @@ files in the cell below:
 # %%
 # merge the urban centre input raster files to form one larger area
 # use subset regex to ensure expected year, CRS and resolution are used
-# if uc_config["override"]:
-#     merge_raster_files(
-#         here(uc_config["input_dir"]),
-#         os.path.dirname(here(uc_config["merged_path"])),
-#         os.path.basename(uc_config["merged_path"]),
-#         subset_regex="GHS_POP_E2020_GLOBE_R2023A_54009_1000_",
-#     )
+if uc_config["override"]:
+    merge_raster_files(
+        here(uc_config["input_dir"]),
+        os.path.dirname(here(uc_config["merged_path"])),
+        os.path.basename(uc_config["merged_path"]),
+        subset_regex="GHS_POP_E2020_GLOBE_R2023A_54009_1000_",
+    )
 
 # %%
 # put bbox into a geopandas dataframe for `get_urban_centre` input
