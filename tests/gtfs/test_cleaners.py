@@ -123,7 +123,7 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
     def test_clean_consecutive_stop_fast_travel_warnings_defence(
         self, gtfs_fixture
     ):
-        """Defensive tests forclean_consecutive_stop_fast_travel_warnings()."""
+        """Defensive tests for clean_consecutive_stop_fast_travel_warnings."""
         with pytest.raises(
             AttributeError,
             match=re.escape(
@@ -133,9 +133,7 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
                 "gtfs."
             ),
         ):
-            clean_consecutive_stop_fast_travel_warnings(
-                gtfs=gtfs_fixture, validate=False
-            )
+            clean_consecutive_stop_fast_travel_warnings(gtfs=gtfs_fixture)
 
     def test_clean_consecutive_stop_fast_travel_warnings_on_pass(
         self, gtfs_fixture
@@ -186,18 +184,15 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
         assert (
             original_validation == gtfs_fixture.validity_df.to_dict()
         ), "Original validity df is not as expected"
-        clean_consecutive_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=False
-        )
+        clean_consecutive_stop_fast_travel_warnings(gtfs=gtfs_fixture)
         gtfs_fixture.is_valid()
         assert expected_validation == gtfs_fixture.validity_df.to_dict(), (
             "Validation table is not as expected after cleaning consecutive "
             "stop fast travel warnings"
         )
         # test validation; test gtfs with no warnings
-        clean_consecutive_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=True
-        )
+        gtfs_fixture.is_valid()
+        clean_consecutive_stop_fast_travel_warnings(gtfs=gtfs_fixture)
 
 
 class Test_CleanMultipleStopFastTravelWarnings(object):
@@ -216,9 +211,7 @@ class Test_CleanMultipleStopFastTravelWarnings(object):
                 "gtfs."
             ),
         ):
-            clean_multiple_stop_fast_travel_warnings(
-                gtfs=gtfs_fixture, validate=False
-            )
+            clean_multiple_stop_fast_travel_warnings(gtfs=gtfs_fixture)
 
     def test_clean_multiple_stop_fast_travel_warnings_on_pass(
         self, gtfs_fixture
@@ -269,18 +262,15 @@ class Test_CleanMultipleStopFastTravelWarnings(object):
         assert (
             original_validation == gtfs_fixture.validity_df.to_dict()
         ), "Original validity df is not as expected"
-        clean_multiple_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=False
-        )
+        clean_multiple_stop_fast_travel_warnings(gtfs=gtfs_fixture)
         gtfs_fixture.is_valid()
         assert expected_validation == gtfs_fixture.validity_df.to_dict(), (
             "Validation table is not as expected after cleaning consecutive "
             "stop fast travel warnings"
         )
         # test validation; test gtfs with no warnings
-        clean_multiple_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=True
-        )
+        gtfs_fixture.is_valid()
+        clean_multiple_stop_fast_travel_warnings(gtfs=gtfs_fixture)
 
 
 class TestCoreCleaner(object):
