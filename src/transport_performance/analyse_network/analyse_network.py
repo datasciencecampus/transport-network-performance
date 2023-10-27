@@ -47,7 +47,7 @@ class AnalyseNetwork:
         """Initialise AnalyseNetwork class."""
         # defences
         d._type_defence(gdf, "gdf", gpd.GeoDataFrame)
-        d._type_defence(osm, "osm", (str, pathlib.Path))
+        d._is_expected_filetype(osm, "osm", exp_ext=".pbf")
         d._check_iterable(
             iterable=gtfs,
             param_nm="gtfs",
@@ -55,6 +55,8 @@ class AnalyseNetwork:
             check_elements=True,
             exp_type=(str, pathlib.Path),
         )
+        for path in gtfs:
+            d._is_expected_filetype(path, "gtfs", exp_ext=".zip")
 
         self.gdf = gdf
         self.transport_network = TransportNetwork(osm, gtfs)
@@ -188,7 +190,7 @@ class AnalyseNetwork:
             Number of origins to consider. Note that more origins will greatly
             increase the cartesian product of origins and destinations, which
             may slow down processing or exceed available memory. To use all
-            possible origins, use `len(gdf)`.
+            possible origins, use `len(gdf)`. Default is 1.
             # TODO: consider replacing this by a flag to use either 1 or all.
 
         Yields
@@ -229,6 +231,7 @@ class AnalyseNetwork:
         # get sources and destinations
         # define destinations when `destination_col` is true
         orig_gdf = gdf.copy()
+        geometry_col = gdf.geometry.name
         dest_gdf = (
             gdf[gdf[destination_col] == True].reset_index().copy()  # noqa
         )
@@ -249,7 +252,7 @@ class AnalyseNetwork:
 
             # calculates haversine distance between origins and destinations
             full_gdf["distance"] = self._haversine_gdf(
-                full_gdf, "geometry_orig", "geometry_dest"
+                full_gdf, f"{geometry_col}_orig", f"{geometry_col}_dest"
             )
 
             # filters out pairs where distance is over threshold
@@ -354,9 +357,8 @@ class AnalyseNetwork:
         """
         # defences
         d._type_defence(od_matrix, "od_matrix", pd.DataFrame)
-        d._type_defence(out_name_func, "out_name_func", str)
-        d._type_defence(out_path, "out_path", (str, pathlib.Path))
         d._type_defence(npartitions, "npartitions", int)
+        d._check_parent_dir_exists(out_path, "out_path", create=True)
 
         ddf = dd.from_pandas(od_matrix, npartitions=npartitions)
 
