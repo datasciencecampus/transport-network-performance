@@ -16,8 +16,8 @@ from pathlib import Path
 from typing import Union
 
 from transport_performance.utils.defence import (
-    _check_item_in_list,
-    _check_list,
+    _check_item_in_iter,
+    _check_iterable,
     _type_defence,
     _is_expected_filetype,
 )
@@ -94,10 +94,10 @@ def _filter_target_dict_with_list(
 
     """
     _type_defence(targets, "targets", dict)
+    _check_iterable(_list, "_list", list, exp_type=int)
     _type_defence(search_key, "search_key", str)
-    _check_list(_list, "_list", exp_type=int)
-    _check_list(accepted_keys, "accepted_keys", exp_type=str)
-    _check_item_in_list(search_key, accepted_keys, "search_key")
+    _check_iterable(accepted_keys, "accepted_keys", list, exp_type=str)
+    _check_item_in_iter(search_key, accepted_keys, "search_key")
 
     feat = search_key.lower().strip()
     try:

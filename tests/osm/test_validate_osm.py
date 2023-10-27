@@ -112,11 +112,15 @@ class Test_FilterTargetDictWithList(object):
             match="`search_key` expected <class 'str'>. Got <class 'int'>",
         ):
             _filter_target_dict_with_list(
-                targets={}, _list=list(), search_key=1, accepted_keys=list()
+                targets={},
+                _list=list(),
+                search_key=1,
+                accepted_keys=list("fookey"),
             )
         with pytest.raises(
             TypeError,
-            match="`_list` should be a list. Instead found <class 'int'>",
+            match="`_list` expected <class 'collections.abc.Iterable'>. Got"
+            " <class 'int'>",
         ):
             _filter_target_dict_with_list(
                 targets=dict(), _list=1, search_key="key", accepted_keys=list()
@@ -134,8 +138,8 @@ class Test_FilterTargetDictWithList(object):
             )
         with pytest.raises(
             TypeError,
-            match="`accepted_keys` should be a list. Instead found"
-            " <class 'int'>",
+            match="`accepted_keys` expected <class 'collections.abc.Iterable'>"
+            ". Got <class 'int'>",
         ):
             _filter_target_dict_with_list(
                 targets=dict(), _list=[1], search_key="key", accepted_keys=1
@@ -153,10 +157,8 @@ class Test_FilterTargetDictWithList(object):
             )
         with pytest.raises(
             ValueError,
-            match=re.escape(
-                "'search_key' expected one of the following:['list', 'of',"
-                " 'keys'] Got unacceptable_key"
-            ),
+            match="'search_key'.*['list', 'of', 'keys'].*unacceptable_key:"
+            " <class 'str'>",
         ):
             _filter_target_dict_with_list(
                 targets=dict(),
