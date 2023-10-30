@@ -13,15 +13,12 @@ override = true
 input_dir = "data/external/urban_centre/"
 merged_path = "data/processed/urban_centre/uc_merged.tif"
 bbox = [
-    -415194.5798256779,
-    6014542.675452075,
-    -178899.95729310974,
-    6239314.71054581
+-415194.5798256779, 6014542.675452075, -178899.95729310974, 6239314.71054581
 ]  # must in in 'ESRI:54009', this represents a BBOX around Wales
-centre = [51.5773597, -2.9660008]
+centre = [51.46737027594145, -2.5988505326255895]
 buffer_size = 12000
 write_outputs = true
-output_map_path = "outputs/e2e/urban_centre/urban_centre_map.html"
+output_map_path = "outputs/e2e/bristol/urban_centre/urban_centre_map.html"
 
 [population]  # configuration section for population
 override = true
@@ -30,35 +27,35 @@ merged_path = "data/interim/population/pop_merged.tif"
 merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
 threshold = 1  # set small and positive, to remove 0 pop cells
 write_outputs = true
-output_map_path = "outputs/e2e/population/population_map.html"
+output_map_path = "outputs/e2e/bristol/population/population_map.html"
 
 [gtfs] # configuration section for gtfs
 override = true
-input_path = "data/external/gtfs/itm_wales_gtfs.zip"
-filtered_path = "data/interim/gtfs/itm_wales_filtered_gtfs.zip"
+input_path = "data/external/gtfs/itm_england_gtfs.zip"
+filtered_path = "data/interim/gtfs/itm_england_filtered_gtfs.zip"
 units = "km"
 write_outputs = true
-cleaned_path = "data/processed/gtfs/itm_wales_filtered_cleaned_gtfs.zip"
-stops_map_path = "outputs/e2e/gtfs/stops_map.html"
-hull_map_path = "outputs/e2e/gtfs/hull_map.html"
-used_stops_map_path = "outputs/e2e/gtfs/used_stops_map.html"
+cleaned_path = "data/processed/gtfs/itm_england_filtered_cleaned_gtfs.zip"
+stops_map_path = "outputs/e2e/bristol/gtfs/stops_map.html"
+hull_map_path = "outputs/e2e/bristol/gtfs/hull_map.html"
+used_stops_map_path = "outputs/e2e/bristol/gtfs/used_stops_map.html"
 
 [osm] # configuration section for osm clipping
 override = true
-input_path = "data/external/osm/wales-latest.osm.pbf"
-filtered_path = "data/processed/osm/wales_latest_filtered.osm.pbf"
-tag_filter = false
+input_path = "data/external/osm/england-latest.osm.pbf"
+filtered_path = "data/processed/osm/england_latest_filtered.osm.pbf"
+tag_filter = true
 
 [analyse_network]  # configuration for the analyse_network stage
 departure_year = 2023
-departure_month = 8
-departure_day = 8  # this is the date, not the day of the week
+departure_month = 10
+departure_day = 27  # this is the date, not the day of the week
 departure_hour = 8
 departure_minute = 0
 departure_time_window = 1  # this is in hours
 max_time = 45  # this is in minutes
 write_outputs = true
-outputs_dir = "outputs/e2e/analyse_network/"
+outputs_dir = "outputs/e2e/bristol/analyse_network/"
 qa_travel_times = false  # set to true to qa results with `qa_path`
 qa_path = "outputs/e2e/analyse_network/travel_times.pkl"
 save_travel_times_for_qa = false  # set to true to write to `save_qa_path`
@@ -68,4 +65,4 @@ save_qa_path = "outputs/e2e/analyse_network/travel_times.pkl"
 cut_off_time = 45   # this is in minutes
 cut_off_distance = 11250  # this is in meters
 write_outputs = true
-outputs_dir = "outputs/e2e/metrics/"
+outputs_dir = "outputs/e2e/bristol/metrics/"
