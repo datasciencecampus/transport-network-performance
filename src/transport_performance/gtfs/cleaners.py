@@ -1,10 +1,9 @@
 """A set of functions that clean the gtfs data."""
 from typing import Union
+import warnings
 
 import numpy as np
 import pandas as pd
-import warnings
-
 from gtfs_kit.cleaners import (
     clean_ids as clean_ids_gk,
     clean_route_short_names as clean_route_short_names_gk,
@@ -264,4 +263,37 @@ def clean_unrecognised_column_warnings(gtfs) -> None:
         column = warning[1].split("column")[1].strip()
         tbl.drop(column, inplace=True, axis=1)
         _remove_validation_row(gtfs, warning[1])
+    return None
+
+
+def clean_duplicate_stop_times(gtfs) -> None:
+    """Clean duplicates from stop_times with repeated pair (trip_id, ...
+
+    departure_time.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The gtfs to clean
+
+    Returns
+    -------
+    None
+
+    """
+    _gtfs_defence(gtfs, "gtfs")
+    warning_re = r".* \(trip_id, departure_time\)"
+    # we are only expecting one warning here
+    warning = _get_validation_warnings(gtfs, warning_re)
+    if len(warning) == 0:
+        return None
+    warning = warning[0]
+    # drop from actual table
+    gtfs.table_map[warning[2]].drop_duplicates(
+        subset=["arrival_time", "departure_time", "trip_id", "stop_id"],
+        inplace=True,
+    )
+    _remove_validation_row(gtfs, message=warning_re)
+    # re-validate with gtfs-kit validator
+    gtfs.is_valid({"core_validation": None})
     return None

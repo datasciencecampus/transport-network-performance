@@ -11,6 +11,7 @@
 !tests/data/newport-2023-06-13.osm.pbf
 !tests/data/chester-20230816-small_gtfs.zip
 !tests/data/gtfs/newport-20230613_gtfs.zip
+!tests/data/gtfs/repeated_pair_gtfs_fixture.zip
 !src/transport_performance/data/gtfs/route_lookup.pkl
 !tests/data/gtfs/report/html_template.html
 

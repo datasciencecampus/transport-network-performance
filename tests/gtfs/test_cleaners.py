@@ -12,7 +12,9 @@ from transport_performance.gtfs.cleaners import (
     clean_multiple_stop_fast_travel_warnings,
     core_cleaners,
     clean_unrecognised_column_warnings,
+    clean_duplicate_stop_times,
 )
+from transport_performance.gtfs.gtfs_utils import _get_validation_warnings
 
 
 @pytest.fixture(scope="function")
@@ -394,3 +396,75 @@ class TestCleanUnrecognisedColumnWarnings(object):
                 "wheelchair_accessible",
             ],
         ), "Failed to drop unrecognised columns"
+
+
+class TestCleanDuplicateStopTimes(object):
+    """Tests for clean_duplicate_stop_times."""
+
+    def test_clean_duplicate_stop_times_defence(self):
+        """Defensive functionality tests for clean_duplicate_stop_times."""
+        with pytest.raises(
+            TypeError, match=".*gtfs.* GtfsInstance object.*bool"
+        ):
+            clean_duplicate_stop_times(True)
+
+    def test_clean_duplicate_stop_times_on_pass(self):
+        """General functionality tests for clean_duplicate_stop_times."""
+        gtfs = GtfsInstance("tests/data/gtfs/repeated_pair_gtfs_fixture.zip")
+        gtfs.is_valid(validators={"core_validation": None})
+        _warnings = _get_validation_warnings(
+            gtfs, r"Repeated pair \(trip_id, departure_time\)"
+        )[0]
+        # check that the correct number of rows are impacted
+        assert (
+            len(_warnings[3]) == 24
+        ), "Unexpected number of rows originally impacted"
+        # test case for one of the instances that are removed (1)
+        assert 309 in _warnings[3], "Test case (1) missing from data"
+        assert np.array_equal(
+            list(gtfs.feed.stop_times.loc[309].values),
+            [
+                "VJf98a18e2c314219b4a98f75c5fa44e3f9618e72f",
+                "08:57:56",
+                "08:57:56",
+                "5540AWB33241",
+                3,
+                np.nan,
+                0,
+                0,
+                1.38726,
+                0,
+            ],
+        ), "data for test case (1) invalid"
+        # test case for one of the instances that remain (2)
+        assert 18 in _warnings[3], "Test case (2) missing from data"
+        assert np.array_equal(
+            list(gtfs.feed.stop_times.loc[18].values),
+            [
+                "VJ1b6f3baad353b0ba8d42e0290bfd0b39cb1130bc",
+                "11:10:23",
+                "11:10:23",
+                "5540AWA17133",
+                6,
+                np.nan,
+                0,
+                0,
+                np.nan,
+                0,
+            ],
+        ), "data for test case (2) invalid"
+        # clean gtfs
+        clean_duplicate_stop_times(gtfs)
+        _warnings = _get_validation_warnings(
+            gtfs, r"Repeated pair \(trip_id, departure_time\)"
+        )[0]
+        assert (
+            len(_warnings[3]) == 6
+        ), "Unexpected number of rows impacted after cleaning"
+        # assert test case (1) is removed from the data
+        with pytest.raises(KeyError, match=".*309.*"):
+            gtfs.feed.stop_times.loc[309]
+        # assert test case (2) remains part of the data
+        assert (
+            len(gtfs.feed.stop_times.loc[18]) > 0
+        ), "Test case removed from data"
