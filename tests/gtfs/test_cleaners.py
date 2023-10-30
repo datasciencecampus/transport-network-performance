@@ -14,7 +14,10 @@ from transport_performance.gtfs.cleaners import (
     clean_unrecognised_column_warnings,
     clean_duplicate_stop_times,
 )
-from transport_performance.gtfs.gtfs_utils import _get_validation_warnings
+from transport_performance.gtfs.gtfs_utils import (
+    _get_validation_warnings,
+    _remove_validation_row,
+)
 
 
 @pytest.fixture(scope="function")
@@ -468,3 +471,7 @@ class TestCleanDuplicateStopTimes(object):
         assert (
             len(gtfs.feed.stop_times.loc[18]) > 0
         ), "Test case removed from data"
+
+        # test return of none when no warnings are found (for cov)
+        _remove_validation_row(gtfs, message=r".* \(trip_id, departure_time\)")
+        assert clean_duplicate_stop_times(gtfs) is None
