@@ -66,6 +66,9 @@ class AnalyseNetwork:
         num_origins: int,
         out_path: Union[str, pathlib.Path],
         partition_size: int = 200,
+        destination_col: str = "within_urban_centre",
+        distance: float = 11.25,
+        unit: Unit = Unit.KILOMETERS,
         **kwargs,
     ) -> None:
         """Calculate full O-D matrix and save as parquet.
@@ -84,6 +87,14 @@ class AnalyseNetwork:
         partition_size : int
             Maximum size of each individual parquet files. If data would
             exceed this size, it will be split in several parquet files.
+        destination_col : str
+            Column indicating what centroids should be considered as
+            destinations. Default is "within_urban_centre".
+        distance: float
+            Distance to filter destinations.in km. Points further away from
+            origin are removed from output. Default is 11.25 km.
+        unit : Unit
+            Unit to calculate distance. Default is km.
         **kwargs
             Any valid argument for r5py TravelTimeMatrixComputer object.
             E.g. `departure`, `max_time`, `transport_modes`.
@@ -96,7 +107,13 @@ class AnalyseNetwork:
 
         """
         for sel_orig, sel_dest in tqdm(
-            self._gdf_batch_origins(self.gdf, num_origins=num_origins),
+            self._gdf_batch_origins(
+                self.gdf,
+                destination_col=destination_col,
+                distance=distance,
+                num_origins=num_origins,
+                unit=unit,
+            ),
             total=ceil(len(self.gdf) / num_origins),
         ):
 
@@ -115,7 +132,7 @@ class AnalyseNetwork:
             )
 
             self._save_to_parquet(
-                od_matrix, min(sel_orig), out_path, partitions
+                od_matrix, str(min(sel_orig)), out_path, partitions
             )
 
     def _calculate_transport_network(
@@ -124,7 +141,7 @@ class AnalyseNetwork:
         origins: gpd.GeoDataFrame,
         destinations: gpd.GeoDataFrame,
         **kwargs: dict,
-    ) -> None:
+    ) -> pd.DataFrame:
         """Calculate origin-destination matrix.
 
         This is a wrapper around r5py TravelTimeMatrixComputer and the
@@ -170,9 +187,10 @@ class AnalyseNetwork:
     def _gdf_batch_origins(
         self,
         gdf: gpd.GeoDataFrame,
-        destination_col: str = "within_urban_centre",
-        distance: float = 11.25,
-        num_origins: int = 1,
+        destination_col: str,
+        distance: float,
+        num_origins: int,
+        unit: Unit = Unit.KILOMETERS,
     ) -> (list, list):
         """Split geopandas.DataFrame into batches of a single origin.
 
@@ -182,16 +200,18 @@ class AnalyseNetwork:
             Geodataframe containing location ids to cross match.
         destination_col : str
             Column indicating what centroids should be considered as
-            destinations. Default is "within_urban_centre".
-        distance: float
+            destinations.
+        distance : float
             Distance to filter destinations.in km. Points further away from
-            origin are removed from output. Default is 11.25 km.
-        num_origins: int
+            origin are removed from output.
+        num_origins : int
             Number of origins to consider. Note that more origins will greatly
             increase the cartesian product of origins and destinations, which
             may slow down processing or exceed available memory. To use all
-            possible origins, use `len(gdf)`. Default is 1.
+            possible origins, use `len(gdf)`.
             # TODO: consider replacing this by a flag to use either 1 or all.
+        unit : Unit
+            Unit to calculate distance. Default is km.
 
         Yields
         ------
@@ -219,19 +239,20 @@ class AnalyseNetwork:
         """
         # defences
         d._type_defence(gdf, "gdf", gpd.GeoDataFrame)
-        d._type_defence(destination_col, "destination_col", str)
+        d._check_column_in_df(gdf, destination_col)
         d._type_defence(distance, "distance", float)
         d._type_defence(num_origins, "num_origins", int)
-        if 1 > num_origins > len(gdf):
+        if num_origins < 1 or num_origins > len(gdf):
             raise ValueError(
-                f"`num_origins should be between 1 and {len(gdf)},"
-                f", got {num_origins}"
+                f"`num_origins` should be between 1 and {len(gdf)}, "
+                f"got {num_origins}"
             )
 
         # get sources and destinations
         # define destinations when `destination_col` is true
         orig_gdf = gdf.copy()
         geometry_col = gdf.geometry.name
+        # TODO: add option to include all rows as destinations?
         dest_gdf = (
             gdf[gdf[destination_col] == True].reset_index().copy()  # noqa
         )
@@ -239,7 +260,7 @@ class AnalyseNetwork:
         origins = np.array(orig_gdf["id"])
 
         # TODO: REMEMBER TO REMOVE SHUFFLE
-        np.random.shuffle(origins)
+        # np.random.shuffle(origins)
 
         # loops through origins using selected amount of origins
         for o in range(0, len(origins), num_origins):
@@ -251,8 +272,11 @@ class AnalyseNetwork:
             )
 
             # calculates haversine distance between origins and destinations
-            full_gdf["distance"] = self._haversine_gdf(
-                full_gdf, f"{geometry_col}_orig", f"{geometry_col}_dest"
+            full_gdf["distance"] = self._haversine_df(
+                full_gdf,
+                f"{geometry_col}_orig",
+                f"{geometry_col}_dest",
+                unit=unit,
             )
 
             # filters out pairs where distance is over threshold
@@ -263,18 +287,18 @@ class AnalyseNetwork:
             # yields lists with selected origins and destinations
             yield sel_origins, sel_dest
 
-    def _haversine_gdf(
+    def _haversine_df(
         self,
-        gdf: gpd.GeoDataFrame,
+        df: pd.DataFrame,
         orig: str,
         dest: str,
-        unit: Unit = Unit.KILOMETERS,
+        unit: Unit,
     ) -> np.array:
         """Calculate haversine distance between shapely Point objects.
 
         Parameters
         ----------
-        gdf : gpd.GeoDataFrame
+        df : pd.DataFrame
             Cartesian product of origin and destinations geodataframes. Should
             contain a geometry for each.
         orig : str
@@ -282,7 +306,7 @@ class AnalyseNetwork:
         dest : str
             Name of the column containing the destination geometry.
         unit : Unit
-            Unit to calculte distance.
+            Unit to calculate distance.
 
         Returns
         -------
@@ -291,12 +315,13 @@ class AnalyseNetwork:
 
         """
         # defences
-        d._check_column_in_df(gdf, orig)
-        d._check_column_in_df(gdf, dest)
+        d._type_defence(df, "df", pd.DataFrame)
+        d._check_column_in_df(df, orig)
+        d._check_column_in_df(df, dest)
         d._type_defence(unit, "unit", Unit)
 
-        lat_long_orig = gdf[orig].apply(lambda x: (x.y, x.x))
-        lat_long_dest = gdf[dest].apply(lambda x: (x.y, x.x))
+        lat_long_orig = df[orig].apply(lambda x: (x.y, x.x))
+        lat_long_dest = df[dest].apply(lambda x: (x.y, x.x))
 
         dist_array = haversine_vector(
             list(lat_long_orig), list(lat_long_dest), unit=unit
@@ -357,6 +382,7 @@ class AnalyseNetwork:
         """
         # defences
         d._type_defence(od_matrix, "od_matrix", pd.DataFrame)
+        d._type_defence(out_name_func, "out_name_func", str)
         d._type_defence(npartitions, "npartitions", int)
         d._check_parent_dir_exists(out_path, "out_path", create=True)
 
