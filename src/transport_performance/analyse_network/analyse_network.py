@@ -202,7 +202,7 @@ class AnalyseNetwork:
             Column indicating what centroids should be considered as
             destinations.
         distance : float
-            Distance to filter destinations.in km. Points further away from
+            Distance to filter destinations. Points further away from
             origin are removed from output.
         num_origins : int
             Number of origins to consider. Note that more origins will greatly
@@ -242,6 +242,7 @@ class AnalyseNetwork:
         d._check_column_in_df(gdf, destination_col)
         d._type_defence(distance, "distance", float)
         d._type_defence(num_origins, "num_origins", int)
+        d._type_defence(unit, "unit", Unit)
         if num_origins < 1 or num_origins > len(gdf):
             raise ValueError(
                 f"`num_origins` should be between 1 and {len(gdf)}, "
