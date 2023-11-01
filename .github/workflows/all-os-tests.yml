@@ -28,7 +28,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Integration Tests  # run only those tests marked runinteg & with no osmosis deps
       run: |
-          pytest -m runinteg --runinteg --deselect tests/osm/ --max-memory 80%
+          pytest -m runinteg --runinteg --deselect tests/osm/
     - name: Test with pytest  # run only tests with no osmosis deps
       run: |
         pytest --deselect tests/osm/
