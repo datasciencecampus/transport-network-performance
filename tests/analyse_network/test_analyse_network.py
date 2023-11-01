@@ -1,25 +1,28 @@
 """Unit tests for transport_performance/analyse_network/analyse network."""
+import sys
 
-import datetime
-import glob
-import os
+sys.argv.append(["--max-memory", "99%"])
 
-import geopandas as gpd
-import numpy as np
-import pandas as pd
-import pathlib
-import pytest
+import datetime  # noqa: E402
+import glob  # noqa: E402
+import os  # noqa: E402
 
-from contextlib import nullcontext as does_not_raise
-from haversine import Unit
-from pyprojroot import here
-from pytest_lazyfixture import lazy_fixture
-from r5py import TransportNetwork, TransportMode
-from shapely.geometry import Point
-from typing import Type, Union
-from _pytest.python_api import RaisesContext
+import geopandas as gpd  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+import pathlib  # noqa: E402
+import pytest  # noqa: E402
 
-import transport_performance.analyse_network.analyse_network as an
+from contextlib import nullcontext as does_not_raise  # noqa: E402
+from haversine import Unit  # noqa: E402
+from pyprojroot import here  # noqa: E402
+from pytest_lazyfixture import lazy_fixture  # noqa: E402
+from r5py import TransportNetwork, TransportMode  # noqa: E402
+from shapely.geometry import Point  # noqa: E402
+from typing import Type, Union  # noqa: E402
+from _pytest.python_api import RaisesContext  # noqa: E402
+
+import transport_performance.analyse_network.analyse_network as an  # noqa: E402, E501
 
 
 ############
