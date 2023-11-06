@@ -33,5 +33,6 @@ sphinx
 sphinx-rtd-theme
 haversine
 dask
+pyarrow
 tqdm
 -e .
