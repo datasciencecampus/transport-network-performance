@@ -21,6 +21,30 @@ from transport_performance.utils.constants import PKG_PATH
 
 
 def _validate_datestring(date_text: str, form: str = "%Y%m%d") -> None:
+    """Ensure a date string conforms to the expected form.
+
+    Parameters
+    ----------
+    date_text : str
+        The datestring to be checked.
+    form : str, optional
+        The expected date format. Must be a valid C-standard date code format
+        compatible with datetime. See https://docs.python.org/3/library/datetim
+        e.html#strftime-and-strptime-format-codes for examples. Defaults to
+        "%Y%m%d".
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        `date_text` is not in the expected `form`.
+    TypeError
+        `date_text` or `form` are not string.
+
+    """
     _type_defence(date_text, "date_text", str)
     _type_defence(form, "form", str)
     try:
