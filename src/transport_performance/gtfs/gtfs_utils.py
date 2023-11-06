@@ -58,8 +58,8 @@ def bbox_filter_gtfs(
         What projection should the `bbox_list` be interpreted as. Defaults to
         "epsg:4326" for lat long.
     filter_dates: list, optional
-        A list of dates to restrict the feed to. Defaults to [] meaning that no
-        date filter will be applied.
+        A list of dates to restrict the feed to. Not providing filter_dates
+        means that date filtering will not be applied. Defaults to [].
 
     Returns
     -------
