@@ -18,6 +18,7 @@ from transport_performance.utils.defence import (
     _type_defence,
     _check_attribute,
     _gtfs_defence,
+    _validate_datestring,
     _enforce_file_extension,
     _check_parent_dir_exists,
     _check_item_in_iter,
@@ -40,8 +41,11 @@ def bbox_filter_gtfs(
     ],
     units: str = "km",
     crs: str = "epsg:4326",
+    filter_dates: list = [],
 ) -> None:
     """Filter a GTFS feed to any routes intersecting with a bounding box.
+
+    Optionally filter to a list of given dates.
 
     Parameters
     ----------
@@ -59,6 +63,9 @@ def bbox_filter_gtfs(
     crs : str, optional
         What projection should the `bbox_list` be interpreted as. Defaults to
         "epsg:4326" for lat long.
+    filter_dates: list, optional
+        A list of dates to restrict the feed to. Not providing filter_dates
+        means that date filtering will not be applied. Defaults to [].
 
     Returns
     -------
@@ -84,6 +91,7 @@ def bbox_filter_gtfs(
         "crs": [crs, str],
         "out_pth": [out_pth, (str, pathlib.Path)],
         "in_pth": [in_pth, (str, pathlib.Path)],
+        "filter_dates": [filter_dates, list],
     }
     for k, v in typing_dict.items():
         _type_defence(v[0], k, v[-1])
@@ -106,6 +114,18 @@ def bbox_filter_gtfs(
 
     feed = gk.read_feed(in_pth, dist_units=units)
     restricted_feed = gk.miscellany.restrict_to_area(feed=feed, area=bbox)
+    # optionally retrict to a date
+    if len(filter_dates) > 0:
+        _check_iterable(filter_dates, "filter_dates", list, exp_type=str)
+        # check date format is acceptable
+        [_validate_datestring(x) for x in filter_dates]
+        feed_dates = restricted_feed.get_dates()
+        diff = set(filter_dates).difference(feed_dates)
+        if diff:
+            raise ValueError(f"{diff} not present in feed dates.")
+        restricted_feed = gk.miscellany.restrict_to_dates(
+            restricted_feed, filter_dates
+        )
     restricted_feed.write(out_pth)
     print(f"Filtered feed written to {out_pth}.")
 
