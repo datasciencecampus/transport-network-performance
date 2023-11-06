@@ -18,7 +18,7 @@ beautifulsoup4
 requests
 pytest-mock
 toml
-plotly==5.15.0
+plotly
 nbformat>=4.2.0
 scikit-image
 cartopy
