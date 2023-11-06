@@ -20,13 +20,16 @@ from transport_performance.utils.defence import (
 from transport_performance.utils.constants import PKG_PATH
 
 
-def _validate_datestring(date_text, form="%Y%m%d"):
+def _validate_datestring(date_text: str, form: str = "%Y%m%d") -> None:
+    _type_defence(date_text, "date_text", str)
+    _type_defence(form, "form", str)
     try:
         datetime.strptime(date_text, form)
     except ValueError:
         raise ValueError(
             f"Incorrect date format, {date_text} should be {form}"
         )
+    return None
 
 
 def bbox_filter_gtfs(
