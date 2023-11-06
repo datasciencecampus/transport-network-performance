@@ -15,6 +15,7 @@ from transport_performance.gtfs.gtfs_utils import (
     _add_validation_row,
     filter_gtfs_around_trip,
     convert_pandas_to_plotly,
+    _validate_datestring,
 )
 
 # location of GTFS test fixture
@@ -45,9 +46,7 @@ class TestBboxFilterGtfs(object):
             tmpdir, "newport-train-station-bboxlist_gtfs.zip"
         )
         bbox_filter_gtfs(
-            in_pth=os.path.join(
-                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
-            ),
+            GTFS_FIX_PTH,
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_list,
         )
@@ -71,9 +70,7 @@ class TestBboxFilterGtfs(object):
         )
 
         bbox_filter_gtfs(
-            in_pth=os.path.join(
-                "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
-            ),
+            in_pth=GTFS_FIX_PTH,
             out_pth=pathlib.Path(tmp_out),
             bbox=bbox_gdf,
         )
@@ -86,6 +83,63 @@ class TestBboxFilterGtfs(object):
         assert isinstance(
             feed, GtfsInstance
         ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
+
+    def test_bbox_filter_gtfs_raises_date_not_in_gtfs(self, bbox_list, tmpdir):
+        """Test raises if filter date is not found within the GTFS calendar."""
+        with pytest.raises(
+            ValueError, match="{'30000101'} not present in feed dates."
+        ):
+            bbox_filter_gtfs(
+                in_pth=GTFS_FIX_PTH,
+                out_pth=os.path.join(tmpdir, "foobar.zip"),
+                bbox=bbox_list,
+                filter_dates=["30000101"],
+            )
+
+    def test_bbox_filter_gtfs_filters_to_date(self, bbox_list, tmpdir):
+        """Test filtered GTFS behaves as expected."""
+        out_pth = os.path.join(tmpdir, "out.zip")
+        # filter to date of fixture ingest
+        bbox_filter_gtfs(
+            in_pth=GTFS_FIX_PTH,
+            out_pth=out_pth,
+            bbox=bbox_list,
+            filter_dates=["20230613"],
+        )
+        assert os.path.exists(
+            out_pth
+        ), f"Expected filtered GTFS was not found at {out_pth}"
+        # compare dates
+        fix = GtfsInstance(GTFS_FIX_PTH)
+        fix_stops_count = len(fix.feed.stops)
+        filtered = GtfsInstance(out_pth)
+        filtered_stops_count = len(filtered.feed.stops)
+        assert (
+            fix_stops_count > filtered_stops_count
+        ), f"Expected fewer than {fix_stops_count} in filtered GTFS but"
+        " found {filtered_stops_count}"
+
+    @pytest.mark.runinteg
+    def test_bbox_filter_gtfs_to_date_builds_network(self, bbox_list, tmpdir):
+        """Having this flagged as integration test as Java dependency."""
+        # import goes here to avoid Java warnings as in test_setup.py
+        import r5py
+
+        out_pth = os.path.join(tmpdir, "out.zip")
+        # filter to date of fixture ingest
+        bbox_filter_gtfs(
+            in_pth=GTFS_FIX_PTH,
+            out_pth=out_pth,
+            bbox=bbox_list,
+            filter_dates=["20230613"],
+        )
+        net = r5py.TransportNetwork(
+            osm_pbf=os.path.join(
+                "tests", "data", "newport-2023-06-13.osm.pbf"
+            ),
+            gtfs=[out_pth],
+        )
+        assert isinstance(net, r5py.TransportNetwork)
 
 
 class Test_AddValidationRow(object):
@@ -203,3 +257,20 @@ class TestConvertPandasToPlotly(object):
             "Expected type plotly.graph_objects.Figure but "
             f"{type(fig_return)} found"
         )
+
+
+class Test_ValidateDatestring(object):
+    """Tests for _validate_datestring."""
+
+    def test_validate_datestring_raises(self):
+        """Check incompatible datestrings raise."""
+        with pytest.raises(
+            ValueError,
+            match="Incorrect date format, 2023-10-23 should be %Y%m%d",
+        ):
+            _validate_datestring("2023-10-23")
+
+    def test_validate_datestring_on_pass(self):
+        """Test that func passes if datestring matches specified form."""
+        out = _validate_datestring("2023-10-23", form="%Y-%m-%d")
+        assert isinstance(out, type(None))

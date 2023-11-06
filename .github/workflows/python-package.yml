@@ -49,7 +49,7 @@ jobs:
       shell: sh
     - name: Run Integration Tests
       run: |
-          pytest -m runinteg --runinteg # run only those tests marked runinteg
+          pytest --runinteg # run only those tests marked runinteg
     - name: pre-commit
       run: |
         pre-commit install
