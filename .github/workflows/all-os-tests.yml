@@ -28,7 +28,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Integration Tests  # run only those tests marked runinteg & with no osmosis deps
       run: |
-          pytest -m "runinteg" --ignore tests/osm/ --ignore tests/analyse_network
+          pytest --runinteg --ignore tests/osm/ --ignore tests/analyse_network
     - name: Test with pytest  # run only tests with no osmosis deps
       run: |
         pytest --ignore tests/osm/ --ignore tests/analyse_network
