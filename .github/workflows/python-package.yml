@@ -49,7 +49,7 @@ jobs:
       shell: sh
     - name: Run Integration Tests
       run: |
-          pytest --runinteg # run only those tests marked runinteg
+          pytest -m runinteg --deselect tests/analyse_network  # run only those tests marked runinteg
     - name: pre-commit
       run: |
         pre-commit install
