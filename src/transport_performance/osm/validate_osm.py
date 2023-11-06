@@ -300,7 +300,7 @@ class _LocHandler(osmium.SimpleHandler):
             id, coords = str(node).split("@")
             coords = coords.replace("]", "")
             x, y = coords.split("/")
-            nodelist.append({node.ref: {"x": float(x), "y": float(y)}})
+            nodelist.append({node.ref: {"lon": float(x), "lat": float(y)}})
         self.way_node_locs[w.id] = nodelist
 
 
