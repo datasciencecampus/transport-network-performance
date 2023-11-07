@@ -1,0 +1,35 @@
+# This workflow will install OS dependencies and run a 'base' set of unit tests with Python 3.9
+# The base set is selected based on dependencies that have previously caused issues on Windows
+# Will look to open up the windows test suite in the future.
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Windows Partial Test Suite
+
+on:
+  push:
+  pull_request:
+    branches: [ "dev", "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        os: ["windows-latest"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run 'base' Tests
+      run: |
+          pytest --ignore tests/osm/ --ignore tests/analyse_network --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
