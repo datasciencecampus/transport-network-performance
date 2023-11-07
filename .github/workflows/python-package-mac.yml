@@ -1,0 +1,58 @@
+# This workflow will install Python dependencies, run tests and lint with Python 3.9
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: MacOS Full Test Suite and Coverage
+
+on:
+  push:
+  pull_request:
+    branches: [ "dev", "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        os: ["macos-latest"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Install java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+    - name: Check Java Install
+      run: |
+        java --version
+    - name: Install mac depencies with brew  # not updating brew version, issue with aom
+      run: |
+        brew install geos
+        brew install osmosis
+      shell: sh
+    - name: pre-commit
+      run: |
+        pre-commit install
+        pre-commit run --all-files
+    - name: Run Tests and Generate Coverage Report
+      run: |
+        coverage run -m pytest
+        coverage xml
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        verbose: true
+        token: ${{secrets.CODECOV_TOKEN}}
