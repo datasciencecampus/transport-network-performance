@@ -1,0 +1,47 @@
+# This workflow will install Python dependencies and run only integration tests
+# This is a standalone runner such that if integration testing fails it does not
+# impact other runners.
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: MacOS Integration Tests
+
+on:
+  push:
+  pull_request:
+    branches: [ "dev", "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+        os: ["macos-latest"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Install java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+    - name: Check Java Install
+      run: |
+        java --version
+    - name: Install mac depencies with brew  # not updating brew version, issue with aom
+      run: |
+        brew install geos
+        brew install osmosis
+      shell: sh
+    - name: Run Integration Tests Only
+      run: |
+        pytest -m runinteg --runinteg --ignore tests/analyse_network --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
