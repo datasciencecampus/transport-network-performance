@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    name: Windows Partial Test Suite
+    name: Partial
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:

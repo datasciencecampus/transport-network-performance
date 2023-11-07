@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    name: MacOS Integration Tests
+    name: Integration
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:

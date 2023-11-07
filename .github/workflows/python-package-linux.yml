@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Linux Full Test Suite
+    name: Full
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
