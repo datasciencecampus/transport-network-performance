@@ -1,6 +1,8 @@
 # This workflow will install OS dependencies and run a 'base' set of unit tests with Python 3.9
 # The base set is selected based on dependencies that have previously caused issues on Windows
 # Will look to open up the windows test suite in the future.
+# Fixing OS version to avoid breaking OS changes during development stage.
+# Will open up OS versions before release.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Windows Partial Test Suite
@@ -18,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        os: ["windows-latest", "windows-2019"]
+        os: ["windows-2022"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -33,7 +35,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        # pip install kaleido==0.1.0.post1  # fixing kaleido version, known issue: https://github.com/plotly/Kaleido/issues/134
+        pip install kaleido==0.1.0.post1  # fixing kaleido version within runner, known issue: https://github.com/plotly/Kaleido/issues/134
     - name: Run 'base' Tests
       run: |
           pytest --ignore tests/osm/ --ignore tests/analyse_network --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network

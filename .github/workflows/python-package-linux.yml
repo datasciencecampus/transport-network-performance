@@ -1,4 +1,6 @@
 # This workflow will install Python dependencies and run tests on Linux OS.
+# Fixing OS version to avoid breaking OS changes during development stage.
+# Will open up OS versions before release.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Linux Full Test Suite
@@ -16,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        os: ["ubuntu-latest"]
+        os: ["ubuntu-22.04"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}

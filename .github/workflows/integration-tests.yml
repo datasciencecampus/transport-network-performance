@@ -1,6 +1,8 @@
 # This workflow will install Python dependencies and run only integration tests
 # This is a standalone runner such that if integration testing fails it does not
 # impact other runners.
+# Fixing OS version to avoid breaking OS changes during development stage.
+# Will open up OS versions before release.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: MacOS Integration Tests
@@ -18,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        os: ["macos-latest"]
+        os: ["macos-12"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
