@@ -1,4 +1,5 @@
-# This workflow will install Python dependencies, run tests and lint with Python 3.9
+# This workflow will install Python dependencies, pre-commit checks, run tests and generate Coverage report
+# Not caching pip dependencies in this runner to catch breaking changes in unpinned dependencies
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: MacOS Full Test Suite and Coverage
@@ -23,7 +24,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
