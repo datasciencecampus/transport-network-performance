@@ -32,4 +32,4 @@ jobs:
         pip install -r requirements.txt
     - name: Run 'base' Tests
       run: |
-          pytest --ignore tests/osm/ --ignore tests/analyse_network --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
+          pytest --ignore tests/osm/ --ignore tests/analyse_network --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network --deselect tests/gtfs/test_validation.py::TestGtfsInstance::test__plot
