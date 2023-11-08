@@ -126,9 +126,7 @@ def _filter_target_dict_with_list(
 def _convert_osmdict_to_gdf(
     _dict: dict,
     feature_type: str = "node",
-    lon_colnm: str = "lon",
-    lat_colnm: str = "lat",
-    _crs: Union[str, int] = "epsg:4326",
+    crs: Union[str, int] = "epsg:4326",
 ) -> gpd.GeoDataFrame:
     """Convert an OSM dictionary to a GDF.
 
@@ -139,11 +137,7 @@ def _convert_osmdict_to_gdf(
     feature_type: str
         The type of feature data contained in the dictionary. Defaults to
         "node".
-    lon_colnm: (str)
-        Name of the longitude column.
-    lat_colnm: (str)
-        Name of the latitude column.
-    _crs: (Union[str, int], optional)
+    crs: (Union[str, int], optional)
         The CRS of the spatial features. Defaults to "epsg:4326".
 
     Returns
@@ -173,9 +167,9 @@ def _convert_osmdict_to_gdf(
         out_gdf = pd.concat([out_gdf, out_row])
 
     out_gdf["geometry"] = [
-        Point(xy) for xy in zip(out_gdf[lon_colnm], out_gdf[lat_colnm])
+        Point(xy) for xy in zip(out_gdf["lon"], out_gdf["lat"])
     ]
-    out_gdf = gpd.GeoDataFrame(out_gdf, crs=_crs)
+    out_gdf = gpd.GeoDataFrame(out_gdf, crs=crs)
     return out_gdf
 
 
@@ -639,8 +633,6 @@ class FindLocations(_LocHandler):
         self,
         ids: list,
         feature_type: str,
-        lon_label: str = "lon",
-        lat_label: str = "lat",
         crs: Union[str, int] = "epsg:4326",
     ) -> folium.Map:
         """Plot coordinates for nodes or node members of a way.
@@ -655,12 +647,6 @@ class FindLocations(_LocHandler):
             A list of Node or Way IDs.
         feature_type : str
             Whether the type of OSM feature to plot is node or way.
-        lon_label : str, optional
-            The dictionary key used to identify the longitude value, by default
-            "lon"
-        lat_label : str, optional
-            The dictionary key used to identify the latitude value, by default
-            "lat"
         crs : Union[str, int], optional
             The projection of the spatial features, by default "epsg:4326"
 
@@ -685,6 +671,7 @@ class FindLocations(_LocHandler):
         """
         _type_defence(ids, "ids", list)
         _type_defence(feature_type, "feature_type", str)
+        _type_defence(crs, "crs", (str, int))
         feature_type = feature_type.lower().strip()
         ACCEPT_FEATS = ["node", "way", "relation", "area"]
         _check_item_in_iter(
@@ -709,8 +696,6 @@ class FindLocations(_LocHandler):
         self.coord_gdf = _convert_osmdict_to_gdf(
             coords,
             feature_type,
-            lon_colnm=lon_label,
-            lat_colnm=lat_label,
-            _crs=crs,
+            crs=crs,
         )
         return self.coord_gdf.explore()
