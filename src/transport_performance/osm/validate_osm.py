@@ -17,6 +17,7 @@ from typing import Union
 import pandas as pd
 import geopandas as gpd
 from shapely import Point
+import folium
 
 from transport_performance.utils.defence import (
     _check_item_in_iter,
@@ -128,7 +129,7 @@ def _convert_osmdict_to_gdf(
     lon_colnm: str = "lon",
     lat_colnm: str = "lat",
     _crs: Union[str, int] = "epsg:4326",
-):
+) -> gpd.GeoDataFrame:
     """Convert an OSM dictionary to a GDF.
 
     Parameters
@@ -609,7 +610,7 @@ class FindLocations(_LocHandler):
         self.apply_file(osm_pth, locations=True)
         self.found_locs = dict()
 
-    def check_locs_for_ids(self, ids: list, feature_type: str):
+    def check_locs_for_ids(self, ids: list, feature_type: str) -> dict:
         """Return coordinates for provided list of feature IDs.
 
         Parameters
@@ -633,3 +634,83 @@ class FindLocations(_LocHandler):
             accepted_keys=["node", "way"],
         )
         return self.found_locs
+
+    def plot_ids(
+        self,
+        ids: list,
+        feature_type: str,
+        lon_label: str = "lon",
+        lat_label: str = "lat",
+        crs: Union[str, int] = "epsg:4326",
+    ) -> folium.Map:
+        """Plot coordinates for nodes or node members of a way.
+
+        Provided with a list of node or way IDs, converts the coordinate data
+        from dictionary to GeoDataFrame and uses the basic gdf.explore() method
+        to visualise the features on a basemap.
+
+        Parameters
+        ----------
+        ids : list
+            A list of Node or Way IDs.
+        feature_type : str
+            Whether the type of OSM feature to plot is node or way.
+        lon_label : str, optional
+            The dictionary key used to identify the longitude value, by default
+            "lon"
+        lat_label : str, optional
+            The dictionary key used to identify the latitude value, by default
+            "lat"
+        crs : Union[str, int], optional
+            The projection of the spatial features, by default "epsg:4326"
+
+        Returns
+        -------
+        folium.Map
+            A plot of the coordainate data for each identifiable node.
+
+        Raises
+        ------
+        NotImplementedError
+            Relation location data could be extracted with a bit more munging.
+            Please raise a feature request if you feel this is significant.
+        ValueError
+            `feature_type` is not one of "node", "way", "relation" or "area".
+            No coordinate data was found in the OSM file, despite there being
+            valid IDs present.
+        TypeError
+            `ids` is not of type list.
+            `feature_type` is not of type str.
+
+        """
+        _type_defence(ids, "ids", list)
+        _type_defence(feature_type, "feature_type", str)
+        feature_type = feature_type.lower().strip()
+        ACCEPT_FEATS = ["node", "way", "relation", "area"]
+        _check_item_in_iter(
+            item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
+        )
+        if feature_type == "node":
+            target_attr = self.node_locs
+        elif feature_type == "way":
+            target_attr = self.way_node_locs
+        else:
+            raise NotImplementedError(
+                f"Plotting {feature_type} locations is not yet implemented."
+            )
+        # check that there are locs to plot first
+        if len(target_attr) == 0:
+            raise ValueError("There are no coordinates to plot.")
+        self.check_locs_for_ids(ids, feature_type)
+        # This bit below is possibly defunct. Consider refactoring to remove
+        # the need to do this. Will involve the way the dictionaries are
+        # created in _LocHandler()
+        coords = self.found_locs[feature_type]
+        self.coord_gdf = _convert_osmdict_to_gdf(
+            coords,
+            feature_type,
+            lon_colnm=lon_label,
+            lat_colnm=lat_label,
+            _crs=crs,
+        )
+        return self.coord_gdf.explore()
