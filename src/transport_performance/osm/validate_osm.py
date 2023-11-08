@@ -77,9 +77,8 @@ def _filter_target_dict_with_list(
 
     Returns
     -------
-    dict
-        search_key: filtered_dict. Dictionary with keys filtered to IDs
-        available in `_list`.
+    filtered_dict.
+        Dictionary with keys filtered to IDs available in `_list`.
 
     Raises
     ------
@@ -120,11 +119,11 @@ def _filter_target_dict_with_list(
             "No tags found. Did you specify the correct search_key?"
         )
 
-    return {feat: filtered_dict}
+    return filtered_dict
 
 
 def _convert_osmdict_to_gdf(
-    _dict: dict,
+    osm_dict: dict,
     feature_type: str = "node",
     crs: Union[str, int] = "epsg:4326",
 ) -> gpd.GeoDataFrame:
@@ -132,7 +131,7 @@ def _convert_osmdict_to_gdf(
 
     Parameters
     ----------
-    _dict: (dict)
+    osm_dict: (dict)
         Dictionary of ID: location / tags.
     feature_type: str
         The type of feature data contained in the dictionary. Defaults to
@@ -149,7 +148,7 @@ def _convert_osmdict_to_gdf(
     """
     out_gdf = pd.DataFrame()
     out_row = pd.DataFrame()
-    for key, values in _dict.items():
+    for key, values in osm_dict.items():
         if feature_type == "node":
             out_row = pd.DataFrame(values, index=[key])
         elif feature_type == "way":
@@ -676,13 +675,9 @@ class FindLocations(_LocHandler):
             item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
         )
         self.check_locs_for_ids(ids, feature_type)
-        # This bit below is possibly defunct. Consider refactoring to remove
-        # the need to do this. Will involve the way the dictionaries are
-        # created in _LocHandler()
-        coords = self.found_locs[feature_type]
         self.coord_gdf = _convert_osmdict_to_gdf(
-            coords,
-            feature_type,
+            osm_dict=self.found_locs,
+            feature_type=feature_type,
             crs=crs,
         )
         return self.coord_gdf.explore()
