@@ -94,8 +94,10 @@ nodes_gdf.explore()
 
 
 # %%
-way_ids = ids.id_dict["way_ids"][0:400]
+way_ids = ids.id_dict["way_ids"][0:1]
 way_coords = locs.check_locs_for_ids(way_ids, "way")["way"]
 # %%
-ways_gdf = _convert_osmdict_to_gdf(way_coords, "way", "x", "y")
+ways_gdf = _convert_osmdict_to_gdf(way_coords, "way")
 ways_gdf.explore()
+
+# %%
