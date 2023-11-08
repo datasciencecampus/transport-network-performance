@@ -1,7 +1,6 @@
 """Test validate_osm."""
 import pytest
 import re
-import os
 from pyprojroot import here
 
 from transport_performance.osm.validate_osm import (
@@ -12,32 +11,13 @@ from transport_performance.osm.validate_osm import (
     FindTags,
 )
 
-from transport_performance.osm.osm_utils import filter_osm
+osm_pth = here("tests/data/small-osm.pbf")
 
 
 @pytest.fixture(scope="module")
-def _tiny_osm(tmp_path_factory):
-    """Small osm pbf in a tmpdir.
-
-    This filtered fixtures saved in a tmpdir are smaller again, a bbox around
-    a single junction on an A road. Used to help run costly tests. Note that
-    tmp_path is function-scoped. In order to have a module-scoped tmp fixture,
-    you must use a factory fixture.
-    """
-    osm_pth = here("tests/data/newport-2023-06-13.osm.pbf")
-    out = os.path.join(tmp_path_factory.getbasetemp(), "tiny-osm.pbf")
-    filter_osm(
-        pbf_pth=osm_pth,
-        out_pth=out,
-        bbox=[-3.0224023262, 51.5668731118, -3.0199831413, 51.5685191918],
-    )
-    yield out  # yield to ensure teardown of tmp
-
-
-@pytest.fixture(scope="module")
-def _tiny_osm_ids(_tiny_osm):
+def _tiny_osm_ids():
     """Findids too costly on standard fixture, so use _tiny_osm instead."""
-    ids = FindIds(_tiny_osm)
+    ids = FindIds(osm_pth)
     # many of the test classes here will depend on the get_feature_ids method
     # calculate now once rather than several times in test classes
     ids.get_feature_ids()
@@ -45,16 +25,16 @@ def _tiny_osm_ids(_tiny_osm):
 
 
 @pytest.fixture(scope="module")
-def _tiny_osm_locs(_tiny_osm):
+def _tiny_osm_locs():
     """Locations found within the _tiny_osm fixture."""
-    locs = FindLocations(_tiny_osm)
+    locs = FindLocations(osm_pth)
     return locs
 
 
 @pytest.fixture(scope="module")
-def _tiny_osm_tags(_tiny_osm):
+def _tiny_osm_tags():
     """Tags found within the _tiny_osm fixture."""
-    tags = FindTags(_tiny_osm)
+    tags = FindTags(osm_pth)
     return tags
 
 
