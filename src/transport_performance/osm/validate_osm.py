@@ -662,8 +662,6 @@ class FindLocations(_LocHandler):
             Please raise a feature request if you feel this is significant.
         ValueError
             `feature_type` is not one of "node", "way", "relation" or "area".
-            No coordinate data was found in the OSM file, despite there being
-            valid IDs present.
         TypeError
             `ids` is not of type list.
             `feature_type` is not of type str.
@@ -677,17 +675,6 @@ class FindLocations(_LocHandler):
         _check_item_in_iter(
             item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
         )
-        if feature_type == "node":
-            target_attr = self.node_locs
-        elif feature_type == "way":
-            target_attr = self.way_node_locs
-        else:
-            raise NotImplementedError(
-                f"Plotting {feature_type} locations is not yet implemented."
-            )
-        # check that there are locs to plot first
-        if len(target_attr) == 0:
-            raise ValueError("There are no coordinates to plot.")
         self.check_locs_for_ids(ids, feature_type)
         # This bit below is possibly defunct. Consider refactoring to remove
         # the need to do this. Will involve the way the dictionaries are
