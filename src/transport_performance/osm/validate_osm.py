@@ -14,6 +14,9 @@ node IDs' or similar.
 import osmium
 from pathlib import Path
 from typing import Union
+import pandas as pd
+import geopandas as gpd
+from shapely import Point
 
 from transport_performance.utils.defence import (
     _check_item_in_iter,
@@ -117,6 +120,62 @@ def _filter_target_dict_with_list(
         )
 
     return {feat: filtered_dict}
+
+
+def _convert_osmdict_to_gdf(
+    _dict: dict,
+    feature_type: str = "node",
+    lon_colnm: str = "lon",
+    lat_colnm: str = "lat",
+    _crs: Union[str, int] = "epsg:4326",
+):
+    """Convert an OSM dictionary to a GDF.
+
+    Parameters
+    ----------
+    _dict: (dict)
+        Dictionary of ID: location / tags.
+    feature_type: str
+        The type of feature data contained in the dictionary. Defaults to
+        "node".
+    lon_colnm: (str)
+        Name of the longitude column.
+    lat_colnm: (str)
+        Name of the latitude column.
+    _crs: (Union[str, int], optional)
+        The CRS of the spatial features. Defaults to "epsg:4326".
+
+    Returns
+    -------
+    out_gdf: (gpd.GeoDataFrame)
+        A GeoDataFrame of the spatial features with ID mapped to index and
+        values mapped to columns.
+
+    """
+    out_gdf = pd.DataFrame()
+    out_row = pd.DataFrame()
+    for key, values in _dict.items():
+        if feature_type == "node":
+            out_row = pd.DataFrame(values, index=[key])
+        elif feature_type == "way":
+            # now we have a nested list of node dictionaries. These are node
+            # members of the way.
+            for i in values:
+                for k, j in i.items():
+                    mem_row = pd.DataFrame(j, index=[key, k])
+                    # if there are members of the parent ID, return multiindex
+                    ind = pd.MultiIndex.from_tuples(
+                        [(key, k)], names=["parent_id", "member_id"]
+                    )
+                    mem_row = pd.DataFrame(j, index=ind)
+                    out_row = pd.concat([out_row, mem_row])
+        out_gdf = pd.concat([out_gdf, out_row])
+
+    out_gdf["geometry"] = [
+        Point(xy) for xy in zip(out_gdf[lon_colnm], out_gdf[lat_colnm])
+    ]
+    out_gdf = gpd.GeoDataFrame(out_gdf, crs=_crs)
+    return out_gdf
 
 
 # ---------Internal Classes-----------
