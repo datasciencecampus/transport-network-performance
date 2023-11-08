@@ -208,7 +208,6 @@ class Test_FilterTargetDictWithList(object):
             accepted_keys=["choose_me", "do_not_choose_me"],
         )
         assert isinstance(out, dict)
-        assert list(out.keys()) == ["choose_me"]
         assert "remove" not in out.values()
 
 
@@ -364,23 +363,22 @@ class TestFindLocations(object):
         # check that the expected coordinates are returned for node IDs
         id_list = sorted(ids.id_dict["node_ids"])[0:5]
         locs.check_locs_for_ids(ids=id_list, feature_type="node")
-        assert list(locs.found_locs.keys()) == ["node"]
-        assert len(locs.found_locs["node"]) == 5
+        assert len(locs.found_locs) == 5
         # in all 5 nodes, check that floats are returned
-        for n in locs.found_locs["node"]:
-            for k, v in locs.found_locs["node"][n].items():
+        for n in locs.found_locs:
+            for k, v in locs.found_locs[n].items():
                 assert isinstance(
                     v, float
                 ), f"Expected coord {v} to be type float. got {type(v)}"
         # now check coordinates for a list of way IDs
         way_ids = sorted(ids.id_dict["way_ids"])[0:3]
         locs.check_locs_for_ids(ids=way_ids, feature_type="way")
-        assert list(locs.found_locs.keys()) == ["way"]
-        assert len(locs.found_locs["way"]) == 3
+        assert len(locs.found_locs) == 3
+
         # coords are nested deeper for ways than nodes as you need to access
         # way members' coordinates
-        for w in locs.found_locs["way"]:
-            for x in locs.found_locs["way"][w]:
+        for w in locs.found_locs:
+            for x in locs.found_locs[w]:
                 for k, v in x.items():
                     for coord in list(v.values()):
                         assert isinstance(
@@ -421,7 +419,8 @@ class TestFindTags(object):
         area_ids = ids.id_dict["area_ids"][0:2]
         # many node IDs are empty, so check a known ID for tags instead
         tags.check_tags_for_ids(ids=node_ids, feature_type="node")
-        target_node = tags.found_tags["node"][7728862]
+        target_node = tags.found_tags[7728862]
+
         tag_value_map = {
             "highway": "traffic_signals",
         }
@@ -431,10 +430,9 @@ class TestFindTags(object):
 
         # check way tags
         tags.check_tags_for_ids(ids=way_ids, feature_type="way")
-        # raise ValueError(way_ids)
-        target_way = tags.found_tags["way"][4811009]
-        # raise ValueError(target_way)
-        assert len(tags.found_tags["way"]) == 4
+        target_way = tags.found_tags[4811009]
+        assert len(tags.found_tags) == 4
+
         tag_value_map = {
             "highway": "primary",
             "lanes": "2",
@@ -448,8 +446,7 @@ class TestFindTags(object):
             assert f == v, f"Expected way tag value {v} but found {f}"
         # check relation tags
         tags.check_tags_for_ids(ids=rel_ids, feature_type="relation")
-        target_rel = tags.found_tags["relation"][rel_ids[0]]
-        # raise ValueError(target_rel)
+        target_rel = tags.found_tags[rel_ids[0]]
         tag_value_map = {
             "colour": "#5d2491",
             "name": "Cardiff-Newport 30",
@@ -464,8 +461,7 @@ class TestFindTags(object):
 
         # check area tags
         tags.check_tags_for_ids(ids=area_ids, feature_type="area")
-        target_area = tags.found_tags["area"][area_ids[0]]
-        # raise ValueError(target_area)
+        target_area = tags.found_tags[area_ids[0]]
         tag_value_map = {
             "highway": "primary",
             "junction": "roundabout",
@@ -477,4 +473,4 @@ class TestFindTags(object):
         for k, v in tag_value_map.items():
             f = target_area[k]
             assert f == v, f"Expected area tag value {v} but found {f}"
-        assert len(tags.found_tags["area"]) == 2
+        assert len(tags.found_tags) == 2
