@@ -50,19 +50,7 @@ def _compile_tags(osmium_feature):
         A dictionary of tag name & values.
 
     """
-    tagdict = dict()
-    for tag in osmium_feature.tags:
-        for i, tag in enumerate(tag):
-            if i % 2 == 0:
-                # even tags are keys
-                k = tag
-                v = "_placeholder"
-            else:
-                # odd tags are values
-                v = tag
-            if v != "_placeholder":
-                tagdict[k] = v
-    return tagdict
+    return {tag.k: tag.v for tag in osmium_feature.tags}
 
 
 def _filter_target_dict_with_list(
@@ -298,6 +286,7 @@ class _TagHandler(osmium.SimpleHandler):
 
         """
         # get tags for each relation
+        print(type(r))
         tagdict = _compile_tags(r)
         self.relation_tags[r.id] = tagdict
 
