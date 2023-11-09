@@ -11,6 +11,7 @@ from geopandas import GeoDataFrame
 import numpy as np
 import pathlib
 from plotly.graph_objects import Figure as PlotlyFigure
+from contextlib import nullcontext as does_not_raise
 
 from transport_performance.gtfs.validation import (
     GtfsInstance,
@@ -1054,3 +1055,25 @@ class TestGtfsInstance(object):
         assert os.path.exists(
             pathlib.Path(os.path.join(tmp_path, "gtfs_report", "stops.html"))
         ), "gtfs_report/stops.html was not created"
+
+    @pytest.mark.parametrize(
+        "path, final_path, warns",
+        [
+            ("valid_path.zip", "valid_path.zip", False),
+            ("double_layered/gtfs.zip", "double_layered/gtfs.zip", False),
+            ("no_ext", "no_ext.zip", True),
+            ("invalid_ext.txt", "invalid_ext.zip", True),
+        ],
+    )
+    def test_save(self, tmp_path, gtfs_fixture, path, final_path, warns):
+        """Test the .save() methohd of GtfsInstance()."""
+        complete_path = os.path.join(tmp_path, path)
+        expected_path = os.path.join(tmp_path, final_path)
+        if warns:
+            # catch UserWarning from invalid file extension
+            with pytest.warns(UserWarning):
+                gtfs_fixture.save(complete_path)
+        else:
+            with does_not_raise():
+                gtfs_fixture.save(complete_path)
+        assert os.path.exists(expected_path), "GTFS not saved correctly"
