@@ -146,7 +146,7 @@ def _convert_osm_dict_to_gdf(
         values mapped to columns.
 
     """
-    out_gdf = pd.DataFrame()
+    out_df = pd.DataFrame()
     out_row = pd.DataFrame()
     for key, values in osm_dict.items():
         if feature_type == "node":
@@ -162,13 +162,13 @@ def _convert_osm_dict_to_gdf(
                         [(key, k)], names=["parent_id", "member_id"]
                     )
                     mem_row = pd.DataFrame(j, index=ind)
-                    out_row = pd.concat([out_row, mem_row])
-        out_gdf = pd.concat([out_gdf, out_row])
-
-    out_gdf["geometry"] = [
-        Point(xy) for xy in zip(out_gdf["lon"], out_gdf["lat"])
+                out_row = pd.concat([out_row, mem_row])
+    out_df = pd.concat([out_df, out_row])
+    # geodataframe requires geometry column
+    out_df["geometry"] = [
+        Point(xy) for xy in zip(out_df["lon"], out_df["lat"])
     ]
-    out_gdf = gpd.GeoDataFrame(out_gdf, crs=crs)
+    out_gdf = gpd.GeoDataFrame(out_df, crs=crs)
     return out_gdf
 
 
