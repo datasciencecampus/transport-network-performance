@@ -122,7 +122,7 @@ def _filter_target_dict_with_list(
     return filtered_dict
 
 
-def _convert_osmdict_to_gdf(
+def _convert_osm_dict_to_gdf(
     osm_dict: dict,
     feature_type: str = "node",
     crs: Union[str, int] = "epsg:4326",
@@ -675,7 +675,7 @@ class FindLocations(_LocHandler):
             item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
         )
         self.check_locs_for_ids(ids, feature_type)
-        self.coord_gdf = _convert_osmdict_to_gdf(
+        self.coord_gdf = _convert_osm_dict_to_gdf(
             osm_dict=self.found_locs,
             feature_type=feature_type,
             crs=crs,

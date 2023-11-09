@@ -3,6 +3,7 @@ import pytest
 import re
 import os
 from pyprojroot import here
+import geopandas as gpd
 
 from transport_performance.osm.validate_osm import (
     _compile_tags,
@@ -10,6 +11,7 @@ from transport_performance.osm.validate_osm import (
     FindIds,
     FindLocations,
     FindTags,
+    _convert_osm_dict_to_gdf,
 )
 
 from transport_performance.osm.osm_utils import filter_osm
@@ -474,3 +476,16 @@ class TestFindTags(object):
             f = target_area[k]
             assert f == v, f"Expected area tag value {v} but found {f}"
         assert len(tags.found_tags) == 2
+
+
+class Test_ConvertOsmDictToGdf:
+    """Tests for _convert_osm_dict_to_gdf internal."""
+
+    def test_convert_osm_dict_to_gdf_with_node(self):
+        """Assert the gdf is as expected with node dictionary input."""
+        node_dict = {1: {"lat": 1.0, "lon": 1.0}, 2: {"lat": 2.0, "lon": 2.0}}
+        gdf = _convert_osm_dict_to_gdf(osm_dict=node_dict, feature_type="node")
+        assert isinstance(gdf, gpd.GeoDataFrame)
+        assert all(gdf.columns == ["lat", "lon", "geometry"])
+        assert gdf["geometry"].iloc[0].x == 1.0
+        assert gdf["geometry"].iloc[1].y == 2.0
