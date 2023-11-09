@@ -2,7 +2,7 @@
 
 pyosmium requires handler classes that inherit from their API. The methods of
 these handlers must be named `node`, `way`, `relation` or `area`. Exposing
-these methods would offer no functionality, therefore internal handler classes
+these methods would be of limited utility, therefore internal handler classes
 are used to collect and process the feature information.
 
 A separate group of classes are then defined, inheriting from these internal
@@ -10,6 +10,13 @@ handlers. These API classes are used to apply the logic of the handler classes
 to an osm.pbf file. The API classes also define methods associated with the
 user requirements, eg 'find way Ids', 'find the coordinates for this list of
 node IDs' or similar.
+
+The API classes expose logic that enables users to:
+* Count all features in a pbf file by type (node, way, relation or area)
+* Return IDs of the above feature types
+* Extract tags for the above features
+* Find coordinates for node or way features
+* Plot the coordinates of a given list of node or way IDs
 """
 import osmium
 from pathlib import Path
