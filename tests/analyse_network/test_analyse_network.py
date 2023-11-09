@@ -265,7 +265,7 @@ def test_init(
 
 # _calculate_transport_network
 @pytest.mark.parametrize(
-    "transport_network, r5py_tn, origins, destinations, expected",
+    "transport_network, r5py_tn, origins, destinations, departure, expected",
     [
         # no error raised
         (
@@ -273,6 +273,7 @@ def test_init(
             lazy_fixture("dummy_r5py_tn"),
             lazy_fixture("dummy_gdf_centroids"),
             lazy_fixture("dummy_gdf_centroids"),
+            datetime.datetime(2023, 6, 13, 8, 0),
             does_not_raise(),
         ),
         # wrong r5py.TransportNetwork object
@@ -281,6 +282,7 @@ def test_init(
             "not an r5py transport network",
             lazy_fixture("dummy_gdf_centroids"),
             lazy_fixture("dummy_gdf_centroids"),
+            datetime.datetime(2023, 6, 13, 8, 0),
             pytest.raises(
                 TypeError,
                 match=(
@@ -295,9 +297,26 @@ def test_init(
             lazy_fixture("dummy_r5py_tn"),
             "not an origins gdf",
             lazy_fixture("dummy_gdf_centroids"),
+            datetime.datetime(2023, 6, 13, 8, 0),
             pytest.raises(
                 TypeError,
                 match=(r"`origins` expected .*GeoDataFrame.*" r"Got .*str.*"),
+            ),
+        ),
+        # date out of range
+        (
+            lazy_fixture("dummy_transport_network"),
+            lazy_fixture("dummy_r5py_tn"),
+            lazy_fixture("dummy_gdf_centroids"),
+            lazy_fixture("dummy_gdf_centroids"),
+            datetime.datetime(2015, 6, 13, 8, 0),
+            pytest.raises(
+                IndexError,
+                match=(
+                    r"Date provided is outside of the time range included in "
+                    r"the GTFS provided, or TransportNetwork does not contain "
+                    r"a valid GTFS."
+                ),
             ),
         ),
         # wrong destinations
@@ -306,6 +325,7 @@ def test_init(
             lazy_fixture("dummy_r5py_tn"),
             lazy_fixture("dummy_gdf_centroids"),
             "not a destinations gdf",
+            datetime.datetime(2023, 6, 13, 8, 0),
             pytest.raises(
                 TypeError,
                 match=(
@@ -324,6 +344,7 @@ class Test_calculate_transport_network:
         r5py_tn: TransportNetwork,
         origins: gpd.GeoDataFrame,
         destinations: gpd.GeoDataFrame,
+        departure: datetime.datetime,
         expected: Type[RaisesContext],
     ):
         """Test _calculate_transport_network inputs.
@@ -339,6 +360,8 @@ class Test_calculate_transport_network:
             Geodataframe with origin points.
         destinations :  gpd.GeoDataFrame
             Geodataframe with destination points.
+        departure : datetime.datetime
+            Departure time.
         expected : Type[RaisesContext]
             Expected raise result.
 
@@ -346,7 +369,7 @@ class Test_calculate_transport_network:
         with expected:
             assert [
                 transport_network._calculate_transport_network(
-                    r5py_tn, origins, destinations
+                    r5py_tn, origins, destinations, departure=departure
                 )
             ]
 
@@ -356,6 +379,7 @@ class Test_calculate_transport_network:
         r5py_tn: TransportNetwork,
         origins: gpd.GeoDataFrame,
         destinations: gpd.GeoDataFrame,
+        departure: datetime.datetime,
         expected: Type[RaisesContext],
     ):
         """Test _calculate_transport_network output.
@@ -371,13 +395,15 @@ class Test_calculate_transport_network:
             Geodataframe with origin points.
         destinations :  gpd.GeoDataFrame
             Geodataframe with destination points.
+        departure : datetime.datetime
+            Departure time.
         expected : Type[RaisesContext]
             Expected raise result.
 
         """
         if expected == does_not_raise():
             output = transport_network._calculate_transport_network(
-                r5py_tn, origins, destinations
+                r5py_tn, origins, destinations, departure=departure
             )
             assert isinstance(output, pd.DataFrame)
             assert len(output) == 16

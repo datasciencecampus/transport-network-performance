@@ -1,5 +1,6 @@
 """Wrapper for r5py to calculate O-D matrices."""
 import pathlib
+import warnings
 
 import dask.dataframe as dd
 import geopandas as gpd
@@ -167,6 +168,16 @@ class AnalyseNetwork:
             Dataframe containing the O-D matrix for the origin-destination
             combinations.
 
+        Raises
+        ------
+        IndexError
+            If the date passed as departure time is not contained in the GTFS,
+            or the GTFS has not been loaded correctly into the TransportNetwork
+            object. Note that if no `departure` kwarg is provided, it will
+            default to datetime.now().
+            Other warnings will not raise this error but should still be
+            printed as normal.
+
         """
         # defences
         d._type_defence(
@@ -175,12 +186,24 @@ class AnalyseNetwork:
         d._type_defence(origins, "origins", gpd.GeoDataFrame)
         d._type_defence(destinations, "destinations", gpd.GeoDataFrame)
 
-        travel_time_matrix_computer = TravelTimeMatrixComputer(
-            transport_network,
-            origins=origins,
-            destinations=destinations,
-            **kwargs,
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "error",
+                "Departure time .* is outside of the time range covered.*",
+            )
+            try:
+                travel_time_matrix_computer = TravelTimeMatrixComputer(
+                    transport_network,
+                    origins=origins,
+                    destinations=destinations,
+                    **kwargs,
+                )
+            except RuntimeWarning:
+                raise IndexError(
+                    "Date provided is outside of the time range included in "
+                    "the GTFS provided, or TransportNetwork does not contain "
+                    "a valid GTFS."
+                )
 
         return travel_time_matrix_computer.compute_travel_times()
 
