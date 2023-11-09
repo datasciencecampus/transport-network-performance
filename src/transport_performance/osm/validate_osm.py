@@ -673,6 +673,10 @@ class FindLocations(_LocHandler):
         _check_item_in_iter(
             item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
         )
+        if feature_type != "node" and feature_type != "way":
+            raise NotImplementedError(
+                "Relation or area plotting not implemented at this time."
+            )
         self.check_locs_for_ids(ids, feature_type)
         self.coord_gdf = _convert_osm_dict_to_gdf(
             osm_dict=self.found_locs,
