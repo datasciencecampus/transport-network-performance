@@ -147,23 +147,22 @@ def _convert_osm_dict_to_gdf(
 
     """
     out_df = pd.DataFrame()
-    out_row = pd.DataFrame()
     for key, values in osm_dict.items():
         if feature_type == "node":
-            out_row = pd.DataFrame(values, index=[key])
+            out_df = pd.concat([out_df, pd.DataFrame(values, index=[key])])
         elif feature_type == "way":
             # now we have a nested list of node dictionaries. These are node
             # members of the way.
             for i in values:
                 for k, j in i.items():
                     mem_row = pd.DataFrame(j, index=[key, k])
-                    # if there are members of the parent ID, return multiindex
+                    # parent id is way, member id is node
                     ind = pd.MultiIndex.from_tuples(
                         [(key, k)], names=["parent_id", "member_id"]
                     )
                     mem_row = pd.DataFrame(j, index=ind)
-                out_row = pd.concat([out_row, mem_row])
-    out_df = pd.concat([out_df, out_row])
+                out_df = pd.concat([out_df, mem_row])
+
     # geodataframe requires geometry column
     out_df["geometry"] = [
         Point(xy) for xy in zip(out_df["lon"], out_df["lat"])
