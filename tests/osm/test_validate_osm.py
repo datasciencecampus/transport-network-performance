@@ -407,6 +407,14 @@ class TestFindLocations(object):
         plt = locs.plot_ids(ids=ids.way_ids[0:1], feature_type="way")
         assert isinstance(plt, Map)
 
+    def test_plot_ids_not_implemented(self, _tiny_osm_locs):
+        """Assert asking for relation or area riases not implemented error."""
+        with pytest.raises(
+            NotImplementedError,
+            match="Relation or area plotting not implemented at this time.",
+        ):
+            _tiny_osm_locs.plot_ids(ids=[], feature_type="relation")
+
 
 class TestFindTags(object):
     """Test FindTags API class."""
