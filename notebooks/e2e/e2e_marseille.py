@@ -19,6 +19,7 @@ import geopandas as gpd
 import pandas as pd
 import gtfs_kit as gk
 import folium
+import seaborn as sns
 
 from pyprojroot import here
 from shapely.geometry import box
@@ -942,4 +943,12 @@ tp_results = tp_results[
 
 tp_results
 
+# %%
+sns.histplot(
+    perf_gdf,
+    x="transport_performance",
+    stat="density",
+    bins=50,
+    binrange=[0, 100],
+)
 # %%
