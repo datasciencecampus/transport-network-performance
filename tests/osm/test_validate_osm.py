@@ -2,6 +2,8 @@
 import pytest
 import re
 from pyprojroot import here
+import geopandas as gpd
+from folium import Map
 
 from transport_performance.osm.validate_osm import (
     _compile_tags,
@@ -9,6 +11,7 @@ from transport_performance.osm.validate_osm import (
     FindIds,
     FindLocations,
     FindTags,
+    _convert_osm_dict_to_gdf,
 )
 
 osm_pth = here("tests/data/small-osm.pbf")
@@ -188,7 +191,6 @@ class Test_FilterTargetDictWithList(object):
             accepted_keys=["choose_me", "do_not_choose_me"],
         )
         assert isinstance(out, dict)
-        assert list(out.keys()) == ["choose_me"]
         assert "remove" not in out.values()
 
 
@@ -344,29 +346,54 @@ class TestFindLocations(object):
         # check that the expected coordinates are returned for node IDs
         id_list = sorted(ids.id_dict["node_ids"])[0:5]
         locs.check_locs_for_ids(ids=id_list, feature_type="node")
-        assert list(locs.found_locs.keys()) == ["node"]
-        assert len(locs.found_locs["node"]) == 5
+        assert len(locs.found_locs) == 5
         # in all 5 nodes, check that floats are returned
-        for n in locs.found_locs["node"]:
-            for k, v in locs.found_locs["node"][n].items():
+        for n in locs.found_locs:
+            for k, v in locs.found_locs[n].items():
                 assert isinstance(
                     v, float
                 ), f"Expected coord {v} to be type float. got {type(v)}"
         # now check coordinates for a list of way IDs
         way_ids = sorted(ids.id_dict["way_ids"])[0:3]
         locs.check_locs_for_ids(ids=way_ids, feature_type="way")
-        assert list(locs.found_locs.keys()) == ["way"]
-        assert len(locs.found_locs["way"]) == 3
+        assert len(locs.found_locs) == 3
+
         # coords are nested deeper for ways than nodes as you need to access
         # way members' coordinates
-        for w in locs.found_locs["way"]:
-            for x in locs.found_locs["way"][w]:
+        for w in locs.found_locs:
+            for x in locs.found_locs[w]:
                 for k, v in x.items():
                     for coord in list(v.values()):
                         assert isinstance(
                             coord, float
                         ), f"Expected coord {coord} to be type float."
                         " got {type(coord)}"
+
+    def test_plot_ids_on_pass(self, _tiny_osm_locs, _tiny_osm_ids):
+        """Assert a plot is produced for node and way features.
+
+        Parameters
+        ----------
+        _tiny_osm_locs : fixture
+            Small OSM fixture.
+        _tiny_osm_ids : fixture
+            The IDs found within the small OSM fixture.
+
+        """
+        ids = _tiny_osm_ids
+        locs = _tiny_osm_locs
+        plt = locs.plot_ids(ids=ids.node_ids[0:1], feature_type="node")
+        assert isinstance(plt, Map)
+        plt = locs.plot_ids(ids=ids.way_ids[0:1], feature_type="way")
+        assert isinstance(plt, Map)
+
+    def test_plot_ids_not_implemented(self, _tiny_osm_locs):
+        """Assert asking for relation or area riases not implemented error."""
+        with pytest.raises(
+            NotImplementedError,
+            match="Relation or area plotting not implemented at this time.",
+        ):
+            _tiny_osm_locs.plot_ids(ids=[], feature_type="relation")
 
 
 class TestFindTags(object):
@@ -401,7 +428,8 @@ class TestFindTags(object):
         area_ids = ids.id_dict["area_ids"][0:2]
         # many node IDs are empty, so check a known ID for tags instead
         tags.check_tags_for_ids(ids=node_ids, feature_type="node")
-        target_node = tags.found_tags["node"][7728862]
+        target_node = tags.found_tags[7728862]
+
         tag_value_map = {
             "highway": "traffic_signals",
         }
@@ -411,10 +439,9 @@ class TestFindTags(object):
 
         # check way tags
         tags.check_tags_for_ids(ids=way_ids, feature_type="way")
-        # raise ValueError(way_ids)
-        target_way = tags.found_tags["way"][4811009]
-        # raise ValueError(target_way)
-        assert len(tags.found_tags["way"]) == 4
+        target_way = tags.found_tags[4811009]
+        assert len(tags.found_tags) == 4
+
         tag_value_map = {
             "highway": "primary",
             "lanes": "2",
@@ -428,8 +455,7 @@ class TestFindTags(object):
             assert f == v, f"Expected way tag value {v} but found {f}"
         # check relation tags
         tags.check_tags_for_ids(ids=rel_ids, feature_type="relation")
-        target_rel = tags.found_tags["relation"][rel_ids[0]]
-        # raise ValueError(target_rel)
+        target_rel = tags.found_tags[rel_ids[0]]
         tag_value_map = {
             "colour": "#5d2491",
             "name": "Cardiff-Newport 30",
@@ -444,8 +470,7 @@ class TestFindTags(object):
 
         # check area tags
         tags.check_tags_for_ids(ids=area_ids, feature_type="area")
-        target_area = tags.found_tags["area"][area_ids[0]]
-        # raise ValueError(target_area)
+        target_area = tags.found_tags[area_ids[0]]
         tag_value_map = {
             "highway": "primary",
             "junction": "roundabout",
@@ -457,4 +482,60 @@ class TestFindTags(object):
         for k, v in tag_value_map.items():
             f = target_area[k]
             assert f == v, f"Expected area tag value {v} but found {f}"
-        assert len(tags.found_tags["area"]) == 2
+        assert len(tags.found_tags) == 2
+
+
+class Test_ConvertOsmDictToGdf:
+    """Tests for _convert_osm_dict_to_gdf internal."""
+
+    def test_convert_osm_dict_to_gdf_with_node(self):
+        """Assert the gdf is as expected with node dictionary input."""
+        node_dict = {1: {"lat": 1.0, "lon": 1.0}, 2: {"lat": 2.0, "lon": 2.0}}
+        gdf = _convert_osm_dict_to_gdf(osm_dict=node_dict, feature_type="node")
+        assert isinstance(
+            gdf, gpd.GeoDataFrame
+        ), f"Expected a gdf. Found {type(gdf)}"
+        assert all(
+            gdf.columns == ["lat", "lon", "geometry"]
+        ), f"Columns not as expected. Found {gdf.columns}"
+        exp_lon = gdf["geometry"].iloc[0].x
+        exp_lat = gdf["geometry"].iloc[1].y
+        assert (
+            exp_lon == 1.0
+        ), f"Expected longitude value of 1.0, but found {exp_lon}"
+        assert (
+            exp_lat == 2.0
+        ), f"Expected latitude value of 1.0, but found {exp_lat}"
+
+    def test_convert_osm_dict_to_gdf_with_way(self):
+        """Assert the gdf is as expected with way dictionary input."""
+        # Below dict represents keys that are way IDs, values are a dictionary
+        # of node member keys and their coordinate data
+        way_dict = {
+            1: [
+                {11: {"lat": 1.0, "lon": 1.0}},
+                {111: {"lat": 2.0, "lon": 2.0}},
+            ],
+            2: [
+                {22: {"lat": 1.0, "lon": 1.0}},
+                {222: {"lat": 2.0, "lon": 2.0}},
+            ],
+        }
+        gdf = _convert_osm_dict_to_gdf(osm_dict=way_dict, feature_type="way")
+        assert isinstance(
+            gdf, gpd.GeoDataFrame
+        ), f"Expected a gdf. Found {type(gdf)}"
+        assert all(
+            gdf.columns == ["lat", "lon", "geometry"]
+        ), f"Columns not as expected. Found {gdf.columns}"
+        assert (
+            len(gdf) == 4
+        ), f"Expected a row for each member node ID, found {len(gdf)}"
+        exp_lon = gdf["geometry"].iloc[1].x
+        exp_lat = gdf["geometry"].iloc[3].y
+        assert (
+            exp_lon == 2.0
+        ), f"Expected longitude value of 1.0, but found {exp_lon}"
+        assert (
+            exp_lat == 2.0
+        ), f"Expected latitude value of 1.0, but found {exp_lat}"

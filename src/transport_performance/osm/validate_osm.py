@@ -14,6 +14,10 @@ node IDs' or similar.
 import osmium
 from pathlib import Path
 from typing import Union
+import pandas as pd
+import geopandas as gpd
+from shapely import Point
+import folium
 
 from transport_performance.utils.defence import (
     _check_item_in_iter,
@@ -73,9 +77,8 @@ def _filter_target_dict_with_list(
 
     Returns
     -------
-    dict
-        search_key: filtered_dict. Dictionary with keys filtered to IDs
-        available in `_list`.
+    filtered_dict.
+        Dictionary with keys filtered to IDs available in `_list`.
 
     Raises
     ------
@@ -116,7 +119,56 @@ def _filter_target_dict_with_list(
             "No tags found. Did you specify the correct search_key?"
         )
 
-    return {feat: filtered_dict}
+    return filtered_dict
+
+
+def _convert_osm_dict_to_gdf(
+    osm_dict: dict,
+    feature_type: str = "node",
+    crs: Union[str, int] = "epsg:4326",
+) -> gpd.GeoDataFrame:
+    """Convert an OSM dictionary to a GDF.
+
+    Parameters
+    ----------
+    osm_dict: (dict)
+        Dictionary of ID: location / tags.
+    feature_type: str
+        The type of feature data contained in the dictionary. Defaults to
+        "node".
+    crs: (Union[str, int], optional)
+        The CRS of the spatial features. Defaults to "epsg:4326".
+
+    Returns
+    -------
+    out_gdf: (gpd.GeoDataFrame)
+        A GeoDataFrame of the spatial features with ID mapped to index and
+        values mapped to columns.
+
+    """
+    out_df = pd.DataFrame()
+    for key, values in osm_dict.items():
+        if feature_type == "node":
+            out_df = pd.concat([out_df, pd.DataFrame(values, index=[key])])
+        elif feature_type == "way":
+            # now we have a nested list of node dictionaries. These are node
+            # members of the way.
+            for i in values:
+                for k, j in i.items():
+                    mem_row = pd.DataFrame(j, index=[key, k])
+                    # parent id is way, member id is node
+                    ind = pd.MultiIndex.from_tuples(
+                        [(key, k)], names=["parent_id", "member_id"]
+                    )
+                    mem_row = pd.DataFrame(j, index=ind)
+                out_df = pd.concat([out_df, mem_row])
+
+    # geodataframe requires geometry column
+    out_df["geometry"] = [
+        Point(xy) for xy in zip(out_df["lon"], out_df["lat"])
+    ]
+    out_gdf = gpd.GeoDataFrame(out_df, crs=crs)
+    return out_gdf
 
 
 # ---------Internal Classes-----------
@@ -300,7 +352,7 @@ class _LocHandler(osmium.SimpleHandler):
             id, coords = str(node).split("@")
             coords = coords.replace("]", "")
             x, y = coords.split("/")
-            nodelist.append({node.ref: {"x": float(x), "y": float(y)}})
+            nodelist.append({node.ref: {"lon": float(x), "lat": float(y)}})
         self.way_node_locs[w.id] = nodelist
 
 
@@ -550,7 +602,7 @@ class FindLocations(_LocHandler):
         self.apply_file(osm_pth, locations=True)
         self.found_locs = dict()
 
-    def check_locs_for_ids(self, ids: list, feature_type: str):
+    def check_locs_for_ids(self, ids: list, feature_type: str) -> dict:
         """Return coordinates for provided list of feature IDs.
 
         Parameters
@@ -574,3 +626,61 @@ class FindLocations(_LocHandler):
             accepted_keys=["node", "way"],
         )
         return self.found_locs
+
+    def plot_ids(
+        self,
+        ids: list,
+        feature_type: str,
+        crs: Union[str, int] = "epsg:4326",
+    ) -> folium.Map:
+        """Plot coordinates for nodes or node members of a way.
+
+        Provided with a list of node or way IDs, converts the coordinate data
+        from dictionary to GeoDataFrame and uses the basic gdf.explore() method
+        to visualise the features on a basemap.
+
+        Parameters
+        ----------
+        ids : list
+            A list of Node or Way IDs.
+        feature_type : str
+            Whether the type of OSM feature to plot is node or way.
+        crs : Union[str, int], optional
+            The projection of the spatial features, by default "epsg:4326"
+
+        Returns
+        -------
+        folium.Map
+            A plot of the coordinate data for each identifiable node.
+
+        Raises
+        ------
+        NotImplementedError
+            Relation location data could be extracted with a bit more munging.
+            Please raise a feature request if you feel this is significant.
+        ValueError
+            `feature_type` is not one of "node", "way", "relation" or "area".
+        TypeError
+            `ids` is not of type list.
+            `feature_type` is not of type str.
+
+        """
+        _type_defence(ids, "ids", list)
+        _type_defence(feature_type, "feature_type", str)
+        _type_defence(crs, "crs", (str, int))
+        feature_type = feature_type.lower().strip()
+        ACCEPT_FEATS = ["node", "way", "relation", "area"]
+        _check_item_in_iter(
+            item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
+        )
+        if feature_type != "node" and feature_type != "way":
+            raise NotImplementedError(
+                "Relation or area plotting not implemented at this time."
+            )
+        self.check_locs_for_ids(ids, feature_type)
+        self.coord_gdf = _convert_osm_dict_to_gdf(
+            osm_dict=self.found_locs,
+            feature_type=feature_type,
+            crs=crs,
+        )
+        return self.coord_gdf.explore()
