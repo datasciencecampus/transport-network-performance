@@ -4,6 +4,7 @@ import re
 import os
 from pyprojroot import here
 import geopandas as gpd
+from folium import Map
 
 from transport_performance.osm.validate_osm import (
     _compile_tags,
@@ -388,6 +389,24 @@ class TestFindLocations(object):
                         ), f"Expected coord {coord} to be type float."
                         " got {type(coord)}"
 
+    def test_plot_ids_on_pass(self, _tiny_osm_locs, _tiny_osm_ids):
+        """Assert a plot is produced for node and way features.
+
+        Parameters
+        ----------
+        _tiny_osm_locs : fixture
+            Small OSM fixture.
+        _tiny_osm_ids : fixture
+            The IDs found within the small OSM fixture.
+
+        """
+        ids = _tiny_osm_ids
+        locs = _tiny_osm_locs
+        plt = locs.plot_ids(ids=ids.node_ids[0:1], feature_type="node")
+        assert isinstance(plt, Map)
+        plt = locs.plot_ids(ids=ids.way_ids[0:1], feature_type="way")
+        assert isinstance(plt, Map)
+
 
 class TestFindTags(object):
     """Test FindTags API class."""
@@ -497,7 +516,7 @@ class Test_ConvertOsmDictToGdf:
             exp_lon == 1.0
         ), f"Expected longitude value of 1.0, but found {exp_lon}"
         assert (
-            exp_lat["geometry"].iloc[1].y == 2.0
+            exp_lat == 2.0
         ), f"Expected latitude value of 1.0, but found {exp_lat}"
 
     def test_convert_osm_dict_to_gdf_with_way(self):
