@@ -1,7 +1,10 @@
-# This workflow will install Python dependencies, run tests and lint with Python 3.9
+# This workflow will install Python dependencies, pre-commit checks, run tests and generate Coverage report
+# Not caching pip dependencies in this runner to catch breaking changes in unpinned dependencies
+# Fixing OS version to avoid breaking OS changes during development stage.
+# Will open up OS versions before release.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python package
+name: MacOS Full Test Suite and Coverage
 
 on:
   push:
@@ -10,12 +13,14 @@ on:
 
 jobs:
   build:
+    name: Full & Coverage
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-        os: ["macos-latest", "ubuntu-latest"]
+        os: ["macos-12"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -34,36 +39,20 @@ jobs:
     - name: Check Java Install
       run: |
         java --version
-    - name: Install mac depencies with brew
-      if: runner.os == 'macOS'  # not updating brew version, issue with aom
+    - name: Install mac depencies with brew  # not updating brew version, issue with aom
       run: |
         brew install geos
         brew install osmosis
       shell: sh
-    - name: Install linux depencies with apt
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt update
-        sudo apt install -y libgeos-dev
-        sudo apt install -y osmosis
-      shell: sh
-    - name: Run Integration Tests
-      run: |
-          pytest -m runinteg --runinteg # run only those tests marked runinteg
     - name: pre-commit
       run: |
         pre-commit install
         pre-commit run --all-files
-    - name: Test with pytest
-      run: |
-        pytest
-    - name: Generate Report
-      if: runner.os == 'macOS'  # run coverage report only on macOS
+    - name: Run Tests and Generate Coverage Report
       run: |
         coverage run -m pytest
         coverage xml
     - name: Upload coverage reports to Codecov
-      if: runner.os == 'macOS'  # run coverage report only on macOS
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
