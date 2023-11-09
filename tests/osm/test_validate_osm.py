@@ -485,7 +485,50 @@ class Test_ConvertOsmDictToGdf:
         """Assert the gdf is as expected with node dictionary input."""
         node_dict = {1: {"lat": 1.0, "lon": 1.0}, 2: {"lat": 2.0, "lon": 2.0}}
         gdf = _convert_osm_dict_to_gdf(osm_dict=node_dict, feature_type="node")
-        assert isinstance(gdf, gpd.GeoDataFrame)
-        assert all(gdf.columns == ["lat", "lon", "geometry"])
-        assert gdf["geometry"].iloc[0].x == 1.0
-        assert gdf["geometry"].iloc[1].y == 2.0
+        assert isinstance(
+            gdf, gpd.GeoDataFrame
+        ), f"Expected a gdf. Found {type(gdf)}"
+        assert all(
+            gdf.columns == ["lat", "lon", "geometry"]
+        ), f"Columns not as expected. Found {gdf.columns}"
+        exp_lon = gdf["geometry"].iloc[0].x
+        exp_lat = gdf["geometry"].iloc[1].y
+        assert (
+            exp_lon == 1.0
+        ), f"Expected longitude value of 1.0, but found {exp_lon}"
+        assert (
+            exp_lat["geometry"].iloc[1].y == 2.0
+        ), f"Expected latitude value of 1.0, but found {exp_lat}"
+
+    def test_convert_osm_dict_to_gdf_with_way(self):
+        """Assert the gdf is as expected with way dictionary input."""
+        # Below dict represents keys that are way IDs, values are a dictionary
+        # of node member keys and their coordinate data
+        way_dict = {
+            1: [
+                {11: {"lat": 1.0, "lon": 1.0}},
+                {111: {"lat": 2.0, "lon": 2.0}},
+            ],
+            2: [
+                {22: {"lat": 1.0, "lon": 1.0}},
+                {222: {"lat": 2.0, "lon": 2.0}},
+            ],
+        }
+        gdf = _convert_osm_dict_to_gdf(osm_dict=way_dict, feature_type="way")
+        assert isinstance(
+            gdf, gpd.GeoDataFrame
+        ), f"Expected a gdf. Found {type(gdf)}"
+        assert all(
+            gdf.columns == ["lat", "lon", "geometry"]
+        ), f"Columns not as expected. Found {gdf.columns}"
+        assert (
+            len(gdf) == 4
+        ), f"Expected a row for each member node ID, found {len(gdf)}"
+        exp_lon = gdf["geometry"].iloc[1].x
+        exp_lat = gdf["geometry"].iloc[3].y
+        assert (
+            exp_lon == 2.0
+        ), f"Expected longitude value of 1.0, but found {exp_lon}"
+        assert (
+            exp_lat == 2.0
+        ), f"Expected latitude value of 1.0, but found {exp_lat}"
