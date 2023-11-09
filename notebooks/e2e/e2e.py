@@ -254,6 +254,7 @@ if gtfs_config["write_outputs"]:
         geoms="hull",
         create_out_parent=True,
     )
+    gtfs.feed = gk.miscellany.restrict_to_dates(gtfs.feed, ["20231027"])
     gtfs.feed.write(here(gtfs_config["cleaned_path"]))
 
 # %%
@@ -543,7 +544,7 @@ def plot(
 
 # %%
 # visualise for an ID within the UC
-UC_ID = 4110
+UC_ID = 6456
 assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
