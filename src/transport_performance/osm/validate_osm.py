@@ -651,7 +651,7 @@ class FindLocations(_LocHandler):
         Returns
         -------
         folium.Map
-            A plot of the coordainate data for each identifiable node.
+            A plot of the coordinate data for each identifiable node.
 
         Raises
         ------
