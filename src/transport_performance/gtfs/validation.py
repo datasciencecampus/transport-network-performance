@@ -234,6 +234,8 @@ class GtfsInstance:
     _extended_validation()
         Generate HTML warning & error summary tables for use in `html_report()`
         .
+    _save()
+        Save the current GtfsInstance().
 
     Raises
     ------
