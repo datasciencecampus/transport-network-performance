@@ -157,6 +157,8 @@ def bbox_filter_gtfs(
 
     Optionally filter to a list of given dates.
 
+    WARNING: THIS FUNCTION IS DEPRECATED AND WILL INEVITABLY BE REMOVED.
+
     Parameters
     ----------
     in_pth : Union[pathlib.Path, str], optional
