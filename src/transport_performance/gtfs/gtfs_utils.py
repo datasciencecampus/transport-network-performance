@@ -26,6 +26,33 @@ from transport_performance.utils.defence import (
 from transport_performance.utils.constants import PKG_PATH
 
 
+def _validate_bbox(bbox: list) -> None:
+    """Small function to ensure bbox coords are in the correct order."""
+    _type_defence(bbox, "bbox", list)
+    # check len
+    if len(bbox) != 4:
+        raise ValueError(
+            f"bbox should have a length of 4, found {len(bbox)} items in list."
+        )
+    # check data type
+    _check_iterable(
+        iterable=bbox,
+        param_nm="bbox",
+        iterable_type=list,
+        exp_type=float,
+    )
+    # check coords
+    if bbox[0] > bbox[2]:
+        raise ValueError(
+            f"BBOX xmin ({bbox[0]}) is greater than xmax ({bbox[2]})"
+        )
+    if bbox[1] > bbox[3]:
+        raise ValueError(
+            f"BBOX ymin ({bbox[1]}) is greater than ymax ({bbox[3]})"
+        )
+    return None
+
+
 def filter_gtfs(
     gtfs: "GtfsInstance",
     bbox: Union[GeoDataFrame, list, None] = None,
@@ -40,7 +67,7 @@ def filter_gtfs(
         The GTFS to filter
     bbox : Union[GeoDataFrame, list, None], optional
         The bbox to filter the GTFS to. Leave as none if the GTFS does not need
-         to be cropped, by default None
+         to be cropped. Format - [xmin, ymin, xmax, ymax], by default None
     crs : _type_, optional
         The CRS of the given bbox, by default "epsg:4326"
     filter_dates : list, optional
@@ -67,20 +94,16 @@ def filter_gtfs(
     # check that filtering has been requested
     if bbox is None and len(filter_dates) == 0:
         warnings.warn(
-            UserWarning,
-            "No filtering requested. Please pass either a bbox "
-            "or a list of dates",
+            UserWarning(
+                "No filtering requested. Please pass either a bbox "
+                "or a list of dates"
+            ),
         )
         return None
 
     # handle bbox
     if isinstance(bbox, list):
-        _check_iterable(
-            iterable=bbox,
-            param_nm="bbox",
-            iterable_type=list,
-            exp_type=float,
-        )
+        _validate_bbox(bbox)
         # create box polygon around provided coords, need to unpack
         bbox = box(*bbox)
         # gtfs_kit expects gdf
@@ -101,11 +124,10 @@ def filter_gtfs(
         diff = set(filter_dates).difference(feed_dates)
         if diff:
             raise ValueError(
-                f"{diff} passed to 'filtered dates not present in feed dates"
+                f"{diff} passed to 'filter_dates' not present in feed dates"
                 f"Feed dates include: {feed_dates}"
             )
         gtfs.feed = gtfs.feed.restrict_to_dates(filter_dates)
-        print("f to date")
 
     # remove attr (for future runs)
     if hasattr(gtfs, "pre_processed_trips"):
