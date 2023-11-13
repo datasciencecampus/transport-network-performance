@@ -67,3 +67,60 @@ class MultiGtfsInstance:
         for path, inst in progress:
             progress.set_description(f"Saving at {path}")
             inst.save(path)
+        return None
+
+    def clean_feed(self, clean_kwargs: Union[dict, None] = None) -> None:
+        """Clean each of the feeds in the MultiGtfsInstance.
+
+        Parameters
+        ----------
+        clean_kwargs : Union[dict, None], optional
+            The kwargs to pass to GtfsInstance.clean_feed() for each Gtfs in
+            the MultiGtfsInstance, by default None
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(clean_kwargs, "clean_kwargs", (dict, type(None)))
+        if isinstance(clean_kwargs, type(None)):
+            clean_kwargs = {}
+        # clean GTFS instances
+        progress = tqdm(
+            zip(self.paths, self.instances), total=len(self.instances)
+        )
+        for path, inst in progress:
+            progress.set_description(f"Cleaning GTFS from path {path}")
+            inst.clean_feed(**clean_kwargs)
+        return None
+
+    def is_valid(self, validation_kwargs: Union[dict, None] = None) -> None:
+        """Validate each of the feeds in the MultiGtfsInstance.
+
+        Parameters
+        ----------
+        validation_kwargs : Union[dict, None], optional
+            The kwargs to pass to GtfsInstance.is_valid() for each Gtfs in
+            the MultiGtfsInstance, by default None
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(
+            validation_kwargs, "validation_kwargs", (dict, type(None))
+        )
+        if isinstance(validation_kwargs, type(None)):
+            validation_kwargs = {}
+        # clean GTFS instances
+        progress = tqdm(
+            zip(self.paths, self.instances), total=len(self.instances)
+        )
+        for path, inst in progress:
+            progress.set_description(f"Cleaning GTFS from path {path}")
+            inst.is_valid(**validation_kwargs)
+        return None
