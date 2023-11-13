@@ -15,6 +15,7 @@ import warnings
 import pathlib
 from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
+from geopandas import GeoDataFrame
 
 from transport_performance.gtfs.validators import (
     validate_travel_over_multiple_stops,
@@ -43,6 +44,9 @@ from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
 )
+
+from transport_performance.gtfs.gtfs_utils import filter_gtfs
+
 from transport_performance.utils.constants import PKG_PATH
 
 
@@ -1658,4 +1662,55 @@ class GtfsInstance:
             path, exp_ext=".zip", default_ext=".zip", param_nm="path"
         )
         self.feed.write(path)
+        return None
+
+    def filter_to_date(self, dates: Union[str, list]) -> None:
+        """Very shallow wrapper around filter_gtfs().
+
+        Filters GTFS to date(s)
+
+        Parameters
+        ----------
+        dates : Union[str, list]
+            The date(s) to filter to
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(dates, "dates", (str, list))
+        # convert to normalsed format
+        if isinstance(dates, str):
+            dates = [dates]
+        # filter gtfs
+        filter_gtfs(gtfs=self, filter_dates=dates)
+        return None
+
+    def filter_to_bbox(
+        self, bbox: Union[list, GeoDataFrame], crs: str = "epsg:4326"
+    ) -> None:
+        """Very shallow wrapper around filter_gfts().
+
+        Filters GTFS to a bbox.
+
+        Parameters
+        ----------
+        bbox : Union[list, GeoDataFrame]
+            The bbox to filter the GTFS to. Leave as none if the GTFS does not
+            need to be cropped. Format - [xmin, ymin, xmax, ymax]
+        crs : str, optional
+            The CRS of the given bbox, by default "epsg:4326"
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(bbox, "bbox", [list, GeoDataFrame])
+        _type_defence(crs, "crs", str)
+        # filter gtfs
+        filter_gtfs(gtfs=self, bbox=bbox, crs=crs)
         return None

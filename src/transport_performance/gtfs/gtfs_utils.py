@@ -68,7 +68,7 @@ def filter_gtfs(
     bbox : Union[GeoDataFrame, list, None], optional
         The bbox to filter the GTFS to. Leave as none if the GTFS does not need
          to be cropped. Format - [xmin, ymin, xmax, ymax], by default None
-    crs : _type_, optional
+    crs : str, optional
         The CRS of the given bbox, by default "epsg:4326"
     filter_dates : list, optional
         The dates to filter the GTFS to. Leave as an empty list if you do not
