@@ -58,7 +58,7 @@ def from_pickle(path: Union[str, pathlib.Path]) -> object:
 
     Returns
     -------
-    Any
+    object
         Object in pickle file. Must have a ".pkl" or ".pickle" file extension.
 
     Raises
