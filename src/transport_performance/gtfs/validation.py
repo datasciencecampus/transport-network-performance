@@ -216,6 +216,12 @@ class GtfsInstance:
         Returns the `daily_route_summary` attribute.
     html_report()
         Generate a HTML report describing the GTFS data.
+    save()
+        Save the current GtfsInstance().
+    filter_to_date()
+        Filter a GtfsInstance to a specific dates or set of dates.
+    filter_to_bbox()
+        Crop a GtfsInstance to a given bbox.
     _produce_stops_map()
         Produces the stops map for use in `viz_stops()`.
     _order_dataframe_by_day()
@@ -238,8 +244,6 @@ class GtfsInstance:
     _extended_validation()
         Generate HTML warning & error summary tables for use in `html_report()`
         .
-    _save()
-        Save the current GtfsInstance().
 
     Raises
     ------
