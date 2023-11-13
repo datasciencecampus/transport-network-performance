@@ -1077,3 +1077,25 @@ class TestGtfsInstance(object):
             with does_not_raise():
                 gtfs_fixture.save(complete_path)
         assert os.path.exists(expected_path), "GTFS not saved correctly"
+
+    def test_filter_to_date(self, gtfs_fixture):
+        """Small tests for the shallow wrapper filter_to_date()."""
+        assert (
+            len(gtfs_fixture.feed.stop_times) == 7765
+        ), "feed.stop_times is an unexpected size"
+        gtfs_fixture.filter_to_date(dates=["20230611"])
+        assert (
+            len(gtfs_fixture.feed.stop_times) == 151
+        ), "GTFS not filtered to singular date as expected"
+
+    def test_filter_to_bbox(self, gtfs_fixture):
+        """Small tests for the shallow wrapper filter_to_bbox()."""
+        assert (
+            len(gtfs_fixture.feed.stop_times) == 7765
+        ), "feed.stop_times is an unexpected size"
+        gtfs_fixture.filter_to_bbox(
+            [-2.985535, 51.551459, -2.919617, 51.606077]
+        )
+        assert (
+            len(gtfs_fixture.feed.stop_times) == 217
+        ), "GTFS not filtered to bbox as expected"
