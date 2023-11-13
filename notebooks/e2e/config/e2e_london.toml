@@ -1,0 +1,51 @@
+
+title = "Config for an E2E example around the London area"
+
+# `override` variable in the sections below can be used to skip over stages
+# which take some time to execute. When running for the first time, it is
+# necessary to set these variables to `true` so that the intermediate and
+# processed data sources can be built. Afterwards, feel free to set these to
+# `false` to avoid rebuilding 'expensive' processed inputs.
+# Use the `write_outputs` flags below to control whether or not to write
+# geneerated outputs to file (useful if you do not want to overwrite results).
+
+[urban_centre]  # configuration section for urban centre
+override = true
+input_dir = "data/external/urban_centre/"
+merged_path = "data/processed/urban_centre/london_uc_merged.tif"
+bbox = [
+    -79012.62418,
+    5991761.479714964,
+    65432.291941,
+    6064340.599894041
+]  # must in in 'ESRI:54009', this represents a BBOX around Wales
+centre = [51.48410, -0.09064]
+buffer_size = 12000
+write_outputs = true
+output_map_path = "outputs/e2e/london/urban_centre/urban_centre_map_london.html"
+
+[population]  # configuration section for population
+override = true
+input_dir = "data/external/population/"
+merged_path = "data/interim/population/pop_merged.tif"
+merged_resampled_path = "data/processed/population/pop_merged_resampled.tif"
+threshold = 1  # set small and positive, to remove 0 pop cells
+write_outputs = true
+output_map_path = "outputs/e2e/london/population/london/population_map_london.html"
+
+[gtfs] # configuration section for gtfs
+override = true
+input_path = "data/external/gtfs/itm_england_gtfs.zip"
+filtered_path = "data/interim/gtfs/itm_london_filtered_gtfs.zip"
+units = "km"
+write_outputs = true
+cleaned_path = "data/processed/gtfs/itm_london_filtered_cleaned_gtfs.zip"
+stops_map_path = "outputs/e2e/london/gtfs/stops_map.html"
+hull_map_path = "outputs/e2e/london/gtfs/hull_map.html"
+used_stops_map_path = "outputs/e2e/london/gtfs/used_stops_map.html"
+
+[osm] # configuration section for osm clipping
+override = true
+input_path = "data/external/osm/england-latest.osm.pbf"
+filtered_path = "data/processed/osm/london_latest_filtered.osm.pbf"
+tag_filter = false
