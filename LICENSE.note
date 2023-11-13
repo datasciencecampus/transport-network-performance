@@ -1,0 +1,21 @@
+The transport_performance package as a whole is distributed under MIT license
+(see file LICENSE). The transport_performance package includes other open
+source software components. The following is a list of these components:
+
+* /./src/transport_performance/data/gtfs/route_lookup.pkl This table is the
+result of a pandas concatenation of 2 scraped HTML tables:
+    1. [GTFS route_type table](https://gtfs.org/schedule/reference/#routestxt)
+    ©Mobility Data, distributed under
+    [Creative Commons 3.0](https://creativecommons.org/licenses/by/3.0/)
+    2. [Google Extended Route Type Schema](https://developers.google.com/transit/gtfs/reference/extended-route-types)
+    ©Google, distributed under
+    [Creative Commons 4.0](https://creativecommons.org/licenses/by/4.0/)
+* /./tests/data/newport-2023-06-13.osm.pbf Sourced from
+[Geofabrik Download Server](https://www.geofabrik.de/data/download.html).
+©OpenStreetMap,
+This file is made available under the Open Database License:
+http://opendatacommons.org/licenses/odbl/1.0/. Any rights in individual
+contents of the database are licensed under the Database Contents License:
+http://opendatacommons.org/licenses/dbcl/1.0/
+* /./tests/data/gtfs/newport-20230613_gtfs.zip ©Crown Copyright. Licensed under
+[Open Government Licence 3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)

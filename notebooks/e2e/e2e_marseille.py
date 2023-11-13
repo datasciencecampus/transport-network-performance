@@ -12,12 +12,14 @@ Call in script wide imports and the configuration information.
 
 # %%
 import toml
+import glob
 import os
 import datetime
 import geopandas as gpd
 import pandas as pd
 import gtfs_kit as gk
 import folium
+import seaborn as sns
 
 from pyprojroot import here
 from shapely.geometry import box
@@ -39,7 +41,7 @@ from transport_performance.utils.raster import (
 
 # %%
 # config filepath, and loading
-CONFIG_FILE = here("notebooks/e2e/config/e2e.toml")
+CONFIG_FILE = here("notebooks/e2e/config/e2e_marseille.toml")
 config = toml.load(CONFIG_FILE)
 
 # split out into separate configs to minimise line length
@@ -93,7 +95,6 @@ uc_gdf = uc.get_urban_centre(
     bbox_gdf,
     centre=tuple(uc_config["centre"]),
     buffer_size=uc_config["buffer_size"],
-    centre_crs="epsg: 4326",
 )
 
 # set the index to the label column to make filtering easier
@@ -164,6 +165,11 @@ pop_gdf, centroid_gdf = rp.get_pop(
     urban_centre_bounds=urban_centre_bounds,
 )
 
+centroid_gdf.to_file(
+    here("data/processed/population/newport_centroid_gdf.json"),
+    drop_id=True,
+    driver="GeoJSON",
+)
 # %%
 # write interactive visual to file
 if pop_config["write_outputs"]:
@@ -181,89 +187,111 @@ then GTFS data.
 
 ### Data Sources
 
-In this example a whole of Wales GTFS data source is used, provided by the
-[Department for Transport's BODS ](https://data.bus-data.dft.gov.uk/). The
-`itm_wales_gtfs.zip` file is expected to be within the directory set by
-`config['gtfs']['input_path']`.
+In this example we use a GTFS including the region of Métropole
+d'Aix-Marseille-Provence et des Bouches-du-Rhône from the
+[Aix-Marseille regional government](https://www.lepilote.com/fr/open-data/83).
+The download contains multiple files, and not all of them include routes within
+our urban centre and buffer.
+The folder containing all the GTFZ zip files `Gtfs_marseille_2023-10-24` file
+is expected to be within the directory set by `config['gtfs']['input_path']`.
 """
 
 # %%
-# clip the GTFS to the extent of the urban centre buffered area
-if gtfs_config["override"]:
-    # get the extent of the urban centre bbox (includes buffer)
-    gtfs_bbox = list(uc_gdf.loc["bbox"].geometry.bounds)
+for file in glob.glob(str(here(gtfs_config["input_path"]))):
+    # clip the GTFS to the extent of the urban centre buffered area
+    print(file.split("/")[-1])
+    if gtfs_config["override"]:
+        # get the extent of the urban centre bbox (includes buffer)
+        gtfs_bbox = list(uc_gdf.loc["bbox"].geometry.bounds)
 
-    # clip to region of interest, setting crs to match the bbox
-    bbox_filter_gtfs(
-        in_pth=here(gtfs_config["input_path"]),
-        out_pth=here(gtfs_config["filtered_path"]),
-        bbox=gtfs_bbox,
+        # clip to region of interest, setting crs to match the bbox
+        bbox_filter_gtfs(
+            in_pth=file,
+            out_pth=here(
+                gtfs_config["filtered_path"] + f"filt-{file.split('/')[-1]}"
+            ),
+            bbox=gtfs_bbox,
+            units=gtfs_config["units"],
+            crs=uc_gdf.crs.to_string(),
+        )
+
+    # read in filtered gtfs feed
+    gtfs = GtfsInstance(
+        gtfs_pth=here(
+            gtfs_config["filtered_path"] + f"filt-{file.split('/')[-1]}"
+        ),
         units=gtfs_config["units"],
-        crs=uc_gdf.crs.to_string(),
     )
 
-# %%
-# read in filtered gtfs feed
-gtfs = GtfsInstance(
-    gtfs_pth=here(gtfs_config["filtered_path"]),
-    units=gtfs_config["units"],
-)
+    # show valid dates
+    available_dates = gtfs.feed.get_dates()
+    s = available_dates[0]
+    f = available_dates[-1]
+    print(f"{len(available_dates)} dates available between {s} & {f}.")
 
-# show valid dates
-available_dates = gtfs.feed.get_dates()
-s = available_dates[0]
-f = available_dates[-1]
-print(f"{len(available_dates)} dates available between {s} & {f}.")
+    # check validity, printing warnings and errors
+    gtfs.is_valid()
+    print("Errors:")
+    gtfs.print_alerts()
+    print("Warnings:")
+    gtfs.print_alerts(alert_type="warning")
 
-# %%
-# check validity, printing warnings and errors
-gtfs.is_valid()
-print("Errors:")
-gtfs.print_alerts()
-print("Warnings:")
-gtfs.print_alerts(alert_type="warning")
+    # clean the gtfs, then re-check the validity and reprint errors/warnings
+    # note: this will remove 'Repeated pair (route_short_name,
+    # route_long_name)'
+    gtfs.clean_feed()
+    gtfs.is_valid()
+    print("Errors:")
+    gtfs.print_alerts()
+    print("Warnings:")
+    gtfs.print_alerts(alert_type="warning")
 
-# %%
-# clean the gtfs, then re-check the validity and reprint errors/warnings
-# note: this will remove 'Repeated pair (route_short_name, route_long_name)'
-gtfs.clean_feed()
-gtfs.is_valid()
-print("Errors:")
-gtfs.print_alerts()
-print("Warnings:")
-gtfs.print_alerts(alert_type="warning")
+    # get the route modes - frequency and proportion of modalities
+    print(gtfs.get_route_modes())
+    # summarise the trips by day of the week
+    print(gtfs.summarise_trips())
+    # summarise the routes by day of the week
+    print(gtfs.summarise_routes())
 
-# %%
-# get the route modes - frequency and proportion of modalities
-gtfs.get_route_modes()
+    # write visuals (stops and hull) and cleaned feed to file
+    if gtfs_config["write_outputs"]:
+        gtfs.viz_stops(
+            here(
+                gtfs_config["stops_map_path"]
+                + f"{file.split('/')[-1].split('.')[0]}.html"
+            ),
+            create_out_parent=True,
+        )
+        gtfs.viz_stops(
+            here(
+                gtfs_config["hull_map_path"]
+                + f"{file.split('/')[-1].split('.')[0]}.html"
+            ),
+            geoms="hull",
+            create_out_parent=True,
+        )
+        gtfs.feed.write(
+            here(
+                gtfs_config["cleaned_path"]
+                + f"filt_cleaned-{file.split('/')[-1]}"
+            )
+        )
 
-# %%
-# summarise the trips by day of the week
-gtfs.summarise_trips()
+    # display a map of only the stops used in `stop_times.txt`,
+    # excluding parents
+    unique_stops = gtfs.feed.stop_times.stop_id.unique()
+    m = gk.stops.map_stops(gtfs.feed, stop_ids=unique_stops)
+    if gtfs_config["write_outputs"]:
+        m.save(
+            here(
+                gtfs_config["used_stops_map_path"]
+                + f"{file.split('/')[-1].split('.')[0]}.html"
+            )
+        )
+    m
 
-# %%
-# summarise the routes by day of the week
-gtfs.summarise_routes()
+    print("\n")
 
-# %%
-# write visuals (stops and hull) and cleaned feed to file
-if gtfs_config["write_outputs"]:
-    gtfs.viz_stops(here(gtfs_config["stops_map_path"]), create_out_parent=True)
-    gtfs.viz_stops(
-        here(gtfs_config["hull_map_path"]),
-        geoms="hull",
-        create_out_parent=True,
-    )
-    gtfs.feed = gk.miscellany.restrict_to_dates(gtfs.feed, ["20231027"])
-    gtfs.feed.write(here(gtfs_config["cleaned_path"]))
-
-# %%
-# display a map of only the stops used in `stop_times.txt`, excluding parents
-unique_stops = gtfs.feed.stop_times.stop_id.unique()
-m = gk.stops.map_stops(gtfs.feed, stop_ids=unique_stops)
-if gtfs_config["write_outputs"]:
-    m.save(here(gtfs_config["used_stops_map_path"]))
-m
 # %% [markdown] noqa: D212, D400, D415
 """
 ## OpenStreetMap
@@ -272,10 +300,10 @@ Clip the OSM data to the buffered urban centre area.
 
 ### Data Sources
 
-In this example a whole of Wales OSM data source is used, provided by the
-[Geofabrik](https://download.geofabrik.de/europe/great-britain.html). The
-`wales-latest.osm.pbf` file is expected to be within the directory set by
-`config['osm']['input_path']`.
+In this example a OSM file from the region of Provence Alpes-Cote d'Azur is
+used, provided by [Geofabrik](https://download.geofabrik.de/europe/france.html)
+. The `provence-alpes-cote-d-azur-latest.osm.pbf` file is expected to be within
+the directory set by `config['osm']['input_path']`.
 """
 
 # %%
@@ -306,7 +334,7 @@ urban centre destinations; in the centre, south west, and eastern regions.
 # build the transport network
 trans_net = TransportNetwork(
     here(osm_config["filtered_path"]),
-    [here(gtfs_config["cleaned_path"])],
+    glob.glob(str(here(gtfs_config["cleaned_path"])) + "/*"),
 )
 
 # %%
@@ -544,7 +572,7 @@ def plot(
 
 # %%
 # visualise for an ID within the UC
-UC_ID = 6456
+UC_ID = 6391
 assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
@@ -569,7 +597,7 @@ plot(
 
 # %%
 # visualise for an ID within the UC
-UC_ID = 5137
+UC_ID = 12094
 assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
@@ -592,7 +620,7 @@ plot(
 
 # %%
 # visualise for an ID within the UC
-UC_ID = 3974
+UC_ID = 10053
 assert UC_ID in travel_times.to_id.unique()
 snippet_id = travel_times[travel_times.to_id == UC_ID]
 snippet_id = pop_gdf.merge(snippet_id, left_on="id", right_on="from_id")
@@ -736,7 +764,7 @@ plot(
 
 # %%
 # QA ID
-ID = 4110
+ID = 12094
 
 # filter distance df to only this id and select a sub-set of columns
 snippet_df = distance_df[distance_df.to_id == ID]
@@ -893,7 +921,7 @@ tp_results = pd.DataFrame(
 ).T[["min", "25%", "50%", "75%", "max"]]
 
 # add in area and name columns, reset the index to make it a column
-tp_results.index = ["Newport"]
+tp_results.index = ["Marseille"]
 tp_results.index.name = "urban centre name"
 tp_results = tp_results.reset_index()
 
@@ -915,4 +943,12 @@ tp_results = tp_results[
 
 tp_results
 
+# %%
+sns.histplot(
+    perf_gdf,
+    x="transport_performance",
+    stat="density",
+    bins=50,
+    binrange=[0, 100],
+)
 # %%
