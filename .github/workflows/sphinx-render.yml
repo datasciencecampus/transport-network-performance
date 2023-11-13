@@ -1,3 +1,6 @@
+# Fixing OS version to avoid breaking OS changes during development stage.
+# Will open up OS versions before release.
+
 name: "Render docs"
 
 on: push
@@ -8,7 +11,8 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Sphinx
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
