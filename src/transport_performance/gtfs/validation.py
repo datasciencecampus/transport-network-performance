@@ -1676,7 +1676,7 @@ class GtfsInstance:
         Parameters
         ----------
         dates : Union[str, list]
-            The date(s) to filter to
+            The date(s) to filter the GTFS to
 
         Returns
         -------
