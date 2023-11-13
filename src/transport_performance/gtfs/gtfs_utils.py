@@ -7,9 +7,13 @@ import pandas as pd
 import os
 import math
 import plotly.graph_objects as go
-from typing import Union
+from typing import Union, TYPE_CHECKING
 import pathlib
 from geopandas import GeoDataFrame
+import warnings
+
+if TYPE_CHECKING:
+    from transport_performance.gtfs.validation import GtfsInstance
 
 from transport_performance.utils.defence import (
     _is_expected_filetype,
@@ -17,8 +21,97 @@ from transport_performance.utils.defence import (
     _type_defence,
     _validate_datestring,
     _enforce_file_extension,
+    _gtfs_defence,
 )
 from transport_performance.utils.constants import PKG_PATH
+
+
+def filter_gtfs(
+    gtfs: "GtfsInstance",
+    bbox: Union[GeoDataFrame, list, None] = None,
+    crs: str = "epsg:4326",
+    filter_dates: list = [],
+) -> None:
+    """Filter the GTFS to either a bbox or a date.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GTFS to filter
+    bbox : Union[GeoDataFrame, list, None], optional
+        The bbox to filter the GTFS to. Leave as none if the GTFS does not need
+         to be cropped, by default None
+    crs : _type_, optional
+        The CRS of the given bbox, by default "epsg:4326"
+    filter_dates : list, optional
+        The dates to filter the GTFS to. Leave as an empty list if you do not
+        require the GTFS to be filtered to a date, by default []
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        Raised if any of the dates passed to 'filter_dates' isn't present in
+        the gtfs
+
+    """
+    # defences
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(bbox, "bbox", (GeoDataFrame, list, type(None)))
+    _type_defence(crs, "crs", str)
+    _type_defence(filter_dates, "filter_dates", list)
+
+    # check that filtering has been requested
+    if bbox is None and len(filter_dates) == 0:
+        warnings.warn(
+            UserWarning,
+            "No filtering requested. Please pass either a bbox "
+            "or a list of dates",
+        )
+        return None
+
+    # handle bbox
+    if isinstance(bbox, list):
+        _check_iterable(
+            iterable=bbox,
+            param_nm="bbox",
+            iterable_type=list,
+            exp_type=float,
+        )
+        # create box polygon around provided coords, need to unpack
+        bbox = box(*bbox)
+        # gtfs_kit expects gdf
+        bbox = gpd.GeoDataFrame(index=[0], crs=crs, geometry=[bbox])
+
+    # filter to bbox
+    if bbox is not None:
+        gtfs.feed = gtfs.feed.restrict_to_area(bbox)
+
+    # filter to date
+    if len(filter_dates) > 0:
+        _check_iterable(
+            filter_dates, "filter_dates", exp_type=str, iterable_type=list
+        )
+        for date in filter_dates:
+            _validate_datestring(date)
+        feed_dates = gtfs.feed.get_dates()
+        diff = set(filter_dates).difference(feed_dates)
+        if diff:
+            raise ValueError(
+                f"{diff} passed to 'filtered dates not present in feed dates"
+                f"Feed dates include: {feed_dates}"
+            )
+        gtfs.feed = gtfs.feed.restrict_to_dates(filter_dates)
+        print("f to date")
+
+    # remove attr (for future runs)
+    if hasattr(gtfs, "pre_processed_trips"):
+        delattr(gtfs, "pre_processed_trips")
+
+    return None
 
 
 def bbox_filter_gtfs(
