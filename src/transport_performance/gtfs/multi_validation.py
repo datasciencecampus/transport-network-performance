@@ -20,7 +20,7 @@ class FileCountError(Exception):
 
 
 class MultiGtfsInstance:
-    """Fille Docstring."""
+    """Filler Docstring."""
 
     def __init__(self, path: Union[str, list]) -> None:
         # defences
