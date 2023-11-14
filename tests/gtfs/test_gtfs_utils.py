@@ -203,7 +203,7 @@ class Test_FilterGtfsAroundTrip(object):
 
     def test_filter_gtfs_around_trip_on_pass(self, tmpdir):
         """General tests for filter_gtfs_around_trip()."""
-        gtfs = GtfsInstance(gtfs_pth="GTFS_FIX_PTH")
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         out_pth = os.path.join(tmpdir, "test_gtfs.zip")
 
         # check gtfs can be created
