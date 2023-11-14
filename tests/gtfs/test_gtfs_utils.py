@@ -153,7 +153,7 @@ class Test_AddValidationRow(object):
     """Tests for _add_validation_row()."""
 
     def test__add_validation_row_defence(self):
-        """Defensive tests for _add_test_validation_row()."""
+        """Defensive tests for _add_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         with pytest.raises(
             AttributeError,
@@ -168,7 +168,7 @@ class Test_AddValidationRow(object):
             )
 
     def test__add_validation_row_on_pass(self):
-        """General tests for _add_test_validation_row()."""
+        """General tests for _add_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         gtfs.is_valid(validators={"core_validation": None})
 
@@ -203,7 +203,7 @@ class Test_FilterGtfsAroundTrip(object):
 
     def test_filter_gtfs_around_trip_on_pass(self, tmpdir):
         """General tests for filter_gtfs_around_trip()."""
-        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+        gtfs = GtfsInstance(gtfs_pth="GTFS_FIX_PTH")
         out_pth = os.path.join(tmpdir, "test_gtfs.zip")
 
         # check gtfs can be created
@@ -212,12 +212,12 @@ class Test_FilterGtfsAroundTrip(object):
             trip_id="VJbedb4cfd0673348e017d42435abbdff3ddacbf82",
             out_pth=out_pth,
         )
-        assert os.path.exists(out_pth), "Failed to filtere GTFS around trip."
+        assert os.path.exists(out_pth), "Failed to filter GTFS around trip."
         # check the new gtfs can be read
         feed = GtfsInstance(gtfs_pth=out_pth)
         assert isinstance(
             feed, GtfsInstance
-        ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
+        ), f"Expected class `GtfsInstance` but found: {type(feed)}`"
 
 
 @pytest.fixture(scope="function")
