@@ -2,15 +2,17 @@
 
 import os
 import pandas as pd
+import geopandas as gpd
 import pathlib
 
 from glob import glob
-from typing import Type, Union
+from typing import Optional, Tuple, Type, Union
 
 from transport_performance.population.rasterpop import RasterPop
 from transport_performance._metrics.metrics_utils import _retrieve_rasterpop
 from transport_performance._metrics.tp_utils import (
     _transport_performance_pandas,
+    _transport_performance_stats,
 )
 from transport_performance.utils.defence import (
     _type_defence,
@@ -26,7 +28,11 @@ def transport_performance(
     sources_col: str = "from_id",
     destinations_col: str = "to_id",
     backend: str = "pandas",
-) -> pd.DataFrame:
+    descriptive_stats: bool = True,
+    urban_centre_name: str = None,
+    urban_centre_country: str = None,
+    urban_centre_gdf: gpd.GeoDataFrame = None,
+) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
     """Calculate the transport performance.
 
     Parameters
@@ -52,11 +58,29 @@ def transport_performance(
     backend : str, optional
         The 'backend' to use to calculate transport performance, by default
         "pandas". Must be one of: {"pandas"}.
+    descriptive_stats : bool, optional
+        Calculate transport performance descriptive statistics and return them
+        in a seperate dataframe. By default True, means descriptive statistics
+        will be calculated and returned.
+    urban_centre_name : str, optional
+        The urban centre name, by default None meaning the name will not be
+        set. Only considered when `descriptive_stats` is True.
+    urban_centre_country: str, optional
+        The country in which the urban centre resides, by default None meaning
+        the country will not be set. Only considered when `descriptive_stats`
+        is True.
+    urban_centre_gdf : gpd.GeoDataFrame, optional
+        Output from `UrbanCentre`, containg the urban centre geometry
+        information. By default None meaning the urban centre area will not be
+        calcuated. Only considered when `descriptive_stats` is True.
 
     Returns
     -------
-    pd.DataFrame
-        Transport performance metrics, grouped by destination column IDs.
+    Tuple[pd.DataFrame, Optional[pd.DataFrame]]
+        The first element of the tuple is the Transport performance metrics
+        dataframe, grouped by destination column IDs. When `descriptive_stats`
+        is `True` the second element will be the descriptive statistics output,
+        otherwise this is `None`.
 
     Raises
     ------
@@ -79,6 +103,10 @@ def transport_performance(
         "sources_col": [sources_col, str],
         "destinations_col": [destinations_col, str],
         "backend": [backend, str],
+        "descriptive_stats": [descriptive_stats, bool],
+        "urban_centre_name": [urban_centre_name, (type(None), str)],
+        "urban_centre_country": [urban_centre_country, (type(None), str)],
+        "urban_centre_gdf": [urban_centre_gdf, (type(None), gpd.GeoDataFrame)],
     }
     for k, v in type_dict.items():
         _type_defence(v[0], k, v[-1])
@@ -119,4 +147,14 @@ def transport_performance(
             f"Got `backend`={backend}. Expected one of: {VALID_TP_BACKENDS}"
         )
 
-    return tp_df
+    # handle stats generation, if requested
+    if descriptive_stats:
+        stats_df = _transport_performance_stats(
+            tp_df,
+            urban_centre_name=urban_centre_name,
+            urban_centre_country=urban_centre_country,
+            urban_centre_gdf=urban_centre_gdf,
+        )
+        return tp_df, stats_df
+
+    return tp_df, None
