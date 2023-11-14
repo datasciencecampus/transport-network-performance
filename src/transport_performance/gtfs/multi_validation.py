@@ -171,7 +171,7 @@ class MultiGtfsInstance:
 
         """
         # defences
-        _type_defence(bbox, "bbox", [list, GeoDataFrame])
+        _type_defence(bbox, "bbox", (list, GeoDataFrame))
         _type_defence(crs, "crs", str)
         # filter gtfs
         progress = tqdm(zip(self.paths, self.instances), total=len(self.paths))
