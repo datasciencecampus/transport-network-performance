@@ -1078,14 +1078,24 @@ class TestGtfsInstance(object):
                 gtfs_fixture.save(complete_path)
         assert os.path.exists(expected_path), "GTFS not saved correctly"
 
-    def test_filter_to_date(self, gtfs_fixture):
+    @pytest.mark.parametrize(
+        "date, expected_len",
+        [
+            # as list
+            (["20230611"], 151),
+            # as str
+            ("20230611", 151),
+        ],
+    )
+    def test_filter_to_date(self, date, expected_len):
         """Small tests for the shallow wrapper filter_to_date()."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
         assert (
-            len(gtfs_fixture.feed.stop_times) == 7765
+            len(gtfs.feed.stop_times) == 7765
         ), "feed.stop_times is an unexpected size"
-        gtfs_fixture.filter_to_date(dates=["20230611"])
+        gtfs.filter_to_date(dates=date)
         assert (
-            len(gtfs_fixture.feed.stop_times) == 151
+            len(gtfs.feed.stop_times) == expected_len
         ), "GTFS not filtered to singular date as expected"
 
     def test_filter_to_bbox(self, gtfs_fixture):
