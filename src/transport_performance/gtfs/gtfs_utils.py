@@ -358,8 +358,8 @@ def _get_validation_warnings(
     message : str
         The regex to use for filtering the warnings.
     return_type : str, optional
-        The return type of the warnings. Can be eithher 'values' or 'dataframe'
-         by default 'values'
+        The return type of the warnings. Can be either 'values' or 'dataframe',
+        by default 'values'
 
     Returns
     -------
@@ -459,7 +459,7 @@ def _function_pipeline(
     """Iterate through and act on a functional pipeline."""
     _gtfs_defence(gtfs, "gtfs")
     _type_defence(func_map, "func_map", dict)
-    _type_defence(operations, "oeprations", (dict, type(None)))
+    _type_defence(operations, "operations", (dict, type(None)))
     if operations:
         for key in operations.keys():
             if key not in func_map.keys():
