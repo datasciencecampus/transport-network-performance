@@ -1,6 +1,7 @@
 """Transport performance helper functions."""
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import pathlib
 import warnings
@@ -219,9 +220,9 @@ def _transport_performance_stats(
         tp_results.loc[0, UC_NAME_COL] = urban_centre_name
         select_cols.insert(0, UC_NAME_COL)
 
-    # calculate the total population
+    # calculate the total population - set to int64 type (default pandas int)
     tp_results["urban centre population"] = (
-        tp_df.population.sum().round().astype(int)
+        tp_df.population.sum().round().astype(np.int64)
     )
 
     # reorder columns to improve readability
