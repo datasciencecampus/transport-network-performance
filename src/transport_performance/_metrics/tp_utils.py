@@ -49,8 +49,12 @@ def _transport_performance_pandas(
         Transport performance metrics, grouped by destination column IDs.
 
     """
+    # create local binding before manipulation since `centroids` is a mutable
+    # dtype - create pass-by-value effect and won't impact inpput variable.
+    centroids_df = centroids
+
     # convert centroid shapley object to tuple
-    centroids["centroid_tuple"] = centroids["centroid"].apply(
+    centroids_df["centroid_tuple"] = centroids_df["centroid"].apply(
         lambda coord: (coord.y, coord.x)
     )
 
@@ -60,7 +64,7 @@ def _transport_performance_pandas(
     # merge on centroid coordinates tuples
     tts = (
         tts.merge(
-            centroids[["id", "centroid_tuple"]],
+            centroids_df[["id", "centroid_tuple"]],
             left_on=sources_col,
             right_on="id",
             how="left",
@@ -68,7 +72,7 @@ def _transport_performance_pandas(
         .drop(["id"], axis=1)
         .rename(columns={"centroid_tuple": "from_centroid_tuple"})
         .merge(
-            centroids[["id", "centroid_tuple"]],
+            centroids_df[["id", "centroid_tuple"]],
             left_on=destinations_col,
             right_on="id",
             how="left",
