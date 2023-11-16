@@ -305,7 +305,7 @@ class TestTransportPerformance:
             ),
             (
                 lazy_fixture("empty_directory"),
-                pytest.raises(FileNotFoundError, match="No files detectd in"),
+                pytest.raises(FileNotFoundError, match="No files detected in"),
             ),
             (
                 lazy_fixture("non_parquet_extension"),
