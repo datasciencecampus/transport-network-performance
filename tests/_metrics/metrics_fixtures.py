@@ -136,3 +136,12 @@ def empty_directory(tmp_path) -> pathlib.Path:
     """Create an empty path for use in a fixture."""
     # tmp_path not useable inside a parameterised test
     return pathlib.Path(tmp_path)
+
+
+@pytest.fixture()
+def change_tt_cols_fixture(tmp_path, tt_fixture) -> pathlib.Path:
+    """Change column names of mock tt data and resave."""
+    tt = pd.read_parquet(tt_fixture)
+    tt = tt.rename(columns={"from_id": "from", "to_id": "to"})
+    tt.to_parquet(os.path.join(tmp_path, "mock_tt_changed_cols.parquet"))
+    return pathlib.Path(tmp_path)

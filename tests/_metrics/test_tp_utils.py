@@ -53,3 +53,40 @@ class TestTransportPerformancePandas:
         # upack expected results and confirm equivalence
         test_subset_cols, expected_tp, _ = expected_transport_performance
         assert_frame_equal(tp_df[test_subset_cols], expected_tp)
+
+    def test__transport_performance_pandas_source_dest_cols(
+        self,
+        centroid_gdf_fixture,
+        pop_gdf_fixture,
+        change_tt_cols_fixture,
+        expected_transport_performance,
+    ) -> None:
+        """Test non default `sources_col` and `destinations_col`.
+
+        Parameters
+        ----------
+        centroid_gdf_fixture
+            A mock centroid test fixture.
+        pop_gdf_fixture
+            A mock population test fixture.
+        change_tt_cols_fixture
+            A mock travel time fixture with alternative column names. See
+            `change_tt_cols_fixture` for more details.
+        expected_transport_performance
+            Expected transport performance results.
+
+        """
+        # call transport_performance() using the test fixtures
+        tp_df = _transport_performance_pandas(
+            change_tt_cols_fixture,
+            centroid_gdf_fixture,
+            pop_gdf_fixture,
+            sources_col="from",
+            destinations_col="to",
+            travel_time_threshold=3,
+            distance_threshold=0.11,
+        )
+
+        # upack expected results and confirm equivalence
+        test_subset_cols, expected_tp, _ = expected_transport_performance
+        assert_frame_equal(tp_df[test_subset_cols], expected_tp)
