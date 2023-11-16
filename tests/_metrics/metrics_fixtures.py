@@ -63,16 +63,17 @@ def expected_transport_performance() -> Union[
     """
     TEST_COLS = [
         "id",
+        "population",
         "accessible_population",
         "proximity_population",
         "transport_performance",
     ]
     expected_tp_df = pd.DataFrame(
         [
-            [5, 32, 46, (32 / 46 * 100)],
-            [6, 26, 42, (26 / 42 * 100)],
-            [9, 20, 39, (20 / 39 * 100)],
-            [10, 20, 41, (20 / 41 * 100)],
+            [5, 8, 32, 46, (32 / 46 * 100)],
+            [6, 13, 26, 42, (26 / 42 * 100)],
+            [9, 10, 20, 39, (20 / 39 * 100)],
+            [10, 3, 20, 41, (20 / 41 * 100)],
         ],
         columns=TEST_COLS,
     )

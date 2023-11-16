@@ -5,6 +5,7 @@ from pytest_lazyfixture import lazy_fixture
 
 from transport_performance._metrics.tp_utils import (
     _transport_performance_pandas,
+    _transport_performance_stats,
 )
 
 # import metrics fixtures via pytest_plugins
@@ -90,3 +91,38 @@ class TestTransportPerformancePandas:
         # upack expected results and confirm equivalence
         test_subset_cols, expected_tp, _ = expected_transport_performance
         assert_frame_equal(tp_df[test_subset_cols], expected_tp)
+
+
+class TestTransportPerformanceStats:
+    """Unit tests for `_transport_performance_stats()`."""
+
+    def test_uc_incorrect_crs(
+        self,
+        expected_transport_performance,
+        uc_fixture,
+    ) -> None:
+        """Check descriptive stats calculation with wrong CRS.
+
+        Ensure the user warning is raisde, CRS conversion, and calculated area
+        are correct when an urban centre with an invalid CRS is provided.
+
+        Parameters
+        ----------
+        expected_transport_performance
+            Mock transport performance input (using expected output).
+        uc_fixture
+            Mock urban centre fixture, who's CRS will be converted.
+
+        """
+        with pytest.warns(
+            UserWarning,
+            match="Unable to calculate the ubran centre area in CRS EPSG:4326",
+        ):
+            _, tp_df, expected_stats = expected_transport_performance
+            stats_df = _transport_performance_stats(
+                tp_df,
+                urban_centre_name="name",
+                urban_centre_country="country",
+                urban_centre_gdf=uc_fixture.to_crs("EPSG:4326"),
+            )
+            assert_frame_equal(stats_df, expected_stats)
