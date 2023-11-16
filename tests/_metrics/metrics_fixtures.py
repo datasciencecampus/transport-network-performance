@@ -118,3 +118,21 @@ def multi_tt_fixture(tt_fixture, tmp_path) -> pathlib.Path:
         )
 
     return pathlib.Path(multi_tt_path)
+
+
+@pytest.fixture()
+def non_parquet_extension(tmp_path) -> pathlib.Path:
+    """Create an directory fixture with a parquet and csv file within a dir."""
+    non_parquet_dir = os.path.join(tmp_path, "non_parquet_dir")
+    os.makedirs(non_parquet_dir)
+    pd.DataFrame().to_parquet(os.path.join(non_parquet_dir, "test.parquet"))
+    pd.DataFrame().to_csv(os.path.join(non_parquet_dir, "test.csv"))
+
+    return pathlib.Path(non_parquet_dir)
+
+
+@pytest.fixture()
+def empty_directory(tmp_path) -> pathlib.Path:
+    """Create an empty path for use in a fixture."""
+    # tmp_path not useable inside a parameterised test
+    return pathlib.Path(tmp_path)

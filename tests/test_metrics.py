@@ -3,6 +3,8 @@
 import pytest
 
 from pandas.testing import assert_frame_equal
+from pyprojroot import here
+from pytest_lazyfixture import lazy_fixture
 
 from transport_performance.metrics import transport_performance
 
@@ -285,4 +287,58 @@ class TestTransportPerformance:
                 centroid_gdf_fixture,
                 pop_gdf_fixture,
                 backend="test",
+            )
+
+    @pytest.mark.parametrize(
+        "tt_path, expected",
+        [
+            (
+                here("tests/data/newport-2023-06-13.osm.pbf"),
+                pytest.raises(
+                    ValueError,
+                    match="expected file extension .parquet. Found .pbf",
+                ),
+            ),
+            (
+                here("does_not_exist"),
+                pytest.raises(FileNotFoundError, match="does not exist."),
+            ),
+            (
+                lazy_fixture("empty_directory"),
+                pytest.raises(FileNotFoundError, match="No files detectd in"),
+            ),
+            (
+                lazy_fixture("non_parquet_extension"),
+                pytest.raises(
+                    ValueError,
+                    match="expected file extension .parquet. Found .csv",
+                ),
+            ),
+        ],
+    )
+    def test_travel_time_input_defences(
+        self, centroid_gdf_fixture, pop_gdf_fixture, tt_path, expected
+    ) -> None:
+        """Test travel time input defence handling.
+
+        Check: incorrect file type, dir that doesn't exist, an empty dir, and
+        a dir with a file inside that has an invalid file extension.
+
+        Parameters
+        ----------
+        centroid_gdf_fixture
+            Mock centroid fixture.
+        pop_gdf_fixture
+            Mock population fixture.
+        tt_path
+            Travel times directory to test.
+        expected
+            Expected raises when tt_path is input into `transport_performance`.
+
+        """
+        with expected:
+            transport_performance(
+                tt_path,
+                centroid_gdf_fixture,
+                pop_gdf_fixture,
             )
