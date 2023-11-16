@@ -127,3 +127,190 @@ class TestTransportPerformance:
         # assert results are as expected
         assert_frame_equal(tp_df[TEST_COLS], expected_tp_df)
         assert_frame_equal(stats_df, expected_stats_df)
+
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, expected",
+        [
+            (
+                "travel_times_path",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*travel_times_path)(?=.*str)(?=.*pathlib.Path)"
+                        "(?=.*Got)(?=.*float).+"
+                    ),
+                ),
+            ),
+            (
+                "centroid_gdf",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*centroid_gdf)(?=.*GeoDataFrame)(?=.*Got)"
+                        "(?=.*float).+"
+                    ),
+                ),
+            ),
+            (
+                "pop_gdf",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*pop_gdf)(?=.*GeoDataFrame)(?=.*Got)"
+                        "(?=.*float).+"
+                    ),
+                ),
+            ),
+            (
+                "travel_time_threshold",
+                "45",
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*travel_time_threshold)(?=.*int)(?=.*Got)"
+                        "(?=.*str).+"
+                    ),
+                ),
+            ),
+            (
+                "distance_threshold",
+                "11.25",
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*distance_threshold)(?=.*int)(?=.*float)(?=.*Got)"
+                        "(?=.*str).+"
+                    ),
+                ),
+            ),
+            (
+                "sources_col",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=("(?=.*sources_col)(?=.*str)(?=.*Got)(?=.*float).+"),
+                ),
+            ),
+            (
+                "destinations_col",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*destinations_col)(?=.*str)(?=.*Got)(?=.*float).+"
+                    ),
+                ),
+            ),
+            (
+                "backend",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=("(?=.*backend)(?=.*str)(?=.*Got)(?=.*float).+"),
+                ),
+            ),
+            (
+                "descriptive_stats",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*descriptive_stats)(?=.*bool)(?=.*Got)"
+                        "(?=.*float).+"
+                    ),
+                ),
+            ),
+            (
+                "urban_centre_name",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*urban_centre_name)(?=.*str)(?=.*Got)"
+                        "(?=.*float).+"
+                    ),
+                ),
+            ),
+            (
+                "urban_centre_country",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*urban_centre_country)(?=.*str)(?=.*Got)"
+                        "(?=.*float).+"
+                    ),
+                ),
+            ),
+            (
+                "urban_centre_gdf",
+                0.0,
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        "(?=.*urban_centre_gdf)(?=.*GeoDataFrame)(?=.*Got)"
+                        "(?=.*float).+"
+                    ),
+                ),
+            ),
+        ],
+    )
+    def test_transport_performance_type_defences(
+        self,
+        arg_name,
+        arg_value,
+        expected,
+        uc_fixture,
+        centroid_gdf_fixture,
+        pop_gdf_fixture,
+        tt_fixture,
+    ):
+        """Check `transport_performance()` type defences.
+
+        Parameters
+        ----------
+        arg_name
+            Name of function argument to test.
+        arg_value
+            Value to use for argument being tested.
+        expected
+            Expected raise statement for argument being tested.
+        uc_fixture
+            Mock urban centre fixture.
+        centroid_gdf_fixture
+            Mock centroids fixture.
+        pop_gdf_fixture
+            Mock population fixture.
+        tt_fixture
+            Mock travel time fixture.
+
+        Notes
+        -----
+        1. `match` arugument in parameterisation checks each word is within
+        the return error message independent of order. This is such that if the
+        error message change, the key components are still captured.
+
+        """
+        # create a argument dictionary to store default values
+        default_args = {
+            "travel_times_path": tt_fixture,
+            "centroid_gdf": centroid_gdf_fixture,
+            "pop_gdf": pop_gdf_fixture,
+            "travel_time_threshold": 45,
+            "distance_threshold": 11.25,
+            "sources_col": "from_id",
+            "destinations_col": "to_id",
+            "backend": "pandas",
+            "descriptive_stats": True,
+            "urban_centre_name": "name",
+            "urban_centre_country": "country",
+            "urban_centre_gdf": uc_fixture,
+        }
+
+        # change value of argument being tested and check raises
+        default_args[arg_name] = arg_value
+        with expected:
+            transport_performance(**default_args)
