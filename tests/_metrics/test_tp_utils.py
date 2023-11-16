@@ -96,7 +96,7 @@ class TestTransportPerformancePandas:
 class TestTransportPerformanceStats:
     """Unit tests for `_transport_performance_stats()`."""
 
-    def test_uc_incorrect_crs(
+    def test__transport_performancestats_uc_incorrect_crs(
         self,
         expected_transport_performance,
         uc_fixture,
