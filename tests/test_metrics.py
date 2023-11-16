@@ -1,51 +1,25 @@
 """Tests for transport_performance/metrics.py."""
 
-import geopandas as gpd
-import pandas as pd
-import pathlib
 import pytest
 
 from pandas.testing import assert_frame_equal
-from pyprojroot import here
 
 from transport_performance.metrics import transport_performance
-from transport_performance.utils.io import from_pickle
 
-
-@pytest.fixture(scope="class")
-def uc_fixture() -> gpd.GeoDataFrame:
-    """Retrieve mock urban centre test fixture."""
-    UC_FIXTURE_PATH = here("tests/data/metrics/mock_urban_centre.pkl")
-    return from_pickle(UC_FIXTURE_PATH)
-
-
-@pytest.fixture(scope="class")
-def centroid_gdf_fixture() -> gpd.GeoDataFrame:
-    """Retrieve mock centroid_gdf test fixture."""
-    CENTROID_GDF_FIXTURE_PATH = here(
-        "tests/data/metrics/mock_centroid_gdf.pkl"
-    )
-    return from_pickle(CENTROID_GDF_FIXTURE_PATH)
-
-
-@pytest.fixture(scope="class")
-def pop_gdf_fixture() -> gpd.GeoDataFrame:
-    """Retrieve mock pop_gdf test fixture."""
-    POP_GDF_FIXTURE_PATH = here("tests/data/metrics/mock_pop_gdf.pkl")
-    return from_pickle(POP_GDF_FIXTURE_PATH)
-
-
-@pytest.fixture(scope="class")
-def tt_fixture() -> pathlib.Path:
-    """Retrieve mock travel times test fixture."""
-    return here("tests/data/metrics/mock_tt.parquet")
+# import metrics fixtures via pytest_plugins
+pytest_plugins = ["tests._metrics.metrics_fixtures"]
 
 
 class TestTransportPerformance:
     """Collection of tests for `transport_performance()` function."""
 
     def test_transport_performance(
-        self, uc_fixture, centroid_gdf_fixture, pop_gdf_fixture, tt_fixture
+        self,
+        uc_fixture,
+        centroid_gdf_fixture,
+        pop_gdf_fixture,
+        tt_fixture,
+        expected_transport_performance,
     ) -> None:
         """Test main behaviour of transport performance function.
 
@@ -59,6 +33,8 @@ class TestTransportPerformance:
             A mock population test fixture
         tt_fixture
             A mock travel time test fixture
+        expected_transport_performance
+            Expected results fixture
 
         Notes
         -----
@@ -79,54 +55,12 @@ class TestTransportPerformance:
             urban_centre_country="country",
             urban_centre_gdf=uc_fixture,
         )
-
-        # create expected transport performance and stats results
-        # log subset of columns to test against
-        TEST_COLS = [
-            "id",
-            "accessible_population",
-            "proximity_population",
-            "transport_performance",
-        ]
-        expected_tp_df = pd.DataFrame(
-            [
-                [5, 32, 46, (32 / 46 * 100)],
-                [6, 26, 42, (26 / 42 * 100)],
-                [9, 20, 39, (20 / 39 * 100)],
-                [10, 20, 41, (20 / 41 * 100)],
-            ],
-            columns=TEST_COLS,
-        )
-        expected_stats_df = pd.DataFrame(
-            [
-                [
-                    "name",
-                    "country",
-                    0.04,
-                    34,
-                    expected_tp_df.transport_performance.min(),
-                    expected_tp_df.transport_performance.quantile(0.25),
-                    expected_tp_df.transport_performance.median(),
-                    expected_tp_df.transport_performance.quantile(0.75),
-                    expected_tp_df.transport_performance.max(),
-                ],
-            ],
-            columns=[
-                "urban centre name",
-                "urban centre country",
-                "urban centre area",
-                "urban centre population",
-                "min",
-                "25%",
-                "50%",
-                "75%",
-                "max",
-            ],
-        )
+        # upack expected results and confirm equivalence
+        test_cols, expected_tp, expected_stats = expected_transport_performance
 
         # assert results are as expected
-        assert_frame_equal(tp_df[TEST_COLS], expected_tp_df)
-        assert_frame_equal(stats_df, expected_stats_df)
+        assert_frame_equal(tp_df[test_cols], expected_tp)
+        assert_frame_equal(stats_df, expected_stats)
 
     @pytest.mark.parametrize(
         "arg_name, arg_value, expected",
