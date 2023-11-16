@@ -295,8 +295,8 @@ class MultiGtfsInstance:
 
         """
         _type_defence(return_summary, "return_summary", bool)
-        self.daily_trip_summary = self._summarise_core(
+        self.daily_route_summary = self._summarise_core(
             which="route", summ_ops=summ_ops
         ).copy()
         if return_summary:
-            return self.daily_trip_summary
+            return self.daily_route_summary
