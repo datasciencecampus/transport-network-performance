@@ -13,12 +13,17 @@ pytest_plugins = ["tests._metrics.metrics_fixtures"]
 class TestTransportPerformance:
     """Collection of tests for `transport_performance()` function."""
 
+    @pytest.mark.parametrize(
+        "descriptive_stats",
+        [True, False],
+    )
     def test_transport_performance(
         self,
         uc_fixture,
         centroid_gdf_fixture,
         pop_gdf_fixture,
         tt_fixture,
+        descriptive_stats,
         expected_transport_performance,
     ) -> None:
         """Test main behaviour of transport performance function.
@@ -33,6 +38,8 @@ class TestTransportPerformance:
             A mock population test fixture
         tt_fixture
             A mock travel time test fixture
+        descriptive_stats
+            Flag to control whether descriptive statistics are calculated.
         expected_transport_performance
             Expected results fixture
 
@@ -51,16 +58,20 @@ class TestTransportPerformance:
             pop_gdf_fixture,
             travel_time_threshold=3,
             distance_threshold=0.11,
+            descriptive_stats=descriptive_stats,
             urban_centre_name="name",
             urban_centre_country="country",
             urban_centre_gdf=uc_fixture,
         )
-        # upack expected results and confirm equivalence
-        test_cols, expected_tp, expected_stats = expected_transport_performance
 
-        # assert results are as expected
+        # upack expected results and confirm equivalence
+        # when no descriptive stats are calulcated, ensure None is returned
+        test_cols, expected_tp, expected_stats = expected_transport_performance
         assert_frame_equal(tp_df[test_cols], expected_tp)
-        assert_frame_equal(stats_df, expected_stats)
+        if descriptive_stats:
+            assert_frame_equal(stats_df, expected_stats)
+        else:
+            assert stats_df is None
 
     @pytest.mark.parametrize(
         "arg_name, arg_value, expected",
