@@ -314,3 +314,30 @@ class TestTransportPerformance:
         default_args[arg_name] = arg_value
         with expected:
             transport_performance(**default_args)
+
+    def test_transport_performance_invalid_backend(
+        self, centroid_gdf_fixture, pop_gdf_fixture, tt_fixture
+    ) -> None:
+        """Test transport performance with an invalid backend.
+
+        Parameters
+        ----------
+        centroid_gdf_fixture
+            Mock centroid test fixture
+        pop_gdf_fixture
+            Mock population test fixture
+        tt_fixture
+            Mock travel time test fixture
+
+        """
+        # call transport_performance() using an invalid backend
+        with pytest.raises(
+            ValueError,
+            match="Got `backend`=test. Expected one of:",
+        ):
+            transport_performance(
+                tt_fixture,
+                centroid_gdf_fixture,
+                pop_gdf_fixture,
+                backend="test",
+            )
