@@ -143,6 +143,15 @@ class TestFilterGtfs(object):
         assert (
             len(gtfs.feed.stop_times) == 7741
         ), "GTFS not filtered to multiple dates as expected"
+        # test attr get'sr emoved
+        gtfs.summarise_routes()
+        assert hasattr(
+            gtfs, "pre_processed_trips"
+        ), "pre_processed trips not an attr of the gtfs"
+        filter_gtfs(gtfs, filter_dates=["20230611", "20230615"])
+        assert not hasattr(
+            gtfs, "pre_processed_trips"
+        ), "pre_processed trips is still an attr of the gtfs"
 
 
 class TestBboxFilterGtfs(object):
