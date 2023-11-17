@@ -65,7 +65,7 @@ class TestMultiGtfsInstance(object):
         """General tests for the constructor."""
         m_gtfs = MultiGtfsInstance(multi_gtfs_paths)
         assert np.array_equal(
-            m_gtfs.paths, multi_gtfs_paths
+            np.sort(m_gtfs.paths), np.sort(multi_gtfs_paths)
         ), "Paths not as expected"
         assert len(m_gtfs.paths) == 2, "Unexpected number of GTFS paths"
         assert (
@@ -92,7 +92,7 @@ class TestMultiGtfsInstance(object):
             os.path.basename(fpath) for fpath in glob.glob(save_dir + "/*.zip")
         ]
         assert np.array_equal(
-            expected_paths, found_paths
+            np.sort(expected_paths), np.sort(found_paths)
         ), "GtfsInstances not saved as expected"
 
     def test_clean_feed_defences(self, multi_gtfs_fixture):
