@@ -5,6 +5,7 @@ import glob
 
 import numpy as np
 import pandas as pd
+import folium
 
 from transport_performance.gtfs.multi_validation import (
     MultiGtfsInstance,
@@ -246,3 +247,55 @@ class TestMultiGtfsInstance(object):
         # assert summary isn't returned
         not_summary = multi_gtfs_fixture.summarise_routes(return_summary=False)
         assert isinstance(not_summary, type(None))
+
+    @pytest.mark.parametrize(
+        "path, return_viz, raises, match",
+        (
+            [
+                True,
+                True,
+                TypeError,
+                ".*path.*expected.*str.*Path.*None.*Got.*bool.*",
+            ],
+            [
+                "test.html",
+                12,
+                TypeError,
+                ".*return_viz.*expected.*bool.*None.*Got.*int.*",
+            ],
+            [
+                None,
+                None,
+                ValueError,
+                "Both .*path.*return_viz.* parameters are of NoneType.",
+            ],
+        ),
+    )
+    def test_viz_stops_defences(
+        self, multi_gtfs_fixture, path, return_viz, raises, match
+    ):
+        """Defensive tests for .viz_stops()."""
+        with pytest.raises(raises, match=match):
+            multi_gtfs_fixture.viz_stops(path=path, return_viz=return_viz)
+
+    def test_viz_stops(self, multi_gtfs_fixture, tmp_path):
+        """General tests for .viz_stops()."""
+        # saving without returning
+        save_path = os.path.join(tmp_path, "save_test.html")
+        returned = multi_gtfs_fixture.viz_stops(
+            path=save_path, return_viz=False
+        )
+        assert os.path.exists(save_path)
+        assert isinstance(returned, type(None))
+        # saving with returning
+        save_path = os.path.join(tmp_path, "save_test2.html")
+        returned = multi_gtfs_fixture.viz_stops(
+            path=save_path, return_viz=True
+        )
+        assert os.path.exists(save_path)
+        assert isinstance(returned, folium.Map)
+        # returning without save
+        returned = multi_gtfs_fixture.viz_stops(return_viz=True)
+        assert isinstance(returned, folium.Map)
+        files = glob.glob(f"{tmp_path}/*.html")
+        assert len(files) == 2, "More files saved than expected"

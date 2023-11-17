@@ -16,6 +16,7 @@ from transport_performance.utils.defence import (
     _type_defence,
     _is_expected_filetype,
     _check_parent_dir_exists,
+    _enforce_file_extension,
 )
 
 
@@ -390,8 +391,9 @@ class MultiGtfsInstance:
         # defences
         _type_defence(path, "path", (str, pathlib.Path, type(None)))
         _type_defence(return_viz, "return_viz", (bool, type(None)))
-        if not isinstance(path, type(None)):
+        if path:
             _check_parent_dir_exists(path, "path", True)
+            _enforce_file_extension(path, ".html", ".html", "path")
         if not path and not return_viz:
             raise ValueError(
                 "Both 'path' and 'return_viz' parameters are of NoneType."
