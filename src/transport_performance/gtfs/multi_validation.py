@@ -8,6 +8,8 @@ import os
 from geopandas import GeoDataFrame
 import numpy as np
 import pandas as pd
+import folium
+from folium.plugins import FastMarkerCluster
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.utils.defence import (
@@ -358,3 +360,115 @@ class MultiGtfsInstance:
         ).copy()
         if return_summary:
             return self.daily_route_summary
+
+    def viz_stops(
+        self, path: Union[str, pathlib.Path] = None, return_viz: bool = True
+    ) -> Union[folium.Map, None]:
+        """Visualise all stops from all of the GTFS files.
+
+        Parameters
+        ----------
+        path : Union[str, pathlib.Path], optional
+            The path to save the folium map to, by default None.
+        return_viz : bool, optional
+            Whether or not to return the folium map object, by default True.
+
+        Returns
+        -------
+        folium.Map
+            A folium map with all stops plotted on it.
+        None
+            Returns none if 'return_viz' is False.
+
+        Raises
+        ------
+        ValueError
+            An error is raised if bot parameters are None as the map won't be
+            saved or returned.
+
+        """
+        # defences
+        _type_defence(path, "path", (str, pathlib.Path, type(None)))
+        _type_defence(return_viz, "return_viz", (bool, type(None)))
+        if not isinstance(path, type(None)):
+            _check_parent_dir_exists(path, "path", True)
+        if not path and not return_viz:
+            raise ValueError(
+                "Both 'path' and 'return_viz' parameters are of NoneType."
+            )
+
+        # combine stop tables
+        parts = []
+        for inst in self.instances:
+            subset = inst.feed.stops[
+                ["stop_lat", "stop_lon", "stop_name", "stop_id", "stop_code"]
+            ].copy()
+            subset["gtfs_path"] = os.path.basename(inst.gtfs_path)
+            parts.append(subset)
+
+        all_stops = pd.concat(parts)
+
+        # plot all stops to a folium map
+        map = folium.Map(control_scale=True)
+        STOP_STYLE = {
+            "radius": 8,
+            "fill": "true",
+            "color": "blue",
+            "weight": 1,
+            "fillOpacity": 0.8,
+        }
+        CLICKED_STYLE = {
+            "radius": 9,
+            "fill": "true",
+            "color": "green",
+            "weight": 1,
+            "fillOpacity": 0.5,
+        }
+        callback = f"""\
+        function (row) {{
+            var imarker;
+            marker = L.circleMarker(new L.LatLng(row[0], row[1]),
+                {STOP_STYLE}
+            );
+            // add a popup with stop info
+            marker.bindPopup(
+                    '<b><u>Stop Information</u></b><br>' +
+                    '<b>Stop Name:</b>' + row[2] + '<br>' +
+                    '<b>Stop ID:</b>' + row[3] + '<br>' +
+                    '<b>Stop Code:</b>' + row[4] + '<br>'
+            );
+            // function for changing marker properties on hover
+            function marker_hover(mark) {{
+                mark.target.setStyle(
+                    {CLICKED_STYLE}
+                );
+            }};
+            function marker_return(mark) {{
+                mark.target.setStyle(
+                    {STOP_STYLE}
+                );
+            }};
+            // add listeners
+            marker.on('mouseover', marker_hover);
+            marker.on('mouseout', marker_return);
+            // return marker
+            return marker;
+
+        }};
+        """
+        FastMarkerCluster(
+            data=all_stops, callback=callback, disableClusteringAtZoom=15
+        ).add_to(map)
+        # fit map to bounds
+        map_bounds = (
+            (all_stops.stop_lat.min(), all_stops.stop_lon.min()),
+            (all_stops.stop_lat.max(), all_stops.stop_lon.max()),
+        )
+        map.fit_bounds(map_bounds)
+
+        # save and return
+        if path:
+            map.save(path)
+        if return_viz:
+            return map
+        return None
