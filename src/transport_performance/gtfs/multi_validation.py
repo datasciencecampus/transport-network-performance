@@ -24,12 +24,70 @@ class FileCountError(Exception):
 
 
 class MultiGtfsInstance:
-    """Filler Docstring."""
+    """Create a feed instance for multiple GTFS files.
+
+    Tihs allows for multiple GTFS files to be cleaned, validated, summarised,
+    filtered and saved at the same time.
+
+    Parameters
+    ----------
+    path : Union[str, list]
+        list of paths, or a glob string. See more informtion on glovb strings
+        here: https://docs.python.org/3/library/glob.html
+
+    Attributes
+    ----------
+    paths : list
+        A list of the GTFS paths used to create the MultiGtfsInstance object.
+    instances : list
+        A list of GtfsInstance objects created from self.paths.
+    daily_trip_summary : pd.DataFrame
+        A combined summary of statistics for trips from all GTFS files in the
+        MultiGtfsInstance.
+    daily_route_summary : pd.DataFrame
+        A combined summary of statistics for routes from all GTFS files in the
+        MultiGtfsInstance.
+
+    Methods
+    -------
+    save()
+        Saves each GtfsInstance to a directory.
+    clean_feed()
+        Cleans all of the GTFS files.
+    is_valid()
+        Validates all of the GTFS files.
+    filter_to_date()
+        Filter all of the GTFS files to a specific date(s).
+    filter_to_bbox()
+        Filter all of the GTFS files to a specific bbox.
+    summarise_trips()
+        Create a summary of all of the routes throughout all GTFS files.
+    summarise_routes()
+        Create a summary of all of the trips throughout all GTFS files.
+
+    Raises
+    ------
+    TypeError
+        'path' is not of type string or list.
+    FileCountError
+        The glob string used for glob.glob does not find at least 2 files.
+    FileNotFoundError
+        One (or more) of the paths passed to 'path' does not exist.
+    ValueError
+        Path as no file extension.
+    ValueError
+        One (or more) of the paths passed are not of the filetype '.zip'.
+
+    Returns
+    -------
+    None
+
+    """
 
     def __init__(self, path: Union[str, list]) -> None:
         # defences
         _type_defence(path, "path", (str, list))
-        # defend a regex string
+        # defend a glob string
         if isinstance(path, str):
             gtfs_paths = glob.glob(path)
             if len(gtfs_paths) < 2:
