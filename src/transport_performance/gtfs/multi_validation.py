@@ -26,13 +26,13 @@ class FileCountError(Exception):
 class MultiGtfsInstance:
     """Create a feed instance for multiple GTFS files.
 
-    Tihs allows for multiple GTFS files to be cleaned, validated, summarised,
+    This allows for multiple GTFS files to be cleaned, validated, summarised,
     filtered and saved at the same time.
 
     Parameters
     ----------
     path : Union[str, list]
-        list of paths, or a glob string. See more informtion on glovb strings
+        A list of paths, or a glob string. See more informtion on glob strings
         here: https://docs.python.org/3/library/glob.html
 
     Attributes
