@@ -124,7 +124,7 @@ def filter_gtfs(
         diff = set(filter_dates).difference(feed_dates)
         if diff:
             raise ValueError(
-                f"{diff} passed to 'filter_dates' not present in feed dates"
+                f"{diff} passed to 'filter_dates' not present in feed dates "
                 f"Feed dates include: {feed_dates}"
             )
         gtfs.feed = gtfs.feed.restrict_to_dates(filter_dates)

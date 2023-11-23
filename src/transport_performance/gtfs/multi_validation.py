@@ -217,7 +217,10 @@ class MultiGtfsInstance:
         progress = tqdm(zip(self.paths, self.instances), total=len(self.paths))
         for path, inst in progress:
             progress.set_description(f"Filtering GTFS from path {path}")
-            inst.filter_to_date(dates=dates)
+            try:
+                inst.filter_to_date(dates=dates)
+            except ValueError as e:
+                raise ValueError(f"In GTFS {path}.\n{e}")
         return None
 
     def filter_to_bbox(
