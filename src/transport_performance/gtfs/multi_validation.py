@@ -161,9 +161,7 @@ class MultiGtfsInstance:
             inst.clean_feed(**clean_kwargs)
         return None
 
-    def is_valid(
-        self, validation_kwargs: Union[dict, None] = None
-    ) -> pd.DataFrame:
+    def is_valid(self, validation_kwargs: Union[dict, None] = None) -> None:
         """Validate each of the feeds in the MultiGtfsInstance.
 
         Parameters
@@ -174,9 +172,7 @@ class MultiGtfsInstance:
 
         Returns
         -------
-        self.validity_df : pd.DataFrame
-            A dataframe containing the validation messages from all of the
-            GtfsInstance's.
+        None
 
         """
         # defences
@@ -192,16 +188,32 @@ class MultiGtfsInstance:
         for path, inst in progress:
             progress.set_description(f"Cleaning GTFS from path {path}")
             inst.is_valid(**validation_kwargs)
+        return None
 
-        # concat all validation tables into one
-        tables = []
-        for inst in self.instances:
-            valid_df = inst.validity_df.copy()
-            valid_df["GTFS"] = inst.gtfs_path
-            tables.append(valid_df)
-        combined_validation = pd.concat(tables)
-        self.validity_df = combined_validation
-        return self.validity_df.copy().reset_index(drop=True)
+    def filter_to_date(self, dates: Union[str, list]) -> None:
+        """Filter each GTFS to date(s).
+
+        Parameters
+        ----------
+        dates : Union[str, list]
+            The date(s) to filter the GTFS to
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(dates, "dates", (str, list))
+        # convert to normalsed format
+        if isinstance(dates, str):
+            dates = [dates]
+        # filter gtfs
+        progress = tqdm(zip(self.paths, self.instances), total=len(self.paths))
+        for path, inst in progress:
+            progress.set_description(f"Filtering GTFS from path {path}")
+            inst.filter_to_date(dates=dates)
+        return None
 
     def filter_to_bbox(
         self, bbox: Union[list, GeoDataFrame], crs: str = "epsg:4326"
