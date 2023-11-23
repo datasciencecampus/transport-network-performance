@@ -20,12 +20,6 @@ from transport_performance.utils.defence import (
 )
 
 
-class FileCountError(Exception):
-    """Raised when the number of files found is less than expected."""
-
-    pass
-
-
 class MultiGtfsInstance:
     """Create a feed instance for multiple GTFS files.
 
@@ -72,10 +66,11 @@ class MultiGtfsInstance:
     ------
     TypeError
         'path' is not of type string or list.
-    FileCountError
-        The glob string used for glob.glob does not find at least 2 files.
     FileNotFoundError
         One (or more) of the paths passed to 'path' does not exist.
+    FileNotFoundError
+        There are no GTFS files found in the passed list of paths, or from the
+        glob string.
     ValueError
         Path as no file extension.
     ValueError
@@ -93,12 +88,9 @@ class MultiGtfsInstance:
         # defend a glob string
         if isinstance(path, str):
             gtfs_paths = glob.glob(path)
-            if len(gtfs_paths) < 2:
-                raise FileCountError(
-                    f"At least 2 files expected at {path}. Found "
-                    f"{len(gtfs_paths)}"
-                )
             path = gtfs_paths
+        if len(path) < 1:
+            raise FileNotFoundError("No GTFS files found.")
         # check all paths are zip files
         for i, pth in enumerate(path):
             _is_expected_filetype(pth, f"path[{i}]", True, ".zip")

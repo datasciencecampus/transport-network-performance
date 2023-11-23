@@ -9,7 +9,6 @@ import folium
 
 from transport_performance.gtfs.multi_validation import (
     MultiGtfsInstance,
-    FileCountError,
 )
 from transport_performance.gtfs.validation import GtfsInstance
 
@@ -42,17 +41,11 @@ class TestMultiGtfsInstance(object):
         ):
             MultiGtfsInstance(12)
         # not enough files found (0)
-        with pytest.raises(
-            FileCountError, match="At least 2 files expected.*Found.*0"
-        ):
+        with pytest.raises(FileNotFoundError, match="No GTFS files found."):
             MultiGtfsInstance(f"{tmp_path}/*.zip")
         # not enough files found (1)
         with open(os.path.join(tmp_path, "test.txt"), "w") as f:
             f.write("This is a test.")
-        with pytest.raises(
-            FileCountError, match="At least 2 files expected.*Found.*1"
-        ):
-            MultiGtfsInstance(f"{tmp_path}/*.txt")
         # files of wrong type
         with open(os.path.join(tmp_path, "test2.txt"), "w") as f:
             f.write("This is a test.")
