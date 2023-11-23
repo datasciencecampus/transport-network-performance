@@ -161,7 +161,9 @@ class MultiGtfsInstance:
             inst.clean_feed(**clean_kwargs)
         return None
 
-    def is_valid(self, validation_kwargs: Union[dict, None] = None) -> None:
+    def is_valid(
+        self, validation_kwargs: Union[dict, None] = None
+    ) -> pd.DataFrame:
         """Validate each of the feeds in the MultiGtfsInstance.
 
         Parameters
@@ -172,7 +174,9 @@ class MultiGtfsInstance:
 
         Returns
         -------
-        None
+        self.validity_df : pd.DataFrame
+            A dataframe containing the validation messages from all of the
+            GtfsInstance's.
 
         """
         # defences
@@ -188,8 +192,17 @@ class MultiGtfsInstance:
         for path, inst in progress:
             progress.set_description(f"Cleaning GTFS from path {path}")
             inst.is_valid(**validation_kwargs)
-        return None
 
+        # concat all validation tables into one
+        tables = []
+        for inst in self.instances:
+            valid_df = inst.validity_df.copy()
+            valid_df["GTFS"] = inst.gtfs_path
+            tables.append(valid_df)
+        combined_validation = pd.concat(tables)
+        self.validity_df = combined_validation
+        return self.validity_df.copy().reset_index(drop=True)
+        
     def filter_to_date(self, dates: Union[str, list]) -> None:
         """Filter each GTFS to date(s).
 
