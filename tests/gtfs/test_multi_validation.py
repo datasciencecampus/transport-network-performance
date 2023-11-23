@@ -249,9 +249,10 @@ class TestMultiGtfsInstance(object):
         assert isinstance(not_summary, type(None))
 
     @pytest.mark.parametrize(
-        "path, return_viz, raises, match",
+        "path, return_viz, filtered_only, raises, match",
         (
             [
+                True,
                 True,
                 True,
                 TypeError,
@@ -260,23 +261,40 @@ class TestMultiGtfsInstance(object):
             [
                 "test.html",
                 12,
+                True,
                 TypeError,
                 ".*return_viz.*expected.*bool.*None.*Got.*int.*",
             ],
             [
                 None,
                 None,
+                True,
                 ValueError,
                 "Both .*path.*return_viz.* parameters are of NoneType.",
+            ],
+            [
+                "test.html",
+                True,
+                12,
+                TypeError,
+                ".*filtered_only.*expected.*bool.*Got.*int.*",
             ],
         ),
     )
     def test_viz_stops_defences(
-        self, multi_gtfs_fixture, path, return_viz, raises, match
+        self,
+        multi_gtfs_fixture,
+        path,
+        return_viz,
+        filtered_only,
+        raises,
+        match,
     ):
         """Defensive tests for .viz_stops()."""
         with pytest.raises(raises, match=match):
-            multi_gtfs_fixture.viz_stops(path=path, return_viz=return_viz)
+            multi_gtfs_fixture.viz_stops(
+                path=path, return_viz=return_viz, filtered_only=filtered_only
+            )
 
     def test_viz_stops(self, multi_gtfs_fixture, tmp_path):
         """General tests for .viz_stops()."""

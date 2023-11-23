@@ -376,7 +376,10 @@ class MultiGtfsInstance:
             return self.daily_route_summary
 
     def viz_stops(
-        self, path: Union[str, pathlib.Path] = None, return_viz: bool = True
+        self,
+        path: Union[str, pathlib.Path] = None,
+        return_viz: bool = True,
+        filtered_only: bool = True,
     ) -> Union[folium.Map, None]:
         """Visualise all stops from all of the GTFS files.
 
@@ -386,6 +389,9 @@ class MultiGtfsInstance:
             The path to save the folium map to, by default None.
         return_viz : bool, optional
             Whether or not to return the folium map object, by default True.
+        filtered_only : bool, optional
+            Whether to filter the stops that are plotted to only stop_id's that
+            are present in the stop_times table.
 
         Returns
         -------
@@ -404,6 +410,7 @@ class MultiGtfsInstance:
         # defences
         _type_defence(path, "path", (str, pathlib.Path, type(None)))
         _type_defence(return_viz, "return_viz", (bool, type(None)))
+        _type_defence(filtered_only, "filtered_only", bool)
         if path:
             _check_parent_dir_exists(path, "path", True)
             _enforce_file_extension(path, ".html", ".html", "path")
@@ -411,13 +418,15 @@ class MultiGtfsInstance:
             raise ValueError(
                 "Both 'path' and 'return_viz' parameters are of NoneType."
             )
-
         # combine stop tables
         parts = []
         for inst in self.instances:
             subset = inst.feed.stops[
                 ["stop_lat", "stop_lon", "stop_name", "stop_id", "stop_code"]
             ].copy()
+            if filtered_only:
+                valid_ids = inst.feed.stop_times.stop_id.unique()
+                subset = subset[subset.stop_id.isin(valid_ids)]
             subset["gtfs_path"] = os.path.basename(inst.gtfs_path)
             parts.append(subset)
 
