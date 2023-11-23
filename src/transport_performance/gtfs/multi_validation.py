@@ -47,9 +47,9 @@ class MultiGtfsInstance:
 
     Methods
     -------
-    save()
+    save_feeds()
         Saves each GtfsInstance to a directory.
-    clean_feed()
+    clean_feeds()
         Cleans all of the GTFS files.
     is_valid()
         Validates all of the GTFS files.
@@ -99,7 +99,7 @@ class MultiGtfsInstance:
         # instantiate the GtfsInstance's
         self.instances = [GtfsInstance(fpath) for fpath in path]
 
-    def save(self, dir: Union[pathlib.Path, str]) -> None:
+    def save_feeds(self, dir: Union[pathlib.Path, str]) -> None:
         """Save the GtfsInstances to a directory.
 
         Parameters
@@ -126,7 +126,7 @@ class MultiGtfsInstance:
             inst.save(path)
         return None
 
-    def clean_feed(self, clean_kwargs: Union[dict, None] = None) -> None:
+    def clean_feeds(self, clean_kwargs: Union[dict, None] = None) -> None:
         """Clean each of the feeds in the MultiGtfsInstance.
 
         Parameters

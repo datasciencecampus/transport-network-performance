@@ -56,7 +56,7 @@ def _validate_bbox_list(bbox: list) -> None:
 def filter_gtfs(
     gtfs: "GtfsInstance",
     bbox: Union[GeoDataFrame, list, None] = None,
-    crs: str = "epsg:4326",
+    crs: Union[str, int] = "epsg:4326",
     filter_dates: list = [],
 ) -> None:
     """Filter the GTFS to either a bbox or a date.
@@ -68,7 +68,7 @@ def filter_gtfs(
     bbox : Union[GeoDataFrame, list, None], optional
         The bbox to filter the GTFS to. Leave as none if the GTFS does not need
          to be cropped. Format - [xmin, ymin, xmax, ymax], by default None
-    crs : str, optional
+    crs : Union[str, int], optional
         The CRS of the given bbox, by default "epsg:4326"
     filter_dates : list, optional
         The dates to filter the GTFS to. Leave as an empty list if you do not
@@ -88,7 +88,7 @@ def filter_gtfs(
     # defences
     _gtfs_defence(gtfs, "gtfs")
     _type_defence(bbox, "bbox", (GeoDataFrame, list, type(None)))
-    _type_defence(crs, "crs", str)
+    _type_defence(crs, "crs", (str, int))
     _type_defence(filter_dates, "filter_dates", list)
 
     # check that filtering has been requested

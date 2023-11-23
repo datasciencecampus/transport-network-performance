@@ -69,11 +69,11 @@ class TestMultiGtfsInstance(object):
                 inst, GtfsInstance
             ), "GtfsInstance not instanciated"
 
-    def test_save(self, multi_gtfs_paths, tmp_path):
-        """Tests for .save()."""
+    def test_save_feeds(self, multi_gtfs_paths, tmp_path):
+        """Tests for .save_feeds()."""
         gtfs = MultiGtfsInstance(multi_gtfs_paths)
         save_dir = os.path.join(tmp_path, "save_test")
-        gtfs.save(save_dir)
+        gtfs.save_feeds(save_dir)
         # assert .save created parent dir
         assert os.path.exists(save_dir), "Save directory not created"
         # assert files saved
@@ -88,13 +88,13 @@ class TestMultiGtfsInstance(object):
             np.sort(expected_paths), np.sort(found_paths)
         ), "GtfsInstances not saved as expected"
 
-    def test_clean_feed_defences(self, multi_gtfs_fixture):
-        """Defensive tests for .clean_feed()."""
+    def test_clean_feeds_defences(self, multi_gtfs_fixture):
+        """Defensive tests for .clean_feeds()."""
         with pytest.raises(TypeError, match=".*clean_kwargs.*dict.*bool"):
-            multi_gtfs_fixture.clean_feed(True)
+            multi_gtfs_fixture.clean_feeds(True)
 
-    def test_clean_feed_on_pasas(self):
-        """General tests for .clean_feed()."""
+    def test_clean_feeds_on_pasas(self):
+        """General tests for .clean_feeds()."""
         # To be completed once PR 195 is merged as there are breaking changes.
         # https://github.com/datasciencecampus/transport-network-performance/
         # pull/195
