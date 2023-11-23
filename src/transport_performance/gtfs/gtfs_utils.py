@@ -197,6 +197,12 @@ def bbox_filter_gtfs(
 
 
     """
+    warnings.filterwarnings("once", category=DeprecationWarning)
+    warnings.warn(
+        "This function has been deprecated and it's functionality has been "
+        "refined in .filter_gtfs().",
+        DeprecationWarning,
+    )
     typing_dict = {
         "bbox": [bbox, (list, GeoDataFrame)],
         "units": [units, str],
