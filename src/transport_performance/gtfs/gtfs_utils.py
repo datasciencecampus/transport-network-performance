@@ -133,6 +133,12 @@ def filter_gtfs(
     if hasattr(gtfs, "pre_processed_trips"):
         delattr(gtfs, "pre_processed_trips")
 
+    # post-filtering checks on GTFS
+    if len(gtfs.feed.stop_times) < 1:
+        warnings.warn(
+            f"GTFS from path {gtfs.gtfs_path} is empty after filtering",
+            UserWarning,
+        )
     return None
 
 

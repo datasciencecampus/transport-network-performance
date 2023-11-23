@@ -157,9 +157,10 @@ class TestMultiGtfsInstance(object):
         ), "Gtfs inst[1] not as expected"
         # filter to bbox
         # (out of scope of Chester, so Chester GTFS should return 0)
-        multi_gtfs_fixture.filter_to_bbox(
-            [-2.985535, 51.551459, -2.919617, 51.606077]
-        )
+        with pytest.warns(UserWarning):
+            multi_gtfs_fixture.filter_to_bbox(
+                [-2.985535, 51.551459, -2.919617, 51.606077]
+            )
         # assert filtered contents
         assert (
             len(multi_gtfs_fixture.instances[0].feed.stop_times) == 0
