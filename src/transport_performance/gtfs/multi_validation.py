@@ -202,7 +202,7 @@ class MultiGtfsInstance:
         combined_validation = pd.concat(tables)
         self.validity_df = combined_validation
         return self.validity_df.copy().reset_index(drop=True)
-        
+
     def filter_to_date(self, dates: Union[str, list]) -> None:
         """Filter each GTFS to date(s).
 
