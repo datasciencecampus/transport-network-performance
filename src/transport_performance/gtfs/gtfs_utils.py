@@ -26,7 +26,7 @@ from transport_performance.utils.defence import (
 from transport_performance.utils.constants import PKG_PATH
 
 
-def _validate_bbox(bbox: list) -> None:
+def _validate_bbox_list(bbox: list) -> None:
     """Small function to ensure bbox coords are in the correct order."""
     _type_defence(bbox, "bbox", list)
     # check len
@@ -103,7 +103,7 @@ def filter_gtfs(
 
     # handle bbox
     if isinstance(bbox, list):
-        _validate_bbox(bbox)
+        _validate_bbox_list(bbox)
         # create box polygon around provided coords, need to unpack
         bbox = box(*bbox)
         # gtfs_kit expects gdf
