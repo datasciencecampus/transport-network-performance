@@ -156,7 +156,7 @@ def _convert_osm_dict_to_gdf(
                         [(key, k)], names=["parent_id", "member_id"]
                     )
                     mem_row = pd.DataFrame(j, index=ind)
-                out_df = pd.concat([out_df, mem_row])
+                    out_df = pd.concat([out_df, mem_row])
 
     # geodataframe requires geometry column
     out_df["geometry"] = [
