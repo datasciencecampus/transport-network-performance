@@ -27,7 +27,7 @@ def _transport_performance_pandas(
         File path or directory path to `analyse_network` output(s). Files must
         be in '.parquet' format.
     centroids : gpd.GeoDataFrame
-        Populations geodataframe containing centroid geometries
+        Populations geodataframe containing centroid geometries.
     populations : gpd.GeoDataFrame
         Populations geodataframe containing population data and cell
         geometries.
@@ -35,8 +35,8 @@ def _transport_performance_pandas(
         Maximum threshold for travel times, by default 45 (minutes). Used when
         calculating accessibility.
     distance_threshold : float, optional
-        Maximum threshold for source/desintiation distance, by default 11.25
-        (Km). Used when calculating accessibility and proximity.
+        Maximum threshold for source/destination distance, by default 11.25
+        (km). Used when calculating accessibility and proximity.
     sources_col : str, optional
         The sources column name in the travel time data, by default "from_id".
     destinations_col : str, optional
@@ -50,10 +50,10 @@ def _transport_performance_pandas(
 
     """
     # create local binding before manipulation since `centroids` is a mutable
-    # dtype - create pass-by-value effect and won't impact inpput variable.
+    # dtype - create pass-by-value effect and won't impact input variable.
     centroids_df = centroids
 
-    # convert centroid shapley object to tuple
+    # convert centroid shapely object to tuple
     centroids_df["centroid_tuple"] = centroids_df["centroid"].apply(
         lambda coord: (coord.y, coord.x)
     )
@@ -160,7 +160,7 @@ def _transport_performance_stats(
     urban_centre_gdf : gpd.GeoDataFrame, optional
         Output from `UrbanCentre`, containg the urban centre geometry
         information. By default None meaning the urban centre area will not be
-        calcuated.
+        calculated.
 
     Returns
     -------
@@ -171,7 +171,7 @@ def _transport_performance_stats(
     ------
     UserWarning
         When the CRS unit of `urban_centre_gdf` is not in meters, and
-        reporjection is required in order to calculate the urban centre area.
+        reprojection is required in order to calculate the urban centre area.
 
     """
     # describe columns to include
