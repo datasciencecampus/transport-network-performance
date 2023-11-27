@@ -45,7 +45,7 @@ jobs:
         sudo apt search libgeos
         sudo apt install -y libgeos-dev
         sudo apt search osmosis
-        sudo apt install -y osmosis=0.48.3
+        sudo apt install -y osmosis
       shell: sh
     - name: Test with pytest
       run: |
