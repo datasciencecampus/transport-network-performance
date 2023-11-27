@@ -35,15 +35,15 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: '11'
+        java-version: '11.0.21'
     - name: Check Java Install
       run: |
         java --version
     - name: Install linux depencies with apt
       run: |
         sudo apt update
-        sudo apt install -y libgeos-dev
-        sudo apt install -y osmosis
+        sudo apt install -y libgeos-dev=3.12.0
+        sudo apt install -y osmosis=0.48.3
       shell: sh
     - name: Test with pytest
       run: |
