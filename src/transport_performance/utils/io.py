@@ -68,7 +68,7 @@ def from_pickle(path: Union[str, pathlib.Path]) -> object:
     FileNotFoundError
         `path` does not exist
     ValueError
-        `path` does not have either a ".pkl" or ".pickle" file extnesion.
+        `path` does not have either a ".pkl" or ".pickle" file extension.
 
     """
     # defensive checks
