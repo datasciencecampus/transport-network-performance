@@ -48,8 +48,8 @@ def transport_performance(
         Maximum threshold for travel times, by default 45 (minutes). Used when
         calculating accessibility.
     distance_threshold : Union[int, float], optional
-        Maximum threshold for source/desintiation distance, by default 11.25
-        (Km). Used when calculating accessibility and proximity.
+        Maximum threshold for source/destination distance, by default 11.25
+        (km). Used when calculating accessibility and proximity.
     sources_col : str, optional
         The sources column name in the travel time data, by default "from_id".
     destinations_col : str, optional
@@ -60,7 +60,7 @@ def transport_performance(
         "pandas". Must be one of: {"pandas"}.
     descriptive_stats : bool, optional
         Calculate transport performance descriptive statistics and return them
-        in a seperate dataframe. By default True, means descriptive statistics
+        in a separate dataframe. By default True, means descriptive statistics
         will be calculated and returned.
     urban_centre_name : str, optional
         The urban centre name, by default None meaning the name will not be
@@ -72,7 +72,7 @@ def transport_performance(
     urban_centre_gdf : gpd.GeoDataFrame, optional
         Output from `UrbanCentre`, containg the urban centre geometry
         information. By default None meaning the urban centre area will not be
-        calcuated. Only considered when `descriptive_stats` is True.
+        calculated. Only considered when `descriptive_stats` is True.
 
     Returns
     -------
