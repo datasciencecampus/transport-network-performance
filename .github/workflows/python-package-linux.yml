@@ -42,7 +42,8 @@ jobs:
     - name: Install linux depencies with apt
       run: |
         sudo apt update
-        sudo apt install -y libgeos-dev=3.12.0
+        sudo apt search libgeos
+        sudo apt install -y libgeos3.12.0
         sudo apt install -y osmosis=0.48.3
       shell: sh
     - name: Test with pytest
