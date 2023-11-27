@@ -40,12 +40,11 @@ jobs:
     - name: Check Java Install
       run: |
         java --version
-    - name: Install mac depencies with brew  # not updating brew version, issue with aom
+    - name: Install mac dependencies with brew  # not updating brew version, issue with aom
       run: |
         brew --version
-        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/fd6a21cdb2c56d44509f7459c3feadfe3931ee27/Formula/g/geos.rb
-        brew info geos
-        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/fc3b38db25493e08020dd2479a94061636edcad4/Formula/osmosis.rb
+        curl https://raw.githubusercontent.com/Homebrew/homebrew-core/fc3b38db25493e08020dd2479a94061636edcad4/Formula/osmosis.rb > osmosis.rb
+        brew install --build-from-source ./osmosis.rb
         brew info osmosis
       shell: sh
     - name: Run Integration Tests Only
