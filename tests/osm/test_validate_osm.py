@@ -483,6 +483,11 @@ class Test_ConvertOsmDictToGdf:
                 {222: {"lat": 2.0, "lon": 2.0}},
             ],
         }
+        exp_rows = 0  # expect a gdf with a row for every way member
+        for i in way_dict:
+            for j in way_dict[i]:
+                exp_rows += 1
+
         gdf = _convert_osm_dict_to_gdf(osm_dict=way_dict, feature_type="way")
         assert isinstance(
             gdf, gpd.GeoDataFrame
@@ -490,9 +495,7 @@ class Test_ConvertOsmDictToGdf:
         assert all(
             gdf.columns == ["lat", "lon", "geometry"]
         ), f"Columns not as expected. Found {gdf.columns}"
-        assert (
-            len(gdf) == 4
-        ), f"Expected a row for each member node ID, found {len(gdf)}"
+        assert len(gdf) == 4, f"Expected {exp_rows} rows, found {len(gdf)}"
         exp_lon = gdf["geometry"].iloc[1].x
         exp_lat = gdf["geometry"].iloc[3].y
         assert (
