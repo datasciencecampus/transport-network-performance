@@ -123,7 +123,7 @@ def multi_tt_fixture(tt_fixture, tmp_path) -> pathlib.Path:
 
 @pytest.fixture()
 def non_parquet_extension(tmp_path) -> pathlib.Path:
-    """Create an directory fixture with a parquet and csv file within a dir."""
+    """Create a directory fixture with a parquet and csv file inside."""
     non_parquet_dir = os.path.join(tmp_path, "non_parquet_dir")
     os.makedirs(non_parquet_dir)
     pd.DataFrame().to_parquet(os.path.join(non_parquet_dir, "test.parquet"))
