@@ -103,7 +103,7 @@ class TestTransportPerformanceStats:
     ) -> None:
         """Check descriptive stats calculation with wrong CRS.
 
-        Ensure the user warning is raisde, CRS conversion, and calculated area
+        Ensure the user warning is raised, CRS conversion, and calculated area
         are correct when an urban centre with an invalid CRS is provided.
 
         Parameters
@@ -111,12 +111,12 @@ class TestTransportPerformanceStats:
         expected_transport_performance
             Mock transport performance input (using expected output).
         uc_fixture
-            Mock urban centre fixture, who's CRS will be converted.
+            Mock urban centre fixture, whose CRS will be converted.
 
         """
         with pytest.warns(
             UserWarning,
-            match="Unable to calculate the ubran centre area in CRS EPSG:4326",
+            match="Unable to calculate the urban centre area in CRS EPSG:4326",
         ):
             _, tp_df, expected_stats = expected_transport_performance
             stats_df = _transport_performance_stats(
