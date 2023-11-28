@@ -56,7 +56,7 @@ class TestIOPickle:
     def test_to_pickle_on_warns(
         self, test_gdf: gpd.GeoDataFrame, tmp_path: str
     ) -> None:
-        """Check `to_pickle()` warns when an invalid file extension if given.
+        """Check `to_pickle()` warns when an invalid file extension is given.
 
         Parameters
         ----------
