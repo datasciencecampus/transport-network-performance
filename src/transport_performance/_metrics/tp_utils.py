@@ -203,7 +203,7 @@ def _transport_performance_stats(
         uc_crs = uc.crs.to_string()
         if crs_units != "metre":
             warnings.warn(
-                f"Unable to calculate the ubran centre area in CRS {uc_crs} "
+                f"Unable to calculate the urban centre area in CRS {uc_crs} "
                 f"with units {crs_units}. Reprojecting `urban_centre` onto an "
                 "equal area projection (ESRI:54009, mollweide) for the area "
                 "calculation step."
