@@ -33,17 +33,17 @@ class TestTransportPerformance:
         Parameters
         ----------
         uc_fixture
-            A mock urban centre test fixture
+            A mock urban centre test fixture.
         centroid_gdf_fixture
-            A mock centroid test fixture
+            A mock centroid test fixture.
         pop_gdf_fixture
-            A mock population test fixture
+            A mock population test fixture.
         tt_fixture
-            A mock travel time test fixture
+            A mock travel time test fixture.
         descriptive_stats
             Flag to control whether descriptive statistics are calculated.
         expected_transport_performance
-            Expected results fixture
+            Expected results fixture.
 
         Notes
         -----
@@ -66,8 +66,8 @@ class TestTransportPerformance:
             urban_centre_gdf=uc_fixture,
         )
 
-        # upack expected results and confirm equivalence
-        # when no descriptive stats are calulcated, ensure None is returned
+        # unpack expected results and confirm equivalence
+        # when no descriptive stats are calculated, ensure None is returned
         test_cols, expected_tp, expected_stats = expected_transport_performance
         assert_frame_equal(tp_df[test_cols], expected_tp)
         if descriptive_stats:
@@ -236,12 +236,12 @@ class TestTransportPerformance:
 
         Notes
         -----
-        1. `match` arugument in parameterisation checks each word is within
+        1. `match` argument in parameterisation checks each word is within
         the return error message independent of order. This is such that if the
         error message change, the key components are still captured.
 
         """
-        # create a argument dictionary to store default values
+        # create an argument dictionary to store default values
         default_args = {
             "travel_times_path": tt_fixture,
             "centroid_gdf": centroid_gdf_fixture,
@@ -270,11 +270,11 @@ class TestTransportPerformance:
         Parameters
         ----------
         centroid_gdf_fixture
-            Mock centroid test fixture
+            Mock centroid test fixture.
         pop_gdf_fixture
-            Mock population test fixture
+            Mock population test fixture.
         tt_fixture
-            Mock travel time test fixture
+            Mock travel time test fixture.
 
         """
         # call transport_performance() using an invalid backend
