@@ -49,9 +49,9 @@ def _transport_performance_pandas(
         Transport performance metrics, grouped by destination column IDs.
 
     """
-    # create local binding before manipulation since `centroids` is a mutable
+    # create local copy before manipulation since `centroids` is a mutable
     # dtype - create pass-by-value effect and won't impact input variable.
-    centroids_df = centroids
+    centroids_df = centroids.copy()
 
     # convert centroid shapely object to tuple
     centroids_df["centroid_tuple"] = centroids_df["centroid"].apply(
