@@ -289,6 +289,21 @@ class TestTransportPerformance:
                 backend="test",
             )
 
+        # call transport_performance() using a currently invalid polars backend
+        with pytest.raises(
+            NotImplementedError,
+            match=(
+                "A `polars` based transport performance backend is not yet "
+                "available."
+            ),
+        ):
+            transport_performance(
+                tt_fixture,
+                centroid_gdf_fixture,
+                pop_gdf_fixture,
+                backend="polars",
+            )
+
     @pytest.mark.parametrize(
         "tt_path, expected",
         [

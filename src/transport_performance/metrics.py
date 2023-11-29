@@ -89,7 +89,7 @@ def transport_performance(
 
     """
     # record valid transport performance backends
-    VALID_TP_BACKENDS = ["pandas"]
+    VALID_TP_BACKENDS = ["pandas", "polars"]
 
     # type defences
     type_dict = {
@@ -135,6 +135,11 @@ def transport_performance(
             distance_threshold=distance_threshold,
             sources_col=sources_col,
             destinations_col=destinations_col,
+        )
+    elif backend == "polars":
+        raise NotImplementedError(
+            "A `polars` based transport performance backend is not yet "
+            "available."
         )
     else:
         # raise an error if an unexpected backend is provided
