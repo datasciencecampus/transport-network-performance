@@ -146,7 +146,7 @@ class AnalyseNetwork:
         else:
             origin_gdf = self.gdf.copy()
             dest_gdf = self.gdf[
-                self.gdf[destination_col] == True  # noqa
+                self.gdf[destination_col] == True  # noqa: E712
             ].copy()
 
             od_matrix = self._calculate_transport_network(
@@ -260,7 +260,6 @@ class AnalyseNetwork:
             increase the cartesian product of origins and destinations, which
             may slow down processing or exceed available memory. To use all
             possible origins, use `len(gdf)`.
-            # TODO: consider replacing this by a flag to use either 1 or all.
         unit : Unit
             Unit to calculate distance. Default is km.
 
@@ -306,13 +305,12 @@ class AnalyseNetwork:
         geometry_col = gdf.geometry.name
         # TODO: add option to include all rows as destinations?
         dest_gdf = (
-            gdf[gdf[destination_col] == True].reset_index().copy()  # noqa
+            gdf[gdf[destination_col] == True]  # noqa: E712
+            .reset_index()
+            .copy()
         )
 
         origins = np.array(orig_gdf["id"])
-
-        # TODO: REMEMBER TO REMOVE SHUFFLE
-        # np.random.shuffle(origins)
 
         # loops through origins using selected amount of origins
         for o in range(0, len(origins), num_origins):
