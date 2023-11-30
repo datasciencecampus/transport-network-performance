@@ -160,9 +160,7 @@ class AnalyseNetwork:
                 od_matrix, partition_size
             )
 
-            self._save_to_parquet(
-                od_matrix, str(min(sel_orig)), out_path, partitions
-            )
+            self._save_to_parquet(od_matrix, "all", out_path, partitions)
 
     def _calculate_transport_network(
         self,
