@@ -108,6 +108,9 @@ class AnalyseNetwork:
         may not be enough to handle the O-D matrix.
 
         """
+        # defences
+        d._type_defence(batch_orig, "batch_orig", bool)
+
         if batch_orig:
             # batches are forced to a single origin per iteration
             # (see note in `_gdf_batch_origins`)
