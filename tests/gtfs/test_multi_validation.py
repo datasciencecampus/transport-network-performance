@@ -178,7 +178,7 @@ class TestMultiGtfsInstance(object):
                 "not_which",
                 [np.max],
                 ValueError,
-                ".*which.*route.*trip.*not_which.*",
+                ".*which.*trips.*routes.*not_which.*",
             ],
         ),
     )
@@ -193,7 +193,7 @@ class TestMultiGtfsInstance(object):
         """General tests for _summarise_core()."""
         # test summarising routes
         summary = multi_gtfs_fixture._summarise_core(
-            which="route", summ_ops=[np.max, np.mean]
+            which="routes", summ_ops=[np.max, np.mean]
         )
         assert isinstance(
             summary, pd.DataFrame
@@ -201,14 +201,14 @@ class TestMultiGtfsInstance(object):
         assert (
             len(summary) == 14
         ), f"Number of rows in route summary df is {len(summary)}. Expected 14"
-        friday_exp = [["friday", 3, 25, 18.0], ["friday", 200, 4, 4.0]]
+        friday_exp = [["friday", 3, 37, 31.0], ["friday", 200, 4, 4.0]]
         assert np.array_equal(
             friday_exp,
             [list(x) for x in list(summary[summary.day == "friday"].values)],
         ), "Route summary for Friday not as expected"
         # test summarising trips
         summary = multi_gtfs_fixture._summarise_core(
-            which="trip", summ_ops=[np.max, np.mean]
+            which="trips", summ_ops=[np.max, np.mean]
         )
         assert isinstance(
             summary, pd.DataFrame
@@ -216,7 +216,7 @@ class TestMultiGtfsInstance(object):
         assert (
             len(summary) == 14
         ), f"Number of rows in trip summary df is {len(summary)}. Expected 14"
-        friday_exp = [["friday", 3, 804, 478.0], ["friday", 200, 22, 22.0]]
+        friday_exp = [["friday", 3, 955, 792.0], ["friday", 200, 22, 22.0]]
         assert np.array_equal(
             friday_exp,
             [list(x) for x in list(summary[summary.day == "friday"].values)],
@@ -228,9 +228,6 @@ class TestMultiGtfsInstance(object):
         summary = multi_gtfs_fixture.summarise_trips()
         assert isinstance(summary, pd.DataFrame)
         assert hasattr(multi_gtfs_fixture, "daily_trip_summary")
-        # assert summary isn't returned
-        not_summary = multi_gtfs_fixture.summarise_trips(return_summary=False)
-        assert isinstance(not_summary, type(None))
 
     def test_summarise_routes(self, multi_gtfs_fixture):
         """General tests for summarise_routes()."""
@@ -238,9 +235,6 @@ class TestMultiGtfsInstance(object):
         summary = multi_gtfs_fixture.summarise_routes()
         assert isinstance(summary, pd.DataFrame)
         assert hasattr(multi_gtfs_fixture, "daily_route_summary")
-        # assert summary isn't returned
-        not_summary = multi_gtfs_fixture.summarise_routes(return_summary=False)
-        assert isinstance(not_summary, type(None))
 
     @pytest.mark.parametrize(
         "path, return_viz, filtered_only, raises, match",

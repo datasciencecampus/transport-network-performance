@@ -253,122 +253,126 @@ class MultiGtfsInstance:
 
     def _summarise_core(
         self,
-        which: str = "route",
+        which: str = "trips",
         summ_ops: list = [np.min, np.max, np.mean, np.median],
     ) -> pd.DataFrame:
-        """Concat and summarise the summaries for each GtfsInstance.
+        """Summarise the MultiGtfsInstance by either trip_id or route_id.
 
         Parameters
         ----------
         which : str, optional
-            Which feature to summarise. Options include ['trip', 'route'],
-            by default "route"
+            Which summary to create. Options include ['trips', 'routes'],
+            by default "trips"
         summ_ops : list, optional
-            A list of operators used for summaries,
+            A list of numpy operators to gather a summary on. Accepts operators
+              (e.g., np.min) or strings ("min"),
             by default [np.min, np.max, np.mean, np.median]
 
         Returns
         -------
         pd.DataFrame
-            A dataframe containing the concated summaries
+            A dataframe containing the summary.
 
         Raises
         ------
         ValueError
-            An error raised when the 'which' parameter is invalid.
+            Raises when 'which' is not either 'trips' or 'routes'
 
         """
-        # only small defences here as defences are included in summarise_routes
-        # for each GtfsInstance.
+        # defences
         _type_defence(summ_ops, "summ_ops", list)
         _type_defence(which, "which", str)
         which = which.lower().strip()
-        if which not in ["route", "trip"]:
+        if which not in ["trips", "routes"]:
             raise ValueError(
-                f"'which' must be on of ['route', 'trip']. Got {which}"
+                f"'which' must be one of ['trips', 'routes'].  Got {which}"
             )
-        # concat summaries
-        if which == "route":
-            summaries = [
-                inst.summarise_routes(summ_ops, True)
-                for inst in self.instances
-            ]
+
+        # choose summary
+        if which == "trips":
+            group_col = "trip_id"
+            count_col = "trip_count"
         else:
-            summaries = [
-                inst.summarise_trips(summ_ops, True) for inst in self.instances
-            ]
-        combined_sums = pd.concat(summaries)
-        group_cols = ["day", "route_type"]
-        op_map = {
-            col: col.split("_")[-1]
-            for col in combined_sums.columns.values
-            if col not in group_cols
-        }
-        total_sums = (
-            combined_sums.groupby(group_cols)
-            .agg(op_map)
+            group_col = "route_id"
+            count_col = "route_count"
+
+        # concat pre-processed trips/routes
+        daily_schedule = [
+            g._preprocess_trips_and_routes() for g in self.instances
+        ]
+        daily_schedule = pd.concat(daily_schedule)
+        schedule = daily_schedule[
+            ["date", "day", group_col, "route_type"]
+        ].drop_duplicates()
+        # group to each date and take counts
+        trip_counts = (
+            schedule.groupby(["route_type", "date", "day"])
+            .agg({group_col: "count"})
+            .reset_index()
+        )
+        trip_counts.rename(mapper={group_col: count_col}, axis=1, inplace=True)
+        trip_counts = (
+            trip_counts.groupby(["day", "route_type"])
+            .agg({count_col: summ_ops})
             .reset_index()
             .round(0)
         )
-        return total_sums
+        # reformat index
+        trip_counts.columns = trip_counts.columns = [
+            "_".join(value) if "" not in value else "".join(value)
+            for value in trip_counts.columns.values
+        ]
+        trip_counts.columns = [
+            column.replace("amin", "min").replace("amax", "max")
+            for column in trip_counts.columns.values
+        ]
+        return trip_counts
 
     def summarise_trips(
-        self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
-        return_summary: bool = True,
+        self, summ_ops: list = [np.min, np.max, np.mean, np.median]
     ) -> pd.DataFrame:
-        """Prodice a summarised table of trip statistics for each day.
+        """Summarise the combined GTFS data by trip_id.
 
         Parameters
         ----------
         summ_ops : list, optional
-            A list of operators used for summaries,
+            A list of numpy operators to gather a summary on. Accepts operators
+              (e.g., np.min) or strings ("min"),
             by default [np.min, np.max, np.mean, np.median]
-        return_summary : bool, optional
-            Wether or not to return the summary,
-            by default True
 
         Returns
         -------
         pd.DataFrame
-            A dataframe containing the summarised trips
+            A dataframe containing the summary
 
         """
-        _type_defence(return_summary, "return_summary", bool)
         self.daily_trip_summary = self._summarise_core(
-            which="trip", summ_ops=summ_ops
-        ).copy()
-        if return_summary:
-            return self.daily_trip_summary
+            which="trips", summ_ops=summ_ops
+        )
+        return self.daily_trip_summary.copy()
 
     def summarise_routes(
-        self,
-        summ_ops: list = [np.min, np.max, np.mean, np.median],
-        return_summary: bool = True,
+        self, summ_ops: list = [np.min, np.max, np.mean, np.median]
     ) -> pd.DataFrame:
-        """Prodice a summarised table of route statistics for each day.
+        """Summarise the combined GTFS data by route_id.
 
         Parameters
         ----------
         summ_ops : list, optional
-            A list of operators used for summaries,
+            A list of numpy operators to gather a summary on. Accepts operators
+              (e.g., np.min) or strings ("min"),
             by default [np.min, np.max, np.mean, np.median]
-        return_summary : bool, optional
-            Wether or not to return the summary,
-            by default True
 
         Returns
         -------
         pd.DataFrame
-            A dataframe containing the summarised routes
+            A dataframe containing the summary
 
         """
-        _type_defence(return_summary, "return_summary", bool)
         self.daily_route_summary = self._summarise_core(
-            which="route", summ_ops=summ_ops
-        ).copy()
-        if return_summary:
-            return self.daily_route_summary
+            which="routes", summ_ops=summ_ops
+        )
+        return self.daily_route_summary.copy()
 
     def viz_stops(
         self,
