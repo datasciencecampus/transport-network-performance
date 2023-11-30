@@ -64,8 +64,8 @@ class AnalyseNetwork:
 
     def od_matrix(
         self,
-        num_origins: int,
         out_path: Union[str, pathlib.Path],
+        batch_orig: bool = False,
         partition_size: int = 200,
         destination_col: str = "within_urban_centre",
         distance: float = 11.25,
@@ -76,17 +76,17 @@ class AnalyseNetwork:
 
         Parameters
         ----------
-        num_origins : int
-            Number of origins to consider when batching the transport network
-            calculation. A value of 1 would loop through each origin and all
-            the destinations within the distance threshold. This is recommended
-            for large areas where the full O-D matrix would not fit in memory
-            (e.g. London). A value of len(gdf) would run only once using all
-            destinations.
         out_path : Union[str, pathlib.Path]
             Path to save the O-D matrix as parquet files.
+        batch_orig : bool
+            Flag to indicate whether to calculate the transport network
+            performance using the whole dataset or batching by origin
+            (iteratively calculating the transport performance of each origin
+            and all destinations within range). Should be True for large urban
+            centres where the whole O-D matrix may be to large to be hold in
+            memory. Defaults to False.
         partition_size : int
-            Maximum size of each individual parquet files. If data would
+            Maximum size of each individual parquet file. If data would
             exceed this size, it will be split in several parquet files.
         destination_col : str
             Column indicating what centroids should be considered as
@@ -102,24 +102,49 @@ class AnalyseNetwork:
 
         Notes
         -----
-        This function will work with any number of origins. However, this is
-        not currently optimised and performance may be poor if using values
-        other than 1 or all.
+        `batch_orig` = True can be used for small datasets, however this will
+        likely be slower as normal r5py behaviour uses parallel computing. We
+        recommend setting this argument to True only in cases where memory
+        may not be enough to handle the O-D matrix.
 
         """
-        for sel_orig, sel_dest in tqdm(
-            self._gdf_batch_origins(
-                self.gdf,
-                destination_col=destination_col,
-                distance=distance,
-                num_origins=num_origins,
-                unit=unit,
-            ),
-            total=ceil(len(self.gdf) / num_origins),
-        ):
+        if batch_orig:
+            # batches are forced to a single origin per iteration
+            # (see note in `_gdf_batch_origins`)
+            # may change in the future
+            for sel_orig, sel_dest in tqdm(
+                self._gdf_batch_origins(
+                    self.gdf,
+                    destination_col=destination_col,
+                    distance=distance,
+                    num_origins=1,
+                    unit=unit,
+                ),
+                total=len(self.gdf),
+            ):
 
-            origin_gdf = self.gdf[self.gdf["id"].isin(sel_orig)]
-            dest_gdf = self.gdf[self.gdf["id"].isin(sel_dest)]
+                origin_gdf = self.gdf[self.gdf["id"].isin(sel_orig)].copy()
+                dest_gdf = self.gdf[self.gdf["id"].isin(sel_dest)].copy()
+
+                od_matrix = self._calculate_transport_network(
+                    self.transport_network,
+                    origins=origin_gdf,
+                    destinations=dest_gdf,
+                    **kwargs,
+                )
+
+                partitions = self._estimate_num_partitions(
+                    od_matrix, partition_size
+                )
+
+                self._save_to_parquet(
+                    od_matrix, str(min(sel_orig)), out_path, partitions
+                )
+        else:
+            origin_gdf = self.gdf.copy()
+            dest_gdf = self.gdf[
+                self.gdf[destination_col] == True  # noqa
+            ].copy()
 
             od_matrix = self._calculate_transport_network(
                 self.transport_network,
