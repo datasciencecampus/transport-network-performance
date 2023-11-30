@@ -337,8 +337,8 @@ class MultiGtfsInstance:
         ----------
         summ_ops : list, optional
             A list of numpy operators to gather a summary on. Accepts operators
-              (e.g., np.min) or strings ("min"),
-            by default [np.min, np.max, np.mean, np.median]
+            (e.g., np.min) or strings ("min")
+            ,by default [np.min, np.max, np.mean, np.median]
 
         Returns
         -------
