@@ -18,7 +18,7 @@ from shapely.geometry import Point
 from typing import Type, Union
 from _pytest.python_api import RaisesContext
 
-import transport_performance.analyse_network.analyse_network as an
+import transport_performance.analyse_network as an
 
 
 ############
