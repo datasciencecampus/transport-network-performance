@@ -89,6 +89,7 @@ class UrbanCentre:
         cell_fill_threshold: int = 5,
         vector_nodata: int = -200,
         buffer_size: int = 10000,
+        buffer_estimation_crs: str = "EPSG:27700",
     ) -> gpd.GeoDataFrame:
         """Get urban centre.
 
@@ -130,6 +131,10 @@ class UrbanCentre:
         buffer_size : int, optional
             Size of the buffer around the urban centre, in the distance units
             of the `centre_crs`. Defaults to 10,000 metres.
+        buffer_estimation_crs : string, optional
+            CRS to use when calculating the buffer. Recommend using an
+            appropriate CRS for measuring distances. Default is "EPSG:2770",
+            suitable for UK urban centres.
 
         Returns
         -------
@@ -184,8 +189,14 @@ class UrbanCentre:
                 "`buffer_size` expected positive non-zero integer"
             )
 
+        # convert uc to appropriate CRS before buffer estimation + return CRS.
         self.__buffer = gpd.GeoDataFrame(
-            geometry=self.__vectorized_uc.buffer(buffer_size), crs=self.crs
+            geometry=(
+                self.__vectorized_uc.to_crs(buffer_estimation_crs)
+                .buffer(buffer_size)
+                .to_crs(self.crs)
+            ),
+            crs=self.crs,
         )
 
         # bbox
