@@ -795,8 +795,20 @@ class Test_save_to_parquet:
 #######################
 # test module outputs #
 #######################
+@pytest.mark.parametrize(
+    "batch_orig, num_files",
+    [
+        # all origins
+        (False, 1),
+        # single origin
+        (True, 4),
+    ],
+)
 def test_od_matrix(
-    dummy_transport_network: an.AnalyseNetwork, dummy_filepath: pathlib.Path
+    dummy_transport_network: an.AnalyseNetwork,
+    dummy_filepath: pathlib.Path,
+    batch_orig: bool,
+    num_files: int,
 ):
     """Test main od_matrix method outputs.
 
@@ -807,13 +819,17 @@ def test_od_matrix(
         centroids fixtures.
     dummy_filepath : pathlib.Path
         Path to temporary directory to save parquet files.
-
+    batch_orig : bool
+        Flag to indicate whether to calculate the transport network
+        performance using the whole dataset or batching by origin
+    num_files : int
+        Number of files expected based on `batch_orig`.
 
     """
     tn = dummy_transport_network
     tn.od_matrix(
-        num_origins=4,
         out_path=dummy_filepath,
+        batch_orig=batch_orig,
         partition_size=200,
         destination_col="within_urban_centre",
         distance=11.25,
@@ -824,9 +840,32 @@ def test_od_matrix(
         transport_modes=[TransportMode.TRANSIT],
     )
 
-    assert glob.glob(os.path.join(dummy_filepath, "*.parquet")) == [
-        os.path.join(dummy_filepath, "batch-1-0.parquet")
-    ]
+    if batch_orig:
+        # check 4 parquet files are saved
+        assert (
+            len(glob.glob(os.path.join(dummy_filepath, "*.parquet")))
+            == num_files
+        )
+        # check 4 files with expected name pattern are saved
+        assert (
+            len(
+                glob.glob(
+                    os.path.join(dummy_filepath, "batch-[1-4]-0.parquet")
+                )
+            )
+            == num_files
+        )
+    else:
+        # check 1 parquet file is saved
+        assert (
+            len(glob.glob(os.path.join(dummy_filepath, "*.parquet")))
+            == num_files
+        )
+        # check name of file is as expected
+        assert glob.glob(os.path.join(dummy_filepath, "*.parquet")) == [
+            os.path.join(dummy_filepath, "batch-all-0.parquet")
+        ]
+
     loaded_output = pd.read_parquet(dummy_filepath)
     assert list(loaded_output["from_id"]) == [1, 1, 2, 2, 3, 3, 4, 4]
     assert list(loaded_output["to_id"]) == [2, 4, 2, 4, 2, 4, 2, 4]
