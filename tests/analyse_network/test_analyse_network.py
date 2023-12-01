@@ -8,186 +8,18 @@ import numpy as np
 import pandas as pd
 import pathlib
 import pytest
+import r5py
 
 from contextlib import nullcontext as does_not_raise
 from haversine import Unit
-from pyprojroot import here
-from pytest_lazyfixture import lazy_fixture
-from r5py import TransportNetwork, TransportMode
-from shapely.geometry import Point
-from typing import Type, Union
+from r5py import TransportMode
+from typing import Type, Any
 from _pytest.python_api import RaisesContext
 
 import transport_performance.analyse_network as an
 
-
-############
-# fixtures #
-############
-
-# gtfs file
-@pytest.fixture(scope="module")
-def dummy_gtfs():
-    """Create fixture with dummy gtfs file.
-
-    Returns
-    -------
-    list
-        List with paths to dummy GTFS files.
-
-    """
-    return [here("tests/data/gtfs/newport-20230613_gtfs.zip")]
-
-
-# pbf file
-@pytest.fixture(scope="module")
-def dummy_osm():
-    """Create fixture with dummy osm file.
-
-    Returns
-    -------
-    pathlib.Path
-        Path to dummy PBF file.
-
-    """
-    return here("tests/data/newport-2023-06-13.osm.pbf")
-
-
-# centroids
-@pytest.fixture(scope="module")
-def dummy_gdf_centroids():
-    """Create fixture with dummy gtfs file.
-
-    Returns
-    -------
-    gpd.GeoDataFrame
-        Dummy geodataframe with four centroids within the boundaries of PBF
-        and GTFS dummy files.
-
-    """
-    points = {
-        "id": [1, 2, 3, 4],
-        "geometry": [
-            Point(-2.999681677472678, 51.58859432106067),
-            Point(-3.002464225582309, 51.59023553677067),
-            Point(-2.9966994427043026, 51.58796089656915),
-            Point(-3.0026994196377954, 51.587209140699315),
-        ],
-        "within_urban_centre": [0, 1, 0, 1],
-    }
-    return gpd.GeoDataFrame(points, crs="epsg: 4326")
-
-
-# AnalyseNetwork object
-@pytest.fixture(scope="module")
-def dummy_transport_network(dummy_gdf_centroids, dummy_osm, dummy_gtfs):
-    """Create fixture with AnalyseNetwork object.
-
-    Returns
-    -------
-    AnalyseNetwork
-        Initialised AnalyseNetwork object created from PBF, GTFS and centroids
-        fixtures.
-
-    Notes
-    -----
-    This object is mainly used to call analyse_network methods in tests.
-
-    """
-    return an.AnalyseNetwork(dummy_gdf_centroids, dummy_osm, dummy_gtfs)
-
-
-# r5py TransportNetwork object
-@pytest.fixture(scope="module")
-def dummy_r5py_tn(dummy_transport_network):
-    """Create fixture with dummy r5py TransportNetwork object.
-
-    Returns
-    -------
-    r5py.TransportNetwork
-        r5py.TransportNetwork object.
-
-    Notes
-    -----
-    This fixture is used to test defences in the internal function
-    _calculate_transport_network.
-
-    """
-    return dummy_transport_network.transport_network
-
-
-# small o-d matrix dataframe fixture
-@pytest.fixture(scope="module")
-def dummy_od_matrix():
-    """Create fixture with dummy O-D matrix.
-
-    Returns
-    -------
-    pd.DataFrame
-        Pandas dataframe with two origins and two destinations.
-
-    Notes
-    -----
-    This object is a pandas DataFrame and not a GeoDataFrame, as used by
-    internal functions.
-
-    """
-    points = {
-        "id_orig": [1, 2, 1, 2],
-        "geometry_orig": [
-            Point(-2.999681677472678, 51.58859432106067),
-            Point(-3.002464225582309, 51.59023553677067),
-            Point(-2.999681677472678, 51.58859432106067),
-            Point(-3.002464225582309, 51.59023553677067),
-        ],
-        "id_dest": [3, 3, 4, 4],
-        "geometry_dest": [
-            Point(-2.9966994427043026, 51.58796089656915),
-            Point(-2.9966994427043026, 51.58796089656915),
-            Point(-3.0026994196377954, 51.587209140699315),
-            Point(-3.0026994196377954, 51.587209140699315),
-        ],
-    }
-    return pd.DataFrame(points)
-
-
-# big dataframe to test splitting
-@pytest.fixture(scope="module")
-def dummy_big_df():
-    """Create fixture with a random big dataframe.
-
-    Returns
-    -------
-    pd.DataFrame
-        Big dataframe.
-
-    Notes
-    -----
-    This is created to test the calculate partitions behaviour of internal
-    function _estimate_num_partitions.
-
-    """
-    df = pd.DataFrame(np.random.rand(10000, 1000))
-    # parquet doesn't like non-string column names
-    df.columns = [str(x) for x in df.columns]
-    return df
-
-
-# temporary directory to save parquet
-@pytest.fixture
-def dummy_filepath(tmp_path, scope="function"):
-    """Create fixture with output path.
-
-    Returns
-    -------
-    pathlib.Path
-        Path to the temporary directory to save files.
-
-    """
-    tempdir = tmp_path / "parquet_files"
-    tempdir.mkdir()
-    return tempdir
-
+# import metrics fixtures via pytest_plugins
+pytest_plugins = ["tests.analyse_network.analyse_network_fixtures"]
 
 #############################
 # test class initialisation #
@@ -195,20 +27,18 @@ def dummy_filepath(tmp_path, scope="function"):
 
 
 @pytest.mark.parametrize(
-    "gdf, osm, gtfs, expected",
+    "arg_name, arg_value, expected",
     [
         # no error raised
         (
-            lazy_fixture("dummy_gdf_centroids"),
-            lazy_fixture("dummy_osm"),
-            lazy_fixture("dummy_gtfs"),
+            None,
+            None,
             does_not_raise(),
         ),
         # wrong centroids gdf
         (
+            "gdf",
             "not a gdf",
-            lazy_fixture("dummy_osm"),
-            lazy_fixture("dummy_gtfs"),
             pytest.raises(
                 TypeError,
                 match=(r"`gdf` expected .*GeoDataFrame.*" r"Got .*str.*"),
@@ -216,9 +46,8 @@ def dummy_filepath(tmp_path, scope="function"):
         ),
         # wrong osm path
         (
-            lazy_fixture("dummy_gdf_centroids"),
+            "osm",
             ["not a path or string"],
-            lazy_fixture("dummy_gtfs"),
             pytest.raises(
                 TypeError,
                 match=(r"`pth` expected .*str.*Path.*" r"Got .*list.*"),
@@ -226,8 +55,7 @@ def dummy_filepath(tmp_path, scope="function"):
         ),
         # wrong gtfs list
         (
-            lazy_fixture("dummy_gdf_centroids"),
-            lazy_fixture("dummy_osm"),
+            "gtfs",
             {"not a list"},
             pytest.raises(
                 TypeError, match=(r"`gtfs` expected .*list.*" r"Got .*set.*")
@@ -236,27 +64,44 @@ def dummy_filepath(tmp_path, scope="function"):
     ],
 )
 def test_init(
-    gdf: gpd.GeoDataFrame,
-    osm: Union[str, pathlib.Path],
-    gtfs: list,
+    arg_name: str,
+    arg_value: Any,
     expected: Type[RaisesContext],
+    dummy_gdf_centroids: gpd.GeoDataFrame,
+    dummy_osm: pathlib.Path,
+    dummy_gtfs: list,
 ):
     """Tests AnalyseNetwork class initialisation.
 
     Parameters
     ----------
-    gdf : gpd.GeoDataFrame
-        GeoDataFrame with centroids within transport network boundaries.
-    osm : Union[str, pathlib.Path]
-        Path to pbf file.
-    gtfs : list
-        List with path(s) to GTFS files.
+    arg_name : str
+        Name of function argument to test.
+    arg_value : Any
+        Value to use for argument being tested.
     expected : Type[RaisesContext]
         Expected raise result.
+    dummy_gdf_centroids : gpd.GeoDataFrame
+        Fixture with dummy centroid coordinates.
+    dummy_osm : pathlib.Path
+        Fixture with path to dummy pbf file.
+    dummy_gtfs : list
+        Fixture with path to dummy gtfs file. It is in a list as that's the
+        format needed by the function (as it can take a list of paths).
 
     """
+    # dict of default args
+    default_args = {
+        "gdf": dummy_gdf_centroids,
+        "osm": dummy_osm,
+        "gtfs": dummy_gtfs,
+    }
+
+    if arg_name is not None:
+        default_args[arg_name] = arg_value
+
     with expected:
-        assert an.AnalyseNetwork(gdf, osm, gtfs)
+        assert an.AnalyseNetwork(**default_args)
 
 
 ###########################
@@ -264,153 +109,140 @@ def test_init(
 ###########################
 
 # _calculate_transport_network
-@pytest.mark.parametrize(
-    "transport_network, r5py_tn, origins, destinations, departure, expected",
-    [
-        # no error raised
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_r5py_tn"),
-            lazy_fixture("dummy_gdf_centroids"),
-            lazy_fixture("dummy_gdf_centroids"),
-            datetime.datetime(2023, 6, 13, 8, 0),
-            does_not_raise(),
-        ),
-        # wrong r5py.TransportNetwork object
-        (
-            lazy_fixture("dummy_transport_network"),
-            "not an r5py transport network",
-            lazy_fixture("dummy_gdf_centroids"),
-            lazy_fixture("dummy_gdf_centroids"),
-            datetime.datetime(2023, 6, 13, 8, 0),
-            pytest.raises(
-                TypeError,
-                match=(
-                    r"`transport_network` expected .*r5py.*TransportNetwork.*"
-                    r"Got .*str.*"
-                ),
-            ),
-        ),
-        # wrong origins
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_r5py_tn"),
-            "not an origins gdf",
-            lazy_fixture("dummy_gdf_centroids"),
-            datetime.datetime(2023, 6, 13, 8, 0),
-            pytest.raises(
-                TypeError,
-                match=(r"`origins` expected .*GeoDataFrame.*" r"Got .*str.*"),
-            ),
-        ),
-        # date out of range
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_r5py_tn"),
-            lazy_fixture("dummy_gdf_centroids"),
-            lazy_fixture("dummy_gdf_centroids"),
-            datetime.datetime(2015, 6, 13, 8, 0),
-            pytest.raises(
-                IndexError,
-                match=(
-                    r"Date provided is outside of the time range included in "
-                    r"the GTFS provided, or TransportNetwork does not contain "
-                    r"a valid GTFS."
-                ),
-            ),
-        ),
-        # wrong destinations
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_r5py_tn"),
-            lazy_fixture("dummy_gdf_centroids"),
-            "not a destinations gdf",
-            datetime.datetime(2023, 6, 13, 8, 0),
-            pytest.raises(
-                TypeError,
-                match=(
-                    r"`destinations` expected .*GeoDataFrame.*" r"Got .*str.*"
-                ),
-            ),
-        ),
-    ],
-)
 class Test_calculate_transport_network:
     """Class to test the _calculate_transport_network internal function."""
 
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, expected",
+        [
+            # wrong r5py.TransportNetwork object
+            (
+                "transport_network",
+                "not an r5py transport network",
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        r"`transport_network` expected "
+                        r".*r5py.*TransportNetwork.* Got .*str.*"
+                    ),
+                ),
+            ),
+            # wrong origins
+            (
+                "origins",
+                "not an origins gdf",
+                pytest.raises(
+                    TypeError,
+                    match=(r"`origins` expected .*GeoDataFrame.* Got.*str.*"),
+                ),
+            ),
+            # wrong destinations
+            (
+                "destinations",
+                "not a destinations gdf",
+                pytest.raises(
+                    TypeError,
+                    match=(
+                        r"`destinations` expected .*GeoDataFrame.* Got .*str.*"
+                    ),
+                ),
+            ),
+            # date out of range
+            (
+                "departure",
+                datetime.datetime(2015, 6, 13, 8, 0),
+                pytest.raises(
+                    IndexError,
+                    match=(
+                        r"Date provided is outside of the time range included "
+                        r"in the GTFS provided, or TransportNetwork does not "
+                        r"contain a valid GTFS."
+                    ),
+                ),
+            ),
+        ],
+    )
     def test__calculate_transport_network_inputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        r5py_tn: TransportNetwork,
-        origins: gpd.GeoDataFrame,
-        destinations: gpd.GeoDataFrame,
-        departure: datetime.datetime,
+        arg_name: str,
+        arg_value: Any,
         expected: Type[RaisesContext],
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_r5py_tn: r5py.TransportNetwork,
+        dummy_gdf_centroids: gpd.GeoDataFrame,
     ):
         """Test _calculate_transport_network inputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        r5py_tn : TransportNetwork
-            r5py TransportNetwork object.
-        origins :  gpd.GeoDataFrame
-            Geodataframe with origin points.
-        destinations :  gpd.GeoDataFrame
-            Geodataframe with destination points.
-        departure : datetime.datetime
-            Departure time.
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
         expected : Type[RaisesContext]
             Expected raise result.
+        dummy_transport_network : an.AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_r5py_tn : r5py.TransportNetwork
+            Fixture with r5py.TransportNetwork object.
+        dummy_gdf_centroids : gpd.GeoDataFrame
+            Fixture with dummy centroid coordinates.
 
         """
+        # transport network
+        analyse_network = dummy_transport_network
+
+        # dict of default args
+        default_args = {
+            "transport_network": dummy_r5py_tn,
+            "origins": dummy_gdf_centroids,
+            "destinations": dummy_gdf_centroids,
+            "departure": datetime.datetime(2023, 6, 13, 8, 0),
+        }
+
+        default_args[arg_name] = arg_value
+
         with expected:
             assert [
-                transport_network._calculate_transport_network(
-                    r5py_tn, origins, destinations, departure=departure
-                )
+                analyse_network._calculate_transport_network(**default_args)
             ]
 
     def test__calculate_transport_network_outputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        r5py_tn: TransportNetwork,
-        origins: gpd.GeoDataFrame,
-        destinations: gpd.GeoDataFrame,
-        departure: datetime.datetime,
-        expected: Type[RaisesContext],
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_r5py_tn: r5py.TransportNetwork,
+        dummy_gdf_centroids: gpd.GeoDataFrame,
     ):
         """Test _calculate_transport_network output.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        r5py_tn : TransportNetwork
-            r5py TransportNetwork object.
-        origins :  gpd.GeoDataFrame
-            Geodataframe with origin points.
-        destinations :  gpd.GeoDataFrame
-            Geodataframe with destination points.
-        departure : datetime.datetime
-            Departure time.
-        expected : Type[RaisesContext]
-            Expected raise result.
+        dummy_transport_network : an.AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_r5py_tn : r5py.TransportNetwork
+            Fixture with r5py.TransportNetwork object.
+        dummy_gdf_centroids : gpd.GeoDataFrame
+            Fixture with dummy centroid coordinates.
 
         """
-        if expected == does_not_raise():
-            output = transport_network._calculate_transport_network(
-                r5py_tn, origins, destinations, departure=departure
-            )
-            assert isinstance(output, pd.DataFrame)
-            assert len(output) == 16
-            assert list(output.columns) == ["from_id", "to_id", "travel_time"]
-            assert min(output["travel_time"]) == 0
-            assert max(output["travel_time"]) == 12
-            assert output.travel_time.mean() == 5.625
+        # transport network
+        analyse_network = dummy_transport_network
+
+        # dict of default args
+        default_args = {
+            "transport_network": dummy_r5py_tn,
+            "origins": dummy_gdf_centroids,
+            "destinations": dummy_gdf_centroids,
+            "departure": datetime.datetime(2023, 6, 13, 8, 0),
+        }
+
+        output = analyse_network._calculate_transport_network(**default_args)
+        assert isinstance(output, pd.DataFrame)
+        assert len(output) == 16
+        assert list(output.columns) == ["from_id", "to_id", "travel_time"]
+        assert min(output["travel_time"]) == 0
+        assert max(output["travel_time"]) == 12
+        assert output.travel_time.mean() == 5.625
 
 
 # _gdf_batch_origins
@@ -418,27 +250,12 @@ class Test_gdf_batch_origins:
     """Class to test the _gdf_batch_origins internal function."""
 
     @pytest.mark.parametrize(
-        "transport_network, gdf, destination_col, distance, num_origins,"
-        "unit, expected",
+        "arg_name, arg_value, expected",
         [
-            # no error raised
-            (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
-                11.25,
-                1,
-                Unit.KILOMETERS,
-                does_not_raise(),
-            ),
             # wrong gdf
             (
-                lazy_fixture("dummy_transport_network"),
+                "gdf",
                 "not a geodataframe",
-                "within_urban_centre",
-                11.25,
-                1,
-                Unit.KILOMETERS,
                 pytest.raises(
                     TypeError,
                     match=(r"`gdf` expected .*GeoDataFrame.* Got .*str.*"),
@@ -446,12 +263,8 @@ class Test_gdf_batch_origins:
             ),
             # wrong column name
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
+                "destination_col",
                 "not_a_column_in_gdf",
-                11.25,
-                1,
-                Unit.KILOMETERS,
                 pytest.raises(
                     IndexError,
                     match=(
@@ -462,12 +275,8 @@ class Test_gdf_batch_origins:
             ),
             # wrong distance
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
+                "distance",
                 "wrong distance",
-                1,
-                Unit.KILOMETERS,
                 pytest.raises(
                     TypeError,
                     match=(r"`distance` expected .*float.* Got .*str.*"),
@@ -475,12 +284,8 @@ class Test_gdf_batch_origins:
             ),
             # wrong num_origins type
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
-                11.25,
+                "num_origins",
                 "wrong number",
-                Unit.KILOMETERS,
                 pytest.raises(
                     TypeError,
                     match=(r"`num_origins` expected .*int.* Got .*str.*"),
@@ -488,12 +293,8 @@ class Test_gdf_batch_origins:
             ),
             # wrong num_origins number
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
-                11.25,
+                "num_origins",
                 17,
-                Unit.KILOMETERS,
                 pytest.raises(
                     ValueError,
                     match=(r"`num_origins` should be between 1 and 4, got 17"),
@@ -501,11 +302,7 @@ class Test_gdf_batch_origins:
             ),
             # wrong unit
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
-                11.25,
-                1,
+                "unit",
                 "not a unit",
                 pytest.raises(
                     TypeError, match=(r"`unit` expected .*Unit.* Got .*str.*")
@@ -515,78 +312,68 @@ class Test_gdf_batch_origins:
     )
     def test__gdf_batch_origins_inputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        gdf: gpd.GeoDataFrame,
-        destination_col: str,
-        distance: float,
-        num_origins: int,
-        unit: Unit,
+        arg_name: str,
+        arg_value: Any,
         expected: Type[RaisesContext],
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_gdf_centroids: gpd.GeoDataFrame,
     ):
         """Test _gdf_batch_origins inputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        gdf : gpd.GeoDataFrame
-            Geodataframe with location ids.
-        destination_col : str
-            Column with flag indicating what points should be considered as
-            destinations.
-        distance : float
-            Distance to filter destinations.
-        num_origins : int
-            Number of origins to consider in each loop.
-        unit : Unit
-            Unit to calculate distance.
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
         expected : Type[RaisesContext]
             Expected raise result.
+        dummy_transport_network : an.AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_gdf_centroids : gpd.GeoDataFrame
+            Fixture with dummy centroid coordinates.
 
         """
-        generator = transport_network._gdf_batch_origins(
-            gdf, destination_col, distance, num_origins, unit
-        )
+        # transport network
+        analyse_network = dummy_transport_network
+
+        default_args = {
+            "gdf": dummy_gdf_centroids,
+            "destination_col": "within_urban_centre",
+            "distance": 11.25,
+            "num_origins": 1,
+            "unit": Unit.KILOMETERS,
+        }
+
+        default_args[arg_name] = arg_value
+
+        generator = analyse_network._gdf_batch_origins(**default_args)
         with expected:
             assert next(generator)
 
     @pytest.mark.parametrize(
-        "transport_network, gdf, destination_col, distance, num_origins,"
-        "exp_output",
+        "distance, num_origins, exp_output",
         [
             # defaults
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
                 11.25,
                 1,
                 [[1], [2, 4]],
             ),
             # changed distance
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
                 0.25,
                 1,
                 [[1], []],
             ),
             # changed batch size
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
                 11.25,
                 4,
                 [[1, 2, 3, 4], [2, 4]],
             ),
             # changed batch size and distance
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_gdf_centroids"),
-                "within_urban_centre",
                 0.25,
                 4,
                 [[1, 2, 3, 4], [2, 4]],
@@ -595,9 +382,8 @@ class Test_gdf_batch_origins:
     )
     def test__gdf_batch_origins_outputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        gdf: gpd.GeoDataFrame,
-        destination_col: str,
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_gdf_centroids: gpd.GeoDataFrame,
         distance: float,
         num_origins: int,
         exp_output: list,
@@ -606,14 +392,10 @@ class Test_gdf_batch_origins:
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        gdf : gpd.GeoDataFrame
-            Geodataframe with location ids.
-        destination_col : str
-            Column with flag indicating what points should be considered as
-            destinations.
+        dummy_transport_network : AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_gdf_centroids : gpd.GeoDataFrame
+            Fixture with dummy centroid coordinates.
         distance : float
             Distance to filter destinations.
         num_origins : int
@@ -622,8 +404,11 @@ class Test_gdf_batch_origins:
             Expected yield outputs for the first iteration of the generator.
 
         """
-        generator = transport_network._gdf_batch_origins(
-            gdf, destination_col, distance, num_origins
+        analyse_network = dummy_transport_network
+        gdf = dummy_gdf_centroids
+
+        generator = analyse_network._gdf_batch_origins(
+            gdf, "within_urban_centre", distance, num_origins
         )
         outputs = next(generator)
         assert list(outputs[0]) == exp_output[0]
@@ -631,270 +416,245 @@ class Test_gdf_batch_origins:
 
 
 # _haversine_gdf
-@pytest.mark.parametrize(
-    "transport_network, df, orig, dest, unit, expected, output",
-    [
-        # no error raised
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_od_matrix"),
-            "geometry_orig",
-            "geometry_dest",
-            Unit.KILOMETERS,
-            does_not_raise(),
-            np.array([0.21773847, 0.47178888, 0.25921125, 0.3369124]),
-        ),
-        # wrong df
-        (
-            lazy_fixture("dummy_transport_network"),
-            "not a df",
-            "geometry_orig",
-            "geometry_dest",
-            Unit.KILOMETERS,
-            pytest.raises(
-                TypeError, match=(r"`df` expected .*DataFrame.* Got .*str.*")
-            ),
-            [],
-        ),
-        # wrong geometry origin column
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_od_matrix"),
-            "not_in_df",
-            "geometry_dest",
-            Unit.KILOMETERS,
-            pytest.raises(
-                IndexError,
-                match=(r"'not_in_df' is not a column in the dataframe"),
-            ),
-            [],
-        ),
-        # wrong geometry destination column
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_od_matrix"),
-            "geometry_orig",
-            "not_in_df",
-            Unit.KILOMETERS,
-            pytest.raises(
-                IndexError,
-                match=(r"'not_in_df' is not a column in the dataframe"),
-            ),
-            [],
-        ),
-        # wrong unit
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_od_matrix"),
-            "geometry_orig",
-            "geometry_dest",
-            "not a unit",
-            pytest.raises(
-                TypeError, match=(r"`unit` expected .*Unit.* Got .*str.*")
-            ),
-            [],
-        ),
-    ],
-)
 class Test_haversine_df:
     """Class to test the _haversine_gdf internal function."""
 
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, expected",
+        [
+            # wrong df
+            (
+                "df",
+                "not a df",
+                pytest.raises(
+                    TypeError,
+                    match=(r"`df` expected .*DataFrame.* Got .*str.*"),
+                ),
+            ),
+            # wrong geometry origin column
+            (
+                "orig",
+                "not_in_df",
+                pytest.raises(
+                    IndexError,
+                    match=(r"'not_in_df' is not a column in the dataframe"),
+                ),
+            ),
+            # wrong geometry destination column
+            (
+                "dest",
+                "not_in_df",
+                pytest.raises(
+                    IndexError,
+                    match=(r"'not_in_df' is not a column in the dataframe"),
+                ),
+            ),
+            # wrong unit
+            (
+                "unit",
+                "not a unit",
+                pytest.raises(
+                    TypeError, match=(r"`unit` expected .*Unit.* Got .*str.*")
+                ),
+            ),
+        ],
+    )
     def test__haversine_df_inputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        df: pd.DataFrame,
-        orig: str,
-        dest: str,
-        unit: Unit,
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_od_matrix: pd.DataFrame,
+        arg_name: str,
+        arg_value: Any,
         expected: Type[RaisesContext],
-        output: list,
     ):
         """Test _gdf_batch_origins inputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        df : pd.DataFrame
-            Dataframe with coordinates for origins and destinations.
-        orig : str
-            Name of the column containing origin coordinates.
-        dest : str
-            Name of the column containing destination coordinates.
-        unit : Unit
-            Unit to calculate distance.
+        dummy_transport_network : AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_od_matrix : pd.DataFrame
+            Fixture with dummy O-D matrix.
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
         expected : Type[RaisesContext]
             Expected raise result.
-        output : list
-            List with expected distances between pairs of points.
 
         """
+        # transport network
+        analyse_network = dummy_transport_network
+
+        default_args = {
+            "df": dummy_od_matrix,
+            "orig": "geometry_orig",
+            "dest": "geometry_dest",
+            "unit": Unit.KILOMETERS,
+        }
+
+        if arg_name is not None:
+            default_args[arg_name] = arg_value
+
         with expected:
-            assert [transport_network._haversine_df(df, orig, dest, unit)]
+            assert [analyse_network._haversine_df(**default_args)]
 
     def test__haversine_df_outputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        df: pd.DataFrame,
-        orig: str,
-        dest: str,
-        unit: Unit,
-        expected: Type[RaisesContext],
-        output,
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_od_matrix: pd.DataFrame,
     ):
         """Test _gdf_batch_origins outputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        df : pd.DataFrame
-            Dataframe with coordinates for origins and destinations.
-        orig : str
-            Name of the column containing origin coordinates.
-        dest : str
-            Name of the column containing destination coordinates.
-        unit : Unit
-            Unit to calculate distance.
-        expected : Type[RaisesContext]
-            Expected raise result.
-        output : list
-            List with expected distances between pairs of points.
+        dummy_transport_network : AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_od_matrix : pd.DataFrame
+            Fixture with dummy O-D matrix.
 
         """
-        if expected == does_not_raise():
-            assert (
-                transport_network._haversine_df(df, orig, dest, unit) == output
-            )
+        # transport network
+        analyse_network = dummy_transport_network
+
+        default_args = {
+            "df": dummy_od_matrix,
+            "orig": "geometry_orig",
+            "dest": "geometry_dest",
+            "unit": Unit.KILOMETERS,
+        }
+
+        output = np.array([0.21773847, 0.47178888, 0.25921125, 0.3369124])
+
+        assert np.array_equal(
+            np.round(analyse_network._haversine_df(**default_args), 8), output
+        )
 
 
 # _estimate_num_partitions
-@pytest.mark.parametrize(
-    "transport_network, df, partition_size, expected, partitions",
-    [
-        # no error raised, 1 partition
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_big_df"),
-            200,
-            does_not_raise(),
-            1,
-        ),
-        # no error raised, 8 partitions
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_big_df"),
-            10,
-            does_not_raise(),
-            8,
-        ),
-        # wrong df
-        (
-            lazy_fixture("dummy_transport_network"),
-            "not a dataframe",
-            10,
-            pytest.raises(
-                TypeError, match=(r"`df` expected .*DataFrame.* Got .*str.*")
-            ),
-            0,
-        ),
-        # wrong partition size
-        (
-            lazy_fixture("dummy_transport_network"),
-            lazy_fixture("dummy_big_df"),
-            "not an integer",
-            pytest.raises(
-                TypeError,
-                match=(r"`partition_size` expected .*int.* Got .*str.*"),
-            ),
-            0,
-        ),
-    ],
-)
 class Test_estimate_num_partitions:
     """Class to test the _estimate_num_partitions internal function."""
 
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, expected",
+        [
+            # wrong df
+            (
+                "df",
+                "not a dataframe",
+                pytest.raises(
+                    TypeError,
+                    match=(r"`df` expected .*DataFrame.* Got .*str.*"),
+                ),
+            ),
+            # wrong partition size
+            (
+                "partition_size",
+                "not an integer",
+                pytest.raises(
+                    TypeError,
+                    match=(r"`partition_size` expected .*int.* Got .*str.*"),
+                ),
+            ),
+        ],
+    )
     def test__estimate_num_partitions_inputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        df: pd.DataFrame,
-        partition_size: int,
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_big_df: pd.DataFrame,
+        arg_name: str,
+        arg_value: Any,
         expected: Type[RaisesContext],
-        partitions: int,
     ):
         """Test _estimate_num_partitions inputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        df : pd.DataFrame
-            Big dataframe with random numbers.
-        partition_size : int
-            Maximum size in MB for each parquet file partition.
+        dummy_transport_network : AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_big_df : pd.DataFrame
+            Fixture with dummy big dataframe.
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
         expected : Type[RaisesContext]
             Expected raise result.
-        partitions : int
-            Expected output.
 
         """
-        with expected:
-            assert transport_network._estimate_num_partitions(
-                df, partition_size
-            )
+        # transport network
+        analyse_network = dummy_transport_network
 
+        default_args = {
+            "df": dummy_big_df,
+            "partition_size": 200,
+        }
+
+        default_args[arg_name] = arg_value
+
+        with expected:
+            assert analyse_network._estimate_num_partitions(**default_args)
+
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, expected",
+        [
+            # wrong df
+            ("partition_size", 200, 1),
+            # wrong partition size
+            ("partition_size", 10, 8),
+        ],
+    )
     def test__estimate_num_partitions_outputs(
         self,
-        transport_network: an.AnalyseNetwork,
-        df: pd.DataFrame,
-        partition_size: int,
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_big_df: pd.DataFrame,
+        arg_name: str,
+        arg_value: Any,
         expected: Type[RaisesContext],
-        partitions: int,
     ):
         """Test _estimate_num_partitions outputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
-            Initialised AnalyseNetwork object created from PBF, GTFS and
-            centroids fixtures.
-        df : pd.DataFrame
-            Big dataframe with random numbers.
-        partition_size : int
-            Maximum size in MB for each parquet file partition.
-        expected : Type[RaisesContext]
-            Expected raise result.
-        partitions : int
-            Expected output.
+        dummy_transport_network : AnalyseNetwork
+            Fixture with initialised AnalyseNetwork object.
+        dummy_big_df : pd.DataFrame
+            Fixture with dummy big dataframe.
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
+        expected : int
+            Expected result.
 
         """
-        if expected == does_not_raise():
-            assert (
-                transport_network._estimate_num_partitions(df, partition_size)
-                == partitions
-            )
+        # transport network
+        analyse_network = dummy_transport_network
+
+        default_args = {
+            "df": dummy_big_df,
+            "partition_size": 200,
+        }
+
+        default_args[arg_name] = arg_value
+
+        assert (
+            analyse_network._estimate_num_partitions(**default_args)
+            == expected
+        )
 
 
 # _save_to_parquet
-
-
 class Test_save_to_parquet:
     """Class to test the _save_to_parquet internal function."""
 
     @pytest.mark.parametrize(
-        "transport_network, df, out_name_func, out_path, npartitions, "
-        "expected",
+        "arg_name, arg_value, expected",
         [
             # wrong od matrix
             (
-                lazy_fixture("dummy_transport_network"),
+                "od_matrix",
                 "not a dataframe",
-                "file_name",
-                lazy_fixture("dummy_filepath"),
-                1,
                 pytest.raises(
                     TypeError,
                     match=(r"`od_matrix` expected .*DataFrame.* Got .*str.*"),
@@ -902,11 +662,8 @@ class Test_save_to_parquet:
             ),
             # wrong filename func
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_big_df"),
+                "out_name_func",
                 12345,
-                lazy_fixture("dummy_filepath"),
-                1,
                 pytest.raises(
                     TypeError,
                     match=(r"`out_name_func` expected .*str.* Got .*int.*"),
@@ -914,10 +671,7 @@ class Test_save_to_parquet:
             ),
             # wrong npartition
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_big_df"),
-                "file_name",
-                lazy_fixture("dummy_filepath"),
+                "npartitions",
                 "not an int",
                 pytest.raises(
                     TypeError,
@@ -926,11 +680,8 @@ class Test_save_to_parquet:
             ),
             # wrong out_path
             (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_big_df"),
-                "file_name",
+                "out_path",
                 ["wrong path"],
-                1,
                 pytest.raises(
                     TypeError,
                     match=(r"`out_path` expected path-like, found.*list.*"),
@@ -940,90 +691,104 @@ class Test_save_to_parquet:
     )
     def test__save_to_parquet_input(
         self,
-        transport_network: an.AnalyseNetwork,
-        df: pd.DataFrame,
-        out_name_func: str,
-        out_path: pathlib.Path,
-        npartitions: int,
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_big_df: pd.DataFrame,
+        dummy_filepath: pathlib.Path,
+        arg_name: str,
+        arg_value: Any,
         expected: Type[RaisesContext],
     ):
         """Test _save_to_parquet inputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
+        dummy_transport_network : AnalyseNetwork
             Initialised AnalyseNetwork object created from PBF, GTFS and
             centroids fixtures.
-        df : pd.DataFrame
-            Big dataframe with random numbers.
-        out_name_func : str
-            String to add to the parquet filenames.
-        out_path : pathlib.Path
-            Path to temporary directory to save parquet files.
-        npartitions : int
-            Number of partitions to divide the parquet file.
-        expected : Type[RaisesContext]
-            Expected raise result.
+        dummy_big_df : pd.DataFrame
+            Fixture with dummy big dataframe.
+        dummy_filepath : pathlib.Path
+            Fixture with path to the temporary directory to save files.
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
+        expected : int
+            Expected result.
 
         """
-        if expected != does_not_raise():
-            with expected:
-                assert transport_network._save_to_parquet(
-                    df, out_name_func, out_path, npartitions
-                )
+        # transport network
+        analyse_network = dummy_transport_network
+
+        default_args = {
+            "od_matrix": dummy_big_df,
+            "out_name_func": "file_name",
+            "out_path": dummy_filepath,
+            "npartitions": 1,
+        }
+
+        default_args[arg_name] = arg_value
+
+        with expected:
+            assert analyse_network._save_to_parquet(**default_args)
 
     @pytest.mark.parametrize(
-        "transport_network, df, out_name_func, out_path, npartitions",
+        "arg_name, arg_value",
         [
             # no error raised, 1 partition
-            (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_big_df"),
-                "file_name",
-                lazy_fixture("dummy_filepath"),
-                1,
-            ),
-            # no error raised, 3 partitions
-            (
-                lazy_fixture("dummy_transport_network"),
-                lazy_fixture("dummy_big_df"),
-                "file_name",
-                lazy_fixture("dummy_filepath"),
-                11,
-            ),
+            ("npartitions", 2),
+            # no error raised, 11 partitions
+            ("npartitions", 11),
         ],
     )
     def test__save_to_parquet_output(
         self,
-        transport_network: an.AnalyseNetwork,
-        df: pd.DataFrame,
-        out_name_func: str,
-        out_path: pathlib.Path,
-        npartitions,
+        dummy_transport_network: an.AnalyseNetwork,
+        dummy_big_df: pd.DataFrame,
+        dummy_filepath: pathlib.Path,
+        arg_name: str,
+        arg_value: Any,
     ):
         """Test _save_to_parquet outputs.
 
         Parameters
         ----------
-        transport_network : AnalyseNetwork
+        dummy_transport_network : AnalyseNetwork
             Initialised AnalyseNetwork object created from PBF, GTFS and
             centroids fixtures.
-        df : pd.DataFrame
-            Big dataframe with random numbers.
-        out_name_func : str
-            String to add to the parquet filenames.
-        out_path : pathlib.Path
-            Path to temporary directory to save parquet files.
-        npartitions : int
-            Number of partitions to divide the parquet file.
+        dummy_big_df : pd.DataFrame
+            Fixture with dummy big dataframe.
+        dummy_filepath : pathlib.Path
+            Fixture with path to the temporary directory to save files.
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
 
         """
-        transport_network._save_to_parquet(
-            df, out_name_func, out_path, npartitions
-        )
+        # transport network
+        analyse_network = dummy_transport_network
+
+        default_args = {
+            "od_matrix": dummy_big_df,
+            "out_name_func": "file_name",
+            "out_path": dummy_filepath,
+            "npartitions": 1,
+        }
+
+        default_args[arg_name] = arg_value
+        analyse_network._save_to_parquet(**default_args)
+
         assert (
-            len(glob.glob(os.path.join(out_path, f"*{out_name_func}*")))
-            == npartitions
+            len(
+                glob.glob(
+                    os.path.join(
+                        default_args["out_path"],
+                        f"*{default_args['out_name_func']}*",
+                    )
+                )
+            )
+            == default_args["npartitions"]
         )
 
 
