@@ -38,7 +38,27 @@ elif area == "leeds":
     uc_centre_crs = "ESRI:54009"
     uc_buffer_size = 12000
     updated_crs = "EPSG:27700"
-
+elif area == "london":
+    # using leeds file - covers most of west Europe anyhow
+    uc_input_path = here("data/processed/urban_centre/leeds_uc_merged.tif")
+    uc_bbox = [
+        -79012.62418,
+        5991761.479714964,
+        65432.291941,
+        6064340.599894041,
+    ]
+    uc_centre = [51.48410, -0.09064]
+    uc_centre_crs = "EPSG:4326"
+    uc_buffer_size = 12000
+    updated_crs = "EPSG:27700"
+elif area == "marseille":
+    # using leeds file - covers most of west Europe anyhow
+    uc_input_path = here("data/processed/urban_centre/leeds_uc_merged.tif")
+    uc_bbox = [426000.0, 5137000.0, 465000.0, 5176000.0]
+    uc_centre = [445500.0, 5156500.0]
+    uc_centre_crs = "ESRI:54009"
+    uc_buffer_size = 12000
+    updated_crs = "EPSG:2154"
 else:
     raise ValueError(f"Unkown area name {area}.")
 
