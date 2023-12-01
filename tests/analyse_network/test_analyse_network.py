@@ -847,14 +847,12 @@ def test_od_matrix(
             == num_files
         )
         # check 4 files with expected name pattern are saved
-        assert (
-            len(
-                glob.glob(
-                    os.path.join(dummy_filepath, "batch-[1-4]-0.parquet")
-                )
-            )
-            == num_files
-        )
+        assert sorted(
+            glob.glob(os.path.join(dummy_filepath, "batch-[1-9]-0.parquet"))
+        ) == [
+            os.path.join(dummy_filepath, f"batch-{n}-0.parquet")
+            for n in range(1, 5)
+        ]
     else:
         # check 1 parquet file is saved
         assert (
