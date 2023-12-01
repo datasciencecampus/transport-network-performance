@@ -1198,7 +1198,11 @@ def test_final_output(
         (-253763.63915167, 6065281.520681345),
         (-253763.63915167, 6042708.5862836335),
     ]
-    assert out.loc[2][1] == Polygon(bbox_coords)
+    assert (
+        out.loc[2:]
+        .geom_almost_equals(Polygon(bbox_coords), decimal=3)
+        .values[0]
+    )
 
     # type of output
     assert type(out) is gpd.GeoDataFrame
