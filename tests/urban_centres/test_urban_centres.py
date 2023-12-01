@@ -1191,6 +1191,9 @@ def test_final_output(
     assert out.loc[0][1] == Polygon(uc_coords)
 
     # bbox expected coordinates
+    # assert uses `geom_almost_equals` as small rounding/floating point
+    # differences were observed on the GitHub Actions runners between OSs.
+    # Using 6dp to reflect dp resolution of a 32-bit (single) float.
     bbox_coords = [
         (-253763.639152, 6042708.586284),
         (-227236.365294, 6042708.586284),
