@@ -1202,7 +1202,7 @@ def test_final_output(
         (-253763.639152, 6042708.586284),
     ]
     assert (
-        out.loc[2:]
+        out.loc[out["label"] == "bbox"]
         .geom_almost_equals(Polygon(bbox_coords), decimal=6)
         .values[0]
     )
