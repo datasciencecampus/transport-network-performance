@@ -182,6 +182,7 @@
         <span class="n">cell_fill_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
         <span class="n">vector_nodata</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">200</span><span class="p">,</span>
         <span class="n">buffer_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="n">buffer_estimation_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;EPSG:27700&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get urban centre.</span>
 
@@ -223,12 +224,35 @@
 <span class="sd">        buffer_size : int, optional</span>
 <span class="sd">            Size of the buffer around the urban centre, in the distance units</span>
 <span class="sd">            of the `centre_crs`. Defaults to 10,000 metres.</span>
+<span class="sd">        buffer_estimation_crs : string, optional</span>
+<span class="sd">            CRS to use when calculating the buffer. Recommend using an</span>
+<span class="sd">            appropriate CRS for measuring distances. Default is &quot;EPSG:27700&quot;,</span>
+<span class="sd">            suitable for UK urban centres. See Notes for more details.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        output : gpd.GeoDataFrame</span>
 <span class="sd">            GeoDataFrame with urban centre, buffer and bbox vector polygon</span>
 <span class="sd">            boundaries.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Buffer estimation: To detemine a buffer around the urban centre an</span>
+<span class="sd">        apporiate CRS is needed to ensure distances are preserved. The CRSs</span>
+<span class="sd">        adopted for raster data typically preserve area (e.g., Mollweide/</span>
+<span class="sd">        ESRI:54009 is an equal area projection). The solution to this problem</span>
+<span class="sd">        would be to provide an appropriate CRS to use when estimating the</span>
+<span class="sd">        buffer geometry, such as those used for topographic mapping and</span>
+<span class="sd">        engineering surveying of specific countries. To date, the following</span>
+<span class="sd">        CRSs have been utilised for their respective contries when estimating</span>
+<span class="sd">        buffers around urban centres:</span>
+
+<span class="sd">        ======= =====</span>
+<span class="sd">        Country CRS</span>
+<span class="sd">        ======= =====</span>
+<span class="sd">        UK      EPSG:27700</span>
+<span class="sd">        France  EPSG:2154</span>
+<span class="sd">        ======= =====</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># window raster based on bbox</span>
@@ -277,8 +301,14 @@
                 <span class="s2">&quot;`buffer_size` expected positive non-zero integer&quot;</span>
             <span class="p">)</span>
 
+        <span class="c1"># convert uc to appropriate CRS before buffer estimation + return CRS</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__buffer</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
-            <span class="n">geometry</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__vectorized_uc</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">buffer_size</span><span class="p">),</span> <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span>
+            <span class="n">geometry</span><span class="o">=</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__vectorized_uc</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">buffer_estimation_crs</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">buffer_size</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># bbox</span>
