@@ -1191,7 +1191,7 @@ def test_final_output(
     assert out.loc[0][1] == Polygon(uc_coords)
 
     # bbox expected coordinates
-    # assert uses `geom_almost_equals` as small rounding/floating point
+    # assert uses `geom_equals_exact` as small rounding/floating point
     # differences were observed on the GitHub Actions runners between OSs.
     # Using 6dp to reflect dp resolution of a 32-bit (single) float.
     bbox_coords = [
@@ -1203,7 +1203,7 @@ def test_final_output(
     ]
     assert (
         out.loc[out["label"] == "bbox"]
-        .geom_almost_equals(Polygon(bbox_coords), decimal=6)
+        .geom_equals_exact(Polygon(bbox_coords), tolerance=6)
         .values[0]
     )
 
