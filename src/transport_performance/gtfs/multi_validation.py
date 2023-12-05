@@ -28,9 +28,10 @@ class MultiGtfsInstance:
 
     Parameters
     ----------
-    path : Union[str, list]
-        A list of paths, or a glob string. See more informtion on glob strings
-        here: https://docs.python.org/3/library/glob.html
+    path : Union[str, list, pathlib.Path]
+        A list of paths, a singular paath object, or a glob string.
+        See more informtion on glob strings here:
+        https://docs.python.org/3/library/glob.html
 
     Attributes
     ----------
@@ -82,9 +83,12 @@ class MultiGtfsInstance:
 
     """
 
-    def __init__(self, path: Union[str, list]) -> None:
+    def __init__(self, path: Union[str, list, pathlib.Path]) -> None:
         # defences
-        _type_defence(path, "path", (str, list))
+        _type_defence(path, "path", (str, list, pathlib.Path))
+        # check if a pathlib.Path object has been passed (single gtfs)
+        if isinstance(path, (pathlib.Path, pathlib.PurePath)):
+            path = [path]
         # defend a glob string
         if isinstance(path, str):
             gtfs_paths = glob.glob(path)

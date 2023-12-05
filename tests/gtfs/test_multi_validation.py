@@ -2,6 +2,7 @@
 import pytest
 import os
 import glob
+import pathlib
 
 import numpy as np
 import pandas as pd
@@ -68,6 +69,15 @@ class TestMultiGtfsInstance(object):
             assert isinstance(
                 inst, GtfsInstance
             ), "GtfsInstance not instanciated"
+        # test singular gtfs path
+        test_path = pathlib.Path(
+            os.path.join("tests", "data", "chester-20230816-small_gtfs.zip")
+        )
+        m_gtfs_2 = MultiGtfsInstance(test_path)
+        assert len(m_gtfs_2.paths) == 1, "Too many/Not enough paths passed"
+        assert (
+            pathlib.Path(m_gtfs.paths[0]) == test_path
+        ), "Test path not as expected in MGTFS"
 
     def test_save_feeds(self, multi_gtfs_paths, tmp_path):
         """Tests for .save_feeds()."""
