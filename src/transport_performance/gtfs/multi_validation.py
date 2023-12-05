@@ -87,8 +87,12 @@ class MultiGtfsInstance:
         # defences
         _type_defence(path, "path", (str, list, pathlib.Path))
         # check if a pathlib.Path object has been passed (single gtfs)
-        if isinstance(path, (pathlib.Path, pathlib.PurePath)):
-            path = [path]
+        if isinstance(path, pathlib.Path):
+            #  if a directory is passed, convert to string for glob string
+            if os.path.splitext(path)[0] == "":
+                path = str(path)
+            else:
+                path = [path]
         # defend a glob string
         if isinstance(path, str):
             gtfs_paths = glob.glob(path)
