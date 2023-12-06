@@ -35,14 +35,14 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: '11'
+        java-version: '11.0.21'
     - name: Check Java Install
       run: |
         java --version
     - name: Install mac depencies with brew  # not updating brew version, issue with aom
       run: |
         brew install geos
-        brew install osmosis
+        brew info geos
       shell: sh
     - name: pre-commit
       run: |
