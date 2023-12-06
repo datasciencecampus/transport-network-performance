@@ -127,17 +127,17 @@ def _convert_osm_dict_to_gdf(
 
     Parameters
     ----------
-    osm_dict: (dict)
+    osm_dict : dict
         Dictionary of ID: location / tags.
-    feature_type: str
+    feature_type : str
         The type of feature data contained in the dictionary. Defaults to
         "node".
-    crs: (Union[str, int], optional)
+    crs : Union[str, int], optional
         The CRS of the spatial features. Defaults to "epsg:4326".
 
     Returns
     -------
-    out_gdf: (gpd.GeoDataFrame)
+    out_gdf: gpd.GeoDataFrame
         A GeoDataFrame of the spatial features with ID mapped to index and
         values mapped to columns.
 
@@ -182,27 +182,27 @@ class _IdHandler(osmium.SimpleHandler):
 
     Methods
     -------
-    node()
+    node
         Collates available OSM node feature IDs. Creates the node_ids
         attribute.
-    way()
+    way
         Collates available OSM way feature IDs. Creates the way_ids attribute.
-    relation()
+    relation
         Collates available OSM relation feature IDs. Creates the relations_ids
         attribute.
-    area()
+    area
         Collates available OSM area feature IDs. Creates the area_ids attribute
         .
 
     Attributes
     ----------
-    node_ids: list
+    node_ids : list
         List of available OSM node feature IDs.
-    way_ids: list
+    way_ids : list
         List of available OSM way feature IDs.
-    relations_ids: list
+    relations_ids : list
         List of available OSM relation feature IDs.
-    area_ids: list
+    area_ids : list
         List of available OSM area feature IDs.
 
     """
@@ -269,16 +269,16 @@ class _TagHandler(osmium.SimpleHandler):
 
     Methods
     -------
-    node()
+    node
         Compiles all available tag data for OSM node features. Creates the
         node_tags attribute.
-    way()
+    way
         Compiles all available tag data for OSM way features. Creates the
         way_tags attribute.
-    relation()
+    relation
         Compiles all available tag data for OSM relation features. Creates the
         relation_tags attribute.
-    area()
+    area
         Compiles all available tag data for OSM area features. Creates the
         area_tags attribute.
 
@@ -354,17 +354,17 @@ class _LocHandler(osmium.SimpleHandler):
 
     Attributes
     ----------
-    node_locs: dict
+    node_locs : dict
         Node coordinates. Inherited from class _LocHandler.
-    way_node_locs: dict
+    way_node_locs : dict
         Member node coordinates for each way feature. Inherited from class
         _LocHandler.
 
     Methods
     -------
-    node()
+    node
         Gets coordinate data from a node. Creates the `node_locs` attribute.
-    way()
+    way
         Gets coordinate data for each node member of a way. Creates the
         `way_node_locs` attribute.
 
@@ -418,43 +418,43 @@ class FindIds:
 
     Parameters
     ----------
-    osm_pth: Union[Path, str]
+    osm_pth : Union[Path, str]
         Path to osm file.
-    id_collator: _IdHandler, optional
+    id_collator : _IdHandler, optional
         FindIds applies the logic from id_collator to a pbf file on init,
         storing the collated IDs in their appropriate attributes - __node_ids,
         __way_ids, __relations_ids and __area_ids. Defaults to _IdHandler.
 
     Raises
     ------
-    TypeError:
+    TypeError :
         `osm_pth` is not of type pathlib.Path or str.
-    FileNotFoundError:
+    FileNotFoundError :
         `osm_pth` file not found on disk.
-    ValueError:
+    ValueError :
         `osm_pth` does not have a .pbf extension.
 
     Attributes
     ----------
-    counts: dict
+    counts : dict
         Counts of feature IDs by feature type.
-    id_dict: dict
+    id_dict : dict
         IDs of all found features by feature type.
-    __node_ids: list
+    __node_ids : list
         Internal attribute contains list of all node IDs contained in pbf file.
-    __way_ids: list
+    __way_ids : list
         Internal attribute contains list of all way IDs contained in pbf file.
-    __relations_ids: list
+    __relations_ids : list
         Internal attribute contains list of all relation IDs contained in pbf
         file.
-    __area_ids: list
+    __area_ids : list
         Internal attribute contains list of all area IDs contained in pbf file.
 
     Methods
     -------
-    count_features()
+    count_features
         Count of feature IDs by feature type.
-    get_feature_ids()
+    get_feature_ids
         Return feature IDs by available feature type.
 
     """
@@ -479,7 +479,7 @@ class FindIds:
 
         Returns
         -------
-        counts: dict
+        counts : dict
             Counts of node, way, relation & area IDs in a pbf file.
 
         """
@@ -497,7 +497,7 @@ class FindIds:
 
         Returns
         -------
-        id_dict: dict
+        id_dict : dict
             Available IDs for nodes, ways, relations and areas.
 
         """
@@ -516,33 +516,33 @@ class FindTags:
 
     Parameters
     ----------
-    osm_pth: Union[Path, str]
+    osm_pth : Union[Path, str]
         Path to osm file.
-    tag_collator: _TagHandler, optional
+    tag_collator : _TagHandler, optional
         FindTags applies the logic from tag_collator to a pbf file on init,
         storing the collated tags in a `found_tags` attribute. Defaults to
         _TagHandler.
 
     Raises
     ------
-    TypeError:
+    TypeError :
         `osm_pth` is not of type pathlib.Path or str.
-    FileNotFoundError:
+    FileNotFoundError :
         `osm_pth` file not found on disk.
-    ValueError:
+    ValueError :
         `osm_pth` does not have a .pbf extension.
 
     Attributes
     ----------
-    found_tags: dict
+    found_tags : dict
         Found tags for specified feature IDs.
-    __node_tags: dict
+    __node_tags : dict
         Tags found for OSM node features.
-    __way_tags: dict
+    __way_tags : dict
         Tags found for OSM way features.
-    __relation_tags: dict
+    __relation_tags : dict
         Tags found for OSM relation features.
-    __area_tags: dict
+    __area_tags : dict
         Tags found for OSM area features.
 
     Methods
@@ -579,8 +579,8 @@ class FindTags:
 
         Returns
         -------
-        found_tags: dict
-            ID: dict of tags, containing tag name : value.
+        found_tags : dict
+            ID : dict of tags, containing tag name : value.
 
         """
         self.found_tags = _filter_target_dict_with_list(
@@ -602,29 +602,29 @@ class FindLocations:
 
     Parameters
     ----------
-    osm_pth: Union[Path, str]
+    osm_pth : Union[Path, str]
         Path to osm file.
-    loc_collator: _LocHandler=_LocHandler
+    loc_collator : _LocHandler=_LocHandler
         FindLocations applies the logic from loc_collator to a pbf file on
         init, storing the collated locations in __node_locs or __way_node_locs
         attributes. Defaults to _LocHandler.
 
     Raises
     ------
-    TypeError:
+    TypeError :
         `osm_pth` is not of type pathlib.Path or str.
-    FileNotFoundError:
+    FileNotFoundError :
         `osm_pth` file not found on disk.
-    ValueError:
+    ValueError :
         `osm_pth` does not have a .pbf extension.
 
     Attributes
     ----------
-    found_locs: dict
+    found_locs : dict
         Found locations for specified feature IDs.
-    __node_locs: dict
+    __node_locs : dict
         Locations of nodes.
-    __way_node_locs: dict
+    __way_node_locs : dict
         Locations of nodes that belong to a way.
 
     Methods
@@ -661,8 +661,8 @@ class FindLocations:
 
         Returns
         -------
-        found_locs: dict
-            ID: dict of tags, containing ID : location.
+        found_locs : dict
+            ID : dict of tags, containing ID : location.
 
         """
         self.found_locs = _filter_target_dict_with_list(
@@ -701,12 +701,12 @@ class FindLocations:
 
         Raises
         ------
-        NotImplementedError
+        NotImplementedError :
             Relation location data could be extracted with a bit more munging.
             Please raise a feature request if you feel this is significant.
-        ValueError
+        ValueError :
             `feature_type` is not one of "node", "way", "relation" or "area".
-        TypeError
+        TypeError :
             `ids` is not of type list.
             `feature_type` is not of type str.
 
