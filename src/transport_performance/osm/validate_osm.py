@@ -720,7 +720,7 @@ class FindLocations:
         _check_item_in_iter(
             item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
         )
-        if feature_type != "node" and feature_type != "way":
+        if feature_type not in ["node", "way"]:
             raise NotImplementedError(
                 "Relation or area plotting not implemented at this time."
             )
