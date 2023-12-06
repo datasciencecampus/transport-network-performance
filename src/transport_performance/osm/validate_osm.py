@@ -483,10 +483,10 @@ class FindIds:
 
         """
         counts = {
-            "n_nodes": len(self._FindIds__node_ids),
-            "n_ways": len(self._FindIds__way_ids),
-            "n_relations": len(self._FindIds__relations_ids),
-            "n_areas": len(self._FindIds__area_ids),
+            "n_nodes": len(self.__node_ids),
+            "n_ways": len(self.__way_ids),
+            "n_relations": len(self.__relations_ids),
+            "n_areas": len(self.__area_ids),
         }
         self.counts = counts
         return counts
@@ -501,10 +501,10 @@ class FindIds:
 
         """
         id_dict = {
-            "node_ids": self._FindIds__node_ids,
-            "way_ids": self._FindIds__way_ids,
-            "relation_ids": self._FindIds__relations_ids,
-            "area_ids": self._FindIds__area_ids,
+            "node_ids": self.__node_ids,
+            "way_ids": self.__way_ids,
+            "relation_ids": self.__relations_ids,
+            "area_ids": self.__area_ids,
         }
         self.id_dict = id_dict
         return id_dict
@@ -584,10 +584,10 @@ class FindTags:
         """
         self.found_tags = _filter_target_dict_with_list(
             targets={
-                "node": self._FindTags__node_tags,
-                "way": self._FindTags__way_tags,
-                "relation": self._FindTags__relation_tags,
-                "area": self._FindTags__area_tags,
+                "node": self.__node_tags,
+                "way": self.__way_tags,
+                "relation": self.__relation_tags,
+                "area": self.__area_tags,
             },
             _list=ids,
             search_key=feature_type,
@@ -631,6 +631,8 @@ class FindLocations:
     check_locs_for_ids()
         Filter locations to the given list of IDs. Updates `found_locs`
         attribute.
+    plot_ids()
+        Plot coordinates for nodes or node members of a way.
 
     """
 
