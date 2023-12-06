@@ -283,15 +283,27 @@ class TestFindLocations(object):
     def test_find_locations_init(self, _tiny_osm_locs):
         """Test for FindLocations init behaviour."""
         locs = _tiny_osm_locs
-        exp_attrs = ["found_locs", "node_locs", "way_node_locs"]
-        exp_methods = ["check_locs_for_ids", "node", "way"]
+        exp_attrs = [
+            "found_locs",
+            "_FindLocations__node_locs",
+            "_FindLocations__way_node_locs",
+        ]
+        exp_methods = ["check_locs_for_ids", "plot_ids"]
         _class_atttribute_assertions(locs, exp_attrs, exp_methods)
-        assert locs.node_locs[7727955] == {
+        assert locs._FindLocations__node_locs[7727955] == {
             "lon": -3.0034452,
             "lat": 51.5677329,
         }
         # 2 node locations for way ID 4811009
-        assert len(locs.way_node_locs[4811009]) == 2
+        search_id = 4811009
+        assert locs._FindLocations__way_node_locs[
+            search_id
+        ], f"Node ID {search_id} not found, available"
+        " nodes:\n{locs._FindLocations__node_locs.keys()}"
+        way_len = len(locs._FindLocations__way_node_locs[search_id])
+        assert (
+            way_len == 2
+        ), f"Expected way with length 2, instead found {way_len}"
 
     def test_check_locs_for_ids(self, _tiny_osm_locs, _tiny_osm_ids):
         """Assert check_locs_for_ids."""
