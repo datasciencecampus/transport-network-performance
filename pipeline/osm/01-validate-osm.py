@@ -42,7 +42,7 @@ tags.check_tags_for_ids(ids.id_dict["relation_ids"][0:11], "relation")
 # get some area tags
 tags.check_tags_for_ids(ids.id_dict["area_ids"][0:11], "area")
 post_tags = time.perf_counter()
-print(f"tag handling in {post_tags - post_ids:0.4f} seconds")
+print(f"Tag handling in {post_tags - post_ids:0.4f} seconds")
 # for fixture, ~11.4143 seconds
 # for wales-latest ~515.9820 seconds -> 8mins.
 
@@ -56,6 +56,6 @@ locs.check_locs_for_ids(ids.id_dict["node_ids"][0:11], feature_type="node")
 # Also way features.
 locs.check_locs_for_ids(ids.id_dict["way_ids"][0:11], feature_type="way")
 post_locs = time.perf_counter()
-print(f"location handling in {post_locs - post_tags:0.4f} seconds")
+print(f"Location handling in {post_locs - post_tags:0.4f} seconds")
 # for fixture, ~4.6656 seconds
 # for wales-latest ~268.4524 seconds -> 4mins
