@@ -351,6 +351,22 @@ class _LocHandler(osmium.SimpleHandler):
     osmium.SimpleHandler : class
         Inherits from osmium.SimpleHandler
 
+    Attributes
+    ----------
+    node_locs: dict
+        Node coordinates. Inherited from class _LocHandler.
+    way_node_locs: dict
+        Member node coordinates for each way feature. Inherited from class
+        _LocHandler.
+
+    Methods
+    -------
+    node()
+        Gets coordinate data from a node. Creates the `node_locs` attribute.
+    way()
+        Gets coordinate data for each node member of a way. Creates the
+        `way_node_locs` attribute.
+
     """
 
     def __init__(self) -> None:
@@ -580,16 +596,17 @@ class FindTags:
         return self.found_tags
 
 
-class FindLocations(_LocHandler):
+class FindLocations:
     """Applies location collation to OSM file.
 
     Parameters
     ----------
-    _LocHandler : class
-        Internal class for handling locations. Inherits from
-        osmium.SimpleHandler.
     osm_pth: Union[Path, str]
         Path to osm file.
+    loc_collator: _LocHandler=_LocHandler
+        FindLocations applies the logic from loc_collator to a pbf file on
+        init, storing the collated locations in __node_locs or __way_node_locs
+        attributes. Defaults to _LocHandler.
 
     Raises
     ------
@@ -604,30 +621,28 @@ class FindLocations(_LocHandler):
     ----------
     found_locs: dict
         Found locations for specified feature IDs.
-    node_locs: dict
-        Node coordinates. Inherited from class _LocHandler.
-    way_node_locs: dict
-        Member node coordinates for each way feature. Inherited from class
-        _LocHandler.
+    __node_locs: dict
+        Locations of nodes.
+    __way_node_locs: dict
+        Locations of nodes that belong to a way.
 
     Methods
     -------
     check_locs_for_ids()
         Filter locations to the given list of IDs. Updates `found_locs`
         attribute.
-    node()
-        Gets coordinate data from a node. Creates the `node_locs` attribute.
-        Inherited from class _LocHandler.
-    way()
-        Gets coordinate data for each node member of a way. Creates the
-        `way_node_locs` attribute. Inherited from class _LocHandler.
 
     """
 
-    def __init__(self, osm_pth) -> None:
+    def __init__(
+        self, osm_pth, loc_collator: _LocHandler = _LocHandler
+    ) -> None:
         super().__init__()
         _is_expected_filetype(osm_pth, "osm_pth", exp_ext=".pbf")
-        self.apply_file(osm_pth, locations=True)
+        locs = _LocHandler()
+        locs.apply_file(osm_pth, locations=True)
+        self.__node_locs = locs.node_locs
+        self.__way_node_locs = locs.way_node_locs
         self.found_locs = dict()
 
     def check_locs_for_ids(self, ids: list, feature_type: str) -> dict:
@@ -648,7 +663,7 @@ class FindLocations(_LocHandler):
 
         """
         self.found_locs = _filter_target_dict_with_list(
-            targets={"node": self.node_locs, "way": self.way_node_locs},
+            targets={"node": self.__node_locs, "way": self.__way_node_locs},
             _list=ids,
             search_key=feature_type,
             accepted_keys=["node", "way"],
