@@ -155,6 +155,7 @@ class Test_FilterTargetDictWithList(object):
         )
         assert isinstance(out, dict)
         assert "remove" not in out.values()
+        assert len(out) == 3
 
 
 def _class_atttribute_assertions(
