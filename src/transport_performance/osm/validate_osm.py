@@ -390,8 +390,9 @@ class FindIds:
     osm_pth: Union[Path, str]
         Path to osm file.
     id_collator: _IdHandler, optional
-        FindIds applies the logic from _IdHandler to a pbf file on init,
-        storing the collated IDs in an `ids` attribute. Defaults to _IdHandler.
+        FindIds applies the logic from id_collator to a pbf file on init,
+        storing the collated IDs in their appropriate attributes - __node_ids,
+        __way_ids, __relations_ids and __area_ids. Defaults to _IdHandler.
 
     Raises
     ------
@@ -479,15 +480,17 @@ class FindIds:
         return id_dict
 
 
-class FindTags(_TagHandler):
+class FindTags:
     """Applies tag collation to OSM file.
 
     Parameters
     ----------
-    _TagHandler : class
-        Internal class for handling IDs. Inherits from osmium.SimpleHandler.
     osm_pth: Union[Path, str]
         Path to osm file.
+    tag_collator: _TagHandler, optional
+        FindTags applies the logic from tag_collator to a pbf file on init,
+        storing the collated tags in a `found_tags` attribute. Defaults to
+        _TagHandler.
 
     Raises
     ------
