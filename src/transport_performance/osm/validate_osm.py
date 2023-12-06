@@ -266,6 +266,21 @@ class _TagHandler(osmium.SimpleHandler):
     osmium.SimpleHandler : class
         Inherits from osmium.SimpleHandler
 
+    Methods
+    -------
+    node()
+        Compiles all available tag data for OSM node features. Creates the
+        node_tags attribute.
+    way()
+        Compiles all available tag data for OSM way features. Creates the
+        way_tags attribute.
+    relation()
+        Compiles all available tag data for OSM relation features. Creates the
+        relation_tags attribute.
+    area()
+        Compiles all available tag data for OSM area features. Creates the
+        area_tags attribute.
+
     """
 
     def __init__(self) -> None:
@@ -311,7 +326,6 @@ class _TagHandler(osmium.SimpleHandler):
 
         """
         # get tags for each relation
-        print(type(r))
         tagdict = _compile_tags(r)
         self.relation_tags[r.id] = tagdict
 
@@ -505,40 +519,34 @@ class FindTags:
     ----------
     found_tags: dict
         Found tags for specified feature IDs.
-    node_tags: dict
-        Tags found for OSM node features. Inherited from _TagHandler.
-    way_tags: dict
-        Tags found for OSM way features. Inherited from _TagHandler.
-    relation_tags: dict
-        Tags found for OSM relation features. Inherited from _TagHandler.
-    area_tags: dict
-        Tags found for OSM area features. Inherited from _TagHandler.
+    __node_tags: dict
+        Tags found for OSM node features.
+    __way_tags: dict
+        Tags found for OSM way features.
+    __relation_tags: dict
+        Tags found for OSM relation features.
+    __area_tags: dict
+        Tags found for OSM area features.
 
     Methods
     -------
     check_tags_for_ids()
         Filter tags to the given list of IDs. Updates `found_tags` attribute.
-    node()
-        Compiles all available tag data for OSM node features. Creates the
-        node_tags attribute. Inherited from _TagHandler.
-    way()
-        Compiles all available tag data for OSM way features. Creates the
-        way_tags attribute. Inherited from _TagHandler.
-    relation()
-        Compiles all available tag data for OSM relation features. Creates the
-        relation_tags attribute. Inherited from _TagHandler.
-    area()
-        Compiles all available tag data for OSM area features. Creates the
-        area_tags attribute. Inherited from _TagHandler.
 
     """
 
-    def __init__(self, osm_pth) -> None:
-        super().__init__()
+    def __init__(
+        self, osm_pth, tag_collator: _TagHandler = _TagHandler
+    ) -> None:
         _is_expected_filetype(
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
-        self.apply_file(osm_pth)
+        tags = _TagHandler()
+        tags.apply_file(osm_pth)
+        self.__node_tags = tags.node_tags
+        self.__way_tags = tags.way_tags
+        self.__relation_tags = tags.relation_tags
+        self.__area_tags = tags.area_tags
         self.found_tags = dict()
 
     def check_tags_for_ids(self, ids: list, feature_type: str) -> dict:
@@ -560,10 +568,10 @@ class FindTags:
         """
         self.found_tags = _filter_target_dict_with_list(
             targets={
-                "node": self.node_tags,
-                "way": self.way_tags,
-                "relation": self.relation_tags,
-                "area": self.area_tags,
+                "node": self._FindTags__node_tags,
+                "way": self._FindTags__way_tags,
+                "relation": self._FindTags__relation_tags,
+                "area": self._FindTags__area_tags,
             },
             _list=ids,
             search_key=feature_type,
