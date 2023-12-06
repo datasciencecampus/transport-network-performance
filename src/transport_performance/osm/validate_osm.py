@@ -179,6 +179,31 @@ class _IdHandler(osmium.SimpleHandler):
     osmium.SimpleHandler : class
         Inherits from osmium.SimpleHandler
 
+    Methods
+    -------
+    node()
+        Collates available OSM node feature IDs. Creates the node_ids
+        attribute.
+    way()
+        Collates available OSM way feature IDs. Creates the way_ids attribute.
+    relation()
+        Collates available OSM relation feature IDs. Creates the relations_ids
+        attribute.
+    area()
+        Collates available OSM area feature IDs. Creates the area_ids attribute
+        .
+
+    Attributes
+    ----------
+    node_ids: list
+        List of available OSM node feature IDs.
+    way_ids: list
+        List of available OSM way feature IDs.
+    relations_ids: list
+        List of available OSM relation feature IDs.
+    area_ids: list
+        List of available OSM area feature IDs.
+
     """
 
     def __init__(self) -> None:
@@ -355,17 +380,18 @@ class _LocHandler(osmium.SimpleHandler):
 # ---------API classes-----------
 
 
-class FindIds(_IdHandler):
+class FindIds:
     """Apply ID collation to an OSM file.
 
     Count or return available feature IDs in an OSM file.
 
     Parameters
     ----------
-    _IdHandler : class
-        Internal class for handling IDs. Inherits from osmium.SimpleHandler.
     osm_pth: Union[Path, str]
         Path to osm file.
+    id_collator: _IdHandler
+        FindIds applies the logic from _IdHandler to a pbf file on init,
+        storing the collated IDs in an `ids` attribute.
 
     Raises
     ------
@@ -378,18 +404,11 @@ class FindIds(_IdHandler):
 
     Attributes
     ----------
+    ids:
     counts: dict
         Counts of feature IDs by feature type.
     id_dict: dict
         IDs of all found features by feature type.
-    node_ids: list
-        List of available OSM node feature IDs. Inherited from _IdHandler.
-    way_ids: list
-        List of available OSM way feature IDs. Inherited from _IdHandler.
-    relations_ids: list
-        List of available OSM relation feature IDs. Inherited from _IdHandler.
-    area_ids: list
-        List of available OSM area feature IDs. Inherited from _IdHandler.
 
     Methods
     -------
@@ -397,27 +416,17 @@ class FindIds(_IdHandler):
         Count of feature IDs by feature type.
     get_feature_ids()
         Return feature IDs by available feature type.
-    node()
-        Collates available OSM node feature IDs. Creates the node_ids
-        attribute. Inherited from _IdHandler.
-    way()
-        Collates available OSM way feature IDs. Creates the way_ids attribute.
-        Inherited from _IdHandler.
-    relation()
-        Collates available OSM relation feature IDs. Creates the relations_ids
-        attribute. Inherited from _IdHandler.
-    area()
-        Collates available OSM area feature IDs. Creates the area_ids
-        attribute. Inherited from _IdHandler.
 
     """
 
-    def __init__(self, osm_pth: Union[Path, str]) -> None:
-        super().__init__()
+    def __init__(
+        self, osm_pth: Union[Path, str], id_collator: _IdHandler = _IdHandler
+    ) -> None:
+        self.ids = id_collator()
         _is_expected_filetype(
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
-        self.apply_file(osm_pth)
+        self.ids.apply_file(osm_pth)
         self.counts = dict()
         self.id_dict = dict()
 
@@ -431,10 +440,10 @@ class FindIds(_IdHandler):
 
         """
         counts = {
-            "n_nodes": len(self.node_ids),
-            "n_ways": len(self.way_ids),
-            "n_relations": len(self.relations_ids),
-            "n_areas": len(self.area_ids),
+            "n_nodes": len(self.ids.node_ids),
+            "n_ways": len(self.ids.way_ids),
+            "n_relations": len(self.ids.relations_ids),
+            "n_areas": len(self.ids.area_ids),
         }
         self.counts = counts
         return counts
@@ -449,10 +458,10 @@ class FindIds(_IdHandler):
 
         """
         id_dict = {
-            "node_ids": self.node_ids,
-            "way_ids": self.way_ids,
-            "relation_ids": self.relations_ids,
-            "area_ids": self.area_ids,
+            "node_ids": self.ids.node_ids,
+            "way_ids": self.ids.way_ids,
+            "relation_ids": self.ids.relations_ids,
+            "area_ids": self.ids.area_ids,
         }
         self.id_dict = id_dict
         return id_dict
