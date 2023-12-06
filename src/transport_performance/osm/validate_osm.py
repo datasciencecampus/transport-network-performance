@@ -467,10 +467,10 @@ class FindIds:
 
         """
         counts = {
-            "n_nodes": len(self.__node_ids),
-            "n_ways": len(self.__way_ids),
-            "n_relations": len(self.__relations_ids),
-            "n_areas": len(self.__area_ids),
+            "n_nodes": len(self._FindIds__node_ids),
+            "n_ways": len(self._FindIds__way_ids),
+            "n_relations": len(self._FindIds__relations_ids),
+            "n_areas": len(self._FindIds__area_ids),
         }
         self.counts = counts
         return counts
@@ -485,10 +485,10 @@ class FindIds:
 
         """
         id_dict = {
-            "node_ids": self.__node_ids,
-            "way_ids": self.__way_ids,
-            "relation_ids": self.__relations_ids,
-            "area_ids": self.__area_ids,
+            "node_ids": self._FindIds__node_ids,
+            "way_ids": self._FindIds__way_ids,
+            "relation_ids": self._FindIds__relations_ids,
+            "area_ids": self._FindIds__area_ids,
         }
         self.id_dict = id_dict
         return id_dict
