@@ -389,9 +389,9 @@ class FindIds:
     ----------
     osm_pth: Union[Path, str]
         Path to osm file.
-    id_collator: _IdHandler
+    id_collator: _IdHandler, optional
         FindIds applies the logic from _IdHandler to a pbf file on init,
-        storing the collated IDs in an `ids` attribute.
+        storing the collated IDs in an `ids` attribute. Defaults to _IdHandler.
 
     Raises
     ------
