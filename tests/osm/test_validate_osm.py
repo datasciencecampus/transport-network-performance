@@ -1,6 +1,7 @@
 """Test validate_osm."""
 import pytest
 import re
+
 from pyprojroot import here
 import geopandas as gpd
 from folium import Map

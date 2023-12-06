@@ -18,9 +18,10 @@ The API classes expose logic that enables users to:
 * Find coordinates for node or way features
 * Plot the coordinates of a given list of node or way IDs
 """
-import osmium
 from pathlib import Path
 from typing import Union
+
+import osmium
 import pandas as pd
 import geopandas as gpd
 from shapely import Point
