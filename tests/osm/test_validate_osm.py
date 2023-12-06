@@ -360,17 +360,13 @@ class TestFindTags(object):
         tags = _tiny_osm_tags
         expected_attrs = [
             "found_tags",
-            "node_tags",
-            "way_tags",
-            "relation_tags",
-            "area_tags",
+            "_FindTags__node_tags",
+            "_FindTags__way_tags",
+            "_FindTags__relation_tags",
+            "_FindTags__area_tags",
         ]
         expected_methods = [
             "check_tags_for_ids",
-            "node",
-            "way",
-            "relation",
-            "area",
         ]
         _class_atttribute_assertions(tags, expected_attrs, expected_methods)
 
