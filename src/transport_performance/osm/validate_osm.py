@@ -580,7 +580,8 @@ class FindTags:
         Returns
         -------
         found_tags : dict
-            ID : dict of tags, containing tag name : value.
+            Dictionary of tag IDs and their tag data in ID : {name:value}
+            format.
 
         """
         self.found_tags = _filter_target_dict_with_list(
