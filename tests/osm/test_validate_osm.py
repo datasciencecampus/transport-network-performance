@@ -4,7 +4,7 @@ import re
 
 from pyprojroot import here
 import geopandas as gpd
-from folium import Map
+import folium
 
 from transport_performance.osm.validate_osm import (
     _filter_target_dict_with_list,
@@ -353,9 +353,9 @@ class TestFindLocations(object):
         plt = locs.plot_ids(
             ids=ids._FindIds__node_ids[0:1], feature_type="node"
         )
-        assert isinstance(plt, Map)
+        assert isinstance(plt, folium.Map)
         plt = locs.plot_ids(ids=ids._FindIds__way_ids[0:1], feature_type="way")
-        assert isinstance(plt, Map)
+        assert isinstance(plt, folium.Map)
 
     def test_plot_ids_not_implemented(self, _tiny_osm_locs):
         """Assert asking for relation or area riases not implemented error."""
