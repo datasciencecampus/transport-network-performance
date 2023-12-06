@@ -194,7 +194,7 @@ class TestFindIds(object):
 
     def test_findids_init(self, _tiny_osm_ids):
         """Test init behaviour for FindIds."""
-        osm_ids = _tiny_osm_ids
+        ids = _tiny_osm_ids
         # check all the expected attributes
         expected_attrs = [
             "counts",
@@ -204,20 +204,20 @@ class TestFindIds(object):
             "count_features",
             "get_feature_ids",
         ]
-        _class_atttribute_assertions(osm_ids, expected_attrs, expected_methods)
-        f_nod = len(osm_ids.ids.node_ids)
+        _class_atttribute_assertions(ids, expected_attrs, expected_methods)
+        f_nod = len(ids._FindIds__node_ids)
         assert (
             f_nod == self.e_nod
         ), f"Expected {self.e_nod} nodes, found {f_nod} nodes."
-        f_way = len(osm_ids.ids.way_ids)
+        f_way = len(ids._FindIds__way_ids)
         assert (
             f_way == self.e_way
         ), f"Expected {self.e_way} ways, found {f_way} ways."
-        f_rel = len(osm_ids.ids.relations_ids)
+        f_rel = len(ids._FindIds__relations_ids)
         assert (
             f_rel == self.e_rel
         ), f"Expected {self.e_rel} rels, found {f_rel} rels."
-        f_area = len(osm_ids.ids.area_ids)
+        f_area = len(ids._FindIds__area_ids)
         assert (
             f_area == self.e_area
         ), f"Expected {self.e_area} areas, found {f_area} areas."
@@ -334,11 +334,13 @@ class TestFindLocations(object):
             The IDs found within the small OSM fixture.
 
         """
-        osm_ids = _tiny_osm_ids
+        ids = _tiny_osm_ids
         locs = _tiny_osm_locs
-        plt = locs.plot_ids(ids=osm_ids.ids.node_ids[0:1], feature_type="node")
+        plt = locs.plot_ids(
+            ids=ids._FindIds__node_ids[0:1], feature_type="node"
+        )
         assert isinstance(plt, Map)
-        plt = locs.plot_ids(ids=osm_ids.ids.way_ids[0:1], feature_type="way")
+        plt = locs.plot_ids(ids=ids._FindIds__way_ids[0:1], feature_type="way")
         assert isinstance(plt, Map)
 
     def test_plot_ids_not_implemented(self, _tiny_osm_locs):

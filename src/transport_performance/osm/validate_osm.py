@@ -409,6 +409,15 @@ class FindIds:
         Counts of feature IDs by feature type.
     id_dict: dict
         IDs of all found features by feature type.
+    __node_ids: list
+        Internal attribute contains list of all node IDs contained in pbf file.
+    __way_ids: list
+        Internal attribute contains list of all way IDs contained in pbf file.
+    __relations_ids: list
+        Internal attribute contains list of all relation IDs contained in pbf
+        file.
+    __area_ids: list
+        Internal attribute contains list of all area IDs contained in pbf file.
 
     Methods
     -------
@@ -422,11 +431,15 @@ class FindIds:
     def __init__(
         self, osm_pth: Union[Path, str], id_collator: _IdHandler = _IdHandler
     ) -> None:
-        self.ids = id_collator()
         _is_expected_filetype(
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
-        self.ids.apply_file(osm_pth)
+        collated_ids = id_collator()
+        collated_ids.apply_file(osm_pth)
+        self.__node_ids = collated_ids.node_ids
+        self.__way_ids = collated_ids.way_ids
+        self.__relations_ids = collated_ids.relations_ids
+        self.__area_ids = collated_ids.area_ids
         self.counts = dict()
         self.id_dict = dict()
 
@@ -440,10 +453,10 @@ class FindIds:
 
         """
         counts = {
-            "n_nodes": len(self.ids.node_ids),
-            "n_ways": len(self.ids.way_ids),
-            "n_relations": len(self.ids.relations_ids),
-            "n_areas": len(self.ids.area_ids),
+            "n_nodes": len(self.__node_ids),
+            "n_ways": len(self.__way_ids),
+            "n_relations": len(self.__relations_ids),
+            "n_areas": len(self.__area_ids),
         }
         self.counts = counts
         return counts
@@ -458,10 +471,10 @@ class FindIds:
 
         """
         id_dict = {
-            "node_ids": self.ids.node_ids,
-            "way_ids": self.ids.way_ids,
-            "relation_ids": self.ids.relations_ids,
-            "area_ids": self.ids.area_ids,
+            "node_ids": self.__node_ids,
+            "way_ids": self.__way_ids,
+            "relation_ids": self.__relations_ids,
+            "area_ids": self.__area_ids,
         }
         self.id_dict = id_dict
         return id_dict
