@@ -404,7 +404,6 @@ class FindIds:
 
     Attributes
     ----------
-    ids:
     counts: dict
         Counts of feature IDs by feature type.
     id_dict: dict
