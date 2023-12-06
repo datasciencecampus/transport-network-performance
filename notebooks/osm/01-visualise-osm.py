@@ -26,3 +26,8 @@ locs.plot_ids(ids=node_ids, feature_type="node")
 locs.plot_ids(ids=way_ids, feature_type="way")
 
 # %%
+tags = osmval.FindTags(fix_pth)
+
+# %%
+tags.check_tags_for_ids(way_ids, feature_type="way")
+# %%
