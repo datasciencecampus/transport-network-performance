@@ -471,7 +471,7 @@ class Test_ConvertOsmDictToGdf:
         ), f"Expected longitude value of 1.0, but found {exp_lon}"
         assert (
             exp_lat == 2.0
-        ), f"Expected latitude value of 1.0, but found {exp_lat}"
+        ), f"Expected latitude value of 2.0, but found {exp_lat}"
 
     def test_convert_osm_dict_to_gdf_with_way(self):
         """Assert the gdf is as expected with way dictionary input."""
@@ -507,4 +507,4 @@ class Test_ConvertOsmDictToGdf:
         ), f"Expected longitude value of 1.0, but found {exp_lon}"
         assert (
             exp_lat == 2.0
-        ), f"Expected latitude value of 1.0, but found {exp_lat}"
+        ), f"Expected latitude value of 2.0, but found {exp_lat}"
