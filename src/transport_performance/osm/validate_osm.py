@@ -47,7 +47,7 @@ def _compile_tags(osmium_feature):
 
     Returns
     -------
-    tagdict: dict
+    dict
         A dictionary of tag name & values.
 
     """
