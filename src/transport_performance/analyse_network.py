@@ -154,9 +154,7 @@ class AnalyseNetwork:
                 )
         else:
             origin_gdf = self.gdf.copy()
-            dest_gdf = self.gdf[
-                self.gdf[destination_col] == True  # noqa: E712
-            ].copy()
+            dest_gdf = self.gdf[self.gdf[destination_col]].copy()
 
             od_matrix = self._calculate_transport_network(
                 self.transport_network,
@@ -311,11 +309,7 @@ class AnalyseNetwork:
         orig_gdf = gdf.copy()
         geometry_col = gdf.geometry.name
         # TODO: add option to include all rows as destinations?
-        dest_gdf = (
-            gdf[gdf[destination_col] == True]  # noqa: E712
-            .reset_index()
-            .copy()
-        )
+        dest_gdf = gdf[gdf[destination_col]].reset_index(drop=True).copy()
 
         origins = np.array(orig_gdf["id"])
 
