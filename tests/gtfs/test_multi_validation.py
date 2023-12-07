@@ -128,6 +128,15 @@ class TestMultiGtfsInstance(object):
             TypeError, match=".*dates.*expected.*str.*list.*int.*"
         ):
             multi_gtfs_fixture.filter_to_date(12)
+        with pytest.raises(
+            ValueError,
+            match=(
+                r"In GTFS tests/data/chester-20230816-small_gtfs.zip."
+                r"\n{\'20040109\'} passed to \'filter_dates\' not present in "
+                r"feed dates.*"
+            ),
+        ):
+            multi_gtfs_fixture.filter_to_date(["20040109"])
 
     def test_filter_to_date(self, multi_gtfs_fixture):
         """Tests for .filter_to_date()."""
