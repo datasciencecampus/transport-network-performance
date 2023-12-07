@@ -62,7 +62,7 @@ def dummy_gdf_centroids():
             Point(-2.9966994427043026, 51.58796089656915),
             Point(-3.0026994196377954, 51.587209140699315),
         ],
-        "within_urban_centre": [0, 1, 0, 1],
+        "within_urban_centre": [False, True, False, True],
     }
     return gpd.GeoDataFrame(points, crs="epsg: 4326")
 
