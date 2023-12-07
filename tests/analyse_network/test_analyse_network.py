@@ -389,9 +389,9 @@ class Test_gdf_batch_origins:
                 1,
                 [[1], []],
             ),
-            # changed batch size
+            # changed batch size and using int
             (
-                11.25,
+                11,
                 4,
                 [[1, 2, 3, 4], [2, 4]],
             ),

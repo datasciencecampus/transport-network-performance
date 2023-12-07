@@ -77,7 +77,7 @@ class AnalyseNetwork:
         batch_orig: bool = False,
         partition_size: int = 200,
         destination_col: str = "within_urban_centre",
-        distance: float = 11.25,
+        distance: Union[int, float] = 11.25,
         unit: Unit = Unit.KILOMETERS,
         **kwargs,
     ) -> None:
@@ -100,7 +100,7 @@ class AnalyseNetwork:
         destination_col : str
             Column indicating what centroids should be considered as
             destinations. Default is "within_urban_centre".
-        distance: float
+        distance: Union[int, float]
             Distance to filter destinations.in km. Points further away from
             origin are removed from output. Default is 11.25 km.
         unit : Unit
@@ -244,7 +244,7 @@ class AnalyseNetwork:
         self,
         gdf: gpd.GeoDataFrame,
         destination_col: str,
-        distance: float,
+        distance: Union[int, float],
         num_origins: int,
         unit: Unit = Unit.KILOMETERS,
     ) -> (list, list):
@@ -257,7 +257,7 @@ class AnalyseNetwork:
         destination_col : str
             Column indicating what centroids should be considered as
             destinations. Column dtype needs to be bool.
-        distance : float
+        distance : Union[int, float],
             Distance to filter destinations. Points further away from
             origin are removed from output.
         num_origins : int
@@ -295,7 +295,7 @@ class AnalyseNetwork:
         # defences
         d._type_defence(gdf, "gdf", gpd.GeoDataFrame)
         d._check_column_in_df(gdf, destination_col)
-        d._type_defence(distance, "distance", float)
+        d._type_defence(distance, "distance", (int, float))
         d._type_defence(num_origins, "num_origins", int)
         d._type_defence(unit, "unit", Unit)
         if gdf[destination_col].dtype != bool:
