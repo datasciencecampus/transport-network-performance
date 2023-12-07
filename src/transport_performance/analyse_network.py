@@ -256,7 +256,7 @@ class AnalyseNetwork:
             Geodataframe containing location ids to cross match.
         destination_col : str
             Column indicating what centroids should be considered as
-            destinations.
+            destinations. Column dtype needs to be bool.
         distance : float
             Distance to filter destinations. Points further away from
             origin are removed from output.
@@ -298,6 +298,11 @@ class AnalyseNetwork:
         d._type_defence(distance, "distance", float)
         d._type_defence(num_origins, "num_origins", int)
         d._type_defence(unit, "unit", Unit)
+        if gdf[destination_col].dtype != bool:
+            raise TypeError(
+                f"Column {destination_col} should be bool. "
+                f"Got {gdf[destination_col].dtype}"
+            )
         if num_origins < 1 or num_origins > len(gdf):
             raise ValueError(
                 f"`num_origins` should be between 1 and {len(gdf)}, "
