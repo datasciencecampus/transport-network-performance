@@ -1191,14 +1191,21 @@ def test_final_output(
     assert out.loc[0][1] == Polygon(uc_coords)
 
     # bbox expected coordinates
+    # assert uses `geom_equals_exact` as small rounding/floating point
+    # differences were observed on the GitHub Actions runners between OSs.
+    # Using 6dp to reflect dp resolution of a 32-bit (single) float.
     bbox_coords = [
-        (-253000.0, 6042000.0),
-        (-228000.0, 6042000.0),
-        (-228000.0, 6066000.0),
-        (-253000.0, 6066000.0),
-        (-253000.0, 6042000.0),
+        (-253763.639152, 6042708.586284),
+        (-227236.365294, 6042708.586284),
+        (-227236.365294, 6065281.520681),
+        (-253763.639152, 6065281.520681),
+        (-253763.639152, 6042708.586284),
     ]
-    assert out.loc[2][1] == Polygon(bbox_coords)
+    assert (
+        out.loc[out["label"] == "bbox"]
+        .geom_equals_exact(Polygon(bbox_coords), tolerance=6)
+        .values[0]
+    )
 
     # type of output
     assert type(out) is gpd.GeoDataFrame

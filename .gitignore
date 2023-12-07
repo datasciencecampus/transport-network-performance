@@ -6,6 +6,8 @@
 *.zip
 *.pkl
 *.html
+*.tif
+*.parquet
 
 # exception for test fixtures/package data
 !tests/data/newport-2023-06-13.osm.pbf
@@ -14,6 +16,11 @@
 !tests/data/gtfs/newport-20230613_gtfs.zip
 !src/transport_performance/data/gtfs/route_lookup.pkl
 !tests/data/gtfs/report/html_template.html
+!tests/data/metrics/mock_centroid_gdf.pkl
+!tests/data/metrics/mock_pop_gdf.pkl
+!tests/data/metrics/mock_raster_input.tif
+!tests/data/metrics/mock_tt.parquet
+!tests/data/metrics/mock_urban_centre.pkl
 
 # exception for html templates
 !src/transport_performance/data/gtfs/report/html_templates/evaluation_template.html
@@ -49,7 +56,6 @@ outputs/*
 *.csv
 *.rds
 *.rda
-*.parquet
 *.arrow
 
 # Office files
@@ -65,7 +71,6 @@ outputs/*
 *.png
 *.jpg
 *.jpeg
-*.tif
 *.svg
 
 # The following was created by https://www.toptal.com/developers/gitignore/api/macos,windows,r,python
