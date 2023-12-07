@@ -5,6 +5,7 @@ import re
 from pyprojroot import here
 import geopandas as gpd
 import folium
+import pandas as pd
 
 from transport_performance.osm.validate_osm import (
     _filter_target_dict_with_list,
@@ -468,6 +469,11 @@ class Test_ConvertOsmDictToGdf:
         assert all(
             gdf.columns == ["lat", "lon", "geometry"]
         ), f"Columns not as expected. Found {gdf.columns}"
+        expected_index = pd.MultiIndex.from_tuples(
+            [(1, 11), (1, 111), (2, 22), (2, 222)],
+            names=["parent_id", "member_id"],
+        )
+        pd.testing.assert_index_equal(gdf.index, expected_index)
         assert len(gdf) == 4, f"Expected {exp_rows} rows, found {len(gdf)}"
         exp_lon = gdf["geometry"].iloc[1].x
         exp_lat = gdf["geometry"].iloc[3].y
