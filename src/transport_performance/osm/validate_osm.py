@@ -55,7 +55,9 @@ def _compile_tags(osmium_feature):
 
 
 def _filter_target_dict_with_list(
-    targets: dict, _list: list, search_key: str, accepted_keys: list
+    targets: dict,
+    _list: list,
+    search_key: str,
 ) -> dict:
     """Select a target dictionary and filter it with a list of keys.
 
@@ -67,9 +69,6 @@ def _filter_target_dict_with_list(
         A list of keys, OSM IDs in this context. Integer keys are expected.
     search_key : str
         The key value to search with.
-    accepted_keys : list
-        Valid key values specific to the context of the method calling this
-        function.
 
     Returns
     -------
@@ -79,14 +78,11 @@ def _filter_target_dict_with_list(
     Raises
     ------
     ValueError
-        `search_key` is not in `accepted_keys`.
         `filtered_dict` is empty. No tags for the combination of `_list` and
         `search_key` were found.
     TypeError
         `_list` is not a list.
-        `accepted_keys` is not a list.
         Elements of `_list` are not integer.
-        Elements of `accepted_keys` are not string.
         `search_key` is not a string.
     KeyError
         `search_key` is not present in `targets.keys()`
@@ -95,8 +91,6 @@ def _filter_target_dict_with_list(
     _type_defence(targets, "targets", dict)
     _check_iterable(_list, "_list", list, exp_type=int)
     _type_defence(search_key, "search_key", str)
-    _check_iterable(accepted_keys, "accepted_keys", list, exp_type=str)
-    _check_item_in_iter(search_key, accepted_keys, "search_key")
 
     feat = search_key.lower().strip()
     try:
@@ -592,7 +586,6 @@ class FindTags:
             },
             _list=ids,
             search_key=feature_type,
-            accepted_keys=["node", "way", "relation", "area"],
         )
         return self.found_tags
 
@@ -669,7 +662,6 @@ class FindLocations:
             targets={"node": self.__node_locs, "way": self.__way_node_locs},
             _list=ids,
             search_key=feature_type,
-            accepted_keys=["node", "way"],
         )
         return self.found_locs
 

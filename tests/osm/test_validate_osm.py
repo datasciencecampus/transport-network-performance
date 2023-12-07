@@ -51,7 +51,9 @@ class Test_FilterTargetDictWithList(object):
             match="`targets` expected <class 'dict'>. Got <class 'int'>",
         ):
             _filter_target_dict_with_list(
-                targets=1, _list=list(), search_key="key", accepted_keys=list()
+                targets=1,
+                _list=list(),
+                search_key="key",
             )
         with pytest.raises(
             TypeError,
@@ -61,7 +63,6 @@ class Test_FilterTargetDictWithList(object):
                 targets={},
                 _list=list(),
                 search_key=1,
-                accepted_keys=list("fookey"),
             )
         with pytest.raises(
             TypeError,
@@ -69,7 +70,9 @@ class Test_FilterTargetDictWithList(object):
             " <class 'int'>",
         ):
             _filter_target_dict_with_list(
-                targets=dict(), _list=1, search_key="key", accepted_keys=list()
+                targets=dict(),
+                _list=1,
+                search_key="key",
             )
         with pytest.raises(
             TypeError,
@@ -80,37 +83,6 @@ class Test_FilterTargetDictWithList(object):
                 targets=dict(),
                 _list=[1, 2, 3.0],
                 search_key="key",
-                accepted_keys=list(),
-            )
-        with pytest.raises(
-            TypeError,
-            match="`accepted_keys` expected <class 'collections.abc.Iterable'>"
-            ". Got <class 'int'>",
-        ):
-            _filter_target_dict_with_list(
-                targets=dict(), _list=[1], search_key="key", accepted_keys=1
-            )
-        with pytest.raises(
-            TypeError,
-            match="`accepted_keys` must contain <class 'str'> only. Found"
-            " <class 'int'> : 2",
-        ):
-            _filter_target_dict_with_list(
-                targets=dict(),
-                _list=[1],
-                search_key="key",
-                accepted_keys=["1", 2, "3"],
-            )
-        with pytest.raises(
-            ValueError,
-            match="'search_key'.*['list', 'of', 'keys'].*unacceptable_key:"
-            " <class 'str'>",
-        ):
-            _filter_target_dict_with_list(
-                targets=dict(),
-                _list=list(),
-                search_key="unacceptable_key",
-                accepted_keys=["list", "of", "keys"],
             )
         # check catching conditions where search key doesn't match the name
         # of any dictionary target
@@ -126,7 +98,6 @@ class Test_FilterTargetDictWithList(object):
                 targets=empty_dict,
                 _list=[1, 2, 3],
                 search_key="no_match",
-                accepted_keys=["no_match"],
             )
         # this check is to simulate providing the incorrect search key
         # resulting in an empty dictionary returned.
@@ -138,7 +109,6 @@ class Test_FilterTargetDictWithList(object):
                 targets=empty_dict,
                 _list=[1, 2, 3],
                 search_key="some_dict",
-                accepted_keys=["some_dict"],
             )
 
     def test__filter_target_dict_with_list_returns(self):
@@ -151,7 +121,6 @@ class Test_FilterTargetDictWithList(object):
             targets=target_dicts,
             _list=[1, 2, 3],
             search_key="choose_me",
-            accepted_keys=["choose_me", "do_not_choose_me"],
         )
         assert isinstance(out, dict)
         assert "remove" not in out.values()
