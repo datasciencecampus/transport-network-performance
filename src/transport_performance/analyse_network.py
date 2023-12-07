@@ -56,10 +56,19 @@ class AnalyseNetwork:
             check_elements=True,
             exp_type=(str, pathlib.Path),
         )
+
         for path in gtfs:
             d._is_expected_filetype(path, "gtfs", exp_ext=".zip")
 
-        self.gdf = gdf
+        # check if gdf is in EPSG: 4326
+        if gdf.crs != "EPSG: 4326":
+            warnings.warn(
+                f"`gdf` crs needs to be EPSG: 4326, found {gdf.crs}. "
+                "`gdf` will be re-projected."
+            )
+            self.gdf = gdf.to_crs("EPSG: 4326")
+        else:
+            self.gdf = gdf
         self.transport_network = TransportNetwork(osm, gtfs)
 
     def od_matrix(
