@@ -89,6 +89,7 @@ class UrbanCentre:
         cell_fill_threshold: int = 5,
         vector_nodata: int = -200,
         buffer_size: int = 10000,
+        buffer_estimation_crs: str = "EPSG:27700",
     ) -> gpd.GeoDataFrame:
         """Get urban centre.
 
@@ -130,12 +131,35 @@ class UrbanCentre:
         buffer_size : int, optional
             Size of the buffer around the urban centre, in the distance units
             of the `centre_crs`. Defaults to 10,000 metres.
+        buffer_estimation_crs : string, optional
+            CRS to use when calculating the buffer. Recommend using an
+            appropriate CRS for measuring distances. Default is "EPSG:27700",
+            suitable for UK urban centres. See Notes for more details.
 
         Returns
         -------
         output : gpd.GeoDataFrame
             GeoDataFrame with urban centre, buffer and bbox vector polygon
             boundaries.
+
+        Notes
+        -----
+        Buffer estimation: To detemine a buffer around the urban centre an
+        apporiate CRS is needed to ensure distances are preserved. The CRSs
+        adopted for raster data typically preserve area (e.g., Mollweide/
+        ESRI:54009 is an equal area projection). The solution to this problem
+        would be to provide an appropriate CRS to use when estimating the
+        buffer geometry, such as those used for topographic mapping and
+        engineering surveying of specific countries. To date, the following
+        CRSs have been utilised for their respective contries when estimating
+        buffers around urban centres:
+
+        ======= =====
+        Country CRS
+        ======= =====
+        UK      EPSG:27700
+        France  EPSG:2154
+        ======= =====
 
         """
         # window raster based on bbox
@@ -184,8 +208,14 @@ class UrbanCentre:
                 "`buffer_size` expected positive non-zero integer"
             )
 
+        # convert uc to appropriate CRS before buffer estimation + return CRS
         self.__buffer = gpd.GeoDataFrame(
-            geometry=self.__vectorized_uc.buffer(buffer_size), crs=self.crs
+            geometry=(
+                self.__vectorized_uc.to_crs(buffer_estimation_crs)
+                .buffer(buffer_size)
+                .to_crs(self.crs)
+            ),
+            crs=self.crs,
         )
 
         # bbox
