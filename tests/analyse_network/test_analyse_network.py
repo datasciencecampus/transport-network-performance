@@ -35,6 +35,18 @@ pytest_plugins = ["tests.analyse_network.analyse_network_fixtures"]
             None,
             does_not_raise(),
         ),
+        # wrong crs in centroids
+        (
+            "crs",
+            "EPSG: 27700",
+            pytest.warns(
+                UserWarning,
+                match=(
+                    r"`gdf` crs needs to be EPSG: 4326, found EPSG: 27700.*"
+                    r"`gdf` will be re-projected.*"
+                ),
+            ),
+        ),
         # wrong centroids gdf
         (
             "gdf",
@@ -82,7 +94,7 @@ def test_init(
     expected : Type[RaisesContext]
         Expected raise result.
     dummy_gdf_centroids : gpd.GeoDataFrame
-        Fixture with dummy centroid coordinates.
+        Fixture with dummy centroid coordinates and crs EPSG: 27700.
     dummy_osm : pathlib.Path
         Fixture with path to dummy pbf file.
     dummy_gtfs : list
@@ -97,7 +109,9 @@ def test_init(
         "gtfs": dummy_gtfs,
     }
 
-    if arg_name is not None:
+    if arg_name == "crs":
+        default_args["gdf"] = dummy_gdf_centroids.to_crs(arg_value)
+    elif arg_name is not None:
         default_args[arg_name] = arg_value
 
     with expected:
