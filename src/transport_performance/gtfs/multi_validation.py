@@ -334,6 +334,7 @@ class MultiGtfsInstance:
             column.replace("amin", "min").replace("amax", "max")
             for column in trip_counts.columns.values
         ]
+        trip_counts = self.instances[0]._order_dataframe_by_day(trip_counts)
         return trip_counts
 
     def summarise_trips(

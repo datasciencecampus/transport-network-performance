@@ -211,7 +211,7 @@ class TestMultiGtfsInstance(object):
         assert (
             len(summary) == 14
         ), f"Number of rows in route summary df is {len(summary)}. Expected 14"
-        friday_exp = [["friday", 3, 37, 31.0], ["friday", 200, 4, 4.0]]
+        friday_exp = [["friday", 37, 31.0, 3], ["friday", 4, 4.0, 200]]
         assert np.array_equal(
             friday_exp,
             [list(x) for x in list(summary[summary.day == "friday"].values)],
