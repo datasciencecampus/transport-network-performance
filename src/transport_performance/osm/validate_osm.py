@@ -622,11 +622,14 @@ class FindLocations:
 
     Methods
     -------
-    check_locs_for_ids()
+    check_locs_for_ids
         Filter locations to the given list of IDs. Updates `found_locs`
         attribute.
-    plot_ids()
+    plot_ids
         Plot coordinates for nodes or node members of a way.
+    _check_is_implemented
+        Checks `feature_type` requested by user in methods is node or way. If
+        neither, raise NotImplementedError.
 
     """
 
@@ -640,6 +643,20 @@ class FindLocations:
         self.__node_locs = locs.node_locs
         self.__way_node_locs = locs.way_node_locs
         self.found_locs = dict()
+
+    def _check_is_implemented(self, user_feature: str, param_nm: str) -> None:
+        """If the requested feature is not node or way, raise."""
+        user_feature = user_feature.lower().strip()
+        try:
+            _check_item_in_iter(
+                item=user_feature,
+                iterable=["node", "way"],
+                param_nm="feature_type",
+            )
+        except ValueError:
+            raise NotImplementedError(
+                "Relation or area plotting not implemented at this time."
+            )
 
     def check_locs_for_ids(self, ids: list, feature_type: str) -> dict:
         """Return coordinates for provided list of feature IDs.
@@ -657,7 +674,16 @@ class FindLocations:
         found_locs : dict
             ID : dict of tags, containing ID : location.
 
+        Raises
+        ------
+        NotImplementedError :
+            Relation location data could be extracted with a bit more munging.
+            Please raise a feature request if you feel this is significant.
+
         """
+        self._check_is_implemented(
+            user_feature=feature_type, param_nm="feature_type"
+        )
         self.found_locs = _filter_target_dict_with_list(
             targets={"node": self.__node_locs, "way": self.__way_node_locs},
             _list=ids,
@@ -706,15 +732,9 @@ class FindLocations:
         _type_defence(ids, "ids", list)
         _type_defence(feature_type, "feature_type", str)
         _type_defence(crs, "crs", (str, int))
-        feature_type = feature_type.lower().strip()
-        ACCEPT_FEATS = ["node", "way", "relation", "area"]
-        _check_item_in_iter(
-            item=feature_type, iterable=ACCEPT_FEATS, param_nm="feature_type"
+        self._check_is_implemented(
+            user_feature=feature_type, param_nm="feature_type"
         )
-        if feature_type not in ["node", "way"]:
-            raise NotImplementedError(
-                "Relation or area plotting not implemented at this time."
-            )
         self.check_locs_for_ids(ids, feature_type)
         self.coord_gdf = _convert_osm_dict_to_gdf(
             osm_dict=self.found_locs,
