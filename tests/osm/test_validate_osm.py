@@ -199,10 +199,10 @@ class TestFindIds(object):
         ids = _tiny_osm_ids
         ids.count_features()
         assert isinstance(ids.counts, dict)
-        f_nod = ids.counts["n_nodes"]
-        f_way = ids.counts["n_ways"]
-        f_rel = ids.counts["n_relations"]
-        f_area = ids.counts["n_areas"]
+        f_nod = ids.counts["node_ids"]
+        f_way = ids.counts["way_ids"]
+        f_rel = ids.counts["relation_ids"]
+        f_area = ids.counts["area_ids"]
         assert (
             f_nod == self.e_nod
         ), f"Expected {self.e_nod} nodes, found {f_nod} nodes."

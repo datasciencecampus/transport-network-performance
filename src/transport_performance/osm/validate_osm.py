@@ -476,12 +476,7 @@ class FindIds:
             Counts of node, way, relation & area IDs in a pbf file.
 
         """
-        counts = {
-            "n_nodes": len(self.__node_ids),
-            "n_ways": len(self.__way_ids),
-            "n_relations": len(self.__relations_ids),
-            "n_areas": len(self.__area_ids),
-        }
+        counts = {i: len(j) for i, j in self.get_feature_ids().items()}
         self.counts = counts
         return counts
 
