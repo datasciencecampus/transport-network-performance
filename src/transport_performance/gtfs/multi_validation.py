@@ -4,6 +4,7 @@ from tqdm import tqdm
 import pathlib
 import glob
 import os
+import warnings
 
 from geopandas import GeoDataFrame
 import numpy as np
@@ -64,6 +65,8 @@ class MultiGtfsInstance:
         Create a summary of all of the trips throughout all GTFS files.
     viz_stops()
         Plot each of the stops from all GtfsInstance's on a folium Map object.
+    validate_empty_feeds()
+        Check if there are empty feeds within the MultiGtfsInstance.
 
     Raises
     ------
@@ -204,6 +207,35 @@ class MultiGtfsInstance:
         combined_validation = pd.concat(tables)
         self.validity_df = combined_validation
         return self.validity_df.copy().reset_index(drop=True)
+
+    def validate_empty_feeds(self, delete: bool = False) -> list:
+        """Ensure the feeds in MultiGtfsInstance are not empty.
+
+        Parameters
+        ----------
+        delete : bool, optional
+            Whether or not to delete the empty feeds, by default False
+
+        Returns
+        -------
+        list
+            A list of feeds that are empty and their index in GtfsInstance.
+
+        """
+        empty_feeds = [
+            (ind, inst)
+            for ind, inst in enumerate(self.instances)
+            if len(inst.feed.stop_times) < 1
+        ]
+        if delete and empty_feeds:
+            self.instances = [
+                gtfs_inst
+                for index, gtfs_inst in enumerate(self.instances, start=0)
+                if index not in [i[0] for i in empty_feeds]
+            ]
+        if not self.instances:
+            warnings.warn("MultiGtfsInstance has no feeds.", UserWarning)
+        return empty_feeds
 
     def filter_to_date(self, dates: Union[str, list]) -> None:
         """Filter each GTFS to date(s).
