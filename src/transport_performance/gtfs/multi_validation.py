@@ -62,6 +62,8 @@ class MultiGtfsInstance:
         Create a summary of all of the routes throughout all GTFS files.
     summarise_routes()
         Create a summary of all of the trips throughout all GTFS files.
+    viz_stops()
+        Plot each of the stops from all GtfsInstance's on a folium Map object.
 
     Raises
     ------
