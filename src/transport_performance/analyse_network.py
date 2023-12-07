@@ -332,7 +332,7 @@ class AnalyseNetwork:
 
             # filters out pairs where distance is over threshold
             sel_dest = list(
-                full_gdf[full_gdf["distance"] < distance]["id_dest"].unique()
+                full_gdf[full_gdf["distance"] <= distance]["id_dest"].unique()
             )
 
             # yields lists with selected origins and destinations
