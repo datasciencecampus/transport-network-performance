@@ -151,7 +151,6 @@ def _convert_osm_dict_to_gdf(
             # members of the way.
             for i in values:
                 for k, j in i.items():
-                    mem_row = pd.DataFrame(j, index=[key, k])
                     # parent id is way, member id is node
                     ind = pd.MultiIndex.from_tuples(
                         [(key, k)], names=["parent_id", "member_id"]
