@@ -300,7 +300,7 @@ class AnalyseNetwork:
         d._type_defence(unit, "unit", Unit)
         if gdf[destination_col].dtype != bool:
             raise TypeError(
-                f"Column {destination_col} should be bool. "
+                f"Column `{destination_col}` should be bool. "
                 f"Got {gdf[destination_col].dtype}"
             )
         if num_origins < 1 or num_origins > len(gdf):

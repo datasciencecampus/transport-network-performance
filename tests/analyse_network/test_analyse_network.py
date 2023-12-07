@@ -287,6 +287,15 @@ class Test_gdf_batch_origins:
                     ),
                 ),
             ),
+            # wrong column type
+            (
+                "destination_col",
+                "id",
+                pytest.raises(
+                    TypeError,
+                    match=(r"Column `id` should be bool.* Got int64"),
+                ),
+            ),
             # wrong distance
             (
                 "distance",
