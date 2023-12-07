@@ -164,6 +164,18 @@ class TestFindIds(object):
     e_rel = 12
     e_area = 11
 
+    def test_find_ids_raises(self):
+        """Class FindIds should raise on bad path."""
+        with pytest.raises(
+            FileNotFoundError, match=".*doesnt/exist.pbf not found on file."
+        ):
+            FindIds(osm_pth="doesnt/exist.pbf")
+        with pytest.raises(
+            ValueError,
+            match="`osm_pth` expected file extension .pbf. Found .zip",
+        ):
+            FindIds(osm_pth=here("tests/data/gtfs/newport-20230613_gtfs.zip"))
+
     def test_findids_init(self, _tiny_osm_ids):
         """Test init behaviour for FindIds."""
         ids = _tiny_osm_ids
@@ -252,6 +264,20 @@ class TestFindIds(object):
 class TestFindLocations(object):
     """Tests for FindLocations api class."""
 
+    def test_find_locations_raises(self):
+        """Class FindLocations should raise on bad path."""
+        with pytest.raises(
+            FileNotFoundError, match=".*doesnt/exist.pbf not found on file."
+        ):
+            FindLocations(osm_pth="doesnt/exist.pbf")
+        with pytest.raises(
+            ValueError,
+            match="`osm_pth` expected file extension .pbf. Found .zip",
+        ):
+            FindLocations(
+                osm_pth=here("tests/data/gtfs/newport-20230613_gtfs.zip")
+            )
+
     def test_find_locations_init(self, _tiny_osm_locs):
         """Test for FindLocations init behaviour."""
         locs = _tiny_osm_locs
@@ -338,6 +364,18 @@ class TestFindLocations(object):
 
 class TestFindTags(object):
     """Test FindTags API class."""
+
+    def test_find_tags_raises(self):
+        """Class FindTags should raise on bad path."""
+        with pytest.raises(
+            FileNotFoundError, match=".*doesnt/exist.pbf not found on file."
+        ):
+            FindTags(osm_pth="doesnt/exist.pbf")
+        with pytest.raises(
+            ValueError,
+            match="`osm_pth` expected file extension .pbf. Found .zip",
+        ):
+            FindTags(osm_pth=here("tests/data/gtfs/newport-20230613_gtfs.zip"))
 
     def test_find_tags_init(self, _tiny_osm_tags):
         """Check init behaviour for FindTags."""
