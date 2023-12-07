@@ -30,9 +30,9 @@ print(f"All origins time: {end - start}")
 
 # %%
 # run od_matrix with single origin
-OUT_PATH_ALL = here("outputs/analyse_network/test_single")
+OUT_PATH_SINGLE = here("outputs/analyse_network/test_single")
 start = time.time()
-an.od_matrix(out_path=OUT_PATH_ALL, batch_orig=True)
+an.od_matrix(out_path=OUT_PATH_SINGLE, batch_orig=True)
 end = time.time()
 print(f"All origins time: {end - start}")
 
