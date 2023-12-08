@@ -1693,7 +1693,9 @@ class GtfsInstance:
         return None
 
     def filter_to_bbox(
-        self, bbox: Union[list, GeoDataFrame], crs: str = "epsg:4326"
+        self,
+        bbox: Union[list, GeoDataFrame],
+        crs: Union[str, int] = "epsg:4326",
     ) -> None:
         """Very shallow wrapper around filter_gfts().
 
@@ -1704,7 +1706,7 @@ class GtfsInstance:
         bbox : Union[list, GeoDataFrame]
             The bbox to filter the GTFS to. Leave as none if the GTFS does not
             need to be cropped. Format - [xmin, ymin, xmax, ymax]
-        crs : str, optional
+        crs : Union[str, int], optional
             The CRS of the given bbox, by default "epsg:4326"
 
         Returns
@@ -1714,7 +1716,7 @@ class GtfsInstance:
         """
         # defences
         _type_defence(bbox, "bbox", (list, GeoDataFrame))
-        _type_defence(crs, "crs", str)
+        _type_defence(crs, "crs", (str, int))
         # filter gtfs
         filter_gtfs(gtfs=self, bbox=bbox, crs=crs)
         return None

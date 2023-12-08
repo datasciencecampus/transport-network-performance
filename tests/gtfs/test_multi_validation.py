@@ -193,8 +193,25 @@ class TestMultiGtfsInstance(object):
             TypeError, match=".*bbox.*expected.*list.*GeoDataFrame.*int.*"
         ):
             multi_gtfs_fixture.filter_to_bbox(12)
-        with pytest.raises(TypeError, match=".*crs.*expected.*str.*int.*"):
-            multi_gtfs_fixture.filter_to_bbox([12, 12, 13, 13], 12)
+        with pytest.raises(
+            TypeError, match=".*crs.*expected.*str.*int.*.*DataFrame"
+        ):
+            multi_gtfs_fixture.filter_to_bbox(
+                [12.0, 12.0, 13.0, 13.0], pd.DataFrame()
+            )
+        with pytest.raises(
+            TypeError, match=".*delete_empty_feeds.*expected.*bool.*str.*"
+        ):
+            multi_gtfs_fixture.filter_to_bbox(
+                [1.0, 1.0, 1.0, 1.0], 4326, "test"
+            )
+        # assert error is raised if bbox empties multi GTFS
+        with pytest.raises(
+            ValueError, match="BBOX.*has filtered.*to contain no data.*"
+        ):
+            multi_gtfs_fixture.filter_to_bbox(
+                [1.0, 1.0, 1.0, 1.0], "epsg:4326", True
+            )
 
     def test_filter_to_bbox(self, multi_gtfs_fixture):
         """Tests for .filter_to_bbox()."""
