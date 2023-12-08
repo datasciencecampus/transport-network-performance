@@ -103,24 +103,40 @@ class TestMultiGtfsInstance(object):
         with pytest.raises(TypeError, match=".*clean_kwargs.*dict.*bool"):
             multi_gtfs_fixture.clean_feeds(True)
 
-    def test_clean_feeds_on_pasas(self):
+    def test_clean_feeds_on_pasas(self, multi_gtfs_fixture):
         """General tests for .clean_feeds()."""
-        # To be completed once PR 195 is merged as there are breaking changes.
-        # https://github.com/datasciencecampus/transport-network-performance/
-        # pull/195
-        pass
+        # validate and do quick check on validity_df
+        valid_df = multi_gtfs_fixture.is_valid()
+        assert len(valid_df) == 12, "validity_df not as expected"
+        # clean feed
+        multi_gtfs_fixture.clean_feeds()
+        # ensure cleaning has occured
+        new_valid = multi_gtfs_fixture.is_valid()
+        assert len(new_valid) == 9
+        assert np.array_equal(
+            list(new_valid.iloc[3][["type", "table"]].values),
+            ["error", "routes"],
+        ), "Validity df after cleaning not as expected"
 
     def test_is_valid_defences(self, multi_gtfs_fixture):
         """Defensive tests for .is_valid()."""
         with pytest.raises(TypeError, match=".*validation_kwargs.*dict.*bool"):
             multi_gtfs_fixture.is_valid(True)
 
-    def test_is_valid_on_pass(self):
+    def test_is_valid_on_pass(self, multi_gtfs_fixture):
         """General tests for is_valid()."""
-        # To be completed once PR 195 is merged as there are breaking changes.
-        # https://github.com/datasciencecampus/transport-network-performance/
-        # pull/195
-        pass
+        valid_df = multi_gtfs_fixture.is_valid()
+        assert len(valid_df) == 12, "Validation df not as expected"
+        assert np.array_equal(
+            list(valid_df.iloc[3][["type", "message"]].values),
+            (["warning", "Fast Travel Between Consecutive Stops"]),
+        )
+        assert hasattr(
+            multi_gtfs_fixture, "validity_df"
+        ), "validity_df not created"
+        assert isinstance(
+            multi_gtfs_fixture.validity_df, pd.DataFrame
+        ), "validity_df not a df"
 
     def test_validate_empty_feeds(self, multi_gtfs_fixture):
         """Tests for validate_empty_feeds."""
