@@ -195,7 +195,7 @@ class MultiGtfsInstance:
             zip(self.paths, self.instances), total=len(self.instances)
         )
         for path, inst in progress:
-            progress.set_description(f"Cleaning GTFS from path {path}")
+            progress.set_description(f"Validating GTFS from path {path}")
             inst.is_valid(**validation_kwargs)
 
         # concat all validation tables into one
