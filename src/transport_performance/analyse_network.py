@@ -1,4 +1,5 @@
 """Wrapper for r5py to calculate O-D matrices."""
+import glob
 import pathlib
 import warnings
 
@@ -27,10 +28,13 @@ class AnalyseNetwork:
         Path to the location of the open street map file.
     gtfs : list
         List including path or paths to the locations of gtfs files.
+    out_path : Union[str, pathlib.Path]
+        Path to save the output as parquet files.
 
     Attributes
     ----------
     gdf
+    out_path
     transport_network : TransportNetwork
         R5py object that contains a transport network initialised with data
         from OpenStreetMap and GTFS.
@@ -40,10 +44,26 @@ class AnalyseNetwork:
     od_matrix
         Method that calculates the full O-D matrix and saves it as parquet.
 
+    Raises
+    ------
+    NotImplementedError
+        If the `out_path` provided already contains parquet files, there is
+        a risk that if the number of parquet files produced is less than
+        the number of files in the directory not all of them will be
+        overwritten. This will cause issues when loading them as there will
+        be additional records in the dataframe.
+        In the future we will implement something to handle this (emptying
+        folder, archiving old files). In the meantime, this will raise an
+        error.
+
     """
 
     def __init__(
-        self, gdf: gpd.GeoDataFrame, osm: Union[str, pathlib.Path], gtfs: list
+        self,
+        gdf: gpd.GeoDataFrame,
+        osm: Union[str, pathlib.Path],
+        gtfs: list,
+        out_path: Union[str, pathlib.Path],
     ):
         """Initialise AnalyseNetwork class."""
         # defences
@@ -56,6 +76,7 @@ class AnalyseNetwork:
             check_elements=True,
             exp_type=(str, pathlib.Path),
         )
+        d._check_parent_dir_exists(out_path, "out_path", create=True)
 
         for path in gtfs:
             d._is_expected_filetype(path, "gtfs", exp_ext=".zip")
@@ -69,11 +90,22 @@ class AnalyseNetwork:
             self.gdf = gdf.to_crs("EPSG: 4326")
         else:
             self.gdf = gdf
+
+        # checks if parquet files in out_path
+        # this defence goes here because we want an early fail (before running
+        # all the expensive bits)
+        if len(glob.glob(str(out_path) + "/*.parquet")) > 0:
+            raise NotImplementedError(
+                "Module cannot save parquet files in a directory that already "
+                "contains parquet files. Please remove files or provide an "
+                "empty directory for `out_path`"
+            )
+        self.out_path = out_path
+
         self.transport_network = TransportNetwork(osm, gtfs)
 
     def od_matrix(
         self,
-        out_path: Union[str, pathlib.Path],
         batch_orig: bool = False,
         partition_size: int = 200,
         destination_col: str = "within_urban_centre",
@@ -85,8 +117,6 @@ class AnalyseNetwork:
 
         Parameters
         ----------
-        out_path : Union[str, pathlib.Path]
-            Path to save the O-D matrix as parquet files.
         batch_orig : bool
             Flag to indicate whether to calculate the transport network
             performance using the whole dataset or batching by origin
@@ -150,7 +180,7 @@ class AnalyseNetwork:
                 )
 
                 self._save_to_parquet(
-                    od_matrix, str(min(sel_orig)), out_path, partitions
+                    od_matrix, str(min(sel_orig)), self.out_path, partitions
                 )
         else:
             origin_gdf = self.gdf.copy()
@@ -167,7 +197,7 @@ class AnalyseNetwork:
                 od_matrix, partition_size
             )
 
-            self._save_to_parquet(od_matrix, "all", out_path, partitions)
+            self._save_to_parquet(od_matrix, "all", self.out_path, partitions)
 
     def _calculate_transport_network(
         self,
@@ -440,7 +470,6 @@ class AnalyseNetwork:
         d._type_defence(od_matrix, "od_matrix", pd.DataFrame)
         d._type_defence(out_name_func, "out_name_func", str)
         d._type_defence(npartitions, "npartitions", int)
-        d._check_parent_dir_exists(out_path, "out_path", create=True)
 
         ddf = dd.from_pandas(od_matrix, npartitions=npartitions)
 
