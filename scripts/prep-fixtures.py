@@ -15,6 +15,10 @@ import os
 import gtfs_kit as gk
 import geopandas as gpd
 from shapely.geometry import box
+from pyprojroot import here
+
+from transport_performance.osm.osm_utils import filter_osm
+
 
 fix_dat = os.path.join("tests", "data", "gtfs")
 gtfs_zip = [
@@ -31,3 +35,15 @@ newport_today = gk.miscellany.restrict_to_dates(
     feed=newport_feed, dates=[date_today]
 )
 newport_today.write(os.path.join(fix_dat, f"newport-{date_today}_gtfs.zip"))
+
+# prepare small osm fixture for costly validate_osm tests
+
+FIX_PTH = here("tests/data/")
+NEWPORT_OSM = os.path.join(FIX_PTH, "newport-2023-06-13.osm.pbf")
+OUT_PTH = os.path.join(FIX_PTH, "small-osm.pbf")
+
+filter_osm(
+    pbf_pth=NEWPORT_OSM,
+    out_pth=OUT_PTH,
+    bbox=[-3.0224023262, 51.5668731118, -3.0199831413, 51.5685191918],
+)
