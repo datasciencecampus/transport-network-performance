@@ -136,7 +136,37 @@ class Test_init:
         with expected:
             assert an.AnalyseNetwork(**default_args)
 
-    # TODO: add test for file in folder defence
+    def test_init_dir_defence(
+        self,
+        dummy_gdf_centroids: gpd.GeoDataFrame,
+        dummy_osm: pathlib.Path,
+        dummy_gtfs: list,
+        dummy_filepath: pathlib.Path,
+    ):
+        """Tests AnalyseNetwork files in directory defence.
+
+        Parameters
+        ----------
+        dummy_gdf_centroids : gpd.GeoDataFrame
+            Fixture with dummy centroid coordinates and crs EPSG: 27700.
+        dummy_osm : pathlib.Path
+            Fixture with path to dummy pbf file.
+        dummy_gtfs : list
+            Fixture with path to dummy gtfs file. It is in a list as that's the
+            format needed by the function (as it can take a list of paths).
+        dummy_filepath : pathlib.path
+            Path to temporary directory to save parquet files.
+
+        """
+        f = open(os.path.join(dummy_filepath, "asdf.parquet"), "a")
+        f.close()
+
+        with pytest.raises(
+            NotImplementedError, match=r"Module cannot save parquet files.*"
+        ):
+            assert an.AnalyseNetwork(
+                dummy_gdf_centroids, dummy_osm, dummy_gtfs, dummy_filepath
+            )
 
 
 ###########################
