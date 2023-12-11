@@ -31,7 +31,6 @@ kaleido
 numpy>=1.25.0 # test suite will fail if user installed lower than this
 sphinx
 sphinx-rtd-theme
-haversine
 dask
 pyarrow >= 14.0.1 # 14.0.0 has security vulnerability
 tqdm
