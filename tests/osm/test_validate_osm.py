@@ -165,7 +165,7 @@ class TestFindIds(object):
     e_area = 11
 
     def test_find_ids_raises(self):
-        """Class FindIds should raise on bad path."""
+        """Class FindIds should raise on bad inputs."""
         with pytest.raises(
             FileNotFoundError, match=".*doesnt/exist.pbf not found on file."
         ):
@@ -175,6 +175,15 @@ class TestFindIds(object):
             match="`osm_pth` expected file extension .pbf. Found .zip",
         ):
             FindIds(osm_pth=here("tests/data/gtfs/newport-20230613_gtfs.zip"))
+        with pytest.raises(
+            TypeError, match="Expected _IdHandler, found: SomeClass"
+        ):
+
+            class SomeClass:
+                def __init__(self):
+                    return None
+
+            FindIds(osm_pth=osm_pth, id_collator=SomeClass)
 
     def test_findids_init(self, _tiny_osm_ids):
         """Test init behaviour for FindIds."""
@@ -277,6 +286,15 @@ class TestFindLocations(object):
             FindLocations(
                 osm_pth=here("tests/data/gtfs/newport-20230613_gtfs.zip")
             )
+        with pytest.raises(
+            TypeError, match="Expected _LocHandler, found: SomeClass"
+        ):
+
+            class SomeClass:
+                def __init__(self):
+                    return None
+
+            FindLocations(osm_pth=osm_pth, loc_collator=SomeClass)
 
     def test_find_locations_init(self, _tiny_osm_locs):
         """Test for FindLocations init behaviour."""
@@ -376,6 +394,15 @@ class TestFindTags(object):
             match="`osm_pth` expected file extension .pbf. Found .zip",
         ):
             FindTags(osm_pth=here("tests/data/gtfs/newport-20230613_gtfs.zip"))
+        with pytest.raises(
+            TypeError, match="Expected _TagHandler, found: SomeClass"
+        ):
+
+            class SomeClass:
+                def __init__(self):
+                    return None
+
+            FindTags(osm_pth=osm_pth, tag_collator=SomeClass)
 
     def test_find_tags_init(self, _tiny_osm_tags):
         """Check init behaviour for FindTags."""
