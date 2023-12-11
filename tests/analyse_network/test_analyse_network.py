@@ -21,101 +21,122 @@ import transport_performance.analyse_network as an
 # import metrics fixtures via pytest_plugins
 pytest_plugins = ["tests.analyse_network.analyse_network_fixtures"]
 
+
 #############################
 # test class initialisation #
 #############################
 
+# _calculate_transport_network
+class Test_init:
+    """Class to test the __init__."""
 
-@pytest.mark.parametrize(
-    "arg_name, arg_value, expected",
-    [
-        # no error raised
-        (
-            None,
-            None,
-            does_not_raise(),
-        ),
-        # wrong crs in centroids
-        (
-            "crs",
-            "EPSG: 27700",
-            pytest.warns(
-                UserWarning,
-                match=(
-                    r"`gdf` crs needs to be EPSG: 4326, found EPSG: 27700.*"
-                    r"`gdf` will be re-projected.*"
+    @pytest.mark.parametrize(
+        "arg_name, arg_value, expected",
+        [
+            # no error raised
+            (
+                None,
+                None,
+                does_not_raise(),
+            ),
+            # wrong crs in centroids
+            (
+                "crs",
+                "EPSG: 27700",
+                pytest.warns(
+                    UserWarning,
+                    match=(
+                        r"`gdf` crs needs to be EPSG: 4326, found EPSG: "
+                        r"27700.*`gdf` will be re-projected.*"
+                    ),
                 ),
             ),
-        ),
-        # wrong centroids gdf
-        (
-            "gdf",
-            "not a gdf",
-            pytest.raises(
-                TypeError,
-                match=(r"`gdf` expected .*GeoDataFrame.*" r"Got .*str.*"),
+            # wrong centroids gdf
+            (
+                "gdf",
+                "not a gdf",
+                pytest.raises(
+                    TypeError,
+                    match=(r"`gdf` expected .*GeoDataFrame.*" r"Got .*str.*"),
+                ),
             ),
-        ),
-        # wrong osm path
-        (
-            "osm",
-            ["not a path or string"],
-            pytest.raises(
-                TypeError,
-                match=(r"`pth` expected .*str.*Path.*" r"Got .*list.*"),
+            # wrong osm path
+            (
+                "osm",
+                ["not a path or string"],
+                pytest.raises(
+                    TypeError,
+                    match=(r"`pth` expected .*str.*Path.*" r"Got .*list.*"),
+                ),
             ),
-        ),
-        # wrong gtfs list
-        (
-            "gtfs",
-            {"not a list"},
-            pytest.raises(
-                TypeError, match=(r"`gtfs` expected .*list.*" r"Got .*set.*")
+            # wrong gtfs list
+            (
+                "gtfs",
+                {"not a list"},
+                pytest.raises(
+                    TypeError,
+                    match=(r"`gtfs` expected .*list.*" r"Got .*set.*"),
+                ),
             ),
-        ),
-    ],
-)
-def test_init(
-    arg_name: str,
-    arg_value: Any,
-    expected: Type[RaisesContext],
-    dummy_gdf_centroids: gpd.GeoDataFrame,
-    dummy_osm: pathlib.Path,
-    dummy_gtfs: list,
-):
-    """Tests AnalyseNetwork class initialisation.
+            # wrong out_path
+            (
+                "out_path",
+                {"not a path or string"},
+                pytest.raises(
+                    TypeError,
+                    match=(r"`out_path` expected path-like, found .*set.*"),
+                ),
+            ),
+        ],
+    )
+    def test_init(
+        self,
+        arg_name: str,
+        arg_value: Any,
+        expected: Type[RaisesContext],
+        dummy_gdf_centroids: gpd.GeoDataFrame,
+        dummy_osm: pathlib.Path,
+        dummy_gtfs: list,
+        dummy_filepath: pathlib.Path,
+    ):
+        """Tests AnalyseNetwork class initialisation.
 
-    Parameters
-    ----------
-    arg_name : str
-        Name of function argument to test.
-    arg_value : Any
-        Value to use for argument being tested.
-    expected : Type[RaisesContext]
-        Expected raise result.
-    dummy_gdf_centroids : gpd.GeoDataFrame
-        Fixture with dummy centroid coordinates and crs EPSG: 27700.
-    dummy_osm : pathlib.Path
-        Fixture with path to dummy pbf file.
-    dummy_gtfs : list
-        Fixture with path to dummy gtfs file. It is in a list as that's the
-        format needed by the function (as it can take a list of paths).
+        Parameters
+        ----------
+        arg_name : str
+            Name of function argument to test.
+        arg_value : Any
+            Value to use for argument being tested.
+        expected : Type[RaisesContext]
+            Expected raise result.
+        dummy_gdf_centroids : gpd.GeoDataFrame
+            Fixture with dummy centroid coordinates and crs EPSG: 27700.
+        dummy_osm : pathlib.Path
+            Fixture with path to dummy pbf file.
+        dummy_gtfs : list
+            Fixture with path to dummy gtfs file. It is in a list as that's the
+            format needed by the function (as it can take a list of paths).
+        dummy_filepath : pathlib.path
+            Path to temporary directory to save parquet files.
 
-    """
-    # dict of default args
-    default_args = {
-        "gdf": dummy_gdf_centroids,
-        "osm": dummy_osm,
-        "gtfs": dummy_gtfs,
-    }
+        """
+        # dict of default args
+        default_args = {
+            "gdf": dummy_gdf_centroids,
+            "osm": dummy_osm,
+            "gtfs": dummy_gtfs,
+            "out_path": dummy_filepath,
+        }
 
-    if arg_name == "crs":
-        default_args["gdf"] = dummy_gdf_centroids.to_crs(arg_value)
-    elif arg_name is not None:
-        default_args[arg_name] = arg_value
+        if arg_name == "crs":
+            default_args["gdf"] = dummy_gdf_centroids.to_crs(arg_value)
+        elif arg_name is not None:
+            default_args[arg_name] = arg_value
 
-    with expected:
-        assert an.AnalyseNetwork(**default_args)
+        with expected:
+            assert an.AnalyseNetwork(**default_args)
+
+    # TODO: add test for file in folder defence
 
 
 ###########################
@@ -701,15 +722,6 @@ class Test_save_to_parquet:
                     match=(r"`npartitions` expected .*int.* Got .*str.*"),
                 ),
             ),
-            # wrong out_path
-            (
-                "out_path",
-                ["wrong path"],
-                pytest.raises(
-                    TypeError,
-                    match=(r"`out_path` expected path-like, found.*list.*"),
-                ),
-            ),
         ],
     )
     def test__save_to_parquet_input(
@@ -732,6 +744,8 @@ class Test_save_to_parquet:
             Fixture with dummy big dataframe.
         dummy_filepath : pathlib.Path
             Fixture with path to the temporary directory to save files.
+            Defence for this is tested in __init__ but this is needed for
+            the function.
         arg_name : str
             Name of function argument to test.
         arg_value : Any
@@ -828,7 +842,9 @@ class Test_save_to_parquet:
     ],
 )
 def test_od_matrix(
-    dummy_transport_network: an.AnalyseNetwork,
+    dummy_gdf_centroids: gpd.GeoDataFrame,
+    dummy_osm: pathlib.Path,
+    dummy_gtfs: list,
     dummy_filepath: pathlib.Path,
     batch_orig: bool,
     num_files: int,
@@ -837,9 +853,12 @@ def test_od_matrix(
 
     Parameters
     ----------
-    dummy_transport_network : AnalyseNetwork
-        Initialised AnalyseNetwork object created from PBF, GTFS and
-        centroids fixtures.
+    dummy_gdf_centroids : gpd.GeoDataFrame
+        Fixture with dummy centroid coordinates and crs EPSG: 27700.
+    dummy_osm : pathlib.Path
+        Fixture with path to dummy pbf file.
+    dummy_gtfs : list
+        Fixture with path to dummy gtfs file.
     dummy_filepath : pathlib.Path
         Path to temporary directory to save parquet files.
     batch_orig : bool
@@ -849,9 +868,10 @@ def test_od_matrix(
         Number of files expected based on `batch_orig`.
 
     """
-    tn = dummy_transport_network
+    tn = an.AnalyseNetwork(
+        dummy_gdf_centroids, dummy_osm, dummy_gtfs, dummy_filepath
+    )
     tn.od_matrix(
-        out_path=dummy_filepath,
         batch_orig=batch_orig,
         partition_size=200,
         destination_col="within_urban_centre",
