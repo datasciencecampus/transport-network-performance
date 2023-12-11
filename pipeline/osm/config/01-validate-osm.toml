@@ -1,0 +1,5 @@
+title = "Config for OSM Validation Pipeline"
+
+[OSM]
+PATH = "tests/data/newport-2023-06-13.osm.pbf"
+#PATH = "data/external/osm/wales-latest.osm.pbf"
