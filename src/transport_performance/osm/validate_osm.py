@@ -426,6 +426,8 @@ class FindIds:
         `osm_pth` file not found on disk.
     ValueError :
         `osm_pth` does not have a .pbf extension.
+    TypeError :
+        id_collator is not an instance of _IdHandler.
 
     Attributes
     ----------
@@ -459,6 +461,9 @@ class FindIds:
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
         collated_ids = id_collator()
+        classnm = collated_ids.__class__.__name__
+        if classnm != "_IdHandler":
+            raise TypeError(f"Expected _IdHandler, found: {classnm}")
         collated_ids.apply_file(osm_pth)
         self.__node_ids = collated_ids.node_ids
         self.__way_ids = collated_ids.way_ids
@@ -519,6 +524,8 @@ class FindTags:
         `osm_pth` file not found on disk.
     ValueError :
         `osm_pth` does not have a .pbf extension.
+    TypeError :
+        tag_collator is not an instance of _TagHandler.
 
     Attributes
     ----------
@@ -546,7 +553,10 @@ class FindTags:
         _is_expected_filetype(
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
-        tags = _TagHandler()
+        tags = tag_collator()
+        classnm = tags.__class__.__name__
+        if classnm != "_TagHandler":
+            raise TypeError(f"Expected _TagHandler, found: {classnm}")
         tags.apply_file(osm_pth)
         self.__node_tags = tags.node_tags
         self.__way_tags = tags.way_tags
@@ -592,7 +602,7 @@ class FindLocations:
     ----------
     osm_pth : Union[Path, str]
         Path to osm file.
-    loc_collator : _LocHandler=_LocHandler
+    loc_collator : _LocHandler, optional
         FindLocations applies the logic from loc_collator to a pbf file on
         init, storing the collated locations in __node_locs or __way_node_locs
         attributes. Defaults to _LocHandler.
@@ -605,6 +615,8 @@ class FindLocations:
         `osm_pth` file not found on disk.
     ValueError :
         `osm_pth` does not have a .pbf extension.
+    TypeError :
+        loc_collator is not an instance of _LocHandler.
 
     Attributes
     ----------
@@ -633,7 +645,10 @@ class FindLocations:
     ) -> None:
         super().__init__()
         _is_expected_filetype(osm_pth, "osm_pth", exp_ext=".pbf")
-        locs = _LocHandler()
+        locs = loc_collator()
+        classnm = locs.__class__.__name__
+        if classnm != "_LocHandler":
+            raise TypeError(f"Expected _LocHandler, found: {classnm}")
         locs.apply_file(osm_pth, locations=True)
         self.__node_locs = locs.node_locs
         self.__way_node_locs = locs.way_node_locs
