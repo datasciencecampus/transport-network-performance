@@ -69,6 +69,13 @@ This will add sdkman env variables to: `~/.bash_profile` and possibly `~/.zshrc`
 4. Install the required version using the `identifier` column, eg: `sdk install java 11.0.19-amzn`
 5. Check this is the currenty used java version: `sdk current java`.
 
+##### Pyosmium Requirements
+
+Pyosmium needs to integrate with C++ Osmium, therefore you will need the
+following dependencies installed on macos:
+* `brew install boost`
+* `brew install cmake`
+
 ### Pre-commit
 
 *Placeholder section*

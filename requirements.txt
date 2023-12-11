@@ -33,5 +33,6 @@ sphinx
 sphinx-rtd-theme
 dask
 pyarrow >= 14.0.1 # 14.0.0 has security vulnerability
+osmium # has dependencies on `cmake` and `boost` which require brew install
 tqdm
 -e .
