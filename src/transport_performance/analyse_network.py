@@ -1,4 +1,5 @@
 """Wrapper for r5py to calculate O-D matrices."""
+import glob
 import pathlib
 import warnings
 
@@ -27,10 +28,13 @@ class AnalyseNetwork:
         Path to the location of the open street map file.
     gtfs : list
         List including path or paths to the locations of gtfs files.
+    out_path : Union[str, pathlib.Path]
+        Path to save the output as parquet files.
 
     Attributes
     ----------
     gdf
+    out_path
     transport_network : TransportNetwork
         R5py object that contains a transport network initialised with data
         from OpenStreetMap and GTFS.
@@ -40,10 +44,26 @@ class AnalyseNetwork:
     od_matrix
         Method that calculates the full O-D matrix and saves it as parquet.
 
+    Raises
+    ------
+    NotImplementedError
+        If the `out_path` provided already contains parquet files, there is
+        a risk that if the number of parquet files produced is less than
+        the number of files in the directory not all of them will be
+        overwritten. This will cause issues when loading them as there will
+        be additional records in the dataframe.
+        In the future we will implement something to handle this (emptying
+        folder, archiving old files). In the meantime, this will raise an
+        error.
+
     """
 
     def __init__(
-        self, gdf: gpd.GeoDataFrame, osm: Union[str, pathlib.Path], gtfs: list
+        self,
+        gdf: gpd.GeoDataFrame,
+        osm: Union[str, pathlib.Path],
+        gtfs: list,
+        out_path: Union[str, pathlib.Path],
     ):
         """Initialise AnalyseNetwork class."""
         # defences
@@ -56,19 +76,40 @@ class AnalyseNetwork:
             check_elements=True,
             exp_type=(str, pathlib.Path),
         )
+        d._check_parent_dir_exists(out_path, "out_path", create=True)
+
         for path in gtfs:
             d._is_expected_filetype(path, "gtfs", exp_ext=".zip")
 
-        self.gdf = gdf
+        # check if gdf is in EPSG: 4326
+        if gdf.crs != "EPSG: 4326":
+            warnings.warn(
+                f"`gdf` crs needs to be EPSG: 4326, found {gdf.crs}. "
+                "`gdf` will be re-projected."
+            )
+            self.gdf = gdf.to_crs("EPSG: 4326")
+        else:
+            self.gdf = gdf
+
+        # checks if parquet files in out_path
+        # this defence goes here because we want an early fail (before running
+        # all the expensive bits)
+        if len(glob.glob(str(out_path) + "/*.parquet")) > 0:
+            raise NotImplementedError(
+                "Module cannot save parquet files in a directory that already "
+                "contains parquet files. Please remove files or provide an "
+                "empty directory for `out_path`"
+            )
+        self.out_path = out_path
+
         self.transport_network = TransportNetwork(osm, gtfs)
 
     def od_matrix(
         self,
-        out_path: Union[str, pathlib.Path],
         batch_orig: bool = False,
         partition_size: int = 200,
         destination_col: str = "within_urban_centre",
-        distance: float = 11.25,
+        distance: Union[int, float] = 11.25,
         unit: Unit = Unit.KILOMETERS,
         **kwargs,
     ) -> None:
@@ -76,8 +117,6 @@ class AnalyseNetwork:
 
         Parameters
         ----------
-        out_path : Union[str, pathlib.Path]
-            Path to save the O-D matrix as parquet files.
         batch_orig : bool
             Flag to indicate whether to calculate the transport network
             performance using the whole dataset or batching by origin
@@ -91,7 +130,7 @@ class AnalyseNetwork:
         destination_col : str
             Column indicating what centroids should be considered as
             destinations. Default is "within_urban_centre".
-        distance: float
+        distance: Union[int, float]
             Distance to filter destinations.in km. Points further away from
             origin are removed from output. Default is 11.25 km.
         unit : Unit
@@ -141,13 +180,11 @@ class AnalyseNetwork:
                 )
 
                 self._save_to_parquet(
-                    od_matrix, str(min(sel_orig)), out_path, partitions
+                    od_matrix, str(min(sel_orig)), self.out_path, partitions
                 )
         else:
             origin_gdf = self.gdf.copy()
-            dest_gdf = self.gdf[
-                self.gdf[destination_col] == True  # noqa: E712
-            ].copy()
+            dest_gdf = self.gdf[self.gdf[destination_col]].copy()
 
             od_matrix = self._calculate_transport_network(
                 self.transport_network,
@@ -160,7 +197,7 @@ class AnalyseNetwork:
                 od_matrix, partition_size
             )
 
-            self._save_to_parquet(od_matrix, "all", out_path, partitions)
+            self._save_to_parquet(od_matrix, "all", self.out_path, partitions)
 
     def _calculate_transport_network(
         self,
@@ -237,7 +274,7 @@ class AnalyseNetwork:
         self,
         gdf: gpd.GeoDataFrame,
         destination_col: str,
-        distance: float,
+        distance: Union[int, float],
         num_origins: int,
         unit: Unit = Unit.KILOMETERS,
     ) -> (list, list):
@@ -249,8 +286,8 @@ class AnalyseNetwork:
             Geodataframe containing location ids to cross match.
         destination_col : str
             Column indicating what centroids should be considered as
-            destinations.
-        distance : float
+            destinations. Column dtype needs to be bool.
+        distance : Union[int, float],
             Distance to filter destinations. Points further away from
             origin are removed from output.
         num_origins : int
@@ -288,9 +325,14 @@ class AnalyseNetwork:
         # defences
         d._type_defence(gdf, "gdf", gpd.GeoDataFrame)
         d._check_column_in_df(gdf, destination_col)
-        d._type_defence(distance, "distance", float)
+        d._type_defence(distance, "distance", (int, float))
         d._type_defence(num_origins, "num_origins", int)
         d._type_defence(unit, "unit", Unit)
+        if gdf[destination_col].dtype != bool:
+            raise TypeError(
+                f"Column `{destination_col}` should be bool. "
+                f"Got {gdf[destination_col].dtype}"
+            )
         if num_origins < 1 or num_origins > len(gdf):
             raise ValueError(
                 f"`num_origins` should be between 1 and {len(gdf)}, "
@@ -302,11 +344,7 @@ class AnalyseNetwork:
         orig_gdf = gdf.copy()
         geometry_col = gdf.geometry.name
         # TODO: add option to include all rows as destinations?
-        dest_gdf = (
-            gdf[gdf[destination_col] == True]  # noqa: E712
-            .reset_index()
-            .copy()
-        )
+        dest_gdf = gdf[gdf[destination_col]].reset_index(drop=True).copy()
 
         origins = np.array(orig_gdf["id"])
 
@@ -329,7 +367,7 @@ class AnalyseNetwork:
 
             # filters out pairs where distance is over threshold
             sel_dest = list(
-                full_gdf[full_gdf["distance"] < distance]["id_dest"].unique()
+                full_gdf[full_gdf["distance"] <= distance]["id_dest"].unique()
             )
 
             # yields lists with selected origins and destinations
@@ -432,7 +470,6 @@ class AnalyseNetwork:
         d._type_defence(od_matrix, "od_matrix", pd.DataFrame)
         d._type_defence(out_name_func, "out_name_func", str)
         d._type_defence(npartitions, "npartitions", int)
-        d._check_parent_dir_exists(out_path, "out_path", create=True)
 
         ddf = dd.from_pandas(od_matrix, npartitions=npartitions)
 

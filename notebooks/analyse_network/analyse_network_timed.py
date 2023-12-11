@@ -17,22 +17,28 @@ newport_rp = from_pickle(PATH_RP)
 centroid_gdf = newport_rp.centroid_gdf
 
 # %%
-# initialise AnalyseNetwork object
-an = AnalyseNetwork(centroid_gdf, PATH_OSM, [PATH_GTFS])
-
-# %%
 # run od_matrix with all origins
 OUT_PATH_ALL = here("outputs/analyse_network/test_all")
+
+# initialise AnalyseNetwork object
+an = AnalyseNetwork(centroid_gdf, PATH_OSM, [PATH_GTFS], out_path=OUT_PATH_ALL)
+
 start = time.time()
-an.od_matrix(out_path=OUT_PATH_ALL, batch_orig=False)
+an.od_matrix(batch_orig=False)
 end = time.time()
 print(f"All origins time: {end - start}")
 
 # %%
 # run od_matrix with single origin
-OUT_PATH_ALL = here("outputs/analyse_network/test_single")
+OUT_PATH_SINGLE = here("outputs/analyse_network/test_single")
+
+# initialise AnalyseNetwork object
+an = AnalyseNetwork(
+    centroid_gdf, PATH_OSM, [PATH_GTFS], out_path=OUT_PATH_SINGLE
+)
+
 start = time.time()
-an.od_matrix(out_path=OUT_PATH_ALL, batch_orig=True)
+an.od_matrix(out_path=OUT_PATH_SINGLE, batch_orig=True)
 end = time.time()
 print(f"All origins time: {end - start}")
 

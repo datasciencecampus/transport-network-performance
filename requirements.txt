@@ -33,6 +33,6 @@ sphinx
 sphinx-rtd-theme
 haversine
 dask
-pyarrow
+pyarrow >= 14.0.1 # 14.0.0 has security vulnerability
 tqdm
 -e .

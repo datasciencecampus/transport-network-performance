@@ -1,6 +1,7 @@
 """Fixtures for transport_performance/analyse_network/analyse network."""
 import geopandas as gpd
 import numpy as np
+import os
 import pandas as pd
 import pytest
 
@@ -62,14 +63,16 @@ def dummy_gdf_centroids():
             Point(-2.9966994427043026, 51.58796089656915),
             Point(-3.0026994196377954, 51.587209140699315),
         ],
-        "within_urban_centre": [0, 1, 0, 1],
+        "within_urban_centre": [False, True, False, True],
     }
     return gpd.GeoDataFrame(points, crs="epsg: 4326")
 
 
 # AnalyseNetwork object
 @pytest.fixture(scope="module")
-def dummy_transport_network(dummy_gdf_centroids, dummy_osm, dummy_gtfs):
+def dummy_transport_network(
+    dummy_gdf_centroids, dummy_osm, dummy_gtfs, tmp_path_factory
+):
     """Create fixture with AnalyseNetwork object.
 
     Returns
@@ -81,9 +84,19 @@ def dummy_transport_network(dummy_gdf_centroids, dummy_osm, dummy_gtfs):
     Notes
     -----
     This object is mainly used to call analyse_network methods in tests.
+    Since the scope of this fixture is "module", a `tmp_path` cannot be used as
+    it requires "function" scope. To prevent this, `tmp_path_factory` is used
+    instead.
+    However, to test functionality of saving to and from the path we need
+    function scope, so that will require a different fixture.
 
     """
-    return an.AnalyseNetwork(dummy_gdf_centroids, dummy_osm, dummy_gtfs)
+    return an.AnalyseNetwork(
+        dummy_gdf_centroids,
+        dummy_osm,
+        dummy_gtfs,
+        os.path.join(tmp_path_factory.getbasetemp(), "tiny-osm.pbf"),
+    )
 
 
 # r5py TransportNetwork object
@@ -164,7 +177,7 @@ def dummy_big_df():
 
 # temporary directory to save parquet
 @pytest.fixture
-def dummy_filepath(tmp_path, scope="function"):
+def dummy_filepath(tmp_path):
     """Create fixture with output path.
 
     Returns
