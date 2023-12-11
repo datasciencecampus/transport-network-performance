@@ -1,0 +1,25 @@
+..
+  class.rst
+
+FindIds
+=======
+
+.. currentmodule:: transport_performance.osm.validate_osm
+
+.. autoclass:: FindIds
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+    
+        
+            .. rubric:: Methods
+
+            .. autosummary::
+                :nosignatures:
+                
+                    ~FindIds.__init__
+                    ~FindIds.count_features
+                    ~FindIds.get_feature_ids
+        
+    

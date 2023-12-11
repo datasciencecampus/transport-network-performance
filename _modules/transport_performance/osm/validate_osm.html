@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>transport_performance.osm.validate_osm &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=76ab003f" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html"><cite>transport-performance</cite> API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/coverage.html">Unit Test Coverage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">transport_performance.osm.validate_osm</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for transport_performance.osm.validate_osm</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Validation of OSM pbf files.</span>
+
+<span class="sd">pyosmium requires handler classes that inherit from their API. The methods of</span>
+<span class="sd">these handlers must be named `node`, `way`, `relation` or `area`. Exposing</span>
+<span class="sd">these methods would be of limited utility, therefore internal handler classes</span>
+<span class="sd">are used to collect and process the feature information.</span>
+
+<span class="sd">A separate group of classes are then defined, inheriting from these internal</span>
+<span class="sd">handlers. These API classes are used to apply the logic of the handler classes</span>
+<span class="sd">to an osm.pbf file. The API classes also define methods associated with the</span>
+<span class="sd">user requirements, eg &#39;find way Ids&#39;, &#39;find the coordinates for this list of</span>
+<span class="sd">node IDs&#39; or similar.</span>
+
+<span class="sd">The API classes expose logic that enables users to:</span>
+<span class="sd">* Count all features in a pbf file by type (node, way, relation or area)</span>
+<span class="sd">* Return IDs of the above feature types</span>
+<span class="sd">* Extract tags for the above features</span>
+<span class="sd">* Find coordinates for node or way features</span>
+<span class="sd">* Plot the coordinates of a given list of node or way IDs</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">osmium</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">from</span> <span class="nn">shapely</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">import</span> <span class="nn">folium</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_check_item_in_iter</span><span class="p">,</span>
+    <span class="n">_check_iterable</span><span class="p">,</span>
+    <span class="n">_type_defence</span><span class="p">,</span>
+    <span class="n">_is_expected_filetype</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># ---------utilities-----------</span>
+
+
+<span class="k">def</span> <span class="nf">_compile_tags</span><span class="p">(</span><span class="n">osmium_feature</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return tag name value pairs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osmium_feature : osmium.osm.types</span>
+<span class="sd">        Either a node, way, relation or area osmium type.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary of tag name &amp; values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">tag</span><span class="o">.</span><span class="n">k</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">v</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">osmium_feature</span><span class="o">.</span><span class="n">tags</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_filter_target_dict_with_list</span><span class="p">(</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">search_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select a target dictionary and filter it with a list of keys.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    targets : dict</span>
+<span class="sd">        A dictionary of feature_type: attribute dicts.</span>
+<span class="sd">    _list : list</span>
+<span class="sd">        A list of keys, OSM IDs in this context. Integer keys are expected.</span>
+<span class="sd">    search_key : str</span>
+<span class="sd">        The key value to search with.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filtered_dict.</span>
+<span class="sd">        Dictionary with keys filtered to IDs available in `_list`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        `filtered_dict` is empty. No tags for the combination of `_list` and</span>
+<span class="sd">        `search_key` were found.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        `_list` is not a list.</span>
+<span class="sd">        Elements of `_list` are not integer.</span>
+<span class="sd">        `search_key` is not a string.</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        `search_key` is not present in `targets.keys()`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="s2">&quot;targets&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="n">_check_iterable</span><span class="p">(</span><span class="n">_list</span><span class="p">,</span> <span class="s2">&quot;_list&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">search_key</span><span class="p">,</span> <span class="s2">&quot;search_key&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+    <span class="n">feat</span> <span class="o">=</span> <span class="n">search_key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">targ_dict</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="n">feat</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;`search_key`: </span><span class="si">{</span><span class="n">feat</span><span class="si">}</span><span class="s2"> did not match keys in &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;`targets`: </span><span class="si">{</span><span class="n">targets</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">filtered_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">targ_dict</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span> <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">_list</span> <span class="k">if</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">targ_dict</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filtered_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;No tags found. Did you specify the correct search_key?&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">filtered_dict</span>
+
+
+<span class="k">def</span> <span class="nf">_convert_osm_dict_to_gdf</span><span class="p">(</span>
+    <span class="n">osm_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">feature_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;node&quot;</span><span class="p">,</span>
+    <span class="n">crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an OSM dictionary to a GDF.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osm_dict : dict</span>
+<span class="sd">        Dictionary of ID: location / tags.</span>
+<span class="sd">    feature_type : str</span>
+<span class="sd">        The type of feature data contained in the dictionary. Defaults to</span>
+<span class="sd">        &quot;node&quot;.</span>
+<span class="sd">    crs : Union[str, int], optional</span>
+<span class="sd">        The CRS of the spatial features. Defaults to &quot;epsg:4326&quot;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    out_gdf: gpd.GeoDataFrame</span>
+<span class="sd">        A GeoDataFrame of the spatial features with ID mapped to index and</span>
+<span class="sd">        values mapped to columns.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">osm_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">feature_type</span> <span class="o">==</span> <span class="s2">&quot;node&quot;</span><span class="p">:</span>
+            <span class="n">out_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">out_df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">key</span><span class="p">])])</span>
+        <span class="k">elif</span> <span class="n">feature_type</span> <span class="o">==</span> <span class="s2">&quot;way&quot;</span><span class="p">:</span>
+            <span class="c1"># now we have a nested list of node dictionaries. These are node</span>
+            <span class="c1"># members of the way.</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="c1"># parent id is way, member id is node</span>
+                    <span class="n">ind</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">(</span>
+                        <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">k</span><span class="p">)],</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;parent_id&quot;</span><span class="p">,</span> <span class="s2">&quot;member_id&quot;</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">mem_row</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ind</span><span class="p">)</span>
+                    <span class="n">out_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">out_df</span><span class="p">,</span> <span class="n">mem_row</span><span class="p">])</span>
+
+    <span class="c1"># geodataframe requires geometry column</span>
+    <span class="n">out_df</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">Point</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="k">for</span> <span class="n">xy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">out_df</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">],</span> <span class="n">out_df</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">])</span>
+    <span class="p">]</span>
+    <span class="n">out_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">out_df</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out_gdf</span>
+
+
+<span class="c1"># ---------Internal Classes-----------</span>
+
+
+<span class="k">class</span> <span class="nc">_IdHandler</span><span class="p">(</span><span class="n">osmium</span><span class="o">.</span><span class="n">SimpleHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collate Ids for OSM Features.</span>
+
+<span class="sd">    Internal class, method names must be fixed to integrate with pyosmium.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osmium.SimpleHandler : class</span>
+<span class="sd">        Inherits from osmium.SimpleHandler</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    node</span>
+<span class="sd">        Collates available OSM node feature IDs. Creates the node_ids</span>
+<span class="sd">        attribute.</span>
+<span class="sd">    way</span>
+<span class="sd">        Collates available OSM way feature IDs. Creates the way_ids attribute.</span>
+<span class="sd">    relation</span>
+<span class="sd">        Collates available OSM relation feature IDs. Creates the relations_ids</span>
+<span class="sd">        attribute.</span>
+<span class="sd">    area</span>
+<span class="sd">        Collates available OSM area feature IDs. Creates the area_ids attribute</span>
+<span class="sd">        .</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    node_ids : list</span>
+<span class="sd">        List of available OSM node feature IDs.</span>
+<span class="sd">    way_ids : list</span>
+<span class="sd">        List of available OSM way feature IDs.</span>
+<span class="sd">    relations_ids : list</span>
+<span class="sd">        List of available OSM relation feature IDs.</span>
+<span class="sd">    area_ids : list</span>
+<span class="sd">        List of available OSM area feature IDs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">way_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relations_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate node IDs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : osmium.Node</span>
+<span class="sd">            A node feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">way</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Way</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate way IDs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        w : osmium.Way</span>
+<span class="sd">            A way feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">way_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Relation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate relation IDs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : osmium.Relation</span>
+<span class="sd">            A relation feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relations_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Area</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate area IDs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        a : osmium.Area</span>
+<span class="sd">            An area feature (includes boundaries).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_TagHandler</span><span class="p">(</span><span class="n">osmium</span><span class="o">.</span><span class="n">SimpleHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collate tags for OSM features.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osmium.SimpleHandler : class</span>
+<span class="sd">        Inherits from osmium.SimpleHandler</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    node</span>
+<span class="sd">        Compiles all available tag data for OSM node features. Creates the</span>
+<span class="sd">        node_tags attribute.</span>
+<span class="sd">    way</span>
+<span class="sd">        Compiles all available tag data for OSM way features. Creates the</span>
+<span class="sd">        way_tags attribute.</span>
+<span class="sd">    relation</span>
+<span class="sd">        Compiles all available tag data for OSM relation features. Creates the</span>
+<span class="sd">        relation_tags attribute.</span>
+<span class="sd">    area</span>
+<span class="sd">        Compiles all available tag data for OSM area features. Creates the</span>
+<span class="sd">        area_tags attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_tags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">way_tags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relation_tags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area_tags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate node tags.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : osmium.Node</span>
+<span class="sd">            A node feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get tags for each node</span>
+        <span class="n">tagdict</span> <span class="o">=</span> <span class="n">_compile_tags</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_tags</span><span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">tagdict</span>
+
+    <span class="k">def</span> <span class="nf">way</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Way</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate way tags.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        w : osmium.Way</span>
+<span class="sd">            A way feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get tags for each way</span>
+        <span class="n">tagdict</span> <span class="o">=</span> <span class="n">_compile_tags</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">way_tags</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">tagdict</span>
+
+    <span class="k">def</span> <span class="nf">relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Relation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate relation tags.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : osmium.Relation</span>
+<span class="sd">            A relation feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get tags for each relation</span>
+        <span class="n">tagdict</span> <span class="o">=</span> <span class="n">_compile_tags</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relation_tags</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">tagdict</span>
+
+    <span class="k">def</span> <span class="nf">area</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">osmium</span><span class="o">.</span><span class="n">Area</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate area tags.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        a : osmium.Area</span>
+<span class="sd">            An area feature (includes boundaries).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get tags for each area</span>
+        <span class="n">tagdict</span> <span class="o">=</span> <span class="n">_compile_tags</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area_tags</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">tagdict</span>
+
+
+<span class="k">class</span> <span class="nc">_LocHandler</span><span class="p">(</span><span class="n">osmium</span><span class="o">.</span><span class="n">SimpleHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collate coordinates for nodes or ways.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osmium.SimpleHandler : class</span>
+<span class="sd">        Inherits from osmium.SimpleHandler</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    node_locs : dict</span>
+<span class="sd">        Node coordinates. Inherited from class _LocHandler.</span>
+<span class="sd">    way_node_locs : dict</span>
+<span class="sd">        Member node coordinates for each way feature. Inherited from class</span>
+<span class="sd">        _LocHandler.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    node</span>
+<span class="sd">        Gets coordinate data from a node. Creates the `node_locs` attribute.</span>
+<span class="sd">    way</span>
+<span class="sd">        Gets coordinate data for each node member of a way. Creates the</span>
+<span class="sd">        `way_node_locs` attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_locs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">way_node_locs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate node coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : osmium.Node</span>
+<span class="sd">            A node feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># extract x,y</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">location</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="c1"># store representative point for each node</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_locs</span><span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">)}</span>
+
+    <span class="k">def</span> <span class="nf">way</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate coordinates for member nodes of a way.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        w : osmium.Way</span>
+<span class="sd">            A way feature.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># compile the member nodes of each way</span>
+        <span class="n">nodelist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">w</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="nb">id</span><span class="p">,</span> <span class="n">coords</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="n">nodelist</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">node</span><span class="o">.</span><span class="n">ref</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">)}})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">way_node_locs</span><span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodelist</span>
+
+
+<span class="c1"># ---------API classes-----------</span>
+
+
+<div class="viewcode-block" id="FindIds">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindIds.html#transport_performance.osm.validate_osm.FindIds">[docs]</a>
+<span class="k">class</span> <span class="nc">FindIds</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply ID collation to an OSM file.</span>
+
+<span class="sd">    Count or return available feature IDs in an OSM file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osm_pth : Union[Path, str]</span>
+<span class="sd">        Path to osm file.</span>
+<span class="sd">    id_collator : _IdHandler, optional</span>
+<span class="sd">        FindIds applies the logic from id_collator to a pbf file on init,</span>
+<span class="sd">        storing the collated IDs in their appropriate attributes - __node_ids,</span>
+<span class="sd">        __way_ids, __relations_ids and __area_ids. Defaults to _IdHandler.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError :</span>
+<span class="sd">        `osm_pth` is not of type pathlib.Path or str.</span>
+<span class="sd">    FileNotFoundError :</span>
+<span class="sd">        `osm_pth` file not found on disk.</span>
+<span class="sd">    ValueError :</span>
+<span class="sd">        `osm_pth` does not have a .pbf extension.</span>
+<span class="sd">    TypeError :</span>
+<span class="sd">        id_collator is not an instance of _IdHandler.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    counts : dict</span>
+<span class="sd">        Counts of feature IDs by feature type.</span>
+<span class="sd">    id_dict : dict</span>
+<span class="sd">        IDs of all found features by feature type.</span>
+<span class="sd">    __node_ids : list</span>
+<span class="sd">        Internal attribute contains list of all node IDs contained in pbf file.</span>
+<span class="sd">    __way_ids : list</span>
+<span class="sd">        Internal attribute contains list of all way IDs contained in pbf file.</span>
+<span class="sd">    __relations_ids : list</span>
+<span class="sd">        Internal attribute contains list of all relation IDs contained in pbf</span>
+<span class="sd">        file.</span>
+<span class="sd">    __area_ids : list</span>
+<span class="sd">        Internal attribute contains list of all area IDs contained in pbf file.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    count_features</span>
+<span class="sd">        Count of feature IDs by feature type.</span>
+<span class="sd">    get_feature_ids</span>
+<span class="sd">        Return feature IDs by available feature type.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">osm_pth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">id_collator</span><span class="p">:</span> <span class="n">_IdHandler</span> <span class="o">=</span> <span class="n">_IdHandler</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_is_expected_filetype</span><span class="p">(</span>
+            <span class="n">osm_pth</span><span class="p">,</span> <span class="s2">&quot;osm_pth&quot;</span><span class="p">,</span> <span class="n">check_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.pbf&quot;</span>
+        <span class="p">)</span>
+        <span class="n">collated_ids</span> <span class="o">=</span> <span class="n">id_collator</span><span class="p">()</span>
+        <span class="n">classnm</span> <span class="o">=</span> <span class="n">collated_ids</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="n">classnm</span> <span class="o">!=</span> <span class="s2">&quot;_IdHandler&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected _IdHandler, found: </span><span class="si">{</span><span class="n">classnm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">collated_ids</span><span class="o">.</span><span class="n">apply_file</span><span class="p">(</span><span class="n">osm_pth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__node_ids</span> <span class="o">=</span> <span class="n">collated_ids</span><span class="o">.</span><span class="n">node_ids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__way_ids</span> <span class="o">=</span> <span class="n">collated_ids</span><span class="o">.</span><span class="n">way_ids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__relations_ids</span> <span class="o">=</span> <span class="n">collated_ids</span><span class="o">.</span><span class="n">relations_ids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__area_ids</span> <span class="o">=</span> <span class="n">collated_ids</span><span class="o">.</span><span class="n">area_ids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FindIds.count_features">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindIds.html#transport_performance.osm.validate_osm.FindIds.count_features">[docs]</a>
+    <span class="k">def</span> <span class="nf">count_features</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count numbers of each available feature type.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        counts : dict</span>
+<span class="sd">            Counts of node, way, relation &amp; area IDs in a pbf file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature_ids</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counts</span> <span class="o">=</span> <span class="n">counts</span>
+        <span class="k">return</span> <span class="n">counts</span></div>
+
+
+<div class="viewcode-block" id="FindIds.get_feature_ids">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindIds.html#transport_performance.osm.validate_osm.FindIds.get_feature_ids">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_feature_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of all available IDs in a pbf file for each feature type.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        id_dict : dict</span>
+<span class="sd">            Available IDs for nodes, ways, relations and areas.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">id_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;node_ids&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_ids</span><span class="p">,</span>
+            <span class="s2">&quot;way_ids&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__way_ids</span><span class="p">,</span>
+            <span class="s2">&quot;relation_ids&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__relations_ids</span><span class="p">,</span>
+            <span class="s2">&quot;area_ids&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__area_ids</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_dict</span> <span class="o">=</span> <span class="n">id_dict</span>
+        <span class="k">return</span> <span class="n">id_dict</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FindTags">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindTags.html#transport_performance.osm.validate_osm.FindTags">[docs]</a>
+<span class="k">class</span> <span class="nc">FindTags</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies tag collation to OSM file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osm_pth : Union[Path, str]</span>
+<span class="sd">        Path to osm file.</span>
+<span class="sd">    tag_collator : _TagHandler, optional</span>
+<span class="sd">        FindTags applies the logic from tag_collator to a pbf file on init,</span>
+<span class="sd">        storing the collated tags in a `found_tags` attribute. Defaults to</span>
+<span class="sd">        _TagHandler.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError :</span>
+<span class="sd">        `osm_pth` is not of type pathlib.Path or str.</span>
+<span class="sd">    FileNotFoundError :</span>
+<span class="sd">        `osm_pth` file not found on disk.</span>
+<span class="sd">    ValueError :</span>
+<span class="sd">        `osm_pth` does not have a .pbf extension.</span>
+<span class="sd">    TypeError :</span>
+<span class="sd">        tag_collator is not an instance of _TagHandler.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    found_tags : dict</span>
+<span class="sd">        Found tags for specified feature IDs.</span>
+<span class="sd">    __node_tags : dict</span>
+<span class="sd">        Tags found for OSM node features.</span>
+<span class="sd">    __way_tags : dict</span>
+<span class="sd">        Tags found for OSM way features.</span>
+<span class="sd">    __relation_tags : dict</span>
+<span class="sd">        Tags found for OSM relation features.</span>
+<span class="sd">    __area_tags : dict</span>
+<span class="sd">        Tags found for OSM area features.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    check_tags_for_ids()</span>
+<span class="sd">        Filter tags to the given list of IDs. Updates `found_tags` attribute.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">osm_pth</span><span class="p">,</span> <span class="n">tag_collator</span><span class="p">:</span> <span class="n">_TagHandler</span> <span class="o">=</span> <span class="n">_TagHandler</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_is_expected_filetype</span><span class="p">(</span>
+            <span class="n">osm_pth</span><span class="p">,</span> <span class="s2">&quot;osm_pth&quot;</span><span class="p">,</span> <span class="n">check_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.pbf&quot;</span>
+        <span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">tag_collator</span><span class="p">()</span>
+        <span class="n">classnm</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="n">classnm</span> <span class="o">!=</span> <span class="s2">&quot;_TagHandler&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected _TagHandler, found: </span><span class="si">{</span><span class="n">classnm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">tags</span><span class="o">.</span><span class="n">apply_file</span><span class="p">(</span><span class="n">osm_pth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__node_tags</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">node_tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__way_tags</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">way_tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__relation_tags</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">relation_tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__area_tags</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">area_tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">found_tags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FindTags.check_tags_for_ids">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindTags.html#transport_performance.osm.validate_osm.FindTags.check_tags_for_ids">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_tags_for_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">feature_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return tags for provided list of feature IDs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ids : list</span>
+<span class="sd">            A list of OSM feature IDs to check. IDs must be integer.</span>
+<span class="sd">        feature_type : str</span>
+<span class="sd">            The type of feature to which the IDS belong. Valid options are</span>
+<span class="sd">            &quot;node&quot;, &quot;way&quot;, &quot;relation&quot;, or &quot;area&quot;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        found_tags : dict</span>
+<span class="sd">            Dictionary of tag IDs and their tag data in ID : {name:value}</span>
+<span class="sd">            format.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">found_tags</span> <span class="o">=</span> <span class="n">_filter_target_dict_with_list</span><span class="p">(</span>
+            <span class="n">targets</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;node&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_tags</span><span class="p">,</span>
+                <span class="s2">&quot;way&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__way_tags</span><span class="p">,</span>
+                <span class="s2">&quot;relation&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__relation_tags</span><span class="p">,</span>
+                <span class="s2">&quot;area&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__area_tags</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">_list</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">search_key</span><span class="o">=</span><span class="n">feature_type</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_tags</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FindLocations">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindLocations.html#transport_performance.osm.validate_osm.FindLocations">[docs]</a>
+<span class="k">class</span> <span class="nc">FindLocations</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies location collation to OSM file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osm_pth : Union[Path, str]</span>
+<span class="sd">        Path to osm file.</span>
+<span class="sd">    loc_collator : _LocHandler, optional</span>
+<span class="sd">        FindLocations applies the logic from loc_collator to a pbf file on</span>
+<span class="sd">        init, storing the collated locations in __node_locs or __way_node_locs</span>
+<span class="sd">        attributes. Defaults to _LocHandler.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError :</span>
+<span class="sd">        `osm_pth` is not of type pathlib.Path or str.</span>
+<span class="sd">    FileNotFoundError :</span>
+<span class="sd">        `osm_pth` file not found on disk.</span>
+<span class="sd">    ValueError :</span>
+<span class="sd">        `osm_pth` does not have a .pbf extension.</span>
+<span class="sd">    TypeError :</span>
+<span class="sd">        loc_collator is not an instance of _LocHandler.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    found_locs : dict</span>
+<span class="sd">        Found locations for specified feature IDs.</span>
+<span class="sd">    __node_locs : dict</span>
+<span class="sd">        Locations of nodes.</span>
+<span class="sd">    __way_node_locs : dict</span>
+<span class="sd">        Locations of nodes that belong to a way.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    check_locs_for_ids</span>
+<span class="sd">        Filter locations to the given list of IDs. Updates `found_locs`</span>
+<span class="sd">        attribute.</span>
+<span class="sd">    plot_ids</span>
+<span class="sd">        Plot coordinates for nodes or node members of a way.</span>
+<span class="sd">    _check_is_implemented</span>
+<span class="sd">        Checks `feature_type` requested by user in methods is node or way. If</span>
+<span class="sd">        neither, raise NotImplementedError.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">osm_pth</span><span class="p">,</span> <span class="n">loc_collator</span><span class="p">:</span> <span class="n">_LocHandler</span> <span class="o">=</span> <span class="n">_LocHandler</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">osm_pth</span><span class="p">,</span> <span class="s2">&quot;osm_pth&quot;</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.pbf&quot;</span><span class="p">)</span>
+        <span class="n">locs</span> <span class="o">=</span> <span class="n">loc_collator</span><span class="p">()</span>
+        <span class="n">classnm</span> <span class="o">=</span> <span class="n">locs</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="n">classnm</span> <span class="o">!=</span> <span class="s2">&quot;_LocHandler&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected _LocHandler, found: </span><span class="si">{</span><span class="n">classnm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">locs</span><span class="o">.</span><span class="n">apply_file</span><span class="p">(</span><span class="n">osm_pth</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__node_locs</span> <span class="o">=</span> <span class="n">locs</span><span class="o">.</span><span class="n">node_locs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__way_node_locs</span> <span class="o">=</span> <span class="n">locs</span><span class="o">.</span><span class="n">way_node_locs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">found_locs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_is_implemented</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_feature</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">param_nm</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;If the requested feature is not node or way, raise.&quot;&quot;&quot;</span>
+        <span class="n">user_feature</span> <span class="o">=</span> <span class="n">user_feature</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_check_item_in_iter</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">=</span><span class="n">user_feature</span><span class="p">,</span>
+                <span class="n">iterable</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;node&quot;</span><span class="p">,</span> <span class="s2">&quot;way&quot;</span><span class="p">],</span>
+                <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;feature_type&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;Relation or area plotting not implemented at this time.&quot;</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="FindLocations.check_locs_for_ids">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindLocations.html#transport_performance.osm.validate_osm.FindLocations.check_locs_for_ids">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_locs_for_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">feature_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return coordinates for provided list of feature IDs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ids : list</span>
+<span class="sd">            A list of OSM feature IDs to check. IDs must be integer.</span>
+<span class="sd">        feature_type : str</span>
+<span class="sd">            The type of feature to which the IDS belong. Valid options are</span>
+<span class="sd">            &quot;node&quot; or &quot;way&quot;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        found_locs : dict</span>
+<span class="sd">            ID : dict of tags, containing ID : location.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError :</span>
+<span class="sd">            Relation location data could be extracted with a bit more munging.</span>
+<span class="sd">            Please raise a feature request if you feel this is significant.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_is_implemented</span><span class="p">(</span>
+            <span class="n">user_feature</span><span class="o">=</span><span class="n">feature_type</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;feature_type&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">found_locs</span> <span class="o">=</span> <span class="n">_filter_target_dict_with_list</span><span class="p">(</span>
+            <span class="n">targets</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;node&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_locs</span><span class="p">,</span> <span class="s2">&quot;way&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__way_node_locs</span><span class="p">},</span>
+            <span class="n">_list</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span>
+            <span class="n">search_key</span><span class="o">=</span><span class="n">feature_type</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_locs</span></div>
+
+
+<div class="viewcode-block" id="FindLocations.plot_ids">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.osm.validate_osm.FindLocations.html#transport_performance.osm.validate_osm.FindLocations.plot_ids">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_ids</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+        <span class="n">feature_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot coordinates for nodes or node members of a way.</span>
+
+<span class="sd">        Provided with a list of node or way IDs, converts the coordinate data</span>
+<span class="sd">        from dictionary to GeoDataFrame and uses the basic gdf.explore() method</span>
+<span class="sd">        to visualise the features on a basemap.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ids : list</span>
+<span class="sd">            A list of Node or Way IDs.</span>
+<span class="sd">        feature_type : str</span>
+<span class="sd">            Whether the type of OSM feature to plot is node or way.</span>
+<span class="sd">        crs : Union[str, int], optional</span>
+<span class="sd">            The projection of the spatial features, by default &quot;epsg:4326&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        folium.Map</span>
+<span class="sd">            A plot of the coordinate data for each identifiable node.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError :</span>
+<span class="sd">            Relation location data could be extracted with a bit more munging.</span>
+<span class="sd">            Please raise a feature request if you feel this is significant.</span>
+<span class="sd">        ValueError :</span>
+<span class="sd">            `feature_type` is not one of &quot;node&quot;, &quot;way&quot;, &quot;relation&quot; or &quot;area&quot;.</span>
+<span class="sd">        TypeError :</span>
+<span class="sd">            `ids` is not of type list.</span>
+<span class="sd">            `feature_type` is not of type str.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="s2">&quot;ids&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">feature_type</span><span class="p">,</span> <span class="s2">&quot;feature_type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_is_implemented</span><span class="p">(</span>
+            <span class="n">user_feature</span><span class="o">=</span><span class="n">feature_type</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;feature_type&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_locs_for_ids</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">feature_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coord_gdf</span> <span class="o">=</span> <span class="n">_convert_osm_dict_to_gdf</span><span class="p">(</span>
+            <span class="n">osm_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">found_locs</span><span class="p">,</span>
+            <span class="n">feature_type</span><span class="o">=</span><span class="n">feature_type</span><span class="p">,</span>
+            <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coord_gdf</span><span class="o">.</span><span class="n">explore</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+
+    <br><br>
+
+    <div>
+        Checkout the
+        <a href="https://github.com/datasciencecampus/transport-network-performance">
+            codebase on GitHub.
+        </a>
+    </div>
+
+    <br>
+
+    <div>
+        For more ONS Data Science Campus news see the
+        <a href="https://datasciencecampus.ons.gov.uk/">
+            Campus' website
+        </a>
+        and
+        <a href="https://twitter.com/i/flow/login?redirect_after_login=%2FDataSciCampus">
+            follow us on Twitter.
+        </a>
+    </div>
+
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

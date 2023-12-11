@@ -32,4 +32,5 @@ transport\_performance.osm
             :recursive:
             
                 transport_performance.osm.osm_utils
+                transport_performance.osm.validate_osm
     

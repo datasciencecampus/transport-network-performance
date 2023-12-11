@@ -1,0 +1,24 @@
+..
+  class.rst
+
+FindTags
+========
+
+.. currentmodule:: transport_performance.osm.validate_osm
+
+.. autoclass:: FindTags
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+    
+        
+            .. rubric:: Methods
+
+            .. autosummary::
+                :nosignatures:
+                
+                    ~FindTags.__init__
+                    ~FindTags.check_tags_for_ids
+        
+    

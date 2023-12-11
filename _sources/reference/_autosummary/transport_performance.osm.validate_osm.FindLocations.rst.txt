@@ -1,0 +1,25 @@
+..
+  class.rst
+
+FindLocations
+=============
+
+.. currentmodule:: transport_performance.osm.validate_osm
+
+.. autoclass:: FindLocations
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+    
+        
+            .. rubric:: Methods
+
+            .. autosummary::
+                :nosignatures:
+                
+                    ~FindLocations.__init__
+                    ~FindLocations.check_locs_for_ids
+                    ~FindLocations.plot_ids
+        
+    
