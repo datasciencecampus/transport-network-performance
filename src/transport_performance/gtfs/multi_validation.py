@@ -94,8 +94,8 @@ class MultiGtfsInstance:
         # check if a pathlib.Path object has been passed (single gtfs)
         if isinstance(path, pathlib.Path):
             #  if a directory is passed, convert to string for glob string
-            if os.path.splitext(path)[0] == "":
-                path = str(path)
+            if os.path.splitext(path)[-1] == "":
+                path = str(path) + "/*.zip"
             else:
                 path = [path]
         # defend a glob string
