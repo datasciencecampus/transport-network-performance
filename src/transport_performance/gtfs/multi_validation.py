@@ -94,15 +94,15 @@ class MultiGtfsInstance:
         # check if a pathlib.Path object has been passed (single gtfs)
         if isinstance(path, pathlib.Path):
             #  if a directory is passed, convert to string for glob string
-            if os.path.splitext(path)[0] == "":
+            if os.path.splitext(path)[-1] == "":
                 path = str(path)
             else:
                 path = [path]
         # defend a glob string
         if isinstance(path, str):
-            gtfs_paths = glob.glob(path)
+            gtfs_paths = glob.glob(path + r"/*.zip")
             path = gtfs_paths
-        if len(path) < 1:
+        elif len(path) < 1:
             raise FileNotFoundError("No GTFS files found.")
         # check all paths are zip files
         for i, pth in enumerate(path):
