@@ -326,27 +326,6 @@ class Test_gdf_batch_origins:
                     match=(r"`gdf` expected .*GeoDataFrame.* Got .*str.*"),
                 ),
             ),
-            # wrong column name
-            (
-                "destination_col",
-                "not_a_column_in_gdf",
-                pytest.raises(
-                    IndexError,
-                    match=(
-                        r"'not_a_column_in_gdf' is not a column in the "
-                        r"dataframe"
-                    ),
-                ),
-            ),
-            # wrong column type
-            (
-                "destination_col",
-                "id",
-                pytest.raises(
-                    TypeError,
-                    match=(r"Column `id` should be bool.* Got int64"),
-                ),
-            ),
             # wrong distance
             (
                 "distance",
@@ -941,3 +920,64 @@ def test_od_matrix(
     assert list(loaded_output["from_id"]) == [1, 1, 2, 2, 3, 3, 4, 4]
     assert list(loaded_output["to_id"]) == [2, 4, 2, 4, 2, 4, 2, 4]
     assert list(loaded_output["travel_time"]) == [9, 4, 0, 7, 12, 7, 7, 0]
+
+
+@pytest.mark.parametrize(
+    "var_name, var_value, expect",
+    [
+        # wrong batch_orig type
+        (
+            "batch_orig",
+            0,
+            pytest.raises(
+                TypeError,
+                match=(r"`batch_orig` expected .*bool.* Got .*int.*"),
+            ),
+        ),
+        # wrong column name
+        (
+            "destination_col",
+            "not_a_column_in_gdf",
+            pytest.raises(
+                IndexError,
+                match=(
+                    r"'not_a_column_in_gdf' is not a column in the "
+                    r"dataframe"
+                ),
+            ),
+        ),
+        # wrong column type
+        (
+            "destination_col",
+            "id",
+            pytest.raises(
+                TypeError,
+                match=(r"Column `id` should be bool.* Got int64"),
+            ),
+        ),
+    ],
+)
+def test_od_matrix_defences(
+    var_name, var_value, expect, dummy_transport_network
+):
+    """Test OD matrix defences.
+
+    Parameters
+    ----------
+    var_name
+        variable to test
+    var_value
+        value of the variable to use
+    expect
+        expected raises - both error and expected match
+    dummy_transport_network
+        dummy transport network fixture
+
+    """
+    default_values = {
+        "destination_col": "within_urban_centre",
+        "batch_orig": False,
+    }
+    default_values[var_name] = var_value
+    with expect:
+        dummy_transport_network.od_matrix(**default_values)

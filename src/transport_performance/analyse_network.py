@@ -149,6 +149,12 @@ class AnalyseNetwork:
         """
         # defences
         d._type_defence(batch_orig, "batch_orig", bool)
+        d._check_column_in_df(self.gdf, destination_col)
+        if self.gdf[destination_col].dtype != bool:
+            raise TypeError(
+                f"Column `{destination_col}` should be bool. "
+                f"Got {self.gdf[destination_col].dtype}"
+            )
 
         if batch_orig:
             # batches are forced to a single origin per iteration
@@ -324,15 +330,9 @@ class AnalyseNetwork:
         """
         # defences
         d._type_defence(gdf, "gdf", gpd.GeoDataFrame)
-        d._check_column_in_df(gdf, destination_col)
         d._type_defence(distance, "distance", (int, float))
         d._type_defence(num_origins, "num_origins", int)
         d._type_defence(unit, "unit", Unit)
-        if gdf[destination_col].dtype != bool:
-            raise TypeError(
-                f"Column `{destination_col}` should be bool. "
-                f"Got {gdf[destination_col].dtype}"
-            )
         if num_origins < 1 or num_origins > len(gdf):
             raise ValueError(
                 f"`num_origins` should be between 1 and {len(gdf)}, "
