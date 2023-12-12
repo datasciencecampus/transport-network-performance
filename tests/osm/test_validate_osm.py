@@ -167,7 +167,7 @@ class TestFindIds(object):
     def test_find_ids_raises(self):
         """Class FindIds should raise on bad inputs."""
         with pytest.raises(
-            FileNotFoundError, match=".*doesnt/exist.pbf not found on file."
+            FileNotFoundError, match=".*doesnt.*exist.pbf not found on file."
         ):
             FindIds(osm_pth="doesnt/exist.pbf")
         with pytest.raises(
@@ -276,7 +276,7 @@ class TestFindLocations(object):
     def test_find_locations_raises(self):
         """Class FindLocations should raise on bad path."""
         with pytest.raises(
-            FileNotFoundError, match=".*doesnt/exist.pbf not found on file."
+            FileNotFoundError, match=".*doesnt.*exist.pbf not found on file."
         ):
             FindLocations(osm_pth="doesnt/exist.pbf")
         with pytest.raises(
@@ -386,7 +386,7 @@ class TestFindTags(object):
     def test_find_tags_raises(self):
         """Class FindTags should raise on bad path."""
         with pytest.raises(
-            FileNotFoundError, match=".*doesnt/exist.pbf not found on file."
+            FileNotFoundError, match=".*doesnt.*exist.pbf not found on file."
         ):
             FindTags(osm_pth="doesnt/exist.pbf")
         with pytest.raises(
