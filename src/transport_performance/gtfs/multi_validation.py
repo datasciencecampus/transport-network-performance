@@ -265,6 +265,13 @@ class MultiGtfsInstance:
                 raise ValueError(f"In GTFS {path}.\n{e}")
         return None
 
+    def _raise_empty_feed_error(self, bbox: list):
+        """Error indicating that a feed has been emptied by filtering."""
+        raise ValueError(
+            f"BBOX '{bbox}' has filtered the MultiGtfs to contain no "
+            "data. Please re-instantiate your MultiGtfsInstance"
+        )
+
     def filter_to_bbox(
         self,
         bbox: Union[list, GeoDataFrame],
@@ -302,11 +309,12 @@ class MultiGtfsInstance:
             try:
                 self.validate_empty_feeds(True)
             except UserWarning:
-                raise ValueError(
-                    f"BBOX '{bbox}' has filtered the MultiGtfs to contain no "
-                    "data. Please re-instantiate your MultiGtfsInstance"
-                )
+                self._raise_empty_feed_error(bbox)
             warnings.resetwarnings()
+        # validate feeds in case MultiGtfs is empty
+        empty_count = len(self.validate_empty_feeds(False))
+        if empty_count == len(self.instances):
+            self._raise_empty_feed_error(bbox)
         return None
 
     def _summarise_core(
