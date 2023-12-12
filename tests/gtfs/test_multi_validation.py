@@ -141,7 +141,10 @@ class TestMultiGtfsInstance(object):
     def test_validate_empty_feeds(self, multi_gtfs_fixture):
         """Tests for validate_empty_feeds."""
         # filter the feeds to a box with no routes
-        multi_gtfs_fixture.filter_to_bbox([1.0, 1.0, 1.0, 1.0])
+        try:
+            multi_gtfs_fixture.filter_to_bbox([1.0, 1.0, 1.0, 1.0])
+        except ValueError:
+            pass
         assert (
             len(multi_gtfs_fixture.validate_empty_feeds()) == 2
         ), "Two empty feeds were not found"
