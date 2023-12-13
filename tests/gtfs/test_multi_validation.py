@@ -103,7 +103,7 @@ class TestMultiGtfsInstance(object):
         with pytest.raises(TypeError, match=".*clean_kwargs.*dict.*bool"):
             multi_gtfs_fixture.clean_feeds(True)
 
-    def test_clean_feeds_on_pasas(self, multi_gtfs_fixture):
+    def test_clean_feeds_on_pass(self, multi_gtfs_fixture):
         """General tests for .clean_feeds()."""
         # validate and do quick check on validity_df
         valid_df = multi_gtfs_fixture.is_valid()
