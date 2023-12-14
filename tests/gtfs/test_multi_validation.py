@@ -342,21 +342,27 @@ class TestMultiGtfsInstance(object):
             friday_exp,
             [list(x) for x in list(summary[summary.day == "friday"].values)],
         ), "trip summary for Friday not as expected"
+        dated = multi_gtfs_fixture._summarise_core(
+            which="routes", return_summary=False
+        )
+        assert isinstance(
+            dated, pd.DataFrame
+        ), "Returned dated table not DataFrame"
+        assert len(dated) == 202955, "Returned dated table not as expected"
 
-    # summarise methods giving incorrect trip stats
-    # def test_summarise_trips(self, multi_gtfs_fixture):
-    #     """General tests for summarise_trips()."""
-    #     # assert that the summary is returned
-    #     summary = multi_gtfs_fixture.summarise_trips()
-    #     assert isinstance(summary, pd.DataFrame)
-    #     assert hasattr(multi_gtfs_fixture, "daily_trip_summary")
+    def test_summarise_trips(self, multi_gtfs_fixture):
+        """General tests for summarise_trips()."""
+        # assert that the summary is returned
+        summary = multi_gtfs_fixture.summarise_trips()
+        assert isinstance(summary, pd.DataFrame)
+        assert hasattr(multi_gtfs_fixture, "daily_trip_summary")
 
-    # def test_summarise_routes(self, multi_gtfs_fixture):
-    #     """General tests for summarise_routes()."""
-    #     # assert that the summary is returned
-    #     summary = multi_gtfs_fixture.summarise_routes()
-    #     assert isinstance(summary, pd.DataFrame)
-    #     assert hasattr(multi_gtfs_fixture, "daily_route_summary")
+    def test_summarise_routes(self, multi_gtfs_fixture):
+        """General tests for summarise_routes()."""
+        # assert that the summary is returned
+        summary = multi_gtfs_fixture.summarise_routes()
+        assert isinstance(summary, pd.DataFrame)
+        assert hasattr(multi_gtfs_fixture, "daily_route_summary")
 
     @pytest.mark.parametrize(
         "path, return_viz, filtered_only, raises, match",
