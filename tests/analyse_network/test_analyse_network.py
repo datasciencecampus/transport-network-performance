@@ -405,31 +405,35 @@ class Test_gdf_batch_origins:
             assert next(generator)
 
     @pytest.mark.parametrize(
-        "distance, num_origins, exp_output",
+        "distance, num_origins, exp_output, len_generator",
         [
             # defaults
             (
                 11.25,
                 1,
                 [[1], [2, 4]],
+                4,
             ),
             # changed distance
             (
                 0.25,
                 1,
                 [[1], []],
+                4,
             ),
             # changed batch size and using int
             (
                 11,
                 4,
                 [[1, 2, 3, 4], [2, 4]],
+                1,
             ),
             # changed batch size and distance
             (
                 0.25,
                 4,
                 [[1, 2, 3, 4], [2, 4]],
+                1,
             ),
         ],
     )
@@ -440,6 +444,7 @@ class Test_gdf_batch_origins:
         distance: float,
         num_origins: int,
         exp_output: list,
+        len_generator: int,
     ):
         """Test _gdf_batch_origins outputs.
 
@@ -455,6 +460,8 @@ class Test_gdf_batch_origins:
             Number of origins to consider in each loop.
         exp_output : list
             Expected yield outputs for the first iteration of the generator.
+        len_generator : int
+            Expected number/length of the generator objects.
 
         """
         analyse_network = dummy_transport_network
@@ -466,6 +473,8 @@ class Test_gdf_batch_origins:
         outputs = next(generator)
         assert list(outputs[0]) == exp_output[0]
         assert list(outputs[1]) == exp_output[1]
+        # add one since we're using the first generator instance above
+        assert sum(1 for _ in generator) + 1 == len_generator
 
 
 # _haversine_gdf
