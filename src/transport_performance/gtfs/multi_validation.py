@@ -233,17 +233,26 @@ class MultiGtfsInstance:
                 for index, gtfs_inst in enumerate(self.instances, start=0)
                 if index not in [i[0] for i in empty_feeds]
             ]
+            # aligning filenames with feed contents, reversing to preserve
+            # index order
+            for f, _ in reversed(empty_feeds):
+                self.paths.pop(f)
+
         if not self.instances:
             warnings.warn("MultiGtfsInstance has no feeds.", UserWarning)
         return empty_feeds
 
-    def filter_to_date(self, dates: Union[str, list]) -> None:
+    def filter_to_date(
+        self, dates: Union[str, list], delete_empty_feeds: bool = False
+    ) -> None:
         """Filter each GTFS to date(s).
 
         Parameters
         ----------
         dates : Union[str, list]
             The date(s) to filter the GTFS to
+        delete_empty_feeds : bool, optional
+            Whether or not to remove empty feeds, by default False
 
         Returns
         -------
@@ -263,6 +272,14 @@ class MultiGtfsInstance:
                 inst.filter_to_date(dates=dates)
             except ValueError as e:
                 raise ValueError(f"In GTFS {path}.\n{e}")
+            # implement delete empty feeds for filter_to_date also
+            if delete_empty_feeds:
+                warnings.filterwarnings("error", category=UserWarning)
+                try:
+                    self.validate_empty_feeds(True)
+                except UserWarning:
+                    self._raise_empty_feed_error(dates)
+                warnings.resetwarnings()
         return None
 
     def _raise_empty_feed_error(self, bbox: list):
@@ -395,51 +412,54 @@ class MultiGtfsInstance:
         trip_counts = self.instances[0]._order_dataframe_by_day(trip_counts)
         return trip_counts
 
-    def summarise_trips(
-        self, summ_ops: list = [np.min, np.max, np.mean, np.median]
-    ) -> pd.DataFrame:
-        """Summarise the combined GTFS data by trip_id.
+    # summary methods giving incorrect trip stats across multiple gtfs
+    # def summarise_trips(
+    #     self, summ_ops: list = [np.min, np.max, np.mean, np.median]
+    # ) -> pd.DataFrame:
+    #     """Summarise the combined GTFS data by trip_id.
 
-        Parameters
-        ----------
-        summ_ops : list, optional
-            A list of numpy operators to gather a summary on. Accepts operators
-            (e.g., np.min) or strings ("min")
-            ,by default [np.min, np.max, np.mean, np.median]
+    #     Parameters
+    #     ----------
+    #     summ_ops : list, optional
+    #         A list of numpy operators to gather a summary on. Accepts
+    #         operators
+    #         (e.g., np.min) or strings ("min")
+    #         ,by default [np.min, np.max, np.mean, np.median]
 
-        Returns
-        -------
-        pd.DataFrame
-            A dataframe containing the summary
+    #     Returns
+    #     -------
+    #     pd.DataFrame
+    #         A dataframe containing the summary
 
-        """
-        self.daily_trip_summary = self._summarise_core(
-            which="trips", summ_ops=summ_ops
-        )
-        return self.daily_trip_summary.copy()
+    #     """
+    #     self.daily_trip_summary = self._summarise_core(
+    #         which="trips", summ_ops=summ_ops
+    #     )
+    #     return self.daily_trip_summary.copy()
 
-    def summarise_routes(
-        self, summ_ops: list = [np.min, np.max, np.mean, np.median]
-    ) -> pd.DataFrame:
-        """Summarise the combined GTFS data by route_id.
+    # def summarise_routes(
+    #     self, summ_ops: list = [np.min, np.max, np.mean, np.median]
+    # ) -> pd.DataFrame:
+    #     """Summarise the combined GTFS data by route_id.
 
-        Parameters
-        ----------
-        summ_ops : list, optional
-            A list of numpy operators to gather a summary on. Accepts operators
-            (e.g., np.min) or strings ("min"),
-            by default [np.min, np.max, np.mean, np.median].
+    #     Parameters
+    #     ----------
+    #     summ_ops : list, optional
+    #         A list of numpy operators to gather a summary on. Accepts
+    #         operators
+    #         (e.g., np.min) or strings ("min"),
+    #         by default [np.min, np.max, np.mean, np.median].
 
-        Returns
-        -------
-        pd.DataFrame
-            A dataframe containing the summary
+    #     Returns
+    #     -------
+    #     pd.DataFrame
+    #         A dataframe containing the summary
 
-        """
-        self.daily_route_summary = self._summarise_core(
-            which="routes", summ_ops=summ_ops
-        )
-        return self.daily_route_summary.copy()
+    #     """
+    #     self.daily_route_summary = self._summarise_core(
+    #         which="routes", summ_ops=summ_ops
+    #     )
+    #     return self.daily_route_summary.copy()
 
     def viz_stops(
         self,
