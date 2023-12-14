@@ -162,6 +162,7 @@ class TestMultiGtfsInstance(object):
         self, multi_gtfs_paths, tmp_path
     ):
         """Regression test, labelled filenames are correct. Need 3 GTFS."""
+        multi_gtfs_paths = sorted(multi_gtfs_paths)
         dest_paths = [
             os.path.join(tmp_path, os.path.basename(pth))
             for pth in multi_gtfs_paths
@@ -175,10 +176,10 @@ class TestMultiGtfsInstance(object):
         )
         shutil.copyfile(multi_gtfs_paths[0], dupe_chester)
         # check that we have the correct file setup in tmp
-        tmp_contents_pre = os.listdir(tmp_path)
+        tmp_contents_pre = sorted(os.listdir(tmp_path))
         assert tmp_contents_pre == [
-            "chester-20230816-small_gtfs.zip",
             "DUPE_chester-20230816-small_gtfs.zip",
+            "chester-20230816-small_gtfs.zip",
             "newport-20230613_gtfs.zip",
         ], f"Expected 3 GTFS before empty feed rm, found: {tmp_contents_pre}"
         # instantiate multi gtfs and filter to a newport BBOX with delete empty
