@@ -18,7 +18,7 @@ from _pytest.python_api import RaisesContext
 
 import transport_performance.analyse_network as an
 
-# import metrics fixtures via pytest_plugins
+# import analyse-network fixtures via pytest_plugins
 pytest_plugins = ["tests.analyse_network.analyse_network_fixtures"]
 
 
@@ -660,9 +660,9 @@ class Test_estimate_num_partitions:
     @pytest.mark.parametrize(
         "arg_name, arg_value, expected",
         [
-            # wrong df
+            # partition_size to check ceil()
             ("partition_size", 200, 1),
-            # wrong partition size
+            # partition_size to check multiple partitions
             ("partition_size", 10, 8),
         ],
     )
