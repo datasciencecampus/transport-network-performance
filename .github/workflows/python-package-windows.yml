@@ -39,4 +39,4 @@ jobs:
         pip install kaleido==0.1.0.post1  # fixing kaleido version within runner, known issue: https://github.com/plotly/Kaleido/issues/134
     - name: Run 'base' Tests
       run: |
-          pytest --ignore tests/osm/ --ignore tests/analyse_network --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
+          pytest --ignore tests/osm/ --ignore tests/analyse_network --ignore tests/test_analyse_network.py --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
