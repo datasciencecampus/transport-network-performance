@@ -901,12 +901,12 @@ def test_od_matrix(
         transport_modes=[TransportMode.TRANSIT],
     )
 
+    # check number of parquet files are as expected
+    assert (
+        len(glob.glob(os.path.join(dummy_filepath, "*.parquet"))) == num_files
+    )
+
     if batch_orig:
-        # check 4 parquet files are saved
-        assert (
-            len(glob.glob(os.path.join(dummy_filepath, "*.parquet")))
-            == num_files
-        )
         # check 4 files with expected name pattern are saved
         assert sorted(
             glob.glob(os.path.join(dummy_filepath, "batch-[1-9]-0.parquet"))
@@ -915,11 +915,6 @@ def test_od_matrix(
             for n in range(1, 5)
         ]
     else:
-        # check 1 parquet file is saved
-        assert (
-            len(glob.glob(os.path.join(dummy_filepath, "*.parquet")))
-            == num_files
-        )
         # check name of file is as expected
         assert glob.glob(os.path.join(dummy_filepath, "*.parquet")) == [
             os.path.join(dummy_filepath, "batch-all-0.parquet")
