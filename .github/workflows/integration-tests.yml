@@ -49,4 +49,4 @@ jobs:
       shell: sh
     - name: Run Integration Tests Only
       run: |
-        pytest -m runinteg --runinteg --ignore tests/analyse_network --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
+        pytest -m runinteg --runinteg --ignore tests/analyse_network --ignore tests/test_analyse_network.py --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
