@@ -95,7 +95,7 @@ def dummy_transport_network(
         dummy_gdf_centroids,
         dummy_osm,
         dummy_gtfs,
-        os.path.join(tmp_path_factory.getbasetemp(), "tiny-osm.pbf"),
+        os.path.join(tmp_path_factory.getbasetemp(), "analyse-network"),
     )
 
 
