@@ -349,6 +349,14 @@ class TestMultiGtfsInstance(object):
             dated, pd.DataFrame
         ), "Returned dated table not DataFrame"
         assert len(dated) == 202955, "Returned dated table not as expected"
+        dated_sum = multi_gtfs_fixture._summarise_core(
+            which="routes", to_days=False
+        )
+        assert len(dated_sum) == 590, "Dated route counts not as expected"
+        assert (
+            dated_sum[dated_sum.date == "2024-04-06"].route_count.iloc[0]
+            == 159
+        ), "Unexpecteed number of routes on 2024-04-06"
 
     def test_summarise_trips(self, multi_gtfs_fixture):
         """General tests for summarise_trips()."""
