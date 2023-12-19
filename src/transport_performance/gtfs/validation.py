@@ -15,6 +15,7 @@ import warnings
 import pathlib
 from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
+from geopandas import GeoDataFrame
 
 from transport_performance.gtfs.validators import (
     validate_travel_over_multiple_stops,
@@ -43,6 +44,9 @@ from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
 )
+
+from transport_performance.gtfs.gtfs_utils import filter_gtfs
+
 from transport_performance.utils.constants import PKG_PATH
 
 
@@ -212,6 +216,12 @@ class GtfsInstance:
         Returns the `daily_route_summary` attribute.
     html_report()
         Generate a HTML report describing the GTFS data.
+    save()
+        Save the current GtfsInstance().
+    filter_to_date()
+        Filter a GtfsInstance to a specific dates or set of dates.
+    filter_to_bbox()
+        Crop a GtfsInstance to a given bbox.
     _produce_stops_map()
         Produces the stops map for use in `viz_stops()`.
     _order_dataframe_by_day()
@@ -1636,4 +1646,77 @@ class GtfsInstance:
             f"View your report here: {report_dir}/gtfs_report"
         )
 
+        return None
+
+    def save(self, path: Union[str, pathlib.Path]) -> None:
+        """Save the cleaned gtfs file.
+
+        Parameters
+        ----------
+        path : Union[str, pathlib.Path]
+            The path to save the GTFS file to. E.g., outputs/cleaned_gtfs.zip
+
+        Returns
+        -------
+        None
+
+        """
+        _check_parent_dir_exists(path, "path", True)
+        path = _enforce_file_extension(
+            path, exp_ext=".zip", default_ext=".zip", param_nm="path"
+        )
+        self.feed.write(path)
+        return None
+
+    def filter_to_date(self, dates: Union[str, list]) -> None:
+        """Very shallow wrapper around filter_gtfs().
+
+        Filters GTFS to date(s)
+
+        Parameters
+        ----------
+        dates : Union[str, list]
+            The date(s) to filter the GTFS to
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(dates, "dates", (str, list))
+        # convert to normalsed format
+        if isinstance(dates, str):
+            dates = [dates]
+        # filter gtfs
+        filter_gtfs(gtfs=self, filter_dates=dates)
+        return None
+
+    def filter_to_bbox(
+        self,
+        bbox: Union[list, GeoDataFrame],
+        crs: Union[str, int] = "epsg:4326",
+    ) -> None:
+        """Very shallow wrapper around filter_gfts().
+
+        Filters GTFS to a bbox.
+
+        Parameters
+        ----------
+        bbox : Union[list, GeoDataFrame]
+            The bbox to filter the GTFS to. Leave as none if the GTFS does not
+            need to be cropped. Format - [xmin, ymin, xmax, ymax]
+        crs : Union[str, int], optional
+            The CRS of the given bbox, by default "epsg:4326"
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(bbox, "bbox", (list, GeoDataFrame))
+        _type_defence(crs, "crs", (str, int))
+        # filter gtfs
+        filter_gtfs(gtfs=self, bbox=bbox, crs=crs)
         return None
