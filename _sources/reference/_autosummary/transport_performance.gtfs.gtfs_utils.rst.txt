@@ -21,6 +21,7 @@ transport\_performance.gtfs.gtfs\_utils
                 
                     bbox_filter_gtfs
                     convert_pandas_to_plotly
+                    filter_gtfs
                     filter_gtfs_around_trip
         
     

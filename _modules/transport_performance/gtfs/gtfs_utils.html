@@ -96,9 +96,13 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">from</span> <span class="nn">geopandas</span> <span class="kn">import</span> <span class="n">GeoDataFrame</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">transport_performance.gtfs.validation</span> <span class="kn">import</span> <span class="n">GtfsInstance</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_is_expected_filetype</span><span class="p">,</span>
@@ -106,8 +110,128 @@
     <span class="n">_type_defence</span><span class="p">,</span>
     <span class="n">_validate_datestring</span><span class="p">,</span>
     <span class="n">_enforce_file_extension</span><span class="p">,</span>
+    <span class="n">_gtfs_defence</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">transport_performance.utils.constants</span> <span class="kn">import</span> <span class="n">PKG_PATH</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_bbox_list</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Small function to ensure bbox coords are in the correct order.&quot;&quot;&quot;</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="s2">&quot;bbox&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+    <span class="c1"># check len</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;bbox should have a length of 4, found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span><span class="si">}</span><span class="s2"> items in list.&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># check data type</span>
+    <span class="n">_check_iterable</span><span class="p">(</span>
+        <span class="n">iterable</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
+        <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;bbox&quot;</span><span class="p">,</span>
+        <span class="n">iterable_type</span><span class="o">=</span><span class="nb">list</span><span class="p">,</span>
+        <span class="n">exp_type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># check coords</span>
+    <span class="k">if</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;BBOX xmin (</span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) is greater than xmax (</span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;BBOX ymin (</span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) is greater than ymax (</span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="filter_gtfs">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.gtfs_utils.filter_gtfs.html#transport_performance.gtfs.gtfs_utils.filter_gtfs">[docs]</a>
+<span class="k">def</span> <span class="nf">filter_gtfs</span><span class="p">(</span>
+    <span class="n">gtfs</span><span class="p">:</span> <span class="s2">&quot;GtfsInstance&quot;</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span>
+    <span class="n">filter_dates</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter the GTFS to either a bbox or a date.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gtfs : GtfsInstance</span>
+<span class="sd">        The GTFS to filter</span>
+<span class="sd">    bbox : Union[GeoDataFrame, list, None], optional</span>
+<span class="sd">        The bbox to filter the GTFS to. Leave as none if the GTFS does not need</span>
+<span class="sd">         to be cropped. Format - [xmin, ymin, xmax, ymax], by default None</span>
+<span class="sd">    crs : Union[str, int], optional</span>
+<span class="sd">        The CRS of the given bbox, by default &quot;epsg:4326&quot;</span>
+<span class="sd">    filter_dates : list, optional</span>
+<span class="sd">        The dates to filter the GTFS to. Leave as an empty list if you do not</span>
+<span class="sd">        require the GTFS to be filtered to a date, by default []</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        Raised if any of the dates passed to &#39;filter_dates&#39; isn&#39;t present in</span>
+<span class="sd">        the gtfs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># defences</span>
+    <span class="n">_gtfs_defence</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;gtfs&quot;</span><span class="p">)</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="s2">&quot;bbox&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">filter_dates</span><span class="p">,</span> <span class="s2">&quot;filter_dates&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+
+    <span class="c1"># check that filtering has been requested</span>
+    <span class="k">if</span> <span class="n">bbox</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_dates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="ne">UserWarning</span><span class="p">(</span>
+                <span class="s2">&quot;No filtering requested. Please pass either a bbox &quot;</span>
+                <span class="s2">&quot;or a list of dates&quot;</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># handle bbox</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">_validate_bbox_list</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="c1"># create box polygon around provided coords, need to unpack</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="c1"># gtfs_kit expects gdf</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">bbox</span><span class="p">])</span>
+
+    <span class="c1"># filter to bbox</span>
+    <span class="k">if</span> <span class="n">bbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">restrict_to_area</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+
+    <span class="c1"># filter to date</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_dates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">_check_iterable</span><span class="p">(</span>
+            <span class="n">filter_dates</span><span class="p">,</span> <span class="s2">&quot;filter_dates&quot;</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">iterable_type</span><span class="o">=</span><span class="nb">list</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">filter_dates</span><span class="p">:</span>
+            <span class="n">_validate_datestring</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
+        <span class="n">feed_dates</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">get_dates</span><span class="p">()</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">filter_dates</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">feed_dates</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">diff</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">diff</span><span class="si">}</span><span class="s2"> passed to &#39;filter_dates&#39; not present in feed dates &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Feed dates include: </span><span class="si">{</span><span class="n">feed_dates</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">restrict_to_dates</span><span class="p">(</span><span class="n">filter_dates</span><span class="p">)</span>
+
+    <span class="c1"># remove attr (for future runs)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;pre_processed_trips&quot;</span><span class="p">):</span>
+        <span class="nb">delattr</span><span class="p">(</span><span class="n">gtfs</span><span class="p">,</span> <span class="s2">&quot;pre_processed_trips&quot;</span><span class="p">)</span>
+
+    <span class="c1"># post-filtering checks on GTFS</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;GTFS from path </span><span class="si">{</span><span class="n">gtfs</span><span class="o">.</span><span class="n">gtfs_path</span><span class="si">}</span><span class="s2"> is empty after filtering&quot;</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
 
 
 <div class="viewcode-block" id="bbox_filter_gtfs">
@@ -132,6 +256,8 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter a GTFS feed to any routes intersecting with a bounding box.</span>
 
 <span class="sd">    Optionally filter to a list of given dates.</span>
+
+<span class="sd">    WARNING: THIS FUNCTION IS DEPRECATED AND WILL INEVITABLY BE REMOVED.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -171,6 +297,12 @@
 
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;once&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s2">&quot;This function has been deprecated and it&#39;s functionality has been &quot;</span>
+        <span class="s2">&quot;refined in .filter_gtfs().&quot;</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">typing_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;bbox&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">bbox</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">GeoDataFrame</span><span class="p">)],</span>
         <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">units</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>

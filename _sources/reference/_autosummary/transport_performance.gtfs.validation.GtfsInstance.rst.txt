@@ -20,11 +20,14 @@ GtfsInstance
                 
                     ~GtfsInstance.__init__
                     ~GtfsInstance.clean_feed
+                    ~GtfsInstance.filter_to_bbox
+                    ~GtfsInstance.filter_to_date
                     ~GtfsInstance.get_gtfs_files
                     ~GtfsInstance.get_route_modes
                     ~GtfsInstance.html_report
                     ~GtfsInstance.is_valid
                     ~GtfsInstance.print_alerts
+                    ~GtfsInstance.save
                     ~GtfsInstance.summarise_routes
                     ~GtfsInstance.summarise_trips
                     ~GtfsInstance.viz_stops

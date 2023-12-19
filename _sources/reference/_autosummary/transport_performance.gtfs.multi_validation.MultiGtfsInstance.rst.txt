@@ -1,0 +1,32 @@
+..
+  class.rst
+
+MultiGtfsInstance
+=================
+
+.. currentmodule:: transport_performance.gtfs.multi_validation
+
+.. autoclass:: MultiGtfsInstance
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+    
+        
+            .. rubric:: Methods
+
+            .. autosummary::
+                :nosignatures:
+                
+                    ~MultiGtfsInstance.__init__
+                    ~MultiGtfsInstance.clean_feeds
+                    ~MultiGtfsInstance.filter_to_bbox
+                    ~MultiGtfsInstance.filter_to_date
+                    ~MultiGtfsInstance.is_valid
+                    ~MultiGtfsInstance.save_feeds
+                    ~MultiGtfsInstance.summarise_routes
+                    ~MultiGtfsInstance.summarise_trips
+                    ~MultiGtfsInstance.validate_empty_feeds
+                    ~MultiGtfsInstance.viz_stops
+        
+    

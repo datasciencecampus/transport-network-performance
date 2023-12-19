@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>get_saved_route_type_lookup &mdash; transport-performance 0.0.1 documentation</title>
+  <title>filter_gtfs &mdash; transport-performance 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=76ab003f" />
@@ -23,8 +23,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="scrape_route_type_lookup" href="transport_performance.gtfs.routes.scrape_route_type_lookup.html" />
-    <link rel="prev" title="transport_performance.gtfs.routes" href="transport_performance.gtfs.routes.html" /> 
+    <link rel="next" title="filter_gtfs_around_trip" href="transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip.html" />
+    <link rel="prev" title="convert_pandas_to_plotly" href="transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -58,13 +58,15 @@
 <li class="toctree-l2"><a class="reference internal" href="transport_performance.population.html">transport_performance.population</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="transport_performance.gtfs.html">transport_performance.gtfs</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.cleaners.html">transport_performance.gtfs.cleaners</a></li>
-<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a></li>
-<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.multi_validation.html">transport_performance.gtfs.multi_validation</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="transport_performance.gtfs.routes.html">transport_performance.gtfs.routes</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">get_saved_route_type_lookup</a></li>
-<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.routes.scrape_route_type_lookup.html">scrape_route_type_lookup</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.bbox_filter_gtfs.html">bbox_filter_gtfs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly.html">convert_pandas_to_plotly</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">filter_gtfs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip.html">filter_gtfs_around_trip</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.multi_validation.html">transport_performance.gtfs.multi_validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.routes.html">transport_performance.gtfs.routes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.validation.html">transport_performance.gtfs.validation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.validators.html">transport_performance.gtfs.validators</a></li>
 </ul>
@@ -99,10 +101,10 @@
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html"><cite>transport-performance</cite> API</a></li>
           <li class="breadcrumb-item"><a href="transport_performance.gtfs.html">transport_performance.gtfs</a></li>
-          <li class="breadcrumb-item"><a href="transport_performance.gtfs.routes.html">transport_performance.gtfs.routes</a></li>
-      <li class="breadcrumb-item active">get_saved_route_type_lookup</li>
+          <li class="breadcrumb-item"><a href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a></li>
+      <li class="breadcrumb-item active">filter_gtfs</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/_autosummary/transport_performance.gtfs.routes.get_saved_route_type_lookup.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/_autosummary/transport_performance.gtfs.gtfs_utils.filter_gtfs.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -110,24 +112,38 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="get-saved-route-type-lookup">
-<h1>get_saved_route_type_lookup<a class="headerlink" href="#get-saved-route-type-lookup" title="Link to this heading"></a></h1>
+  <section id="filter-gtfs">
+<h1>filter_gtfs<a class="headerlink" href="#filter-gtfs" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="transport_performance.gtfs.routes.get_saved_route_type_lookup">
-<span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.routes.</span></span><span class="sig-name descname"><span class="pre">get_saved_route_type_lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/work/transport-network-performance/transport-network-performance/src/transport_performance/data/gtfs/route_lookup.pkl')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/routes.html#get_saved_route_type_lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.routes.get_saved_route_type_lookup" title="Link to this definition"></a></dt>
-<dd><p>Get the lcoally saved route type lookup as a dataframe.</p>
+<dt class="sig sig-object py" id="transport_performance.gtfs.gtfs_utils.filter_gtfs">
+<span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.gtfs_utils.</span></span><span class="sig-name descname"><span class="pre">filter_gtfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtfs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance" title="transport_performance.gtfs.validation.GtfsInstance"><span class="pre">GtfsInstance</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'epsg:4326'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_dates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/gtfs_utils.html#filter_gtfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.gtfs_utils.filter_gtfs" title="Link to this definition"></a></dt>
+<dd><p>Filter the GTFS to either a bbox or a date.</p>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
 <dl class="simple">
-<dt>path<span class="classifier">Union[str, pathlib.Path], optional</span></dt><dd><p>The path to the route type lookup,
-defaults to os.path.join(PKG_PATH, “data”, “gtfs”, “route_lookup.pkl”)</p>
+<dt>gtfs<span class="classifier">GtfsInstance</span></dt><dd><p>The GTFS to filter</p>
+</dd>
+<dt>bbox<span class="classifier">Union[GeoDataFrame, list, None], optional</span></dt><dd><dl class="simple">
+<dt>The bbox to filter the GTFS to. Leave as none if the GTFS does not need</dt><dd><p>to be cropped. Format - [xmin, ymin, xmax, ymax], by default None</p>
+</dd>
+</dl>
+</dd>
+<dt>crs<span class="classifier">Union[str, int], optional</span></dt><dd><p>The CRS of the given bbox, by default “epsg:4326”</p>
+</dd>
+<dt>filter_dates<span class="classifier">list, optional</span></dt><dd><p>The dates to filter the GTFS to. Leave as an empty list if you do not
+require the GTFS to be filtered to a date, by default []</p>
 </dd>
 </dl>
 </section>
 <section id="returns">
 <h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<p>None</p>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
 <dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>The route type lookup</p>
+<dt>ValueError</dt><dd><p>Raised if any of the dates passed to ‘filter_dates’ isn’t present in
+the gtfs</p>
 </dd>
 </dl>
 </section>
@@ -139,8 +155,8 @@ defaults to os.path.join(PKG_PATH, “data”, “gtfs”, “route_lookup.pkl�
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="transport_performance.gtfs.routes.html" class="btn btn-neutral float-left" title="transport_performance.gtfs.routes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="transport_performance.gtfs.routes.scrape_route_type_lookup.html" class="btn btn-neutral float-right" title="scrape_route_type_lookup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="transport_performance.gtfs.gtfs_utils.convert_pandas_to_plotly.html" class="btn btn-neutral float-left" title="convert_pandas_to_plotly" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="transport_performance.gtfs.gtfs_utils.filter_gtfs_around_trip.html" class="btn btn-neutral float-right" title="filter_gtfs_around_trip" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

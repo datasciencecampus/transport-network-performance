@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>transport_performance.gtfs.multi_validation &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=76ab003f" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html"><cite>transport-performance</cite> API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/coverage.html">Unit Test Coverage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">transport_performance.gtfs.multi_validation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for transport_performance.gtfs.multi_validation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Validating multiple GTFS at once.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">geopandas</span> <span class="kn">import</span> <span class="n">GeoDataFrame</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">folium</span>
+<span class="kn">from</span> <span class="nn">folium.plugins</span> <span class="kn">import</span> <span class="n">FastMarkerCluster</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.validation</span> <span class="kn">import</span> <span class="n">GtfsInstance</span>
+<span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_type_defence</span><span class="p">,</span>
+    <span class="n">_is_expected_filetype</span><span class="p">,</span>
+    <span class="n">_check_parent_dir_exists</span><span class="p">,</span>
+    <span class="n">_enforce_file_extension</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="MultiGtfsInstance">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance">[docs]</a>
+<span class="k">class</span> <span class="nc">MultiGtfsInstance</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a feed instance for multiple GTFS files.</span>
+
+<span class="sd">    This allows for multiple GTFS files to be cleaned, validated, summarised,</span>
+<span class="sd">    filtered and saved at the same time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : Union[str, list, pathlib.Path]</span>
+<span class="sd">        A list of paths, a singular paath object, or a glob string.</span>
+<span class="sd">        See more informtion on glob strings here:</span>
+<span class="sd">        https://docs.python.org/3/library/glob.html</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    paths : list</span>
+<span class="sd">        A list of the GTFS paths used to create the MultiGtfsInstance object.</span>
+<span class="sd">    instances : list</span>
+<span class="sd">        A list of GtfsInstance objects created from self.paths.</span>
+<span class="sd">    daily_trip_summary : pd.DataFrame</span>
+<span class="sd">        A combined summary of statistics for trips from all GTFS files in the</span>
+<span class="sd">        MultiGtfsInstance.</span>
+<span class="sd">    daily_route_summary : pd.DataFrame</span>
+<span class="sd">        A combined summary of statistics for routes from all GTFS files in the</span>
+<span class="sd">        MultiGtfsInstance.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    save_feeds()</span>
+<span class="sd">        Saves each GtfsInstance to a directory.</span>
+<span class="sd">    clean_feeds()</span>
+<span class="sd">        Cleans all of the GTFS files.</span>
+<span class="sd">    is_valid()</span>
+<span class="sd">        Validates all of the GTFS files.</span>
+<span class="sd">    filter_to_date()</span>
+<span class="sd">        Filter all of the GTFS files to a specific date(s).</span>
+<span class="sd">    filter_to_bbox()</span>
+<span class="sd">        Filter all of the GTFS files to a specific bbox.</span>
+<span class="sd">    summarise_trips()</span>
+<span class="sd">        Create a summary of all of the routes throughout all GTFS files.</span>
+<span class="sd">    summarise_routes()</span>
+<span class="sd">        Create a summary of all of the trips throughout all GTFS files.</span>
+<span class="sd">    viz_stops()</span>
+<span class="sd">        Plot each of the stops from all GtfsInstance&#39;s on a folium Map object.</span>
+<span class="sd">    validate_empty_feeds()</span>
+<span class="sd">        Check if there are empty feeds within the MultiGtfsInstance.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        &#39;path&#39; is not of type string or list.</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        One (or more) of the paths passed to &#39;path&#39; does not exist.</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        There are no GTFS files found in the passed list of paths, or from the</span>
+<span class="sd">        glob string.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        Path as no file extension.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        One (or more) of the paths passed are not of the filetype &#39;.zip&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">))</span>
+        <span class="c1"># check if a pathlib.Path object has been passed (single gtfs)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">):</span>
+            <span class="c1">#  if a directory is passed, convert to string for glob string</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/*.zip&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="p">]</span>
+        <span class="c1"># defend a glob string</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">gtfs_paths</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">gtfs_paths</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;No GTFS files found.&quot;</span><span class="p">)</span>
+        <span class="c1"># check all paths are zip files</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pth</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">pth</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;path[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;.zip&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="c1"># instantiate the GtfsInstance&#39;s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="p">[</span><span class="n">GtfsInstance</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="k">for</span> <span class="n">fpath</span> <span class="ow">in</span> <span class="n">path</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MultiGtfsInstance.save_feeds">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_feeds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">dir</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the GtfsInstances to a directory.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dir : Union[pathlib.Path, str]</span>
+<span class="sd">            The directory to export the GTFS files into.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">defence_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">dir</span><span class="p">,</span> <span class="s2">&quot;test.test&quot;</span><span class="p">)</span>
+        <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">defence_path</span><span class="p">,</span> <span class="s2">&quot;dir&quot;</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">save_paths</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_new.zip&quot;</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span>
+        <span class="p">]</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">save_paths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving at </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MultiGtfsInstance.clean_feeds">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.clean_feeds">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean_feeds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clean_kwargs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean each of the feeds in the MultiGtfsInstance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        clean_kwargs : Union[dict, None], optional</span>
+<span class="sd">            The kwargs to pass to GtfsInstance.clean_feed() for each Gtfs in</span>
+<span class="sd">            the MultiGtfsInstance, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">clean_kwargs</span><span class="p">,</span> <span class="s2">&quot;clean_kwargs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clean_kwargs</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
+            <span class="n">clean_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># clean GTFS instances</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cleaning GTFS from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">clean_feed</span><span class="p">(</span><span class="o">**</span><span class="n">clean_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="MultiGtfsInstance.is_valid">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.is_valid">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">validation_kwargs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate each of the feeds in the MultiGtfsInstance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        validation_kwargs : Union[dict, None], optional</span>
+<span class="sd">            The kwargs to pass to GtfsInstance.is_valid() for each Gtfs in</span>
+<span class="sd">            the MultiGtfsInstance, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self.validity_df : pd.DataFrame</span>
+<span class="sd">            A dataframe containing the validation messages from all of the</span>
+<span class="sd">            GtfsInstance&#39;s.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span>
+            <span class="n">validation_kwargs</span><span class="p">,</span> <span class="s2">&quot;validation_kwargs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">validation_kwargs</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
+            <span class="n">validation_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># clean GTFS instances</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validating GTFS from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="o">**</span><span class="n">validation_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># concat all validation tables into one</span>
+        <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">:</span>
+            <span class="n">valid_df</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">validity_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">valid_df</span><span class="p">[</span><span class="s2">&quot;GTFS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">gtfs_path</span>
+            <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">valid_df</span><span class="p">)</span>
+        <span class="n">combined_validation</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span> <span class="o">=</span> <span class="n">combined_validation</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validity_df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultiGtfsInstance.validate_empty_feeds">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate_empty_feeds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure the feeds in MultiGtfsInstance are not empty.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        delete : bool, optional</span>
+<span class="sd">            Whether or not to delete the empty feeds, by default False</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            A list of feeds that are empty and their index in GtfsInstance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">empty_feeds</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">inst</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">inst</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">delete</span> <span class="ow">and</span> <span class="n">empty_feeds</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">gtfs_inst</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">gtfs_inst</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">empty_feeds</span><span class="p">]</span>
+            <span class="p">]</span>
+            <span class="c1"># aligning filenames with feed contents, reversing to preserve</span>
+            <span class="c1"># index order</span>
+            <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">empty_feeds</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;MultiGtfsInstance has no feeds.&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">empty_feeds</span></div>
+
+
+<div class="viewcode-block" id="MultiGtfsInstance.filter_to_date">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_date">[docs]</a>
+    <span class="k">def</span> <span class="nf">filter_to_date</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dates</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span> <span class="n">delete_empty_feeds</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter each GTFS to date(s).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dates : Union[str, list]</span>
+<span class="sd">            The date(s) to filter the GTFS to</span>
+<span class="sd">        delete_empty_feeds : bool, optional</span>
+<span class="sd">            Whether or not to remove empty feeds, by default False</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span>
+        <span class="c1"># convert to normalsed format</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">dates</span> <span class="o">=</span> <span class="p">[</span><span class="n">dates</span><span class="p">]</span>
+        <span class="c1"># filter gtfs</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtering GTFS from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">inst</span><span class="o">.</span><span class="n">filter_to_date</span><span class="p">(</span><span class="n">dates</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;In GTFS </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># implement delete empty feeds for filter_to_date also</span>
+            <span class="k">if</span> <span class="n">delete_empty_feeds</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">validate_empty_feeds</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">UserWarning</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_raise_empty_feed_error</span><span class="p">(</span><span class="n">dates</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">resetwarnings</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_raise_empty_feed_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Error indicating that a feed has been emptied by filtering.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;BBOX &#39;</span><span class="si">{</span><span class="n">bbox</span><span class="si">}</span><span class="s2">&#39; has filtered the MultiGtfs to contain no &quot;</span>
+            <span class="s2">&quot;data. Please re-instantiate your MultiGtfsInstance&quot;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="MultiGtfsInstance.filter_to_bbox">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_bbox">[docs]</a>
+    <span class="k">def</span> <span class="nf">filter_to_bbox</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bbox</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">GeoDataFrame</span><span class="p">],</span>
+        <span class="n">crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span>
+        <span class="n">delete_empty_feeds</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter GTFS to a bbox.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bbox : Union[list, GeoDataFrame]</span>
+<span class="sd">            The bbox to filter the GTFS to. Leave as none if the GTFS does not</span>
+<span class="sd">            need to be cropped. Format - [xmin, ymin, xmax, ymax]</span>
+<span class="sd">        crs : Union[str, int], optional</span>
+<span class="sd">            The CRS of the given bbox, by default &quot;epsg:4326&quot;</span>
+<span class="sd">        delete_empty_feeds : bool, optional</span>
+<span class="sd">            Whether or not to remove empty feeds, by default False</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="s2">&quot;bbox&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">GeoDataFrame</span><span class="p">))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">delete_empty_feeds</span><span class="p">,</span> <span class="s2">&quot;delete_empty_feeds&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="c1"># filter gtfs</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtering GTFS from path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">filter_to_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">delete_empty_feeds</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">validate_empty_feeds</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">UserWarning</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_raise_empty_feed_error</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">resetwarnings</span><span class="p">()</span>
+        <span class="c1"># validate feeds in case MultiGtfs is empty</span>
+        <span class="n">empty_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validate_empty_feeds</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">empty_count</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_raise_empty_feed_error</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_summarise_core</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">which</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trips&quot;</span><span class="p">,</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">to_days</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the MultiGtfsInstance by either trip_id or route_id.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        which : str, optional</span>
+<span class="sd">            Which summary to create. Options include [&#39;trips&#39;, &#39;routes&#39;],</span>
+<span class="sd">            by default &quot;trips&quot;</span>
+<span class="sd">        summ_ops : list, optional</span>
+<span class="sd">            A list of numpy operators to gather a summary on. Accepts operators</span>
+<span class="sd">              (e.g., np.min) or strings (&quot;min&quot;),</span>
+<span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
+<span class="sd">        return_summary : bool, optional</span>
+<span class="sd">            When set to False, full data for each trip on each date will be</span>
+<span class="sd">            returned. Defaults to True.</span>
+<span class="sd">        to_days : bool, optional</span>
+<span class="sd">            Whether or not to aggregate to days, or to just return counts for</span>
+<span class="sd">            trips/routes for each date. When False, summ_ops becomes useless,</span>
+<span class="sd">            and should therefore nothing should be passed when calling this</span>
+<span class="sd">            function (so it remains as the default). Defaults to False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            A dataframe containing the summary.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raises when &#39;which&#39; is not either &#39;trips&#39; or &#39;routes&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">summ_ops</span><span class="p">,</span> <span class="s2">&quot;summ_ops&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">which</span><span class="p">,</span> <span class="s2">&quot;which&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">return_summary</span><span class="p">,</span> <span class="s2">&quot;return_summary&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">to_days</span><span class="p">,</span> <span class="s2">&quot;to_days&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">which</span> <span class="o">=</span> <span class="n">which</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">which</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;trips&quot;</span><span class="p">,</span> <span class="s2">&quot;routes&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;which&#39; must be one of [&#39;trips&#39;, &#39;routes&#39;].  Got </span><span class="si">{</span><span class="n">which</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># choose summary</span>
+        <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;trips&quot;</span><span class="p">:</span>
+            <span class="n">group_col</span> <span class="o">=</span> <span class="s2">&quot;trip_id&quot;</span>
+            <span class="n">count_col</span> <span class="o">=</span> <span class="s2">&quot;trip_count&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">group_col</span> <span class="o">=</span> <span class="s2">&quot;route_id&quot;</span>
+            <span class="n">count_col</span> <span class="o">=</span> <span class="s2">&quot;route_count&quot;</span>
+
+        <span class="c1"># concat pre-processed trips/routes</span>
+        <span class="n">daily_schedule</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">_preprocess_trips_and_routes</span><span class="p">()</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span>
+        <span class="p">]</span>
+        <span class="n">daily_schedule</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">daily_schedule</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_summary</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">daily_schedule</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">to_days</span><span class="p">:</span>
+            <span class="n">dated</span> <span class="o">=</span> <span class="n">daily_schedule</span><span class="p">[[</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">,</span> <span class="n">group_col</span><span class="p">]]</span>
+            <span class="n">dated</span> <span class="o">=</span> <span class="n">dated</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="n">dated</span> <span class="o">=</span> <span class="n">dated</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">group_col</span><span class="p">:</span> <span class="n">count_col</span><span class="p">})</span>
+            <span class="n">dated</span> <span class="o">=</span> <span class="n">dated</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dated</span>
+        <span class="n">schedule</span> <span class="o">=</span> <span class="n">daily_schedule</span><span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="n">group_col</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+        <span class="c1"># group to each date and take counts</span>
+        <span class="n">trip_counts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">schedule</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;route_type&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;day&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="n">group_col</span><span class="p">:</span> <span class="s2">&quot;count&quot;</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">trip_counts</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">mapper</span><span class="o">=</span><span class="p">{</span><span class="n">group_col</span><span class="p">:</span> <span class="n">count_col</span><span class="p">},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">trip_counts</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">trip_counts</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="n">count_col</span><span class="p">:</span> <span class="n">summ_ops</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># reformat index</span>
+        <span class="n">trip_counts</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+        <span class="p">]</span>
+        <span class="n">trip_counts</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">column</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;amin&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;amax&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+        <span class="p">]</span>
+        <span class="n">trip_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_order_dataframe_by_day</span><span class="p">(</span><span class="n">trip_counts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">trip_counts</span>
+
+<div class="viewcode-block" id="MultiGtfsInstance.summarise_trips">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips">[docs]</a>
+    <span class="k">def</span> <span class="nf">summarise_trips</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">to_days</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the combined GTFS data by trip_id.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        summ_ops : list, optional</span>
+<span class="sd">            A list of numpy operators to gather a summary on. Accepts</span>
+<span class="sd">            operators</span>
+<span class="sd">            (e.g., np.min) or strings (&quot;min&quot;)</span>
+<span class="sd">            ,by default [np.min, np.max, np.mean, np.median]</span>
+<span class="sd">        return_summary: bool, optional</span>
+<span class="sd">            When set to False, full data for each trip on each date will be</span>
+<span class="sd">            returned. Defaults to True.</span>
+<span class="sd">        to_days : bool, optional</span>
+<span class="sd">            Whether or not to aggregate to days, or to just return counts for</span>
+<span class="sd">            trips/routes for each date. When False, summ_ops becomes useless,</span>
+<span class="sd">            and should therefore nothing should be passed when calling this</span>
+<span class="sd">            function (so it remains as the default). Defaults to False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            A dataframe containing the summary</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_summarise_core</span><span class="p">(</span>
+            <span class="n">which</span><span class="o">=</span><span class="s2">&quot;trips&quot;</span><span class="p">,</span>
+            <span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span>
+            <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">,</span>
+            <span class="n">to_days</span><span class="o">=</span><span class="n">to_days</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MultiGtfsInstance.summarise_routes">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes">[docs]</a>
+    <span class="k">def</span> <span class="nf">summarise_routes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
+        <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">to_days</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the combined GTFS data by route_id.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        summ_ops : list, optional</span>
+<span class="sd">            A list of numpy operators to gather a summary on. Accepts</span>
+<span class="sd">            operators</span>
+<span class="sd">            (e.g., np.min) or strings (&quot;min&quot;),</span>
+<span class="sd">            by default [np.min, np.max, np.mean, np.median].</span>
+<span class="sd">        return_summary: bool, optional</span>
+<span class="sd">            When set to False, full data for each trip on each date will be</span>
+<span class="sd">            returned. Defaults to True.</span>
+<span class="sd">        to_days : bool, optional</span>
+<span class="sd">            Whether or not to aggregate to days, or to just return counts for</span>
+<span class="sd">            trips/routes for each date. When False, summ_ops becomes useless,</span>
+<span class="sd">            and should therefore nothing should be passed when calling this</span>
+<span class="sd">            function (so it remains as the default). Defaults to False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            A dataframe containing the summary</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_summarise_core</span><span class="p">(</span>
+            <span class="n">which</span><span class="o">=</span><span class="s2">&quot;routes&quot;</span><span class="p">,</span>
+            <span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span>
+            <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">,</span>
+            <span class="n">to_days</span><span class="o">=</span><span class="n">to_days</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MultiGtfsInstance.viz_stops">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops">[docs]</a>
+    <span class="k">def</span> <span class="nf">viz_stops</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_viz</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">filtered_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualise all stops from all of the GTFS files.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : Union[str, pathlib.Path], optional</span>
+<span class="sd">            The path to save the folium map to, by default None.</span>
+<span class="sd">        return_viz : bool, optional</span>
+<span class="sd">            Whether or not to return the folium map object, by default True.</span>
+<span class="sd">        filtered_only : bool, optional</span>
+<span class="sd">            Whether to filter the stops that are plotted to only stop_id&#39;s that</span>
+<span class="sd">            are present in the stop_times table.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        folium.Map</span>
+<span class="sd">            A folium map with all stops plotted on it.</span>
+<span class="sd">        None</span>
+<span class="sd">            Returns none if &#39;return_viz&#39; is False.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            An error is raised if bot parameters are None as the map won&#39;t be</span>
+<span class="sd">            saved or returned.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">return_viz</span><span class="p">,</span> <span class="s2">&quot;return_viz&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">filtered_only</span><span class="p">,</span> <span class="s2">&quot;filtered_only&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">_enforce_file_extension</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;.html&quot;</span><span class="p">,</span> <span class="s2">&quot;.html&quot;</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">return_viz</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Both &#39;path&#39; and &#39;return_viz&#39; parameters are of NoneType.&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># combine stop tables</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">:</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">[</span>
+                <span class="p">[</span><span class="s2">&quot;stop_lat&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_lon&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_name&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_id&quot;</span><span class="p">,</span> <span class="s2">&quot;stop_code&quot;</span><span class="p">]</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">filtered_only</span><span class="p">:</span>
+                <span class="n">valid_ids</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stop_times</span><span class="o">.</span><span class="n">stop_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+                <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="p">[</span><span class="n">subset</span><span class="o">.</span><span class="n">stop_id</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">valid_ids</span><span class="p">)]</span>
+            <span class="n">subset</span><span class="p">[</span><span class="s2">&quot;gtfs_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">inst</span><span class="o">.</span><span class="n">gtfs_path</span><span class="p">)</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
+
+        <span class="n">all_stops</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+        <span class="c1"># plot all stops to a folium map</span>
+        <span class="nb">map</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">control_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">STOP_STYLE</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="s2">&quot;fill&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;fillOpacity&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">CLICKED_STYLE</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+            <span class="s2">&quot;fill&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;fillOpacity&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">callback</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">        function (row) </span><span class="se">{{</span>
+<span class="s2">            var imarker;</span>
+<span class="s2">            marker = L.circleMarker(new L.LatLng(row[0], row[1]),</span>
+<span class="s2">                </span><span class="si">{</span><span class="n">STOP_STYLE</span><span class="si">}</span>
+<span class="s2">            );</span>
+<span class="s2">            // add a popup with stop info</span>
+<span class="s2">            marker.bindPopup(</span>
+<span class="s2">                    &#39;&lt;b&gt;&lt;u&gt;Stop Information&lt;/u&gt;&lt;/b&gt;&lt;br&gt;&#39; +</span>
+<span class="s2">                    &#39;&lt;b&gt;Stop Name:&lt;/b&gt;&#39; + row[2] + &#39;&lt;br&gt;&#39; +</span>
+<span class="s2">                    &#39;&lt;b&gt;Stop ID:&lt;/b&gt;&#39; + row[3] + &#39;&lt;br&gt;&#39; +</span>
+<span class="s2">                    &#39;&lt;b&gt;Stop Code:&lt;/b&gt;&#39; + row[4] + &#39;&lt;br&gt;&#39;</span>
+<span class="s2">            );</span>
+<span class="s2">            // function for changing marker properties on hover</span>
+<span class="s2">            function marker_hover(mark) </span><span class="se">{{</span>
+<span class="s2">                mark.target.setStyle(</span>
+<span class="s2">                    </span><span class="si">{</span><span class="n">CLICKED_STYLE</span><span class="si">}</span>
+<span class="s2">                );</span>
+<span class="s2">            </span><span class="se">}}</span><span class="s2">;</span>
+<span class="s2">            function marker_return(mark) </span><span class="se">{{</span>
+<span class="s2">                mark.target.setStyle(</span>
+<span class="s2">                    </span><span class="si">{</span><span class="n">STOP_STYLE</span><span class="si">}</span>
+<span class="s2">                );</span>
+<span class="s2">            </span><span class="se">}}</span><span class="s2">;</span>
+<span class="s2">            // add listeners</span>
+<span class="s2">            marker.on(&#39;mouseover&#39;, marker_hover);</span>
+<span class="s2">            marker.on(&#39;mouseout&#39;, marker_return);</span>
+<span class="s2">            // return marker</span>
+<span class="s2">            return marker;</span>
+
+<span class="s2">        </span><span class="se">}}</span><span class="s2">;</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="n">FastMarkerCluster</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">all_stops</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">disableClusteringAtZoom</span><span class="o">=</span><span class="mi">15</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span>
+        <span class="c1"># fit map to bounds</span>
+        <span class="n">map_bounds</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">all_stops</span><span class="o">.</span><span class="n">stop_lat</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">all_stops</span><span class="o">.</span><span class="n">stop_lon</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
+            <span class="p">(</span><span class="n">all_stops</span><span class="o">.</span><span class="n">stop_lat</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">all_stops</span><span class="o">.</span><span class="n">stop_lon</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span>
+        <span class="p">)</span>
+        <span class="nb">map</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">map_bounds</span><span class="p">)</span>
+
+        <span class="c1"># save and return</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="nb">map</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_viz</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">map</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+
+    <br><br>
+
+    <div>
+        Checkout the
+        <a href="https://github.com/datasciencecampus/transport-network-performance">
+            codebase on GitHub.
+        </a>
+    </div>
+
+    <br>
+
+    <div>
+        For more ONS Data Science Campus news see the
+        <a href="https://datasciencecampus.ons.gov.uk/">
+            Campus' website
+        </a>
+        and
+        <a href="https://twitter.com/i/flow/login?redirect_after_login=%2FDataSciCampus">
+            follow us on Twitter.
+        </a>
+    </div>
+
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

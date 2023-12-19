@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MultiGtfsInstance &mdash; transport-performance 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=76ab003f" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="transport_performance.gtfs.routes" href="transport_performance.gtfs.routes.html" />
+    <link rel="prev" title="transport_performance.gtfs.multi_validation" href="transport_performance.gtfs.multi_validation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            transport-performance
+              <img src="../../_static/dsc.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../explanation/index.html">Explanation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html"><cite>transport-performance</cite> API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="transport_performance.urban_centres.html">transport_performance.urban_centres</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transport_performance.population.html">transport_performance.population</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="transport_performance.gtfs.html">transport_performance.gtfs</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.cleaners.html">transport_performance.gtfs.cleaners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.gtfs_utils.html">transport_performance.gtfs.gtfs_utils</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="transport_performance.gtfs.multi_validation.html">transport_performance.gtfs.multi_validation</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">MultiGtfsInstance</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.routes.html">transport_performance.gtfs.routes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.validation.html">transport_performance.gtfs.validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transport_performance.gtfs.validators.html">transport_performance.gtfs.validators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="transport_performance.osm.html">transport_performance.osm</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../coverage.html">Unit Test Coverage</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../how_to/index.html">How-to Guides</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">transport-performance</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><cite>transport-performance</cite> API</a></li>
+          <li class="breadcrumb-item"><a href="transport_performance.gtfs.html">transport_performance.gtfs</a></li>
+          <li class="breadcrumb-item"><a href="transport_performance.gtfs.multi_validation.html">transport_performance.gtfs.multi_validation</a></li>
+      <li class="breadcrumb-item active">MultiGtfsInstance</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="multigtfsinstance">
+<h1>MultiGtfsInstance<a class="headerlink" href="#multigtfsinstance" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">transport_performance.gtfs.multi_validation.</span></span><span class="sig-name descname"><span class="pre">MultiGtfsInstance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create a feed instance for multiple GTFS files.</p>
+<p>This allows for multiple GTFS files to be cleaned, validated, summarised,
+filtered and saved at the same time.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>path<span class="classifier">Union[str, list, pathlib.Path]</span></dt><dd><p>A list of paths, a singular paath object, or a glob string.
+See more informtion on glob strings here:
+<a class="reference external" href="https://docs.python.org/3/library/glob.html">https://docs.python.org/3/library/glob.html</a></p>
+</dd>
+</dl>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>paths<span class="classifier">list</span></dt><dd><p>A list of the GTFS paths used to create the MultiGtfsInstance object.</p>
+</dd>
+<dt>instances<span class="classifier">list</span></dt><dd><p>A list of GtfsInstance objects created from self.paths.</p>
+</dd>
+<dt>daily_trip_summary<span class="classifier">pd.DataFrame</span></dt><dd><p>A combined summary of statistics for trips from all GTFS files in the
+MultiGtfsInstance.</p>
+</dd>
+<dt>daily_route_summary<span class="classifier">pd.DataFrame</span></dt><dd><p>A combined summary of statistics for routes from all GTFS files in the
+MultiGtfsInstance.</p>
+</dd>
+</dl>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>save_feeds()</dt><dd><p>Saves each GtfsInstance to a directory.</p>
+</dd>
+<dt>clean_feeds()</dt><dd><p>Cleans all of the GTFS files.</p>
+</dd>
+<dt>is_valid()</dt><dd><p>Validates all of the GTFS files.</p>
+</dd>
+<dt>filter_to_date()</dt><dd><p>Filter all of the GTFS files to a specific date(s).</p>
+</dd>
+<dt>filter_to_bbox()</dt><dd><p>Filter all of the GTFS files to a specific bbox.</p>
+</dd>
+<dt>summarise_trips()</dt><dd><p>Create a summary of all of the routes throughout all GTFS files.</p>
+</dd>
+<dt>summarise_routes()</dt><dd><p>Create a summary of all of the trips throughout all GTFS files.</p>
+</dd>
+<dt>viz_stops()</dt><dd><p>Plot each of the stops from all GtfsInstance’s on a folium Map object.</p>
+</dd>
+<dt>validate_empty_feeds()</dt><dd><p>Check if there are empty feeds within the MultiGtfsInstance.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises<a class="headerlink" href="#raises" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>TypeError</dt><dd><p>‘path’ is not of type string or list.</p>
+</dd>
+<dt>FileNotFoundError</dt><dd><p>One (or more) of the paths passed to ‘path’ does not exist.</p>
+</dd>
+<dt>FileNotFoundError</dt><dd><p>There are no GTFS files found in the passed list of paths, or from the
+glob string.</p>
+</dd>
+<dt>ValueError</dt><dd><p>Path as no file extension.</p>
+</dd>
+<dt>ValueError</dt><dd><p>One (or more) of the paths passed are not of the filetype ‘.zip’.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
+<p>None</p>
+<blockquote>
+<div><p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.clean_feeds" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.clean_feeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clean_feeds</span></code></a></p></td>
+<td><p>Clean each of the feeds in the MultiGtfsInstance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_bbox" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_bbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_to_bbox</span></code></a></p></td>
+<td><p>Filter GTFS to a bbox.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_date" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_to_date</span></code></a></p></td>
+<td><p>Filter each GTFS to date(s).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.is_valid" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.is_valid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_valid</span></code></a></p></td>
+<td><p>Validate each of the feeds in the MultiGtfsInstance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_feeds</span></code></a></p></td>
+<td><p>Save the GtfsInstances to a directory.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarise_routes</span></code></a></p></td>
+<td><p>Summarise the combined GTFS data by route_id.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarise_trips</span></code></a></p></td>
+<td><p>Summarise the combined GTFS data by trip_id.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_empty_feeds</span></code></a></p></td>
+<td><p>Ensure the feeds in MultiGtfsInstance are not empty.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">viz_stops</span></code></a></p></td>
+<td><p>Visualise all stops from all of the GTFS files.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.clean_feeds">
+<span class="sig-name descname"><span class="pre">clean_feeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clean_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.clean_feeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.clean_feeds" title="Link to this definition"></a></dt>
+<dd><p>Clean each of the feeds in the MultiGtfsInstance.</p>
+<section id="id1">
+<h3>Parameters<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>clean_kwargs<span class="classifier">Union[dict, None], optional</span></dt><dd><p>The kwargs to pass to GtfsInstance.clean_feed() for each Gtfs in
+the MultiGtfsInstance, by default None</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Returns<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>None</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_bbox">
+<span class="sig-name descname"><span class="pre">filter_to_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'epsg:4326'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_empty_feeds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.filter_to_bbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_bbox" title="Link to this definition"></a></dt>
+<dd><p>Filter GTFS to a bbox.</p>
+<section id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>bbox<span class="classifier">Union[list, GeoDataFrame]</span></dt><dd><p>The bbox to filter the GTFS to. Leave as none if the GTFS does not
+need to be cropped. Format - [xmin, ymin, xmax, ymax]</p>
+</dd>
+<dt>crs<span class="classifier">Union[str, int], optional</span></dt><dd><p>The CRS of the given bbox, by default “epsg:4326”</p>
+</dd>
+<dt>delete_empty_feeds<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to remove empty feeds, by default False</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h3>Returns<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<p>None</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_date">
+<span class="sig-name descname"><span class="pre">filter_to_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_empty_feeds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.filter_to_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_date" title="Link to this definition"></a></dt>
+<dd><p>Filter each GTFS to date(s).</p>
+<section id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dates<span class="classifier">Union[str, list]</span></dt><dd><p>The date(s) to filter the GTFS to</p>
+</dd>
+<dt>delete_empty_feeds<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to remove empty feeds, by default False</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h3>Returns<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>None</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.is_valid">
+<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">validation_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.is_valid" title="Link to this definition"></a></dt>
+<dd><p>Validate each of the feeds in the MultiGtfsInstance.</p>
+<section id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>validation_kwargs<span class="classifier">Union[dict, None], optional</span></dt><dd><p>The kwargs to pass to GtfsInstance.is_valid() for each Gtfs in
+the MultiGtfsInstance, by default None</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h3>Returns<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>self.validity_df<span class="classifier">pd.DataFrame</span></dt><dd><p>A dataframe containing the validation messages from all of the
+GtfsInstance’s.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds">
+<span class="sig-name descname"><span class="pre">save_feeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.save_feeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds" title="Link to this definition"></a></dt>
+<dd><p>Save the GtfsInstances to a directory.</p>
+<section id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>dir<span class="classifier">Union[pathlib.Path, str]</span></dt><dd><p>The directory to export the GTFS files into.</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h3>Returns<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>None</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes">
+<span class="sig-name descname"><span class="pre">summarise_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes" title="Link to this definition"></a></dt>
+<dd><p>Summarise the combined GTFS data by route_id.</p>
+<section id="id11">
+<h3>Parameters<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>summ_ops<span class="classifier">list, optional</span></dt><dd><p>A list of numpy operators to gather a summary on. Accepts
+operators
+(e.g., np.min) or strings (“min”),
+by default [np.min, np.max, np.mean, np.median].</p>
+</dd>
+<dt>return_summary: bool, optional</dt><dd><p>When set to False, full data for each trip on each date will be
+returned. Defaults to True.</p>
+</dd>
+<dt>to_days<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to aggregate to days, or to just return counts for
+trips/routes for each date. When False, summ_ops becomes useless,
+and should therefore nothing should be passed when calling this
+function (so it remains as the default). Defaults to False.</p>
+</dd>
+</dl>
+</section>
+<section id="id12">
+<h3>Returns<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>A dataframe containing the summary</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips">
+<span class="sig-name descname"><span class="pre">summarise_trips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_trips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="Link to this definition"></a></dt>
+<dd><p>Summarise the combined GTFS data by trip_id.</p>
+<section id="id13">
+<h3>Parameters<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>summ_ops<span class="classifier">list, optional</span></dt><dd><p>A list of numpy operators to gather a summary on. Accepts
+operators
+(e.g., np.min) or strings (“min”)
+,by default [np.min, np.max, np.mean, np.median]</p>
+</dd>
+<dt>return_summary: bool, optional</dt><dd><p>When set to False, full data for each trip on each date will be
+returned. Defaults to True.</p>
+</dd>
+<dt>to_days<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to aggregate to days, or to just return counts for
+trips/routes for each date. When False, summ_ops becomes useless,
+and should therefore nothing should be passed when calling this
+function (so it remains as the default). Defaults to False.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h3>Returns<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>A dataframe containing the summary</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds">
+<span class="sig-name descname"><span class="pre">validate_empty_feeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.validate_empty_feeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds" title="Link to this definition"></a></dt>
+<dd><p>Ensure the feeds in MultiGtfsInstance are not empty.</p>
+<section id="id15">
+<h3>Parameters<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>delete<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to delete the empty feeds, by default False</p>
+</dd>
+</dl>
+</section>
+<section id="id16">
+<h3>Returns<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>list</dt><dd><p>A list of feeds that are empty and their index in GtfsInstance.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops">
+<span class="sig-name descname"><span class="pre">viz_stops</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_viz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtered_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Map</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.viz_stops"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops" title="Link to this definition"></a></dt>
+<dd><p>Visualise all stops from all of the GTFS files.</p>
+<section id="id17">
+<h3>Parameters<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>path<span class="classifier">Union[str, pathlib.Path], optional</span></dt><dd><p>The path to save the folium map to, by default None.</p>
+</dd>
+<dt>return_viz<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to return the folium map object, by default True.</p>
+</dd>
+<dt>filtered_only<span class="classifier">bool, optional</span></dt><dd><p>Whether to filter the stops that are plotted to only stop_id’s that
+are present in the stop_times table.</p>
+</dd>
+</dl>
+</section>
+<section id="id18">
+<h3>Returns<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>folium.Map</dt><dd><p>A folium map with all stops plotted on it.</p>
+</dd>
+<dt>None</dt><dd><p>Returns none if ‘return_viz’ is False.</p>
+</dd>
+</dl>
+</section>
+<section id="id19">
+<h3>Raises<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>ValueError</dt><dd><p>An error is raised if bot parameters are None as the map won’t be
+saved or returned.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="transport_performance.gtfs.multi_validation.html" class="btn btn-neutral float-left" title="transport_performance.gtfs.multi_validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="transport_performance.gtfs.routes.html" class="btn btn-neutral float-right" title="transport_performance.gtfs.routes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, ONS Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+
+    <br><br>
+
+    <div>
+        Checkout the
+        <a href="https://github.com/datasciencecampus/transport-network-performance">
+            codebase on GitHub.
+        </a>
+    </div>
+
+    <br>
+
+    <div>
+        For more ONS Data Science Campus news see the
+        <a href="https://datasciencecampus.ons.gov.uk/">
+            Campus' website
+        </a>
+        and
+        <a href="https://twitter.com/i/flow/login?redirect_after_login=%2FDataSciCampus">
+            follow us on Twitter.
+        </a>
+    </div>
+
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

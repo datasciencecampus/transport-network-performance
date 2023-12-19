@@ -104,6 +104,7 @@
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span> <span class="nn">plotly.graph_objects</span> <span class="kn">import</span> <span class="n">Figure</span> <span class="k">as</span> <span class="n">PlotlyFigure</span>
+<span class="kn">from</span> <span class="nn">geopandas</span> <span class="kn">import</span> <span class="n">GeoDataFrame</span>
 
 <span class="kn">from</span> <span class="nn">transport_performance.gtfs.validators</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">validate_travel_over_multiple_stops</span><span class="p">,</span>
@@ -132,6 +133,9 @@
     <span class="n">TemplateHTML</span><span class="p">,</span>
     <span class="n">_set_up_report_dir</span><span class="p">,</span>
 <span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">transport_performance.gtfs.gtfs_utils</span> <span class="kn">import</span> <span class="n">filter_gtfs</span>
+
 <span class="kn">from</span> <span class="nn">transport_performance.utils.constants</span> <span class="kn">import</span> <span class="n">PKG_PATH</span>
 
 
@@ -303,6 +307,12 @@
 <span class="sd">        Returns the `daily_route_summary` attribute.</span>
 <span class="sd">    html_report()</span>
 <span class="sd">        Generate a HTML report describing the GTFS data.</span>
+<span class="sd">    save()</span>
+<span class="sd">        Save the current GtfsInstance().</span>
+<span class="sd">    filter_to_date()</span>
+<span class="sd">        Filter a GtfsInstance to a specific dates or set of dates.</span>
+<span class="sd">    filter_to_bbox()</span>
+<span class="sd">        Crop a GtfsInstance to a given bbox.</span>
 <span class="sd">    _produce_stops_map()</span>
 <span class="sd">        Produces the stops map for use in `viz_stops()`.</span>
 <span class="sd">    _order_dataframe_by_day()</span>
@@ -1753,6 +1763,88 @@
             <span class="sa">f</span><span class="s2">&quot;View your report here: </span><span class="si">{</span><span class="n">report_dir</span><span class="si">}</span><span class="s2">/gtfs_report&quot;</span>
         <span class="p">)</span>
 
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.save">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the cleaned gtfs file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : Union[str, pathlib.Path]</span>
+<span class="sd">            The path to save the GTFS file to. E.g., outputs/cleaned_gtfs.zip</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">_enforce_file_extension</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.zip&quot;</span><span class="p">,</span> <span class="n">default_ext</span><span class="o">=</span><span class="s2">&quot;.zip&quot;</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;path&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.filter_to_date">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.filter_to_date">[docs]</a>
+    <span class="k">def</span> <span class="nf">filter_to_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dates</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Very shallow wrapper around filter_gtfs().</span>
+
+<span class="sd">        Filters GTFS to date(s)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dates : Union[str, list]</span>
+<span class="sd">            The date(s) to filter the GTFS to</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="s2">&quot;dates&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span>
+        <span class="c1"># convert to normalsed format</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">dates</span> <span class="o">=</span> <span class="p">[</span><span class="n">dates</span><span class="p">]</span>
+        <span class="c1"># filter gtfs</span>
+        <span class="n">filter_gtfs</span><span class="p">(</span><span class="n">gtfs</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_dates</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="GtfsInstance.filter_to_bbox">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.filter_to_bbox">[docs]</a>
+    <span class="k">def</span> <span class="nf">filter_to_bbox</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bbox</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">GeoDataFrame</span><span class="p">],</span>
+        <span class="n">crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;epsg:4326&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Very shallow wrapper around filter_gfts().</span>
+
+<span class="sd">        Filters GTFS to a bbox.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bbox : Union[list, GeoDataFrame]</span>
+<span class="sd">            The bbox to filter the GTFS to. Leave as none if the GTFS does not</span>
+<span class="sd">            need to be cropped. Format - [xmin, ymin, xmax, ymax]</span>
+<span class="sd">        crs : Union[str, int], optional</span>
+<span class="sd">            The CRS of the given bbox, by default &quot;epsg:4326&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># defences</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="s2">&quot;bbox&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">GeoDataFrame</span><span class="p">))</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="c1"># filter gtfs</span>
+        <span class="n">filter_gtfs</span><span class="p">(</span><span class="n">gtfs</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
