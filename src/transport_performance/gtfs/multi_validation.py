@@ -339,7 +339,7 @@ class MultiGtfsInstance:
         which: str = "trips",
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
-        to_days: bool = True,
+        to_days: bool = False,
     ) -> pd.DataFrame:
         """Summarise the MultiGtfsInstance by either trip_id or route_id.
 
@@ -354,12 +354,12 @@ class MultiGtfsInstance:
             by default [np.min, np.max, np.mean, np.median]
         return_summary : bool, optional
             When set to False, full data for each trip on each date will be
-            returned.
+            returned. Defaults to True.
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
-            function (so it remains as the default).
+            function (so it remains as the default). Defaults to False.
 
         Returns
         -------
@@ -436,7 +436,7 @@ class MultiGtfsInstance:
         self,
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
-        to_days: bool = True,
+        to_days: bool = False,
     ) -> pd.DataFrame:
         """Summarise the combined GTFS data by trip_id.
 
@@ -449,12 +449,12 @@ class MultiGtfsInstance:
             ,by default [np.min, np.max, np.mean, np.median]
         return_summary: bool, optional
             When set to False, full data for each trip on each date will be
-            returned.
+            returned. Defaults to True.
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
-            function (so it remains as the default).
+            function (so it remains as the default). Defaults to False.
 
         Returns
         -------
@@ -474,7 +474,7 @@ class MultiGtfsInstance:
         self,
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
-        to_days: bool = True,
+        to_days: bool = False,
     ) -> pd.DataFrame:
         """Summarise the combined GTFS data by route_id.
 
@@ -487,12 +487,12 @@ class MultiGtfsInstance:
             by default [np.min, np.max, np.mean, np.median].
         return_summary: bool, optional
             When set to False, full data for each trip on each date will be
-            returned.
+            returned. Defaults to True.
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
-            function (so it remains as the default).
+            function (so it remains as the default). Defaults to False.
 
         Returns
         -------
