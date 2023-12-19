@@ -320,13 +320,20 @@ class TestMultiGtfsInstance(object):
             summary, pd.DataFrame
         ), "_summarise_core() did not return a df."
         assert (
-            len(summary) == 14
-        ), f"Number of rows in route summary df is {len(summary)}. Expected 14"
-        friday_exp = [["friday", 37, 31.0, 3], ["friday", 4, 4.0, 200]]
-        assert np.array_equal(
-            friday_exp,
-            [list(x) for x in list(summary[summary.day == "friday"].values)],
-        ), "Route summary for Friday not as expected"
+            len(summary) == 590
+        ), f"Number of rows in route summary df is {len(summary)} Expected 590"
+        summ_routes = pd.DataFrame(
+            {
+                "date": ["2023-06-06", "2023-06-06"],
+                "route_type": [3, 200],
+                "route_count": [151, 25],
+            },
+            index=[2, 3],
+        )
+        summ_routes["date"] = pd.to_datetime(summ_routes["date"])
+        pd.testing.assert_frame_equal(
+            summary[summary.date == "2023-06-06"], summ_routes
+        )
         # test summarising trips
         summary = multi_gtfs_fixture._summarise_core(
             which="trips", summ_ops=[np.max, np.mean]
@@ -335,13 +342,20 @@ class TestMultiGtfsInstance(object):
             summary, pd.DataFrame
         ), "_summarise_core() did not return a df."
         assert (
-            len(summary) == 14
-        ), f"Number of rows in trip summary df is {len(summary)}. Expected 14"
-        friday_exp = [["friday", 3, 955, 792.0], ["friday", 200, 22, 22.0]]
-        assert np.array_equal(
-            friday_exp,
-            [list(x) for x in list(summary[summary.day == "friday"].values)],
-        ), "trip summary for Friday not as expected"
+            len(summary) == 590
+        ), f"Number of rows in trip summary df is {len(summary)}. Expected 590"
+        summ_trips = pd.DataFrame(
+            {
+                "date": ["2023-06-10", "2023-06-10"],
+                "route_type": [3, 200],
+                "trip_count": [120, 21],
+            },
+            index=[10, 11],
+        )
+        summ_trips["date"] = pd.to_datetime(summ_trips["date"])
+        pd.testing.assert_frame_equal(
+            summary[summary.date == "2023-06-10"], summ_trips
+        )
         dated = multi_gtfs_fixture._summarise_core(
             which="routes", return_summary=False
         )
