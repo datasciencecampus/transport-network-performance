@@ -399,7 +399,9 @@ class MultiGtfsInstance:
         if not return_summary:
             return daily_schedule
         if not to_days:
-            dated = daily_schedule[["date", "route_type", group_col]]
+            dated = daily_schedule[
+                ["date", "route_type", group_col]
+            ].drop_duplicates()
             dated = dated.groupby(["date", "route_type"]).count().reset_index()
             dated = dated.rename(columns={group_col: count_col})
             dated = dated.sort_values("date")

@@ -326,7 +326,7 @@ class TestMultiGtfsInstance(object):
             {
                 "date": ["2023-06-06", "2023-06-06"],
                 "route_type": [3, 200],
-                "route_count": [151, 25],
+                "route_count": [12, 4],
             },
             index=[2, 3],
         )
@@ -368,8 +368,7 @@ class TestMultiGtfsInstance(object):
         )
         assert len(dated_sum) == 590, "Dated route counts not as expected"
         assert (
-            dated_sum[dated_sum.date == "2024-04-06"].route_count.iloc[0]
-            == 159
+            dated_sum[dated_sum.date == "2024-04-06"].route_count.iloc[0] == 9
         ), "Unexpecteed number of routes on 2024-04-06"
 
     def test_summarise_trips(self, multi_gtfs_fixture):
