@@ -5,6 +5,7 @@ import pathlib
 import glob
 import os
 import warnings
+from copy import deepcopy
 
 from geopandas import GeoDataFrame
 import numpy as np
@@ -556,6 +557,13 @@ class MultiGtfsInstance:
         # combine stop tables
         parts = []
         for inst in self.instances:
+            # copy the gtfs instance in case data is manipulated
+            inst = deepcopy(inst)
+            # create a synthesized stop_code column if it does not exist
+            if "stop_code" not in inst.feed.stops.columns:
+                inst.feed.stops["stop_code"] = [
+                    f"ID{sid}" for sid in inst.feed.stops["stop_id"]
+                ]
             subset = inst.feed.stops[
                 ["stop_lat", "stop_lon", "stop_name", "stop_id", "stop_code"]
             ].copy()
@@ -564,6 +572,8 @@ class MultiGtfsInstance:
                 subset = subset[subset.stop_id.isin(valid_ids)]
             subset["gtfs_path"] = os.path.basename(inst.gtfs_path)
             parts.append(subset)
+            # clean up copied instance
+            del inst
 
         all_stops = pd.concat(parts)
 
