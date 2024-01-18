@@ -144,6 +144,9 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># defence</span>
+    <span class="n">_type_defence</span><span class="p">(</span><span class="n">pbf_pth</span><span class="p">,</span> <span class="s2">&quot;pbf_pth&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span>
+    <span class="c1"># if pbf_pth is str, convert to Path in order to access as_posix method</span>
+    <span class="n">pbf_pth</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">pbf_pth</span><span class="p">)</span>
     <span class="n">_is_expected_filetype</span><span class="p">(</span><span class="n">pbf_pth</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;pbf_pth&quot;</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.pbf&quot;</span><span class="p">)</span>
     <span class="n">_enforce_file_extension</span><span class="p">(</span><span class="n">out_pth</span><span class="p">,</span> <span class="s2">&quot;.pbf&quot;</span><span class="p">,</span> <span class="s2">&quot;.pbf&quot;</span><span class="p">,</span> <span class="s2">&quot;out_pth&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">nm</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="p">{</span>
