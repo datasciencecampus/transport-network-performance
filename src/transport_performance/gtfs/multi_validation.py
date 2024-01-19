@@ -112,19 +112,38 @@ class MultiGtfsInstance:
         # instantiate the GtfsInstance's
         self.instances = [GtfsInstance(fpath) for fpath in path]
 
-    def save_feeds(self, dir: Union[pathlib.Path, str]) -> None:
+    def save_feeds(
+        self,
+        dir: Union[pathlib.Path, str],
+        suffix: str = None,
+        file_names: list = None,
+        overwrite: bool = False,
+    ) -> None:
         """Save the GtfsInstances to a directory.
 
         Parameters
         ----------
         dir : Union[pathlib.Path, str]
             The directory to export the GTFS files into.
+        suffix : str
+            The suffix to apply to save names. The 'file_name' param takes
+            priority here.
+        file_names : list
+            A list of save names for the altered GTFS. The list must be the
+            same length as the number of GTFS instances. Takes priority over
+            the 'suffix' param.
+        overwrite : bool
+            Whether or not to overwrite the pre-existing saves with matching
+            paths.
 
         Returns
         -------
         None
 
         """
+        _type_defence(suffix, "suffix", (str, type(None)))
+        _type_defence(file_names, "file_names", (list, type(None)))
+        _type_defence(overwrite, "overwrite", bool)
         defence_path = os.path.join(dir, "test.test")
         _check_parent_dir_exists(defence_path, "dir", create=True)
         save_paths = [
