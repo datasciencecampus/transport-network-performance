@@ -1666,6 +1666,7 @@ class GtfsInstance:
         None
 
         """
+        _type_defence(overwrite, "overwrite", bool)
         _check_parent_dir_exists(path, "path", True)
         path = _enforce_file_extension(
             path, exp_ext=".zip", default_ext=".zip", param_nm="path"
