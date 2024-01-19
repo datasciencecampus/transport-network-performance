@@ -4,6 +4,8 @@ import os
 import glob
 import pathlib
 import shutil
+import subprocess
+import zipfile
 
 import numpy as np
 import pandas as pd
@@ -79,6 +81,81 @@ class TestMultiGtfsInstance(object):
         assert (
             pathlib.Path(m_gtfs.paths[0]) == test_path
         ), "Test path not as expected in MGTFS"
+
+    def test_init_missing_calendar(self, multi_gtfs_paths, tmp_path):
+        """Test init when calendar is missing.
+
+        Fixtures do not cover the scenario of reliance on calendar_dates.
+        Creates a tmp gtfs with a feed that has no calendar and a minimal
+        calendar_dates.txt
+        """
+        for pth in multi_gtfs_paths:
+            subprocess.run(["cp", pth, tmp_path])
+        chest_pth = os.path.join(tmp_path, "chester-20230816-small_gtfs.zip")
+        tmp_chester = os.path.join(tmp_path, "chester-20230816-small_gtfs")
+        # unzip chester
+        archive = zipfile.ZipFile(chest_pth)
+        for file in archive.namelist():
+            archive.extract(file, tmp_chester)
+        # get rid of original as we need to restore it with updated feed
+        subprocess.run(["rm", chest_pth])
+        # make a new calendar_dates
+        new_dates = pd.DataFrame(
+            {
+                "service_id": "740",
+                "date": [
+                    "20230731",
+                    "20230801",
+                    "20230802",
+                    "20230803",
+                    "20230804",
+                ],
+                "exception_type": "1",
+            },
+            index=list(range(0, 5)),
+        )
+        # remove the calendar and replace with calendar_dates
+        subprocess.run(["rm", os.path.join(tmp_chester, "calendar.txt")])
+        new_dates.to_csv(
+            os.path.join(tmp_chester, "calendar_dates.txt"), index=False
+        )
+        # recreate the zip archive
+        with zipfile.ZipFile(chest_pth, "w", zipfile.ZIP_DEFLATED) as zip_ref:
+            for folder_name, subfolders, filenames in os.walk(tmp_chester):
+                for filename in filenames:
+                    zip_ref.write(
+                        os.path.join(folder_name, filename), arcname=filename
+                    )
+        zip_ref.close()
+        subprocess.run(["rm", "-r", tmp_chester])
+        # we can now go ahead with multigtfs instantiation from the tmp
+        m_gtfs = MultiGtfsInstance(tmp_path)
+        which_chester = ["chester" in i for i in m_gtfs.paths]
+        which_chester = [i for i, x in enumerate(which_chester) if x][0]
+        updated_calendar = m_gtfs.instances[which_chester].feed.calendar
+        assert updated_calendar is not None, "Calendar table was not found."
+        n_cal = len(updated_calendar)
+        assert (
+            n_cal == 1
+        ), f"Expected a calendar with one row, instead found {n_cal}"
+        pd.testing.assert_frame_equal(
+            updated_calendar,
+            pd.DataFrame(
+                {
+                    "service_id": ["740"],
+                    "monday": [1],
+                    "tuesday": [1],
+                    "wednesday": [1],
+                    "thursday": [1],
+                    "friday": [1],
+                    "saturday": [0],
+                    "sunday": [0],
+                    "start_date": ["20230731"],
+                    "end_date": ["20230804"],
+                },
+                index=[0],
+            ),
+        )
 
     def test_save_feeds(self, multi_gtfs_paths, tmp_path):
         """Tests for .save_feeds()."""
