@@ -117,7 +117,7 @@ class MultiGtfsInstance:
             if inst.feed.calendar is None:
                 if inst.feed.calendar_dates is None:
                     raise FileNotFoundError(
-                        "Both calendar and calendar_dates is empty for feed "
+                        "Both calendar and calendar_dates are empty for feed "
                         + self.paths[i]
                     )
                 else:
