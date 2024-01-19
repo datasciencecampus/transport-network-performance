@@ -1075,8 +1075,24 @@ class TestGtfsInstance(object):
                 gtfs_fixture.save(complete_path)
         else:
             with does_not_raise():
-                gtfs_fixture.save(complete_path)
+                gtfs_fixture.save(complete_path, overwrite=True)
         assert os.path.exists(expected_path), "GTFS not saved correctly"
+
+    def test_save_overwrite(self, tmp_path, gtfs_fixture):
+        """Test the .save()'s method of GtfsInstance overwrite feature."""
+        # original save
+        save_pth = f"{tmp_path}/test_save.zip"
+        gtfs_fixture.save(save_pth, overwrite=True)
+        assert os.path.exists(save_pth), "GTFS not saved at correct path"
+        # test saving without overwrite enabled
+        with pytest.raises(
+            FileExistsError, match="File already exists at path.*"
+        ):
+            gtfs_fixture.save(f"{tmp_path}/test_save.zip", overwrite=False)
+        # test saving with overwrite enabled raises no errors
+        with does_not_raise():
+            gtfs_fixture.save(f"{tmp_path}/test_save.zip", overwrite=True)
+        assert os.path.exists(save_pth), "GTFS save not found"
 
     @pytest.mark.parametrize(
         "date, expected_len",
