@@ -60,8 +60,8 @@ class TestCreateCalendarFromDates(object):
         mock_dates = pd.DataFrame(
             {
                 "service_id": ["00A", "00B", "00B"],
-                "date": ["19840426", "19840426", "20240426"],
-                "exception_type": [1, 1, 2],
+                "date": ["19840426", "20240426", "19840426"],
+                "exception_type": [1, 2, 1],
             }
         )
         out_calendar = create_calendar_from_dates(mock_dates)
@@ -70,6 +70,13 @@ class TestCreateCalendarFromDates(object):
         ), f"Expected dataframe, found {type(out_calendar)}"
         n_rows = len(out_calendar)
         assert n_rows == 2, f"Expected df length 2, found {n_rows}"
+        # check the exception type 2 value didn't impact the table
+        assert (
+            out_calendar.iloc[1, -1] != "20240426"
+        ), "Did not expect date 20240426 to appear in out calendar."
+        assert (
+            out_calendar.loc[1, "friday"] == 0
+        ), "Did not expect calendar to show service 00B to runs on Friday."
         # check values are as expected. Dates are Thu & Fri respectively.
         pd.testing.assert_frame_equal(
             out_calendar,
