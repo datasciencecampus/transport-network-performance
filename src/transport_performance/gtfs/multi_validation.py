@@ -115,7 +115,7 @@ class MultiGtfsInstance:
     def save_feeds(
         self,
         dir: Union[pathlib.Path, str],
-        suffix: str = None,
+        suffix: str = "_new",
         file_names: list = None,
         overwrite: bool = False,
     ) -> None:
@@ -131,7 +131,8 @@ class MultiGtfsInstance:
         file_names : list
             A list of save names for the altered GTFS. The list must be the
             same length as the number of GTFS instances. Takes priority over
-            the 'suffix' param.
+            the 'suffix' param. Names will be used in order of the instances
+            (access using self.instances()).
         overwrite : bool
             Whether or not to overwrite the pre-existing saves with matching
             paths.
@@ -146,16 +147,22 @@ class MultiGtfsInstance:
         _type_defence(overwrite, "overwrite", bool)
         defence_path = os.path.join(dir, "test.test")
         _check_parent_dir_exists(defence_path, "dir", create=True)
-        save_paths = [
-            os.path.join(
-                dir, os.path.splitext(os.path.basename(p))[0] + "_new.zip"
-            )
-            for p in self.paths
-        ]
+        # format save locations
+        if not file_names:
+            save_paths = [
+                os.path.join(
+                    dir,
+                    os.path.splitext(os.path.basename(p))[0] + f"{suffix}.zip",
+                )
+                for p in self.paths
+            ]
+        else:
+            save_paths = [os.path.join(dir, p) for p in file_names]
+        # save gtfs
         progress = tqdm(zip(save_paths, self.instances), total=len(self.paths))
         for path, inst in progress:
             progress.set_description(f"Saving at {path}")
-            inst.save(path)
+            inst.save(path, overwrite=overwrite)
         return None
 
     def clean_feeds(self, clean_kwargs: Union[dict, None] = None) -> None:

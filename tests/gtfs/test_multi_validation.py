@@ -98,6 +98,19 @@ class TestMultiGtfsInstance(object):
         assert np.array_equal(
             np.sort(expected_paths), np.sort(found_paths)
         ), "GtfsInstances not saved as expected"
+        # test saves with filenames
+        file_name_dir = os.path.join(tmp_path, "filenames")
+        gtfs.save_feeds(
+            dir=file_name_dir, file_names=["test1.zip", "test2.zip"]
+        )
+        assert len(os.listdir(file_name_dir)) == 2, "Not enough files saved"
+        found_paths = [
+            os.path.basename(fpath)
+            for fpath in glob.glob(file_name_dir + "/*.zip")
+        ]
+        assert np.array_equal(
+            found_paths, ["test1.zip", "test2.zip"]
+        ), "File names not saved correctly"
 
     def test_clean_feeds_defences(self, multi_gtfs_fixture):
         """Defensive tests for .clean_feeds()."""
