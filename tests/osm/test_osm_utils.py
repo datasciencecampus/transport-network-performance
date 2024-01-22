@@ -3,6 +3,9 @@ import pytest
 import os
 from unittest.mock import patch, call
 import re
+import glob
+
+from pyprojroot import here
 
 from transport_performance.osm.osm_utils import filter_osm
 
@@ -118,3 +121,21 @@ class TestFilterOsm(object):
             .startswith("call('Filter completed. Written to ")
         )
         assert out is None
+
+    @pytest.mark.runinteg
+    @patch("builtins.print")
+    def test_filter_osm_takes_globstring(self, mock_print, tmpdir):
+        """Assert filter operation executes when user passes a globstring."""
+        found_pbf = sorted(glob.glob(str(here("tests/data/*.pbf"))))[0]
+        target_pth = os.path.join(tmpdir, "test_globstring_input.osm.pbf")
+        filter_osm(
+            pbf_pth=found_pbf, out_pth=target_pth, install_osmosis=False
+        )
+        # check the file exists
+        assert os.path.exists(
+            target_pth
+        ), f"Filtered pbf file not found: {target_pth}"
+        func_out = mock_print.mock_calls
+        assert (
+            func_out[-1].__str__().endswith("test_globstring_input.osm.pbf')")
+        )
