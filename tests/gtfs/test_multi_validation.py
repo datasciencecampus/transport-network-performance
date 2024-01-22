@@ -472,6 +472,14 @@ class TestMultiGtfsInstance(object):
         assert isinstance(returned, folium.Map)
         files = glob.glob(f"{tmp_path}/*.html")
         assert len(files) == 2, "More files saved than expected"
+        # returning a folium map without stop_code present
+        multi_gtfs_fixture.instances[0].feed.stops.drop(
+            "stop_code", axis=1, inplace=True
+        )
+        no_stop_code_map = multi_gtfs_fixture.viz_stops()
+        assert isinstance(
+            no_stop_code_map, folium.Map
+        ), "Map not plotted without stop_code present"
 
     def test_get_dates_defence(self, multi_gtfs_fixture):
         """Defensive tests for .get_dates()."""
