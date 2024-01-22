@@ -486,7 +486,7 @@ class TestMultiGtfsInstance(object):
         # return_range=True
         assert (
             len(multi_gtfs_fixture.get_dates()) == 2
-        ), "Too many dates returned"
+        ), "Unexpected number of dates returned"
         assert (
             multi_gtfs_fixture.get_dates()[0] == "20230605"
         ), "min not as expected"
@@ -505,7 +505,9 @@ class TestMultiGtfsInstance(object):
         assert (
             multi_gtfs_altered_fixture.get_dates()[0] == "20220517"
         ), "min not as expected"
-        assert multi_gtfs_altered_fixture.get_dates()[1] == "20240613"
+        assert (
+            multi_gtfs_altered_fixture.get_dates()[1] == "20240613"
+        ), "max not as expected"
         # return_range=False
         assert (
             len(multi_gtfs_altered_fixture.get_dates(return_range=False)) == 6
