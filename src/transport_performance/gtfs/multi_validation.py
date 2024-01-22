@@ -640,7 +640,8 @@ class MultiGtfsInstance:
         Parameters
         ----------
         return_range : bool, optional
-           Whether to return the raw dates, or the min/max, by default True
+           Whether to return the raw dates, or the min/max range, by default
+           True
 
         Returns
         -------
