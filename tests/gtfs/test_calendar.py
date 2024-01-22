@@ -1,4 +1,5 @@
 """Test calendar utilities."""
+import calendar
 import pytest
 
 import pandas as pd
@@ -36,23 +37,28 @@ class TestCreateCalendarFromDates(object):
         n_rows = len(out_calendar)
         assert n_rows == 1, f"Expected df length 1, found {n_rows}"
         # check values are as expected. Dates are Thu & Fri respectively.
+        exp_calendar = pd.DataFrame(
+            {
+                "service_id": ["00A"],
+                "monday": [0],
+                "tuesday": [0],
+                "wednesday": [0],
+                "thursday": [1],
+                "friday": [1],
+                "saturday": [0],
+                "sunday": [0],
+                "start_date": ["19840426"],
+                "end_date": ["20240426"],
+            },
+            index=[0],
+        )
+        weekdays = [day.lower() for day in calendar.day_name]
+        for nm in exp_calendar.columns:
+            if nm in weekdays:
+                exp_calendar[nm] = exp_calendar[nm].astype("int8")
         pd.testing.assert_frame_equal(
             out_calendar,
-            pd.DataFrame(
-                {
-                    "service_id": ["00A"],
-                    "monday": [0],
-                    "tuesday": [0],
-                    "wednesday": [0],
-                    "thursday": [1],
-                    "friday": [1],
-                    "saturday": [0],
-                    "sunday": [0],
-                    "start_date": ["19840426"],
-                    "end_date": ["20240426"],
-                },
-                index=[0],
-            ),
+            exp_calendar,
         )
 
     def test_create_calendar_passes_with_exception_type_2(self):
@@ -65,6 +71,25 @@ class TestCreateCalendarFromDates(object):
             }
         )
         out_calendar = create_calendar_from_dates(mock_dates)
+        exp_calendar = pd.DataFrame(
+            {
+                "service_id": ["00A", "00B"],
+                "monday": [0, 0],
+                "tuesday": [0, 0],
+                "wednesday": [0, 0],
+                "thursday": [1, 1],
+                "friday": [0, 0],
+                "saturday": [0, 0],
+                "sunday": [0, 0],
+                "start_date": ["19840426", "19840426"],
+                "end_date": ["19840426", "19840426"],
+            },
+            index=[0, 1],
+        )
+        weekdays = [day.lower() for day in calendar.day_name]
+        for nm in exp_calendar.columns:
+            if nm in weekdays:
+                exp_calendar[nm] = exp_calendar[nm].astype("int8")
         assert isinstance(
             out_calendar, pd.DataFrame
         ), f"Expected dataframe, found {type(out_calendar)}"
@@ -80,19 +105,5 @@ class TestCreateCalendarFromDates(object):
         # check values are as expected. Dates are Thu & Fri respectively.
         pd.testing.assert_frame_equal(
             out_calendar,
-            pd.DataFrame(
-                {
-                    "service_id": ["00A", "00B"],
-                    "monday": [0, 0],
-                    "tuesday": [0, 0],
-                    "wednesday": [0, 0],
-                    "thursday": [1, 1],
-                    "friday": [0, 0],
-                    "saturday": [0, 0],
-                    "sunday": [0, 0],
-                    "start_date": ["19840426", "19840426"],
-                    "end_date": ["19840426", "19840426"],
-                },
-                index=[0, 1],
-            ),
+            exp_calendar,
         )
