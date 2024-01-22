@@ -22,6 +22,7 @@ MultiGtfsInstance
                     ~MultiGtfsInstance.clean_feeds
                     ~MultiGtfsInstance.filter_to_bbox
                     ~MultiGtfsInstance.filter_to_date
+                    ~MultiGtfsInstance.get_dates
                     ~MultiGtfsInstance.is_valid
                     ~MultiGtfsInstance.save_feeds
                     ~MultiGtfsInstance.summarise_routes
