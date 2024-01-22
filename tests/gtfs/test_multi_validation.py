@@ -109,7 +109,7 @@ class TestMultiGtfsInstance(object):
             for fpath in glob.glob(file_name_dir + "/*.zip")
         ]
         assert np.array_equal(
-            found_paths, ["test1.zip", "test2.zip"]
+            np.sort(found_paths), np.sort(["test1.zip", "test2.zip"])
         ), "File names not saved correctly"
 
     def test_clean_feeds_defences(self, multi_gtfs_fixture):
