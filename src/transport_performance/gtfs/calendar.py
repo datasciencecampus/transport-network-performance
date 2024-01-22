@@ -48,7 +48,7 @@ def create_calendar_from_dates(calendar_dates: pd.DataFrame) -> pd.DataFrame:
     new_calendar = pd.DataFrame()
     new_calendar["service_id"] = calendar_dates["service_id"].unique()
     day_df = pd.DataFrame(
-        {i: np.zeros(len(new_calendar), dtype=int) for i in days},
+        {i: np.zeros(len(new_calendar), dtype="int8") for i in days},
         index=list(range(0, len(new_calendar))),
     )
     new_calendar = pd.concat([new_calendar, day_df], axis=1)
@@ -59,6 +59,7 @@ def create_calendar_from_dates(calendar_dates: pd.DataFrame) -> pd.DataFrame:
     # update this empty calendar with values from calendar_dates
     for i, r in calendar_dates.iterrows():
         # only update if calendar_dates exception_type is 1 (adding a service)
+        # Type 2 removes a service and will override the calendar
         if r["exception_type"] == 1:
             date_affected = r["date"]
             day_affected = pd.to_datetime(date_affected).weekday()
@@ -79,8 +80,5 @@ def create_calendar_from_dates(calendar_dates: pd.DataFrame) -> pd.DataFrame:
             else:
                 e_date = max(e_date, date_affected)
                 new_calendar.loc[r["service_id"], "end_date"] = e_date
-        else:
-            # Type 2 removes a service and will override the calendar
-            pass
 
     return new_calendar.reset_index(drop=True)
