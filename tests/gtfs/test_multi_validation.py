@@ -1,4 +1,5 @@
 """Tests for multi_validation.py."""
+import calendar
 import pytest
 import os
 import glob
@@ -10,6 +11,7 @@ import zipfile
 import numpy as np
 import pandas as pd
 import folium
+from pyprojroot import here
 
 from transport_performance.gtfs.multi_validation import (
     MultiGtfsInstance,
@@ -82,6 +84,50 @@ class TestMultiGtfsInstance(object):
             pathlib.Path(m_gtfs.paths[0]) == test_path
         ), "Test path not as expected in MGTFS"
 
+    def test_init_missing_calendar_and_dates(self, tmp_path):
+        """Defensive test on init if calendar and calendar_dates is absent."""
+        # test that error is raised when calendar and calendar dates is missing
+        chest_pth = os.path.join(tmp_path, "chester-20230816-small_gtfs.zip")
+        subprocess.run(
+            [
+                "cp",
+                here("tests/data/chester-20230816-small_gtfs.zip"),
+                chest_pth,
+            ]
+        )
+        tmp_chester = os.path.join(tmp_path, "chester-20230816-small_gtfs")
+        subprocess.run(["mkdir", tmp_chester])
+        # unzip chester
+        archive = zipfile.ZipFile(chest_pth)
+        for file in archive.namelist():
+            archive.extract(file, tmp_chester)
+        for f in [
+            "chester-20230816-small_gtfs.zip",
+            "calendar.txt",
+            "calendar_dates.txt",
+        ]:
+            subprocess.run(["rm", os.path.join(tmp_chester, f)])
+        # get rid of original as we need to restore it with updated feed
+        subprocess.run(["rm", chest_pth])
+        # recreate the zip archive
+        broken_feed = os.path.join(tmp_path, "broken_feed.zip")
+        with zipfile.ZipFile(
+            broken_feed, "w", zipfile.ZIP_DEFLATED
+        ) as zip_ref:
+            for folder_name, subfolders, filenames in os.walk(tmp_chester):
+                for filename in filenames:
+                    zip_ref.write(
+                        os.path.join(tmp_chester, filename), arcname=filename
+                    )
+        zip_ref.close()
+        # a feed exists that does not contain any calendar info. mgtfs should
+        # raise.
+        with pytest.raises(
+            FileNotFoundError,
+            match="Both calendar and calendar_dates are empty for feed",
+        ):
+            MultiGtfsInstance(broken_feed)
+
     def test_init_missing_calendar(self, multi_gtfs_paths, tmp_path):
         """Test init when calendar is missing.
 
@@ -138,23 +184,29 @@ class TestMultiGtfsInstance(object):
         assert (
             n_cal == 1
         ), f"Expected a calendar with one row, instead found {n_cal}"
+        exp_calendar = pd.DataFrame(
+            {
+                "service_id": ["740"],
+                "monday": [1],
+                "tuesday": [1],
+                "wednesday": [1],
+                "thursday": [1],
+                "friday": [1],
+                "saturday": [0],
+                "sunday": [0],
+                "start_date": ["20230731"],
+                "end_date": ["20230804"],
+            },
+            index=[0],
+        )
+        # ensure all ints are int8 as variable behaviour on different os
+        weekdays = [day.lower() for day in calendar.day_name]
+        for cnm in exp_calendar.columns:
+            if cnm in weekdays:
+                exp_calendar[cnm] = exp_calendar[cnm].astype("int8")
         pd.testing.assert_frame_equal(
             updated_calendar,
-            pd.DataFrame(
-                {
-                    "service_id": ["740"],
-                    "monday": [1],
-                    "tuesday": [1],
-                    "wednesday": [1],
-                    "thursday": [1],
-                    "friday": [1],
-                    "saturday": [0],
-                    "sunday": [0],
-                    "start_date": ["20230731"],
-                    "end_date": ["20230804"],
-                },
-                index=[0],
-            ),
+            exp_calendar,
         )
 
     def test_save_feeds(self, multi_gtfs_paths, tmp_path):
