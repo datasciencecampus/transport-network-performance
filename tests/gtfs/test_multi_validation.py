@@ -120,13 +120,14 @@ class TestMultiGtfsInstance(object):
                         os.path.join(tmp_chester, filename), arcname=filename
                     )
         zip_ref.close()
+        gtfs = MultiGtfsInstance(broken_feed)
         # a feed exists that does not contain any calendar info. mgtfs should
-        # raise.
+        # raise when checking calendars
         with pytest.raises(
             FileNotFoundError,
             match="Both calendar and calendar_dates are empty for feed",
         ):
-            MultiGtfsInstance(broken_feed)
+            gtfs.ensure_populated_calendars()
 
     def test_init_missing_calendar(self, multi_gtfs_paths, tmp_path):
         """Test init when calendar is missing.
@@ -176,6 +177,7 @@ class TestMultiGtfsInstance(object):
         subprocess.run(["rm", "-r", tmp_chester])
         # we can now go ahead with multigtfs instantiation from the tmp
         m_gtfs = MultiGtfsInstance(tmp_path)
+        m_gtfs.ensure_populated_calendars()
         which_chester = ["chester" in i for i in m_gtfs.paths]
         which_chester = [i for i, x in enumerate(which_chester) if x][0]
         updated_calendar = m_gtfs.instances[which_chester].feed.calendar
