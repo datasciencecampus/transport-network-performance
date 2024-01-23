@@ -19,7 +19,6 @@ from transport_performance.utils.defence import (
     _check_parent_dir_exists,
     _enforce_file_extension,
 )
-from transport_performance.gtfs.calendar import create_calendar_from_dates
 
 
 class MultiGtfsInstance:
@@ -68,6 +67,9 @@ class MultiGtfsInstance:
         Plot each of the stops from all GtfsInstance's on a folium Map object.
     validate_empty_feeds()
         Check if there are empty feeds within the MultiGtfsInstance.
+    ensure_populated_calendars()
+        Check all feeds have populated calendars. If calendar is absent,
+        creates a calendar table from calendar_times.
 
     Raises
     ------
@@ -112,25 +114,19 @@ class MultiGtfsInstance:
         self.paths = path
         # instantiate the GtfsInstance's
         self.instances = [GtfsInstance(fpath) for fpath in path]
-        # ensure calendar is populated
-        for i, inst in enumerate(self.instances):
-            if inst.feed.calendar is None:
-                if inst.feed.calendar_dates is None:
-                    raise FileNotFoundError(
-                        "Both calendar and calendar_dates are empty for feed "
-                        + self.paths[i]
-                    )
-                else:
-                    warnings.warn(
-                        f"No calendar found for {self.paths[i]}. Creating from"
-                        " calendar dates"
-                    )
-                    # store calendar_dates
-                    self.instances[
-                        i
-                    ].feed.calendar = create_calendar_from_dates(
-                        calendar_dates=inst.feed.calendar_dates
-                    )
+
+    def ensure_populated_calendars(self) -> None:
+        """Check if calendar is absent and creates from calendar_dates.
+
+        Shallow wrapper around GtfsInstance.ensure_populated_calendar().
+
+        Returns
+        -------
+        None
+
+        """
+        for inst in self.instances:
+            inst.ensure_populated_calendar()
 
     def save_feeds(self, dir: Union[pathlib.Path, str]) -> None:
         """Save the GtfsInstances to a directory.
