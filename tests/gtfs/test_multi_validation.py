@@ -7,6 +7,7 @@ import pathlib
 import shutil
 import subprocess
 import zipfile
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -34,6 +35,23 @@ def multi_gtfs_fixture(multi_gtfs_paths):
     """Test fixture for MultiGtfsInstance."""
     m_gtfs = MultiGtfsInstance(multi_gtfs_paths)
     return m_gtfs
+
+
+@pytest.fixture(scope="function")
+def multi_gtfs_altered_fixture(multi_gtfs_fixture):
+    """Test fixture with calendar_dates.txt in GTFS instance 0."""
+    # deepcopy otherwise it overwrites multi_gtfs_fixture
+    mgtfs = deepcopy(multi_gtfs_fixture)
+    dummy_cdates = pd.DataFrame(
+        {
+            "service_id": ["000001", "000001", "000002", "000003"],
+            "date": ["20231211", "20240601", "20240613", "20220517"],
+            "exception_type": [1, 1, 1, 1],
+        }
+    )
+    mgtfs.instances[0].feed.calendar_dates = dummy_cdates
+    mgtfs.instances[0].feed.calendar = None
+    return mgtfs
 
 
 class TestMultiGtfsInstance(object):
@@ -585,3 +603,52 @@ class TestMultiGtfsInstance(object):
         assert isinstance(returned, folium.Map)
         files = glob.glob(f"{tmp_path}/*.html")
         assert len(files) == 2, "More files saved than expected"
+        # returning a folium map without stop_code present
+        multi_gtfs_fixture.instances[0].feed.stops.drop(
+            "stop_code", axis=1, inplace=True
+        )
+        no_stop_code_map = multi_gtfs_fixture.viz_stops()
+        assert isinstance(
+            no_stop_code_map, folium.Map
+        ), "Map not plotted without stop_code present"
+
+    def test_get_dates_defence(self, multi_gtfs_fixture):
+        """Defensive tests for .get_dates()."""
+        with pytest.raises(
+            TypeError, match=".*return_range.*expected.*bool.*Got.*str.*"
+        ):
+            multi_gtfs_fixture.get_dates(return_range="test")
+
+    def test_get_dates(self, multi_gtfs_fixture, multi_gtfs_altered_fixture):
+        """General tests for .get_dates()."""
+        # multi gtfs with only calendar.txt
+        # return_range=True
+        assert (
+            len(multi_gtfs_fixture.get_dates()) == 2
+        ), "Unexpected number of dates returned"
+        assert (
+            multi_gtfs_fixture.get_dates()[0] == "20230605"
+        ), "min not as expected"
+        assert (
+            multi_gtfs_fixture.get_dates()[1] == "20240426"
+        ), "max not as expected"
+        # return_range=False
+        assert (
+            len(multi_gtfs_fixture.get_dates(return_range=False)) == 5
+        ), "Unexpected number of dates"
+        # multi_gtfs with both calendar.txt and calendar_dates.txt
+        # return_range=True
+        assert (
+            len(multi_gtfs_altered_fixture.get_dates()) == 2
+        ), "Unexpected number of dates"
+        assert (
+            multi_gtfs_altered_fixture.get_dates()[0] == "20220517"
+        ), "min not as expected"
+        assert (
+            multi_gtfs_altered_fixture.get_dates()[1] == "20240613"
+        ), "max not as expected"
+        # return_range=False
+        assert (
+            len(multi_gtfs_altered_fixture.get_dates(return_range=False)) == 6
+        ), "Unexpected number of dates"
+        pass
