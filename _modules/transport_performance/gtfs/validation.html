@@ -1808,23 +1808,37 @@
 
 <div class="viewcode-block" id="GtfsInstance.save">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.validation.GtfsInstance.html#transport_performance.gtfs.validation.GtfsInstance.save">[docs]</a>
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">],</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the cleaned gtfs file.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        path : Union[str, pathlib.Path]</span>
 <span class="sd">            The path to save the GTFS file to. E.g., outputs/cleaned_gtfs.zip</span>
+<span class="sd">        overwrite : bool</span>
+<span class="sd">            Whether or not to overwrite any pre-existing files at the given</span>
+<span class="sd">            path</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        None</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">overwrite</span><span class="p">,</span> <span class="s2">&quot;overwrite&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="n">_check_parent_dir_exists</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">_enforce_file_extension</span><span class="p">(</span>
             <span class="n">path</span><span class="p">,</span> <span class="n">exp_ext</span><span class="o">=</span><span class="s2">&quot;.zip&quot;</span><span class="p">,</span> <span class="n">default_ext</span><span class="o">=</span><span class="s2">&quot;.zip&quot;</span><span class="p">,</span> <span class="n">param_nm</span><span class="o">=</span><span class="s2">&quot;path&quot;</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;File already exists at path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">. If you wish to &quot;</span>
+                    <span class="s2">&quot;overwrite this file, please pass overwrite=True&quot;</span>
+                <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
