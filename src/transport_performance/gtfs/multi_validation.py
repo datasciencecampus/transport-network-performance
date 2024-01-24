@@ -68,6 +68,9 @@ class MultiGtfsInstance:
         Plot each of the stops from all GtfsInstance's on a folium Map object.
     validate_empty_feeds()
         Check if there are empty feeds within the MultiGtfsInstance.
+    ensure_populated_calendars()
+        Check all feeds have populated calendars. If calendar is absent,
+        creates a calendar table from calendar_times.
     get_dates()
         Get the range of dates that the gtfs(s) span.
 
@@ -114,6 +117,19 @@ class MultiGtfsInstance:
         self.paths = path
         # instantiate the GtfsInstance's
         self.instances = [GtfsInstance(fpath) for fpath in path]
+
+    def ensure_populated_calendars(self) -> None:
+        """Check if calendar is absent and creates from calendar_dates.
+
+        Shallow wrapper around GtfsInstance.ensure_populated_calendar().
+
+        Returns
+        -------
+        None
+
+        """
+        for inst in self.instances:
+            inst.ensure_populated_calendar()
 
     def save_feeds(
         self,

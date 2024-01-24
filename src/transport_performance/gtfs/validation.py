@@ -21,6 +21,7 @@ from transport_performance.gtfs.validators import (
     validate_travel_over_multiple_stops,
     validate_travel_between_consecutive_stops,
 )
+from transport_performance.gtfs.calendar import create_calendar_from_dates
 from transport_performance.gtfs.cleaners import (
     clean_consecutive_stop_fast_travel_warnings,
     clean_multiple_stop_fast_travel_warnings,
@@ -198,6 +199,8 @@ class GtfsInstance:
 
     Methods
     -------
+    ensure_populated_calendar()
+        Creates a calendar from calendar_dates if needed.
     get_gtfs_files()
         Returns the `file_list` attribute.
     is_valid()
@@ -325,6 +328,40 @@ class GtfsInstance:
             ],
             "shapes": [],
         }
+
+    def ensure_populated_calendar(self) -> None:
+        """If calendar is absent, creates one from calendar_dates.
+
+        Saves calendar table to feed.calendar. Shallow wrapper around
+        gtfs.calendar.create_calendar_from_dates.
+
+        Warns
+        -----
+        UserWarning
+            Calendar is empty and calendar_dates will be used to create one.
+
+        Raises
+        ------
+        FileNotFoundError
+            Calendar and calendar_dates are missing, GTFS is invalid.
+
+        """
+        # ensure calendar is populated
+        if self.feed.calendar is None:
+            if self.feed.calendar_dates is None:
+                raise FileNotFoundError(
+                    "Both calendar and calendar_dates are empty for feed "
+                    + self.gtfs_path
+                )
+            else:
+                warnings.warn(
+                    f"No calendar found for {self.gtfs_path}. Creating from"
+                    " calendar dates"
+                )
+                # store calendar_dates
+                self.feed.calendar = create_calendar_from_dates(
+                    calendar_dates=self.feed.calendar_dates
+                )
 
     def get_gtfs_files(self) -> list:
         """Return a list of files making up the GTFS file.
