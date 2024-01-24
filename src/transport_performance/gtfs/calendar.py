@@ -15,8 +15,8 @@ def create_calendar_from_dates(calendar_dates: pd.DataFrame) -> pd.DataFrame:
 
     Use this in cases where a gtfs feed has elected to use a calendar-dates
     table and no calendar. Only adds values for calendar_dates entries tagged
-    as exception_type 1. Exception_type 2 is not treated. Those entries will
-    are left to override calendar values.
+    as exception_type 1. Exception_type 2 is not treated. Those entries are
+    ignored whilst making the calendar table.
 
     Parameters
     ----------
