@@ -20,6 +20,7 @@ GtfsInstance
                 
                     ~GtfsInstance.__init__
                     ~GtfsInstance.clean_feed
+                    ~GtfsInstance.ensure_populated_calendar
                     ~GtfsInstance.filter_to_bbox
                     ~GtfsInstance.filter_to_date
                     ~GtfsInstance.get_gtfs_files

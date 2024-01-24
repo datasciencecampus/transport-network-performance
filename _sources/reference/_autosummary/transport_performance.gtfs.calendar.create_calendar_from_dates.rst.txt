@@ -1,0 +1,9 @@
+..
+  base.rst
+
+create\_calendar\_from\_dates
+=============================
+
+.. currentmodule:: transport_performance.gtfs.calendar
+
+.. autofunction:: create_calendar_from_dates

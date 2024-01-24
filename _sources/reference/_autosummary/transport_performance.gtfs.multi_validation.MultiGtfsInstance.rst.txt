@@ -20,6 +20,7 @@ MultiGtfsInstance
                 
                     ~MultiGtfsInstance.__init__
                     ~MultiGtfsInstance.clean_feeds
+                    ~MultiGtfsInstance.ensure_populated_calendars
                     ~MultiGtfsInstance.filter_to_bbox
                     ~MultiGtfsInstance.filter_to_date
                     ~MultiGtfsInstance.get_dates

@@ -159,6 +159,9 @@
 <span class="sd">        Plot each of the stops from all GtfsInstance&#39;s on a folium Map object.</span>
 <span class="sd">    validate_empty_feeds()</span>
 <span class="sd">        Check if there are empty feeds within the MultiGtfsInstance.</span>
+<span class="sd">    ensure_populated_calendars()</span>
+<span class="sd">        Check all feeds have populated calendars. If calendar is absent,</span>
+<span class="sd">        creates a calendar table from calendar_times.</span>
 <span class="sd">    get_dates()</span>
 <span class="sd">        Get the range of dates that the gtfs(s) span.</span>
 
@@ -205,6 +208,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">paths</span> <span class="o">=</span> <span class="n">path</span>
         <span class="c1"># instantiate the GtfsInstance&#39;s</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="p">[</span><span class="n">GtfsInstance</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="k">for</span> <span class="n">fpath</span> <span class="ow">in</span> <span class="n">path</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MultiGtfsInstance.ensure_populated_calendars">
+<a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.ensure_populated_calendars">[docs]</a>
+    <span class="k">def</span> <span class="nf">ensure_populated_calendars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if calendar is absent and creates from calendar_dates.</span>
+
+<span class="sd">        Shallow wrapper around GtfsInstance.ensure_populated_calendar().</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">:</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">ensure_populated_calendar</span><span class="p">()</span></div>
+
 
 <div class="viewcode-block" id="MultiGtfsInstance.save_feeds">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds">[docs]</a>
