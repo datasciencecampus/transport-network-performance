@@ -131,31 +131,57 @@ class MultiGtfsInstance:
         for inst in self.instances:
             inst.ensure_populated_calendar()
 
-    def save_feeds(self, dir: Union[pathlib.Path, str]) -> None:
+    def save_feeds(
+        self,
+        dir: Union[pathlib.Path, str],
+        suffix: str = "_new",
+        file_names: list = None,
+        overwrite: bool = False,
+    ) -> None:
         """Save the GtfsInstances to a directory.
 
         Parameters
         ----------
         dir : Union[pathlib.Path, str]
             The directory to export the GTFS files into.
+        suffix : str
+            The suffix to apply to save names. The 'file_name' param takes
+            priority here.
+        file_names : list
+            A list of save names for the altered GTFS. The list must be the
+            same length as the number of GTFS instances. Takes priority over
+            the 'suffix' param. Names will be used in order of the instances
+            (access using self.instances()).
+        overwrite : bool
+            Whether or not to overwrite the pre-existing saves with matching
+            paths.
 
         Returns
         -------
         None
 
         """
+        _type_defence(suffix, "suffix", (str, type(None)))
+        _type_defence(file_names, "file_names", (list, type(None)))
+        _type_defence(overwrite, "overwrite", bool)
         defence_path = os.path.join(dir, "test.test")
         _check_parent_dir_exists(defence_path, "dir", create=True)
-        save_paths = [
-            os.path.join(
-                dir, os.path.splitext(os.path.basename(p))[0] + "_new.zip"
-            )
-            for p in self.paths
-        ]
+        # format save locations
+        if not file_names:
+            save_paths = [
+                os.path.join(
+                    dir,
+                    os.path.splitext(os.path.basename(p))[0] + f"{suffix}.zip",
+                )
+                for p in self.paths
+            ]
+        else:
+            save_paths = [os.path.join(dir, p) for p in file_names]
+        # save gtfs
         progress = tqdm(zip(save_paths, self.instances), total=len(self.paths))
         for path, inst in progress:
             progress.set_description(f"Saving at {path}")
-            inst.save(path)
+            inst.save(path, overwrite=overwrite)
         return None
 
     def clean_feeds(self, clean_kwargs: Union[dict, None] = None) -> None:

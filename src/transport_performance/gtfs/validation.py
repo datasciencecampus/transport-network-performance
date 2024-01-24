@@ -1685,23 +1685,37 @@ class GtfsInstance:
 
         return None
 
-    def save(self, path: Union[str, pathlib.Path]) -> None:
+    def save(
+        self, path: Union[str, pathlib.Path], overwrite: bool = False
+    ) -> None:
         """Save the cleaned gtfs file.
 
         Parameters
         ----------
         path : Union[str, pathlib.Path]
             The path to save the GTFS file to. E.g., outputs/cleaned_gtfs.zip
+        overwrite : bool
+            Whether or not to overwrite any pre-existing files at the given
+            path
 
         Returns
         -------
         None
 
         """
+        _type_defence(overwrite, "overwrite", bool)
         _check_parent_dir_exists(path, "path", True)
         path = _enforce_file_extension(
             path, exp_ext=".zip", default_ext=".zip", param_nm="path"
         )
+        if os.path.exists(path):
+            if overwrite:
+                os.remove(path)
+            else:
+                raise FileExistsError(
+                    f"File already exists at path {path}. If you wish to "
+                    "overwrite this file, please pass overwrite=True"
+                )
         self.feed.write(path)
         return None
 
