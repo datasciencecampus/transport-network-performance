@@ -7,39 +7,52 @@
 
 # transport-network-performance
 
-> :warning: This repository is still in the development phase. Caution should be taken before using or referencing this work in any way - use it at your own risk.
+> :warning: This repository is still in the development phase. Caution should
+be taken before using or referencing this work in any way - use it at your own
+risk.
 
 # Introduction
 ## About
 *Describe what this repo contains and what the project is.*
 
+`transport_performance` provides a method for analysing the efficiency of
+moving people into and around urban centres. The method employed here builds
+upon that established by [Poelman *et al*, European Commission 2020](https://ec.europa.eu/regional_policy/sources/work/012020_low_carbon_urban.pdf). Specifically, this python package provides logic
+useful for:
+
+- Defining an urban centre boundary based upon contiguous population density.
+- Inspecting, cleaning and filtering public transit data in [GTFS format](https://gtfs.org/).
+- Inspecting and filtering Open Street Map data in [PBF format](https://wiki.openstreetmap.org/wiki/PBF_Format).
+- Multimodal routing with r5 [using r5py](https://r5py.readthedocs.io/en/stable/)
+to create travel time matrices.
+- Calculation of transport performance statistics.
+
 ## Developers
-We welcome contributions from others. Please check out our [code of conduct](CODE_OF_CONDUCT.md) and [contributing guidance](CONTRIBUTING.md###Set-up).
+We welcome contributions from others. Please check out our
+[code of conduct](CODE_OF_CONDUCT.md) and
+[contributing guidance](CONTRIBUTING.md###Set-up).
 
 ## Installation
 *Describe technical set-up. Such as the required dependencies.*
 
-### Pre-commit actions
-This repository contains a configuration of pre-commit hooks. These are language agnostic and focussed on repository security (such as detection of passwords and API keys). If approaching this project as a developer, you are encouraged to install and enable `pre-commits` by running the following in your shell:
-   1. Install `pre-commit`:
+This package is designed to work with python 3.9.13. Full functionality is
+tested on macos only. Other operating systems may be incompatible with
+`transport_performance.osm` specifically.
 
-      ```
-      pip install pre-commit
-      ```
-   2. Enable `pre-commit`:
-
-      ```
-      pre-commit install
-      ```
-Once pre-commits are activated, whenever you commit to this repository a series of checks will be executed. The pre-commits include checking for security keys, large files and unresolved merge conflict headers. The use of active pre-commits are highly encouraged and the given hooks can be expanded with Python or R specific hooks that can automate the code style and linting. For example, the `flake8` and `black` hooks are useful for maintaining consistent Python code formatting.
-
-**NOTE:** Pre-commit hooks execute Python, so it expects a working Python build.
+The transport modelling logic in `transport_performance.analyse_network`
+depends upon a compatible Java Development Kit (JDK). Please consult the
+[r5py installation docs](https://r5py.readthedocs.io/en/stable/user-guide/installation/installation.html#dependencies)
+and our [Contrubuting Guidance](/./CONTRIBUTING.md) for more on configuring a
+JDK.
 
 ## Usage
 *Explain how to use the things in the repo.*
 
 ### Workflow
-*You may wish to consider generating a graph to show your project workflow. GitHub markdown provides native support for [mermaid](https://mermaid.js.org/syntax/flowchart.html), an example of which is provided below:*
+<!-- *You may wish to consider generating a graph to show your project
+workflow. GitHub markdown provides native support for
+[mermaid](https://mermaid.js.org/syntax/flowchart.html), an example of which is
+provided below:* -->
 
 ```mermaid
 flowchart TD
@@ -48,17 +61,19 @@ flowchart TD
    id2 --> id4[Some output]
 ```
 
-
 # Data Science Campus
-At the [Data Science Campus](https://datasciencecampus.ons.gov.uk/about-us/) we apply data science, and build skills, for public good across the UK and internationally. Get in touch with the Campus at [datasciencecampus@ons.gov.uk](datasciencecampus@ons.gov.uk).
+At the [Data Science Campus](https://datasciencecampus.ons.gov.uk/about-us/) we
+apply data science, and build skills, for public good across the UK and
+internationally. Get in touch with the Campus at
+[datasciencecampus@ons.gov.uk](datasciencecampus@ons.gov.uk).
 
 # License
-
-<!-- Unless stated otherwise, the codebase is released under [the MIT Licence][mit]. -->
+<!-- Unless stated, the codebase is released under [the MIT Licence][mit]. -->
 
 The code, unless otherwise stated, is released under [the MIT Licence][mit].
 
-The documentation for this work is subject to [© Crown copyright][copyright] and is available under the terms of the [Open Government 3.0][ogl] licence.
+The documentation for this work is subject to [© Crown copyright][copyright]
+and is available under the terms of the [Open Government 3.0][ogl] licence.
 
 [mit]: LICENCE
 [copyright]: http://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/
