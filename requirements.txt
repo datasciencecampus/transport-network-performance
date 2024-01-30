@@ -8,7 +8,7 @@ rioxarray
 geopandas
 geocube
 pyproj>=3.6.0
-pytest
+pytest<8.0.0 # avoid breaking change 'CallSpec2' object has no attribute 'funcargs'
 coverage
 pyprojroot
 pytest-lazy-fixture
