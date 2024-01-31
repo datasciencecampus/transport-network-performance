@@ -106,8 +106,6 @@ For guidance on how to use the `transport_performance` package, consult the
 [end to end notebooks](/./notebooks/e2e/). These demonstrate the workflow
 required to calculate transport performance in a number of urban centres.
 
-<img src="/./www/transport-performance-newport.png", alt="Transport performance folium map of Newport, South Wales.", style="display: block; margin-left: auto; margin-right: auto; width: 50%;"/>
-
 ![Transport performance folium map of Newport, South Wales.](/./www/transport-performance-newport.png)
 
 ## Understanding Transport Performance
@@ -124,8 +122,6 @@ in Cardiff.
   margin-right: auto;
   width: 50%;
 
-<img src="/./www/cardiff-street-map.png", alt="Google (2021) A4161 Cardiff. Available at: http://maps.google.co.uk (Accessed: 11 December 2023).", style="display: block; margin-left: auto; margin-right: auto; width: 50%;"/>
-
 ![Google (2021) A4161 Cardiff. Available at: http://maps.google.co.uk (Accessed: 11 December 2023).](/./www/cardiff-street-map.png)
 
 Using this location as the journey origin, travel times to the surrounding
@@ -141,8 +137,6 @@ transport and walking modes.
 
 To calculate the transport performance statistic, the ratio of accessible to
 proximal population is taken.
-
-<img src="/./www/tp-explained.png", alt="Breakdown of Transport Performance statistic.", style="display: block; margin-left: auto; margin-right: auto; width: 50%;"/>
 
 ![Breakdown of Transport Performance statistic.](/./www/tp-explained.png)
 
