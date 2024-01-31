@@ -87,24 +87,12 @@ in GTFS format.
 * [Global Human Settlement Layer](https://ghsl.jrc.ec.europa.eu/download.php)
 population estimates.
 
-### Workflow
-<!-- *You may wish to consider generating a graph to show your project
-workflow. GitHub markdown provides native support for
-[mermaid](https://mermaid.js.org/syntax/flowchart.html), an example of which is
-provided below:* -->
-
-```mermaid
-flowchart TD
-   id1[(Some data)] --> id2(Some processing)
-   id3[(More data)] --> id2
-   id2 --> id4[Some output]
-```
-
 ### Usage
 
 For guidance on how to use the `transport_performance` package, consult the
-[end to end notebooks](/./notebooks/e2e/). These demonstrate the workflow
-required to calculate transport performance in a number of urban centres.
+[end to end notebooks](/./notebooks/e2e/). These notebooks demonstrate the
+workflow required to calculate transport performance in a number of urban
+centres.
 
 ![Transport performance folium map of Newport, South Wales.](/./www/transport-performance-newport.png)
 
