@@ -41,7 +41,7 @@ tested on macos only. Other operating systems may be incompatible with
 The transport modelling features in `transport_performance.analyse_network`
 depends upon a compatible Java Development Kit (JDK). Please consult the
 [r5py installation docs](https://r5py.readthedocs.io/en/stable/user-guide/installation/installation.html#dependencies)
-and our [Contrubuting Guidance](/./CONTRIBUTING.md) for more on configuring a
+and our [Contributing Guidance](/./CONTRIBUTING.md) for more on configuring a
 JDK.
 
 ## Usage
@@ -99,7 +99,7 @@ centres.
 ## Understanding Transport Performance
 
 Transport performance is a statistic developed by The European Commission that
-allows measurment and comparison of how efficiently people move through
+allows measurement and comparison of how efficiently people move through
 transport networks.
 
 In the example below, transport performance is visualised for a single location
