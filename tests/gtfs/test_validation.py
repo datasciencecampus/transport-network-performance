@@ -1122,33 +1122,35 @@ class TestGtfsInstance(object):
             ("invalid_ext.txt", "invalid_ext.zip", True),
         ],
     )
-    def test_save(self, tmp_path, gtfs_fixture, path, final_path, warns):
+    def test_save(self, tmp_path, newp_gtfs_fixture, path, final_path, warns):
         """Test the .save() methohd of GtfsInstance()."""
         complete_path = os.path.join(tmp_path, path)
         expected_path = os.path.join(tmp_path, final_path)
         if warns:
             # catch UserWarning from invalid file extension
             with pytest.warns(UserWarning):
-                gtfs_fixture.save(complete_path)
+                newp_gtfs_fixture.save(complete_path)
         else:
             with does_not_raise():
-                gtfs_fixture.save(complete_path, overwrite=True)
+                newp_gtfs_fixture.save(complete_path, overwrite=True)
         assert os.path.exists(expected_path), "GTFS not saved correctly"
 
-    def test_save_overwrite(self, tmp_path, gtfs_fixture):
+    def test_save_overwrite(self, tmp_path, newp_gtfs_fixture):
         """Test the .save()'s method of GtfsInstance overwrite feature."""
         # original save
         save_pth = f"{tmp_path}/test_save.zip"
-        gtfs_fixture.save(save_pth, overwrite=True)
+        newp_gtfs_fixture.save(save_pth, overwrite=True)
         assert os.path.exists(save_pth), "GTFS not saved at correct path"
         # test saving without overwrite enabled
         with pytest.raises(
             FileExistsError, match="File already exists at path.*"
         ):
-            gtfs_fixture.save(f"{tmp_path}/test_save.zip", overwrite=False)
+            newp_gtfs_fixture.save(
+                f"{tmp_path}/test_save.zip", overwrite=False
+            )
         # test saving with overwrite enabled raises no errors
         with does_not_raise():
-            gtfs_fixture.save(f"{tmp_path}/test_save.zip", overwrite=True)
+            newp_gtfs_fixture.save(f"{tmp_path}/test_save.zip", overwrite=True)
         assert os.path.exists(save_pth), "GTFS save not found"
 
     @pytest.mark.parametrize(
@@ -1171,14 +1173,14 @@ class TestGtfsInstance(object):
             len(gtfs.feed.stop_times) == expected_len
         ), "GTFS not filtered to singular date as expected"
 
-    def test_filter_to_bbox(self, gtfs_fixture):
+    def test_filter_to_bbox(self, newp_gtfs_fixture):
         """Small tests for the shallow wrapper filter_to_bbox()."""
         assert (
-            len(gtfs_fixture.feed.stop_times) == 7765
+            len(newp_gtfs_fixture.feed.stop_times) == 7765
         ), "feed.stop_times is an unexpected size"
-        gtfs_fixture.filter_to_bbox(
+        newp_gtfs_fixture.filter_to_bbox(
             [-2.985535, 51.551459, -2.919617, 51.606077]
         )
         assert (
-            len(gtfs_fixture.feed.stop_times) == 217
+            len(newp_gtfs_fixture.feed.stop_times) == 217
         ), "GTFS not filtered to bbox as expected"

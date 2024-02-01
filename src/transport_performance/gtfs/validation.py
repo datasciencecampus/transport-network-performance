@@ -500,7 +500,7 @@ class GtfsInstance:
         """
         # DEV NOTE: Opting not to allow for validation in clean_feed().
         #           .is_valid() should be used before hand.
-        # DEV NOTE 2: Use of parm name 'cleansers' is to avoid conflicts
+        # DEV NOTE 2: Use of param name 'cleansers' is to avoid conflicts
         _type_defence(cleansers, "cleansers", (dict, type(None)))
         _function_pipeline(
             gtfs=self, func_map=CLEAN_FEED_FUNCTION_MAP, operations=cleansers

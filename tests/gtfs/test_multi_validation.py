@@ -270,15 +270,15 @@ class TestMultiGtfsInstance(object):
         """General tests for .clean_feeds()."""
         # validate and do quick check on validity_df
         valid_df = multi_gtfs_fixture.is_valid()
-        assert len(valid_df) == 12, "validity_df not as expected"
+        assert len(valid_df) == 11, "validity_df not as expected"
         # clean feed
         multi_gtfs_fixture.clean_feeds()
         # ensure cleaning has occured
         new_valid = multi_gtfs_fixture.is_valid()
-        assert len(new_valid) == 9
+        assert len(new_valid) == 1
         assert np.array_equal(
-            list(new_valid.iloc[3][["type", "table"]].values),
-            ["error", "routes"],
+            list(new_valid.iloc[0][["type", "table"]].values),
+            ["warning", "routes"],
         ), "Validity df after cleaning not as expected"
 
     def test_is_valid_defences(self, multi_gtfs_fixture):
@@ -289,7 +289,7 @@ class TestMultiGtfsInstance(object):
     def test_is_valid_on_pass(self, multi_gtfs_fixture):
         """General tests for is_valid()."""
         valid_df = multi_gtfs_fixture.is_valid()
-        assert len(valid_df) == 12, "Validation df not as expected"
+        assert len(valid_df) == 11, "Validation df not as expected"
         assert np.array_equal(
             list(valid_df.iloc[3][["type", "message"]].values),
             (["warning", "Fast Travel Between Consecutive Stops"]),
