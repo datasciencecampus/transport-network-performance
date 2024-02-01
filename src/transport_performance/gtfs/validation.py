@@ -15,10 +15,11 @@ import warnings
 import pathlib
 from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
+from geopandas import GeoDataFrame
 
 import transport_performance.gtfs.cleaners as cleaners
 import transport_performance.gtfs.validators as gtfs_validators
-
+from transport_performance.gtfs.calendar import create_calendar_from_dates
 from transport_performance.gtfs.routes import (
     scrape_route_type_lookup,
     get_saved_route_type_lookup,
@@ -35,7 +36,6 @@ from transport_performance.utils.defence import (
     _check_attribute,
     _enforce_file_extension,
 )
-
 from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
@@ -43,6 +43,7 @@ from transport_performance.gtfs.report.report_utils import (
 from transport_performance.utils.constants import (
     PKG_PATH,
 )
+from transport_performance.gtfs.gtfs_utils import filter_gtfs
 
 # THESE MAPPINGS CAN NOT BE MOVED TO CONSTANTS AS THEY INTRODUCE DEPENDENCY
 # ISSUES.
@@ -225,6 +226,8 @@ class GtfsInstance:
 
     Methods
     -------
+    ensure_populated_calendar()
+        Creates a calendar from calendar_dates if needed.
     get_gtfs_files()
         Returns the `file_list` attribute.
     is_valid()
@@ -243,6 +246,12 @@ class GtfsInstance:
         Returns the `daily_route_summary` attribute.
     html_report()
         Generate a HTML report describing the GTFS data.
+    save()
+        Save the current GtfsInstance().
+    filter_to_date()
+        Filter a GtfsInstance to a specific dates or set of dates.
+    filter_to_bbox()
+        Crop a GtfsInstance to a given bbox.
     _produce_stops_map()
         Produces the stops map for use in `viz_stops()`.
     _order_dataframe_by_day()
@@ -356,6 +365,40 @@ class GtfsInstance:
             "trips": self.feed.trips,
             "calendar": self.feed.calendar,
         }
+
+    def ensure_populated_calendar(self) -> None:
+        """If calendar is absent, creates one from calendar_dates.
+
+        Saves calendar table to feed.calendar. Shallow wrapper around
+        gtfs.calendar.create_calendar_from_dates.
+
+        Warns
+        -----
+        UserWarning
+            Calendar is empty and calendar_dates will be used to create one.
+
+        Raises
+        ------
+        FileNotFoundError
+            Calendar and calendar_dates are missing, GTFS is invalid.
+
+        """
+        # ensure calendar is populated
+        if self.feed.calendar is None:
+            if self.feed.calendar_dates is None:
+                raise FileNotFoundError(
+                    "Both calendar and calendar_dates are empty for feed "
+                    + self.gtfs_path
+                )
+            else:
+                warnings.warn(
+                    f"No calendar found for {self.gtfs_path}. Creating from"
+                    " calendar dates"
+                )
+                # store calendar_dates
+                self.feed.calendar = create_calendar_from_dates(
+                    calendar_dates=self.feed.calendar_dates
+                )
 
     def get_gtfs_files(self) -> list:
         """Return a list of files making up the GTFS file.
@@ -1668,4 +1711,91 @@ class GtfsInstance:
             f"View your report here: {report_dir}/gtfs_report"
         )
 
+        return None
+
+    def save(
+        self, path: Union[str, pathlib.Path], overwrite: bool = False
+    ) -> None:
+        """Save the cleaned gtfs file.
+
+        Parameters
+        ----------
+        path : Union[str, pathlib.Path]
+            The path to save the GTFS file to. E.g., outputs/cleaned_gtfs.zip
+        overwrite : bool
+            Whether or not to overwrite any pre-existing files at the given
+            path
+
+        Returns
+        -------
+        None
+
+        """
+        _type_defence(overwrite, "overwrite", bool)
+        _check_parent_dir_exists(path, "path", True)
+        path = _enforce_file_extension(
+            path, exp_ext=".zip", default_ext=".zip", param_nm="path"
+        )
+        if os.path.exists(path):
+            if overwrite:
+                os.remove(path)
+            else:
+                raise FileExistsError(
+                    f"File already exists at path {path}. If you wish to "
+                    "overwrite this file, please pass overwrite=True"
+                )
+        self.feed.write(path)
+        return None
+
+    def filter_to_date(self, dates: Union[str, list]) -> None:
+        """Very shallow wrapper around filter_gtfs().
+
+        Filters GTFS to date(s)
+
+        Parameters
+        ----------
+        dates : Union[str, list]
+            The date(s) to filter the GTFS to
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(dates, "dates", (str, list))
+        # convert to normalsed format
+        if isinstance(dates, str):
+            dates = [dates]
+        # filter gtfs
+        filter_gtfs(gtfs=self, filter_dates=dates)
+        return None
+
+    def filter_to_bbox(
+        self,
+        bbox: Union[list, GeoDataFrame],
+        crs: Union[str, int] = "epsg:4326",
+    ) -> None:
+        """Very shallow wrapper around filter_gfts().
+
+        Filters GTFS to a bbox.
+
+        Parameters
+        ----------
+        bbox : Union[list, GeoDataFrame]
+            The bbox to filter the GTFS to. Leave as none if the GTFS does not
+            need to be cropped. Format - [xmin, ymin, xmax, ymax]
+        crs : Union[str, int], optional
+            The CRS of the given bbox, by default "epsg:4326"
+
+        Returns
+        -------
+        None
+
+        """
+        # defences
+        _type_defence(bbox, "bbox", (list, GeoDataFrame))
+        _type_defence(crs, "crs", (str, int))
+        # filter gtfs
+        filter_gtfs(gtfs=self, bbox=bbox, crs=crs)
         return None

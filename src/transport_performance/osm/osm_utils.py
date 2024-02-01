@@ -53,6 +53,9 @@ def filter_osm(
 
     """
     # defence
+    _type_defence(pbf_pth, "pbf_pth", (pathlib.Path, str))
+    # if pbf_pth is str, convert to Path in order to access as_posix method
+    pbf_pth = pathlib.Path(pbf_pth)
     _is_expected_filetype(pbf_pth, param_nm="pbf_pth", exp_ext=".pbf")
     _enforce_file_extension(out_pth, ".pbf", ".pbf", "out_pth")
     for nm, val in {

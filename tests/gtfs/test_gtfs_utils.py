@@ -16,6 +16,7 @@ from transport_performance.gtfs.validation import (
 )
 from transport_performance.gtfs.gtfs_utils import (
     bbox_filter_gtfs,
+    filter_gtfs,
     _add_validation_row,
     filter_gtfs_around_trip,
     convert_pandas_to_plotly,
@@ -29,6 +30,135 @@ from transport_performance.gtfs.gtfs_utils import (
 GTFS_FIX_PTH = os.path.join(
     "tests", "data", "gtfs", "newport-20230613_gtfs.zip"
 )
+
+
+class TestFilterGtfs(object):
+    """Tests for filter_gtfs."""
+
+    @pytest.fixture(scope="function")
+    def small_bbox(self):
+        """Small bbox covering a small area in Newport.
+
+        See the bbox visualised here:
+        http://bboxfinder.com/#51.551459,-2.985535,51.606077,-2.919617
+
+        """
+        return [-2.985535, 51.551459, -2.919617, 51.606077]
+
+    @pytest.mark.parametrize(
+        "bbox, crs, filter_dates, raises, match",
+        (
+            # bbox tests
+            [
+                False,
+                "epsg:4326",
+                [],
+                TypeError,
+                ".*bbox.*expected.*GeoDataFrame.*list.*NoneType.*Got.*bool.*",
+            ],
+            [
+                [12.0, "test", 13.0, 14.0],
+                "epsg:4326",
+                [],
+                TypeError,
+                ".*bbox.*float.*Found.*str.*",
+            ],
+            [
+                [51.606077, -2.985535, 51.551459, -2.919617],
+                "epsg:4326",
+                [],
+                ValueError,
+                r"BBOX xmin \(51.606077\) is greater than xmax \(51.551459\)",
+            ],
+            [
+                [51.551459, -2.919617, 51.606077, -2.985535],
+                "epsg:4326",
+                [],
+                ValueError,
+                r"BBOX ymin \(-2.919617\) is greater than ymax \(-2.985535\)",
+            ],
+            [
+                [12.0],
+                "epsg:4326",
+                [],
+                ValueError,
+                "bbox should have a length of 4, found 1 items in list",
+            ],
+            # date not valid format
+            [
+                None,
+                "epsg:4326",
+                ["test"],
+                ValueError,
+                "Incorrect date format.*",
+            ],
+            [
+                None,
+                "epsg:4326",
+                [12],
+                TypeError,
+                ".*filter_dates.*must contain <class.*str.*only.*int.*",
+            ],
+            # date not in gtfs
+            [
+                None,
+                "epsg:4326",
+                ["20000101"],
+                ValueError,
+                ".* passed to 'filter_dates' not present in feed.*",
+            ],
+        ),
+    )
+    def test_filter_gtfs_defence(self, bbox, crs, filter_dates, raises, match):
+        """Defensive tests for filter_gtfs."""
+        with pytest.raises(raises, match=match):
+            gtfs = GtfsInstance(GTFS_FIX_PTH)
+            filter_gtfs(gtfs, bbox=bbox, crs=crs, filter_dates=filter_dates)
+
+    def test_filter_gtfs_warns(self):
+        """Test warns in filter_gtfs."""
+        with pytest.warns(UserWarning, match="No filtering requested.*"):
+            gtfs = GtfsInstance(GTFS_FIX_PTH)
+            filter_gtfs(gtfs)
+
+    def test_filter_gtfs_on_pass(self, small_bbox):
+        """Test filter_gtfs on pass."""
+        # filter to bbox
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        assert (
+            len(gtfs.feed.stop_times) == 7765
+        ), "feed.stop_times is an unexpected size"
+        filter_gtfs(gtfs, small_bbox)
+        assert (
+            len(gtfs.feed.stop_times) == 217
+        ), "GTFS not filtered to bbox as expected"
+        # filter to date
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        assert (
+            len(gtfs.feed.stop_times) == 7765
+        ), "feed.stop_times is an unexpected size"
+        filter_gtfs(gtfs, filter_dates=["20230611"])
+        assert (
+            len(gtfs.feed.stop_times) == 151
+        ), "GTFS not filtered to singular date as expected"
+        # filter to multiple dates
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        assert (
+            len(gtfs.feed.stop_times) == 7765
+        ), "feed.stop_times is an unexpected size"
+        filter_gtfs(gtfs, filter_dates=["20230611", "20230615"])
+        assert (
+            len(gtfs.feed.stop_times) == 7741
+        ), "GTFS not filtered to multiple dates as expected"
+        # test attr get'sr emoved
+        gtfs.summarise_routes()
+        assert hasattr(
+            gtfs, "pre_processed_trips"
+        ), "pre_processed trips not an attr of the gtfs"
+        filter_gtfs(gtfs, filter_dates=["20230611", "20230615"])
+        assert not hasattr(
+            gtfs, "pre_processed_trips"
+        ), "pre_processed trips is still an attr of the gtfs"
 
 
 class TestBboxFilterGtfs(object):
