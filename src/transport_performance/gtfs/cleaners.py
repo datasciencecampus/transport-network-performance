@@ -80,7 +80,7 @@ def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
     return None
 
 
-def _clean_fast_travel_preperation(gtfs, warning_re: str) -> pd.DataFrame:
+def _clean_fast_travel_preparation(gtfs, warning_re: str) -> pd.DataFrame:
     """Prepare to clean fast travel errors.
 
     At the beggining of both of the fast travel cleaners, the gtfs is type
@@ -130,7 +130,7 @@ def clean_consecutive_stop_fast_travel_warnings(gtfs) -> None:
 
     """
     # defences
-    needed_warning = _clean_fast_travel_preperation(
+    needed_warning = _clean_fast_travel_preparation(
         gtfs, "Fast Travel Between Consecutive Stops"
     )
 
@@ -162,7 +162,7 @@ def clean_multiple_stop_fast_travel_warnings(gtfs) -> None:
     None
 
     """
-    needed_warning = _clean_fast_travel_preperation(
+    needed_warning = _clean_fast_travel_preparation(
         gtfs, "Fast Travel Over Multiple Stops"
     )
     if len(needed_warning) < 1:
