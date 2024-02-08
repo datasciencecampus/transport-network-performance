@@ -667,7 +667,7 @@ class TestMultiGtfsInstance(object):
         ), "Unexpected number of dates"
         pass
 
-    def test__plot_core(self, multi_gtfs_fixture, tmp_path):
+    def test__plot_core(self, multi_gtfs_fixture):
         """General tests for _plot_core()."""
         # route summary
         data = multi_gtfs_fixture.summarise_routes()
@@ -695,6 +695,25 @@ class TestMultiGtfsInstance(object):
         trip_fig = multi_gtfs_fixture._plot_core(
             data, "trip_count", kwargs={"markers": True}
         )
-        assert (
-            trip_fig.data[0]["mode"] == "markers+lines"
-        ), "Markers not plotted"
+        assert trip_fig.data[0]["mode"] in [
+            "markers+lines",
+            "lines+markers",
+        ], "Markers not plotted"
+
+    def test_plot_routes(self, multi_gtfs_fixture):
+        """General tests for .plot_routes()."""
+        # plot route_type
+        fig = multi_gtfs_fixture.plot_routes()
+        assert len(fig.data) == 2, "Not plotted by modality"
+        # plot without route type
+        fig = multi_gtfs_fixture.plot_routes(False)
+        assert len(fig.data) == 1, "Plot not as expected"
+
+    def test_plot_trips(self, multi_gtfs_fixture):
+        """General tests for .plot_trips()."""
+        # plot route_type
+        fig = multi_gtfs_fixture.plot_trips()
+        assert len(fig.data) == 2, "Not plotted by modality"
+        # plot without route type
+        fig = multi_gtfs_fixture.plot_trips(False)
+        assert len(fig.data) == 1, "Plot not as expected"
