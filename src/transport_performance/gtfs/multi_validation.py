@@ -735,6 +735,8 @@ class MultiGtfsInstance:
                 break
         return " ".join(parts)
 
+    # def _rolling_average_core()
+
     def _plot_core(
         self,
         df: pd.DataFrame,
@@ -743,6 +745,7 @@ class MultiGtfsInstance:
         height: int = 550,
         title: str = None,
         kwargs: dict = {},
+        rolling_average: Union[int, None] = None,
     ):
         """Plot a timeseries for trip/route count."""
         # defences
@@ -752,6 +755,7 @@ class MultiGtfsInstance:
         _type_defence(height, "height", int)
         _type_defence(title, "title", (str, type(None)))
         _type_defence(kwargs, "kwargs", dict)
+        _type_defence(rolling_average, "rolling_average", (int, type(None)))
         # preparation
         LABEL_FORMAT = {
             count_col: self._reformat_col_names(count_col),
@@ -770,6 +774,28 @@ class MultiGtfsInstance:
         kwargs["height"] = height
         if title:
             PLOT_TITLE["text"] = title
+
+        if rolling_average:
+            new_count_col = f"{rolling_average} Day Rolling Average"
+            temp_dfs = []
+            # impute route type if there is none
+            if "route_type" not in df.columns:
+                df["route_type"] = 15000
+            for rt in df.route_type.unique():
+                temp = df[df.route_type == rt].copy()
+                # resample to account for missing dates
+                temp = temp.set_index("date").resample("1D").sum()
+                # add correct route type
+                temp["route_type"] = rt
+                # calculate rolling average over [x] days
+                temp[new_count_col] = (
+                    temp[count_col]
+                    .rolling(window=rolling_average, center=True)
+                    .mean()
+                )
+                temp_dfs.append(temp)
+            df = pd.concat(temp_dfs).sort_values("date").reset_index()
+            count_col = new_count_col
         # plotting
         fig = px.line(df, x="date", y=count_col, labels=LABEL_FORMAT, **kwargs)
         fig.update_layout(title=PLOT_TITLE)
@@ -783,6 +809,7 @@ class MultiGtfsInstance:
         height: int = 550,
         title: str = None,
         plotly_kwargs: dict = None,
+        rolling_average: Union[int, None] = None,
     ) -> go.Figure:
         """Create a line plot of route counts over time.
 
@@ -798,6 +825,13 @@ class MultiGtfsInstance:
             Plot title, by default None
         plotly_kwargs : dict, optional
             Kwargs to pass to plotly.express.line, by default None
+        rolling_average : Union[int, None], optional
+            How many days to calculate the rolling average over. When left as
+            None, rolling average is not used.
+            The rolling average is calculated from the center, meaning if ra=3,
+            the average will be calculated from the current date, previous date
+            and following date. Missing dates are imputed and treated as having
+            values of 0.
 
         Returns
         -------
@@ -826,6 +860,7 @@ class MultiGtfsInstance:
             height=height,
             title=title,
             kwargs=plotly_kwargs,
+            rolling_average=rolling_average,
         )
         return figure
 
@@ -836,6 +871,7 @@ class MultiGtfsInstance:
         height: int = 550,
         title: str = None,
         plotly_kwargs: dict = None,
+        rolling_average: Union[int, None] = None,
     ) -> go.Figure:
         """Create a line plot of trip counts over time.
 
@@ -851,6 +887,13 @@ class MultiGtfsInstance:
             Plot title, by default None
         plotly_kwargs : dict, optional
             Kwargs to pass to plotly.express.line, by default None
+        rolling_average : Union[int, None], optional
+            How many days to calculate the rolling average over. When left as
+            None, rolling average is not used.
+            The rolling average is calculated from the center, meaning if ra=3,
+            the average will be calculated from the current date, previous date
+            and following date. Missing dates are imputed and treated as having
+            values of 0.
 
         Returns
         -------
@@ -882,5 +925,6 @@ class MultiGtfsInstance:
             height=height,
             title=title,
             kwargs=plotly_kwargs,
+            rolling_average=rolling_average,
         )
         return figure
