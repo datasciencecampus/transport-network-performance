@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import folium
 from pyprojroot import here
+import plotly.graph_objs as go
 
 from transport_performance.gtfs.multi_validation import (
     MultiGtfsInstance,
@@ -665,3 +666,54 @@ class TestMultiGtfsInstance(object):
             len(multi_gtfs_altered_fixture.get_dates(return_range=False)) == 6
         ), "Unexpected number of dates"
         pass
+
+    def test__plot_core(self, multi_gtfs_fixture):
+        """General tests for _plot_core()."""
+        # route summary
+        data = multi_gtfs_fixture.summarise_routes()
+        route_fig = multi_gtfs_fixture._plot_core(data, "route_count")
+        assert isinstance(route_fig, go.Figure), "Route counts not plotted"
+        # trip summary
+        data = multi_gtfs_fixture.summarise_trips()
+        trip_fig = multi_gtfs_fixture._plot_core(data, "trip_count")
+        assert isinstance(trip_fig, go.Figure), "Trip counts not plotted"
+        # trip summary with custom title
+        trip_fig = multi_gtfs_fixture._plot_core(
+            data, "trip_count", title="test"
+        )
+        found_title = trip_fig.layout["title"]["text"]
+        assert found_title == "test", "Title not as expected"
+        # trip summary with custom dimensions
+        trip_fig = multi_gtfs_fixture._plot_core(
+            data, "trip_count", height=100, width=150
+        )
+        found_height = trip_fig.layout["height"]
+        found_width = trip_fig.layout["width"]
+        assert found_height == 100, "Height not as expected"
+        assert found_width == 150, "Width not as expected"
+        # custom kwargs
+        trip_fig = multi_gtfs_fixture._plot_core(
+            data, "trip_count", kwargs={"markers": True}
+        )
+        assert trip_fig.data[0]["mode"] in [
+            "markers+lines",
+            "lines+markers",
+        ], "Markers not plotted"
+
+    def test_plot_routes(self, multi_gtfs_fixture):
+        """General tests for .plot_routes()."""
+        # plot route_type
+        fig = multi_gtfs_fixture.plot_routes()
+        assert len(fig.data) == 2, "Not plotted by modality"
+        # plot without route type
+        fig = multi_gtfs_fixture.plot_routes(False)
+        assert len(fig.data) == 1, "Plot not as expected"
+
+    def test_plot_trips(self, multi_gtfs_fixture):
+        """General tests for .plot_trips()."""
+        # plot route_type
+        fig = multi_gtfs_fixture.plot_trips()
+        assert len(fig.data) == 2, "Not plotted by modality"
+        # plot without route type
+        fig = multi_gtfs_fixture.plot_trips(False)
+        assert len(fig.data) == 1, "Plot not as expected"
