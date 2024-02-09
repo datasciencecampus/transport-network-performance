@@ -446,7 +446,7 @@ class MultiGtfsInstance:
         sort_by = sort_by.lower().strip()
         if sort_by not in ["days", "route_type"]:
             raise ValueError(
-                "'sort_by' must be on of ['days', 'route_type']. "
+                "'sort_by' must be one of ['days', 'route_type']. "
                 f"Got {sort_by}"
             )
 

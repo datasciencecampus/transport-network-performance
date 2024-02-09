@@ -453,24 +453,34 @@ class TestMultiGtfsInstance(object):
         ), "Gtfs inst[1] not as expected after filter"
 
     @pytest.mark.parametrize(
-        "which, summ_ops, raises, match",
+        "which, summ_ops, sort_by, raises, match",
         (
-            ["route", True, TypeError, ".*summ_ops.*list.*bool"],
-            [True, [np.max], TypeError, ".*which.*str.*bool"],
+            ["route", True, "days", TypeError, ".*summ_ops.*list.*bool"],
+            [True, [np.max], "days", TypeError, ".*which.*str.*bool"],
             [
                 "not_which",
                 [np.max],
+                "days",
                 ValueError,
                 ".*which.*trips.*routes.*not_which.*",
+            ],
+            [
+                "trips",
+                [np.max],
+                "not_sort",
+                ValueError,
+                ".*sort_by.*days.*route_type.*not_sort.*",
             ],
         ),
     )
     def test__summarise_core_defence(
-        self, multi_gtfs_fixture, which, summ_ops, raises, match
+        self, multi_gtfs_fixture, which, summ_ops, sort_by, raises, match
     ):
         """Defensive tests for _summarise_core()."""
         with pytest.raises(raises, match=match):
-            multi_gtfs_fixture._summarise_core(which=which, summ_ops=summ_ops)
+            multi_gtfs_fixture._summarise_core(
+                which=which, summ_ops=summ_ops, sort_by=sort_by
+            )
 
     def test__summarise_core(self, multi_gtfs_fixture):
         """General tests for _summarise_core()."""
@@ -532,6 +542,14 @@ class TestMultiGtfsInstance(object):
         assert (
             dated_sum[dated_sum.date == "2024-04-06"].route_count.iloc[0] == 9
         ), "Unexpecteed number of routes on 2024-04-06"
+        # test sorting to route_type
+        route_sort = multi_gtfs_fixture._summarise_core(
+            which="routes", to_days=True, sort_by="route_type"
+        )
+        first_three_types = route_sort.route_type[:3]
+        assert np.array_equal(
+            first_three_types, [3, 3, 3]
+        ), "Summary not sorted by route_type"
 
     def test_summarise_trips(self, multi_gtfs_fixture):
         """General tests for summarise_trips()."""
