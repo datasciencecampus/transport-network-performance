@@ -1491,7 +1491,8 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed(validate=True, fast_travel=True)
+        if clean_feed:
+            self.clean_feed(validate=True, fast_travel=True)
         # re-validate to clean any newly raised errors/warnings
         validation_dataframe = self.is_valid(far_stops=True)
 
