@@ -379,12 +379,21 @@ class MultiGtfsInstance:
             self._raise_empty_feed_error(bbox)
         return None
 
+    def _summary_col_sorter(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Sort columns for summary dfs."""
+        presets = ["day", "route_type"]
+        for col in sorted(df.columns.values):
+            if col not in presets:
+                presets.append(col)
+        return df.reindex(presets, axis=1).copy()
+
     def _summarise_core(
         self,
         which: str = "trips",
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
         to_days: bool = False,
+        sort_by: str = "days",
     ) -> pd.DataFrame:
         """Summarise the MultiGtfsInstance by either trip_id or route_id.
 
@@ -405,6 +414,12 @@ class MultiGtfsInstance:
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
             function (so it remains as the default). Defaults to False.
+        sort_by : str, optional
+            What to sort the dataframe by. Options include: ["days",
+            "route_type"].
+            -days will sort the dataframe by day. E.g., Monday, Tuesday, Wed...
+            -route_type will sort the dataframe by route_type. E.g, 3, 200...,
+            by default "days"
 
         Returns
         -------
@@ -422,10 +437,17 @@ class MultiGtfsInstance:
         _type_defence(which, "which", str)
         _type_defence(return_summary, "return_summary", bool)
         _type_defence(to_days, "to_days", bool)
+        _type_defence(sort_by, "sort_by", str)
         which = which.lower().strip()
         if which not in ["trips", "routes"]:
             raise ValueError(
                 f"'which' must be one of ['trips', 'routes'].  Got {which}"
+            )
+        sort_by = sort_by.lower().strip()
+        if sort_by not in ["days", "route_type"]:
+            raise ValueError(
+                "'sort_by' must be on of ['days', 'route_type']. "
+                f"Got {sort_by}"
             )
 
         # choose summary
@@ -476,7 +498,15 @@ class MultiGtfsInstance:
             column.replace("amin", "min").replace("amax", "max")
             for column in trip_counts.columns.values
         ]
+        # sorting
+        # NOTE: More convoluted sorts don't work well with the custom
+        # _order_dataframe_by_day func.
+        # Always sort by day so that route_type sorts are more organised
         trip_counts = self.instances[0]._order_dataframe_by_day(trip_counts)
+        if sort_by == "route_type":
+            trip_counts = trip_counts.sort_values("route_type")
+        if to_days:
+            trip_counts = self._summary_col_sorter(trip_counts)
         return trip_counts
 
     def summarise_trips(
@@ -484,6 +514,7 @@ class MultiGtfsInstance:
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
         to_days: bool = False,
+        sort_by: Union[str, list] = "days",
     ) -> pd.DataFrame:
         """Summarise the combined GTFS data by trip_id.
 
@@ -502,6 +533,12 @@ class MultiGtfsInstance:
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
             function (so it remains as the default). Defaults to False.
+        sort_by : Union[str, list], optional
+            What to sort the dataframe by. Options include: ["days",
+            "route_type"].
+            -days will sort the dataframe by day. E.g., Monday, Tuesday, Wed...
+            -route_type will sort the dataframe by route_type. E.g, 3, 200...,
+            by default "days"
 
         Returns
         -------
@@ -514,6 +551,7 @@ class MultiGtfsInstance:
             summ_ops=summ_ops,
             return_summary=return_summary,
             to_days=to_days,
+            sort_by=sort_by,
         )
         return self.daily_trip_summary.copy()
 
@@ -522,6 +560,7 @@ class MultiGtfsInstance:
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
         to_days: bool = False,
+        sort_by: str = "days",
     ) -> pd.DataFrame:
         """Summarise the combined GTFS data by route_id.
 
@@ -540,6 +579,12 @@ class MultiGtfsInstance:
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
             function (so it remains as the default). Defaults to False.
+        sort_by : str, optional
+            What to sort the dataframe by. Options include: ["days",
+            "route_type"].
+            -days will sort the dataframe by day. E.g., Monday, Tuesday, Wed...
+            -route_type will sort the dataframe by route_type. E.g, 3, 200...,
+            by default "days"
 
         Returns
         -------
@@ -552,6 +597,7 @@ class MultiGtfsInstance:
             summ_ops=summ_ops,
             return_summary=return_summary,
             to_days=to_days,
+            sort_by=sort_by,
         )
         return self.daily_route_summary.copy()
 
