@@ -707,6 +707,12 @@ class TestMultiGtfsInstance(object):
         assert (
             found_ylabel == "7 Day Rolling Average"
         ), "Rolling average not plotted"
+        # draw a line on a date
+        avg_fig = multi_gtfs_fixture._plot_core(
+            data, "trip_count", rolling_average=7, line_date="2023-12-01"
+        )
+        found_line = avg_fig.layout["shapes"][0]["line"]["dash"]
+        assert found_line == "dash", "Date line not plotted"
 
     def test_plot_routes(self, multi_gtfs_fixture):
         """General tests for .plot_routes()."""

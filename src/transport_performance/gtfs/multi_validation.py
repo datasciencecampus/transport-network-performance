@@ -746,6 +746,7 @@ class MultiGtfsInstance:
         title: str = None,
         kwargs: dict = {},
         rolling_average: Union[int, None] = None,
+        line_date: Union[str, None] = None,
     ):
         """Plot a timeseries for trip/route count."""
         # defences
@@ -756,6 +757,7 @@ class MultiGtfsInstance:
         _type_defence(title, "title", (str, type(None)))
         _type_defence(kwargs, "kwargs", dict)
         _type_defence(rolling_average, "rolling_average", (int, type(None)))
+        _type_defence(line_date, "line_date", (str, type(None)))
         # preparation
         LABEL_FORMAT = {
             count_col: self._reformat_col_names(count_col),
@@ -799,6 +801,8 @@ class MultiGtfsInstance:
         # plotting
         fig = px.line(df, x="date", y=count_col, labels=LABEL_FORMAT, **kwargs)
         fig.update_layout(title=PLOT_TITLE)
+        if line_date:
+            fig.add_vline(x=line_date, line_dash="dash")
 
         return fig
 
@@ -810,6 +814,7 @@ class MultiGtfsInstance:
         title: str = None,
         plotly_kwargs: dict = None,
         rolling_average: Union[int, None] = None,
+        line_date: Union[str, None] = None,
     ) -> go.Figure:
         """Create a line plot of route counts over time.
 
@@ -832,6 +837,9 @@ class MultiGtfsInstance:
             the average will be calculated from the current date, previous date
             and following date. Missing dates are imputed and treated as having
             values of 0.
+        line_date : Union[str, None], optional
+            A data to draw a dashed vertical line on. Date should be in format:
+            YYYY-MM-DD, by default None
 
         Returns
         -------
@@ -861,6 +869,7 @@ class MultiGtfsInstance:
             title=title,
             kwargs=plotly_kwargs,
             rolling_average=rolling_average,
+            line_date=line_date,
         )
         return figure
 
@@ -872,6 +881,7 @@ class MultiGtfsInstance:
         title: str = None,
         plotly_kwargs: dict = None,
         rolling_average: Union[int, None] = None,
+        line_date: Union[str, None] = None,
     ) -> go.Figure:
         """Create a line plot of trip counts over time.
 
@@ -894,6 +904,9 @@ class MultiGtfsInstance:
             the average will be calculated from the current date, previous date
             and following date. Missing dates are imputed and treated as having
             values of 0.
+        line_date : Union[str, None], optional
+            A data to draw a dashed vertical line on. Date should be in format:
+            YYYY-MM-DD, by default None
 
         Returns
         -------
@@ -926,5 +939,6 @@ class MultiGtfsInstance:
             title=title,
             kwargs=plotly_kwargs,
             rolling_average=rolling_average,
+            line_date=line_date,
         )
         return figure
