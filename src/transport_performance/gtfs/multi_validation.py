@@ -735,8 +735,6 @@ class MultiGtfsInstance:
                 break
         return " ".join(parts)
 
-    # def _rolling_average_core()
-
     def _plot_core(
         self,
         df: pd.DataFrame,
