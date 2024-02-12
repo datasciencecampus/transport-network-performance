@@ -699,6 +699,20 @@ class TestMultiGtfsInstance(object):
             "markers+lines",
             "lines+markers",
         ], "Markers not plotted"
+        # rolling average
+        avg_fig = multi_gtfs_fixture._plot_core(
+            data, "trip_count", rolling_average=7
+        )
+        found_ylabel = avg_fig.layout["yaxis"]["title"]["text"]
+        assert (
+            found_ylabel == "7 Day Rolling Average"
+        ), "Rolling average not plotted"
+        # draw a line on a date
+        avg_fig = multi_gtfs_fixture._plot_core(
+            data, "trip_count", rolling_average=7, line_date="2023-12-01"
+        )
+        found_line = avg_fig.layout["shapes"][0]["line"]["dash"]
+        assert found_line == "dash", "Date line not plotted"
 
     def test_plot_routes(self, multi_gtfs_fixture):
         """General tests for .plot_routes()."""
@@ -708,6 +722,12 @@ class TestMultiGtfsInstance(object):
         # plot without route type
         fig = multi_gtfs_fixture.plot_routes(False)
         assert len(fig.data) == 1, "Plot not as expected"
+        # rolling average + no route type
+        avg_fig = multi_gtfs_fixture.plot_routes(
+            rolling_average=7, route_type=False
+        )
+        leg_status = avg_fig.data[0]["showlegend"]
+        assert not leg_status, "Multiple route types found"
 
     def test_plot_trips(self, multi_gtfs_fixture):
         """General tests for .plot_trips()."""
