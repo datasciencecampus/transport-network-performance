@@ -105,11 +105,6 @@ transport networks.
 In the example below, transport performance is visualised for a single location
 in Cardiff.
 
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50%;
-
 ![Google (2021) A4161 Cardiff. Available at: http://maps.google.co.uk (Accessed: 11 December 2023).](/./www/cardiff-street-map.png)
 
 Using this location as the journey origin, travel times to the surrounding
