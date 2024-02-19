@@ -714,26 +714,27 @@ class TestMultiGtfsInstance(object):
         found_line = avg_fig.layout["shapes"][0]["line"]["dash"]
         assert found_line == "dash", "Date line not plotted"
 
-    def test_plot_routes(self, multi_gtfs_fixture):
-        """General tests for .plot_routes()."""
+    def test_plot_service(self, multi_gtfs_fixture):
+        """General tests for .plot_service()."""
         # plot route_type
-        fig = multi_gtfs_fixture.plot_routes()
+        fig = multi_gtfs_fixture.plot_service(service_type="routes")
         assert len(fig.data) == 2, "Not plotted by modality"
         # plot without route type
-        fig = multi_gtfs_fixture.plot_routes(False)
+        fig = multi_gtfs_fixture.plot_service(
+            service_type="routes", route_type=False
+        )
         assert len(fig.data) == 1, "Plot not as expected"
         # rolling average + no route type
-        avg_fig = multi_gtfs_fixture.plot_routes(
-            rolling_average=7, route_type=False
+        avg_fig = multi_gtfs_fixture.plot_service(
+            service_type="routes", rolling_average=7, route_type=False
         )
         leg_status = avg_fig.data[0]["showlegend"]
         assert not leg_status, "Multiple route types found"
-
-    def test_plot_trips(self, multi_gtfs_fixture):
-        """General tests for .plot_trips()."""
-        # plot route_type
-        fig = multi_gtfs_fixture.plot_trips()
+        # plot trips
+        fig = multi_gtfs_fixture.plot_service(service_type="trips")
         assert len(fig.data) == 2, "Not plotted by modality"
         # plot without route type
-        fig = multi_gtfs_fixture.plot_trips(False)
+        fig = multi_gtfs_fixture.plot_service(
+            service_type="trips", route_type=False
+        )
         assert len(fig.data) == 1, "Plot not as expected"
