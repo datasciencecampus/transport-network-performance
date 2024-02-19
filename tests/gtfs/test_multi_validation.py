@@ -453,14 +453,14 @@ class TestMultiGtfsInstance(object):
         ), "Gtfs inst[1] not as expected after filter"
 
     @pytest.mark.parametrize(
-        "which, summ_ops, sort_by, raises, match",
+        "which, summ_ops, sort_by_route_type, raises, match",
         (
-            ["route", True, "days", TypeError, ".*summ_ops.*list.*bool"],
-            [True, [np.max], "days", TypeError, ".*which.*str.*bool"],
+            ["route", True, True, TypeError, ".*summ_ops.*list.*bool"],
+            [True, [np.max], True, TypeError, ".*which.*str.*bool"],
             [
                 "not_which",
                 [np.max],
-                "days",
+                True,
                 ValueError,
                 ".*which.*trips.*routes.*not_which.*",
             ],
@@ -468,18 +468,26 @@ class TestMultiGtfsInstance(object):
                 "trips",
                 [np.max],
                 "not_sort",
-                ValueError,
-                ".*sort_by.*days.*route_type.*not_sort.*",
+                TypeError,
+                ".*sort_by_route_type.*bool.*str",
             ],
         ),
     )
     def test__summarise_core_defence(
-        self, multi_gtfs_fixture, which, summ_ops, sort_by, raises, match
+        self,
+        multi_gtfs_fixture,
+        which,
+        summ_ops,
+        sort_by_route_type,
+        raises,
+        match,
     ):
         """Defensive tests for _summarise_core()."""
         with pytest.raises(raises, match=match):
             multi_gtfs_fixture._summarise_core(
-                which=which, summ_ops=summ_ops, sort_by=sort_by
+                which=which,
+                summ_ops=summ_ops,
+                sort_by_route_type=sort_by_route_type,
             )
 
     def test__summarise_core(self, multi_gtfs_fixture):
@@ -544,7 +552,7 @@ class TestMultiGtfsInstance(object):
         ), "Unexpecteed number of routes on 2024-04-06"
         # test sorting to route_type
         route_sort = multi_gtfs_fixture._summarise_core(
-            which="routes", to_days=True, sort_by="route_type"
+            which="routes", to_days=True, sort_by_route_type=True
         )
         first_three_types = route_sort.route_type[:3]
         assert np.array_equal(
