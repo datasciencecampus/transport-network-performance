@@ -415,7 +415,8 @@ class MultiGtfsInstance:
             and should therefore nothing should be passed when calling this
             function (so it remains as the default), by default False.
         sort_by_route_type : bool, optional
-            Whether or not to sort the resulting dataframe by route_type,
+            Whether or not to sort the resulting dataframe by route_type.
+            This only impacts the resulting df when to_days=True,
             by default False.
 
         Returns
@@ -521,7 +522,8 @@ class MultiGtfsInstance:
             and should therefore nothing should be passed when calling this
             function (so it remains as the default), by default False.
         sort_by_route_type : bool, optional
-            Whether or not to sort the resulting dataframe by route_type,
+            Whether or not to sort the resulting dataframe by route_type.
+            This only impacts the resulting df when to_days=True,
             by default False.
 
         Returns
@@ -564,7 +566,8 @@ class MultiGtfsInstance:
             and should therefore nothing should be passed when calling this
             function (so it remains as the default), by default False.
         sort_by_route_type : bool, optional
-            Whether or not to sort the resulting dataframe by route_type,
+            Whether or not to sort the resulting dataframe by route_type.
+            This only impacts the resulting df when to_days=True,
             by default False.
 
         Returns
