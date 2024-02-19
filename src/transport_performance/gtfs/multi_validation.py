@@ -492,10 +492,10 @@ class MultiGtfsInstance:
         # Always sort by day so that route_type sorts are more organised
         trip_counts = self.instances[0]._order_dataframe_by_day(trip_counts)
         if sort_by_route_type:
-            trip_counts = trip_counts.sort_values("route_type").reset_index()
+            trip_counts = trip_counts.sort_values("route_type")
         if to_days:
             trip_counts = self._summary_col_sorter(trip_counts)
-        return trip_counts
+        return trip_counts.reset_index(drop=True)
 
     def summarise_trips(
         self,
