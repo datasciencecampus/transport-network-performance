@@ -491,12 +491,21 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
+    <span class="k">def</span> <span class="nf">_summary_col_sorter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sort columns for summary dfs.&quot;&quot;&quot;</span>
+        <span class="n">presets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;route_type&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">presets</span><span class="p">:</span>
+                <span class="n">presets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">presets</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="nf">_summarise_core</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">which</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trips&quot;</span><span class="p">,</span>
         <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
         <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">to_days</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">sort_by_route_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the MultiGtfsInstance by either trip_id or route_id.</span>
 
@@ -511,12 +520,16 @@
 <span class="sd">            by default [np.min, np.max, np.mean, np.median]</span>
 <span class="sd">        return_summary : bool, optional</span>
 <span class="sd">            When set to False, full data for each trip on each date will be</span>
-<span class="sd">            returned. Defaults to True.</span>
+<span class="sd">            returned, by default True.</span>
 <span class="sd">        to_days : bool, optional</span>
 <span class="sd">            Whether or not to aggregate to days, or to just return counts for</span>
 <span class="sd">            trips/routes for each date. When False, summ_ops becomes useless,</span>
 <span class="sd">            and should therefore nothing should be passed when calling this</span>
-<span class="sd">            function (so it remains as the default). Defaults to False.</span>
+<span class="sd">            function (so it remains as the default), by default False.</span>
+<span class="sd">        sort_by_route_type : bool, optional</span>
+<span class="sd">            Whether or not to sort the resulting dataframe by route_type.</span>
+<span class="sd">            This only impacts the resulting df when to_days=True,</span>
+<span class="sd">            by default False.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -534,12 +547,12 @@
         <span class="n">_type_defence</span><span class="p">(</span><span class="n">which</span><span class="p">,</span> <span class="s2">&quot;which&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="n">_type_defence</span><span class="p">(</span><span class="n">return_summary</span><span class="p">,</span> <span class="s2">&quot;return_summary&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="n">_type_defence</span><span class="p">(</span><span class="n">to_days</span><span class="p">,</span> <span class="s2">&quot;to_days&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">sort_by_route_type</span><span class="p">,</span> <span class="s2">&quot;sort_by_route_type&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="n">which</span> <span class="o">=</span> <span class="n">which</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">which</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;trips&quot;</span><span class="p">,</span> <span class="s2">&quot;routes&quot;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;&#39;which&#39; must be one of [&#39;trips&#39;, &#39;routes&#39;].  Got </span><span class="si">{</span><span class="n">which</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-
         <span class="c1"># choose summary</span>
         <span class="k">if</span> <span class="n">which</span> <span class="o">==</span> <span class="s2">&quot;trips&quot;</span><span class="p">:</span>
             <span class="n">group_col</span> <span class="o">=</span> <span class="s2">&quot;trip_id&quot;</span>
@@ -588,8 +601,13 @@
             <span class="n">column</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;amin&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;amax&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
         <span class="p">]</span>
+        <span class="c1"># Always sort by day so that route_type sorts are more organised</span>
         <span class="n">trip_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_order_dataframe_by_day</span><span class="p">(</span><span class="n">trip_counts</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">trip_counts</span>
+        <span class="k">if</span> <span class="n">sort_by_route_type</span><span class="p">:</span>
+            <span class="n">trip_counts</span> <span class="o">=</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;route_type&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">to_days</span><span class="p">:</span>
+            <span class="n">trip_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_summary_col_sorter</span><span class="p">(</span><span class="n">trip_counts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">trip_counts</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MultiGtfsInstance.summarise_trips">
 <a class="viewcode-back" href="../../../reference/_autosummary/transport_performance.gtfs.multi_validation.MultiGtfsInstance.html#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips">[docs]</a>
@@ -598,6 +616,7 @@
         <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
         <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">to_days</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">sort_by_route_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the combined GTFS data by trip_id.</span>
 
@@ -610,12 +629,16 @@
 <span class="sd">            ,by default [np.min, np.max, np.mean, np.median]</span>
 <span class="sd">        return_summary: bool, optional</span>
 <span class="sd">            When set to False, full data for each trip on each date will be</span>
-<span class="sd">            returned. Defaults to True.</span>
+<span class="sd">            returned, by default True.</span>
 <span class="sd">        to_days : bool, optional</span>
 <span class="sd">            Whether or not to aggregate to days, or to just return counts for</span>
 <span class="sd">            trips/routes for each date. When False, summ_ops becomes useless,</span>
 <span class="sd">            and should therefore nothing should be passed when calling this</span>
-<span class="sd">            function (so it remains as the default). Defaults to False.</span>
+<span class="sd">            function (so it remains as the default), by default False.</span>
+<span class="sd">        sort_by_route_type : bool, optional</span>
+<span class="sd">            Whether or not to sort the resulting dataframe by route_type.</span>
+<span class="sd">            This only impacts the resulting df when to_days=True,</span>
+<span class="sd">            by default False.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -628,6 +651,7 @@
             <span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span>
             <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">,</span>
             <span class="n">to_days</span><span class="o">=</span><span class="n">to_days</span><span class="p">,</span>
+            <span class="n">sort_by_route_type</span><span class="o">=</span><span class="n">sort_by_route_type</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_trip_summary</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
@@ -639,6 +663,7 @@
         <span class="n">summ_ops</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">],</span>
         <span class="n">return_summary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">to_days</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">sort_by_route_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Summarise the combined GTFS data by route_id.</span>
 
@@ -651,12 +676,16 @@
 <span class="sd">            by default [np.min, np.max, np.mean, np.median].</span>
 <span class="sd">        return_summary: bool, optional</span>
 <span class="sd">            When set to False, full data for each trip on each date will be</span>
-<span class="sd">            returned. Defaults to True.</span>
+<span class="sd">            returned, by default True.</span>
 <span class="sd">        to_days : bool, optional</span>
 <span class="sd">            Whether or not to aggregate to days, or to just return counts for</span>
 <span class="sd">            trips/routes for each date. When False, summ_ops becomes useless,</span>
 <span class="sd">            and should therefore nothing should be passed when calling this</span>
-<span class="sd">            function (so it remains as the default). Defaults to False.</span>
+<span class="sd">            function (so it remains as the default), by default False.</span>
+<span class="sd">        sort_by_route_type : bool, optional</span>
+<span class="sd">            Whether or not to sort the resulting dataframe by route_type.</span>
+<span class="sd">            This only impacts the resulting df when to_days=True,</span>
+<span class="sd">            by default False.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -669,6 +698,7 @@
             <span class="n">summ_ops</span><span class="o">=</span><span class="n">summ_ops</span><span class="p">,</span>
             <span class="n">return_summary</span><span class="o">=</span><span class="n">return_summary</span><span class="p">,</span>
             <span class="n">to_days</span><span class="o">=</span><span class="n">to_days</span><span class="p">,</span>
+            <span class="n">sort_by_route_type</span><span class="o">=</span><span class="n">sort_by_route_type</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">daily_route_summary</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
@@ -691,7 +721,7 @@
 <span class="sd">            Whether or not to return the folium map object, by default True.</span>
 <span class="sd">        filtered_only : bool, optional</span>
 <span class="sd">            Whether to filter the stops that are plotted to only stop_id&#39;s that</span>
-<span class="sd">            are present in the stop_times table.</span>
+<span class="sd">            are present in the stop_times table, by default True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

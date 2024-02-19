@@ -377,7 +377,7 @@ paths.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes">
-<span class="sig-name descname"><span class="pre">summarise_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">summarise_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">sort_by_route_type:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes" title="Link to this definition"></a></dt>
 <dd><p>Summarise the combined GTFS data by route_id.</p>
 <section id="id14">
 <h3>Parameters<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
@@ -388,12 +388,16 @@ operators
 by default [np.min, np.max, np.mean, np.median].</p>
 </dd>
 <dt>return_summary: bool, optional</dt><dd><p>When set to False, full data for each trip on each date will be
-returned. Defaults to True.</p>
+returned, by default True.</p>
 </dd>
 <dt>to_days<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to aggregate to days, or to just return counts for
 trips/routes for each date. When False, summ_ops becomes useless,
 and should therefore nothing should be passed when calling this
-function (so it remains as the default). Defaults to False.</p>
+function (so it remains as the default), by default False.</p>
+</dd>
+<dt>sort_by_route_type<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to sort the resulting dataframe by route_type.
+This only impacts the resulting df when to_days=True,
+by default False.</p>
 </dd>
 </dl>
 </section>
@@ -408,7 +412,7 @@ function (so it remains as the default). Defaults to False.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips">
-<span class="sig-name descname"><span class="pre">summarise_trips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_trips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">summarise_trips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">sort_by_route_type:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_trips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="Link to this definition"></a></dt>
 <dd><p>Summarise the combined GTFS data by trip_id.</p>
 <section id="id16">
 <h3>Parameters<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
@@ -419,12 +423,16 @@ operators
 ,by default [np.min, np.max, np.mean, np.median]</p>
 </dd>
 <dt>return_summary: bool, optional</dt><dd><p>When set to False, full data for each trip on each date will be
-returned. Defaults to True.</p>
+returned, by default True.</p>
 </dd>
 <dt>to_days<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to aggregate to days, or to just return counts for
 trips/routes for each date. When False, summ_ops becomes useless,
 and should therefore nothing should be passed when calling this
-function (so it remains as the default). Defaults to False.</p>
+function (so it remains as the default), by default False.</p>
+</dd>
+<dt>sort_by_route_type<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to sort the resulting dataframe by route_type.
+This only impacts the resulting df when to_days=True,
+by default False.</p>
 </dd>
 </dl>
 </section>
@@ -469,7 +477,7 @@ function (so it remains as the default). Defaults to False.</p>
 <dt>return_viz<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to return the folium map object, by default True.</p>
 </dd>
 <dt>filtered_only<span class="classifier">bool, optional</span></dt><dd><p>Whether to filter the stops that are plotted to only stop_id’s that
-are present in the stop_times table.</p>
+are present in the stop_times table, by default True.</p>
 </dd>
 </dl>
 </section>
