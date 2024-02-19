@@ -736,7 +736,7 @@ class MultiGtfsInstance:
     def _plot_core(
         self,
         df: pd.DataFrame,
-        service_type: str = "routes",
+        count_col: str = "routes",
         width: int = 1000,
         height: int = 550,
         title: str = None,
@@ -747,17 +747,13 @@ class MultiGtfsInstance:
         """Plot a timeseries for trip/route count."""
         # defences
         _type_defence(df, "df", pd.DataFrame)
-        # _type_defence(count_col, "count_col", str)
+        _type_defence(count_col, "count_col", str)
         _type_defence(width, "width", int)
         _type_defence(height, "height", int)
         _type_defence(title, "title", (str, type(None)))
         _type_defence(kwargs, "kwargs", dict)
         _type_defence(rolling_average, "rolling_average", (int, type(None)))
         _type_defence(line_date, "line_date", (str, type(None)))
-        if service_type == "routes":
-            count_col = "route_count"
-        else:
-            count_col = "trip_count"
         # preparation
         LABEL_FORMAT = {
             count_col: self._reformat_col_names(count_col),
@@ -864,9 +860,10 @@ class MultiGtfsInstance:
             )
         if service_type == "routes":
             data = self.summarise_routes().copy()
+            count_col = "route_count"
         else:
             data = self.summarise_trips().copy()
-
+            count_col = "trip_count"
         if not route_type:
             data = (
                 data.drop("route_type", axis=1)
@@ -876,7 +873,7 @@ class MultiGtfsInstance:
             )
         figure = self._plot_core(
             data,
-            service_type=service_type,
+            count_col=count_col,
             width=width,
             height=height,
             title=title,

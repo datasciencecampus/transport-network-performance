@@ -671,19 +671,21 @@ class TestMultiGtfsInstance(object):
         """General tests for _plot_core()."""
         # route summary
         data = multi_gtfs_fixture.summarise_routes()
-        route_fig = multi_gtfs_fixture._plot_core(data, "routes")
+        route_fig = multi_gtfs_fixture._plot_core(data, "route_count")
         assert isinstance(route_fig, go.Figure), "Route counts not plotted"
         # trip summary
         data = multi_gtfs_fixture.summarise_trips()
-        trip_fig = multi_gtfs_fixture._plot_core(data, "trips")
+        trip_fig = multi_gtfs_fixture._plot_core(data, "trip_count")
         assert isinstance(trip_fig, go.Figure), "Trip counts not plotted"
         # trip summary with custom title
-        trip_fig = multi_gtfs_fixture._plot_core(data, "trips", title="test")
+        trip_fig = multi_gtfs_fixture._plot_core(
+            data, "trip_count", title="test"
+        )
         found_title = trip_fig.layout["title"]["text"]
         assert found_title == "test", "Title not as expected"
         # trip summary with custom dimensions
         trip_fig = multi_gtfs_fixture._plot_core(
-            data, "trips", height=100, width=150
+            data, "trip_count", height=100, width=150
         )
         found_height = trip_fig.layout["height"]
         found_width = trip_fig.layout["width"]
@@ -691,7 +693,7 @@ class TestMultiGtfsInstance(object):
         assert found_width == 150, "Width not as expected"
         # custom kwargs
         trip_fig = multi_gtfs_fixture._plot_core(
-            data, "trips", kwargs={"markers": True}
+            data, "trip_count", kwargs={"markers": True}
         )
         assert trip_fig.data[0]["mode"] in [
             "markers+lines",
@@ -699,7 +701,7 @@ class TestMultiGtfsInstance(object):
         ], "Markers not plotted"
         # rolling average
         avg_fig = multi_gtfs_fixture._plot_core(
-            data, "trips", rolling_average=7
+            data, "trip_count", rolling_average=7
         )
         found_ylabel = avg_fig.layout["yaxis"]["title"]["text"]
         assert (
@@ -707,7 +709,7 @@ class TestMultiGtfsInstance(object):
         ), "Rolling average not plotted"
         # draw a line on a date
         avg_fig = multi_gtfs_fixture._plot_core(
-            data, "trips", rolling_average=7, line_date="2023-12-01"
+            data, "trip_count", rolling_average=7, line_date="2023-12-01"
         )
         found_line = avg_fig.layout["shapes"][0]["line"]["dash"]
         assert found_line == "dash", "Date line not plotted"
