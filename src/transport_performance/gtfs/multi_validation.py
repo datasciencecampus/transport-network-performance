@@ -379,12 +379,21 @@ class MultiGtfsInstance:
             self._raise_empty_feed_error(bbox)
         return None
 
+    def _summary_col_sorter(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Sort columns for summary dfs."""
+        presets = ["day", "route_type"]
+        for col in sorted(df.columns.values):
+            if col not in presets:
+                presets.append(col)
+        return df.reindex(presets, axis=1).copy()
+
     def _summarise_core(
         self,
         which: str = "trips",
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
         to_days: bool = False,
+        sort_by_route_type: bool = False,
     ) -> pd.DataFrame:
         """Summarise the MultiGtfsInstance by either trip_id or route_id.
 
@@ -399,12 +408,16 @@ class MultiGtfsInstance:
             by default [np.min, np.max, np.mean, np.median]
         return_summary : bool, optional
             When set to False, full data for each trip on each date will be
-            returned. Defaults to True.
+            returned, by default True.
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
-            function (so it remains as the default). Defaults to False.
+            function (so it remains as the default), by default False.
+        sort_by_route_type : bool, optional
+            Whether or not to sort the resulting dataframe by route_type.
+            This only impacts the resulting df when to_days=True,
+            by default False.
 
         Returns
         -------
@@ -422,12 +435,12 @@ class MultiGtfsInstance:
         _type_defence(which, "which", str)
         _type_defence(return_summary, "return_summary", bool)
         _type_defence(to_days, "to_days", bool)
+        _type_defence(sort_by_route_type, "sort_by_route_type", bool)
         which = which.lower().strip()
         if which not in ["trips", "routes"]:
             raise ValueError(
                 f"'which' must be one of ['trips', 'routes'].  Got {which}"
             )
-
         # choose summary
         if which == "trips":
             group_col = "trip_id"
@@ -476,14 +489,20 @@ class MultiGtfsInstance:
             column.replace("amin", "min").replace("amax", "max")
             for column in trip_counts.columns.values
         ]
+        # Always sort by day so that route_type sorts are more organised
         trip_counts = self.instances[0]._order_dataframe_by_day(trip_counts)
-        return trip_counts
+        if sort_by_route_type:
+            trip_counts = trip_counts.sort_values("route_type")
+        if to_days:
+            trip_counts = self._summary_col_sorter(trip_counts)
+        return trip_counts.reset_index(drop=True)
 
     def summarise_trips(
         self,
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
         to_days: bool = False,
+        sort_by_route_type: bool = False,
     ) -> pd.DataFrame:
         """Summarise the combined GTFS data by trip_id.
 
@@ -496,12 +515,16 @@ class MultiGtfsInstance:
             ,by default [np.min, np.max, np.mean, np.median]
         return_summary: bool, optional
             When set to False, full data for each trip on each date will be
-            returned. Defaults to True.
+            returned, by default True.
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
-            function (so it remains as the default). Defaults to False.
+            function (so it remains as the default), by default False.
+        sort_by_route_type : bool, optional
+            Whether or not to sort the resulting dataframe by route_type.
+            This only impacts the resulting df when to_days=True,
+            by default False.
 
         Returns
         -------
@@ -514,6 +537,7 @@ class MultiGtfsInstance:
             summ_ops=summ_ops,
             return_summary=return_summary,
             to_days=to_days,
+            sort_by_route_type=sort_by_route_type,
         )
         return self.daily_trip_summary.copy()
 
@@ -522,6 +546,7 @@ class MultiGtfsInstance:
         summ_ops: list = [np.min, np.max, np.mean, np.median],
         return_summary: bool = True,
         to_days: bool = False,
+        sort_by_route_type: bool = False,
     ) -> pd.DataFrame:
         """Summarise the combined GTFS data by route_id.
 
@@ -534,12 +559,16 @@ class MultiGtfsInstance:
             by default [np.min, np.max, np.mean, np.median].
         return_summary: bool, optional
             When set to False, full data for each trip on each date will be
-            returned. Defaults to True.
+            returned, by default True.
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
             and should therefore nothing should be passed when calling this
-            function (so it remains as the default). Defaults to False.
+            function (so it remains as the default), by default False.
+        sort_by_route_type : bool, optional
+            Whether or not to sort the resulting dataframe by route_type.
+            This only impacts the resulting df when to_days=True,
+            by default False.
 
         Returns
         -------
@@ -552,6 +581,7 @@ class MultiGtfsInstance:
             summ_ops=summ_ops,
             return_summary=return_summary,
             to_days=to_days,
+            sort_by_route_type=sort_by_route_type,
         )
         return self.daily_route_summary.copy()
 
@@ -571,7 +601,7 @@ class MultiGtfsInstance:
             Whether or not to return the folium map object, by default True.
         filtered_only : bool, optional
             Whether to filter the stops that are plotted to only stop_id's that
-            are present in the stop_times table.
+            are present in the stop_times table, by default True.
 
         Returns
         -------
