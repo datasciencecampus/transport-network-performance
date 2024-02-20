@@ -25,6 +25,7 @@ MultiGtfsInstance
                     ~MultiGtfsInstance.filter_to_date
                     ~MultiGtfsInstance.get_dates
                     ~MultiGtfsInstance.is_valid
+                    ~MultiGtfsInstance.plot_service
                     ~MultiGtfsInstance.save_feeds
                     ~MultiGtfsInstance.summarise_routes
                     ~MultiGtfsInstance.summarise_trips

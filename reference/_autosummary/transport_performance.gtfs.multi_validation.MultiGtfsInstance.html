@@ -169,6 +169,8 @@ creates a calendar table from calendar_times.</p>
 </dd>
 <dt>get_dates()</dt><dd><p>Get the range of dates that the gtfs(s) span.</p>
 </dd>
+<dt>plot_service()</dt><dd><p>Plot a timeseries of route or trip counts.</p>
+</dd>
 </dl>
 </section>
 <section id="raises">
@@ -215,19 +217,22 @@ glob string.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.is_valid" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.is_valid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_valid</span></code></a></p></td>
 <td><p>Validate each of the feeds in the MultiGtfsInstance.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_feeds</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.plot_service" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.plot_service"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_service</span></code></a></p></td>
+<td><p>Create a line plot of route or trip counts over time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_feeds</span></code></a></p></td>
 <td><p>Save the GtfsInstances to a directory.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarise_routes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarise_routes</span></code></a></p></td>
 <td><p>Summarise the combined GTFS data by route_id.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarise_trips</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summarise_trips</span></code></a></p></td>
 <td><p>Summarise the combined GTFS data by trip_id.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_empty_feeds</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_empty_feeds</span></code></a></p></td>
 <td><p>Ensure the feeds in MultiGtfsInstance are not empty.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">viz_stops</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops" title="transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops"><code class="xref py py-obj docutils literal notranslate"><span class="pre">viz_stops</span></code></a></p></td>
 <td><p>Visualise all stops from all of the GTFS files.</p></td>
 </tr>
 </tbody>
@@ -348,11 +353,51 @@ GtfsInstance’s.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.plot_service">
+<span class="sig-name descname"><span class="pre">plot_service</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'routes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">route_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">550</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotly_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rolling_average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.plot_service"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.plot_service" title="Link to this definition"></a></dt>
+<dd><p>Create a line plot of route or trip counts over time.</p>
+<section id="id12">
+<h3>Parameters<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>service_type: str, optional</dt><dd><p>Whether to plot ‘routes’ or ‘trips’. By default ‘routes’.</p>
+</dd>
+<dt>route_type<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to draw a line for each modality, by default True</p>
+</dd>
+<dt>width<span class="classifier">int, optional</span></dt><dd><p>Plot width, by default 1000</p>
+</dd>
+<dt>height<span class="classifier">int, optional</span></dt><dd><p>Plot height, by default 550</p>
+</dd>
+<dt>title<span class="classifier">str, optional</span></dt><dd><p>Plot title, by default None</p>
+</dd>
+<dt>plotly_kwargs<span class="classifier">dict, optional</span></dt><dd><p>Kwargs to pass to plotly.express.line, by default None</p>
+</dd>
+<dt>rolling_average<span class="classifier">Union[int, None], optional</span></dt><dd><p>How many days to calculate the rolling average over. When left as
+None, rolling average is not used.
+The rolling average is calculated from the center, meaning if ra=3,
+the average will be calculated from the current date, previous date
+and following date. Missing dates are imputed and treated as having
+values of 0.</p>
+</dd>
+<dt>line_date<span class="classifier">Union[str, None], optional</span></dt><dd><p>A data to draw a dashed vertical line on. Date should be in format:
+YYYY-MM-DD, by default None</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h3>Returns<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>go.Figure</dt><dd><p>The timerseries plot</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds">
 <span class="sig-name descname"><span class="pre">save_feeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'_new'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.save_feeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.save_feeds" title="Link to this definition"></a></dt>
 <dd><p>Save the GtfsInstances to a directory.</p>
-<section id="id12">
-<h3>Parameters<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<section id="id14">
+<h3>Parameters<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>dir<span class="classifier">Union[pathlib.Path, str]</span></dt><dd><p>The directory to export the GTFS files into.</p>
 </dd>
@@ -369,8 +414,8 @@ paths.</p>
 </dd>
 </dl>
 </section>
-<section id="id13">
-<h3>Returns<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<section id="id15">
+<h3>Returns<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
 <p>None</p>
 </section>
 </dd></dl>
@@ -379,48 +424,13 @@ paths.</p>
 <dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes">
 <span class="sig-name descname"><span class="pre">summarise_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">sort_by_route_type:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_routes" title="Link to this definition"></a></dt>
 <dd><p>Summarise the combined GTFS data by route_id.</p>
-<section id="id14">
-<h3>Parameters<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
-<dl class="simple">
-<dt>summ_ops<span class="classifier">list, optional</span></dt><dd><p>A list of numpy operators to gather a summary on. Accepts
-operators
-(e.g., np.min) or strings (“min”),
-by default [np.min, np.max, np.mean, np.median].</p>
-</dd>
-<dt>return_summary: bool, optional</dt><dd><p>When set to False, full data for each trip on each date will be
-returned, by default True.</p>
-</dd>
-<dt>to_days<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to aggregate to days, or to just return counts for
-trips/routes for each date. When False, summ_ops becomes useless,
-and should therefore nothing should be passed when calling this
-function (so it remains as the default), by default False.</p>
-</dd>
-<dt>sort_by_route_type<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to sort the resulting dataframe by route_type.
-This only impacts the resulting df when to_days=True,
-by default False.</p>
-</dd>
-</dl>
-</section>
-<section id="id15">
-<h3>Returns<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
-<dl class="simple">
-<dt>pd.DataFrame</dt><dd><p>A dataframe containing the summary</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips">
-<span class="sig-name descname"><span class="pre">summarise_trips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">sort_by_route_type:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_trips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="Link to this definition"></a></dt>
-<dd><p>Summarise the combined GTFS data by trip_id.</p>
 <section id="id16">
 <h3>Parameters<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>summ_ops<span class="classifier">list, optional</span></dt><dd><p>A list of numpy operators to gather a summary on. Accepts
 operators
-(e.g., np.min) or strings (“min”)
-,by default [np.min, np.max, np.mean, np.median]</p>
+(e.g., np.min) or strings (“min”),
+by default [np.min, np.max, np.mean, np.median].</p>
 </dd>
 <dt>return_summary: bool, optional</dt><dd><p>When set to False, full data for each trip on each date will be
 returned, by default True.</p>
@@ -446,18 +456,53 @@ by default False.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds">
-<span class="sig-name descname"><span class="pre">validate_empty_feeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.validate_empty_feeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds" title="Link to this definition"></a></dt>
-<dd><p>Ensure the feeds in MultiGtfsInstance are not empty.</p>
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips">
+<span class="sig-name descname"><span class="pre">summarise_trips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">summ_ops:</span> <span class="pre">list</span> <span class="pre">=</span> <span class="pre">[&lt;function</span> <span class="pre">min&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">max&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">mean&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">median&gt;],</span> <span class="pre">return_summary:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">to_days:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">sort_by_route_type:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.summarise_trips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.summarise_trips" title="Link to this definition"></a></dt>
+<dd><p>Summarise the combined GTFS data by trip_id.</p>
 <section id="id18">
 <h3>Parameters<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt>delete<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to delete the empty feeds, by default False</p>
+<dt>summ_ops<span class="classifier">list, optional</span></dt><dd><p>A list of numpy operators to gather a summary on. Accepts
+operators
+(e.g., np.min) or strings (“min”)
+,by default [np.min, np.max, np.mean, np.median]</p>
+</dd>
+<dt>return_summary: bool, optional</dt><dd><p>When set to False, full data for each trip on each date will be
+returned, by default True.</p>
+</dd>
+<dt>to_days<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to aggregate to days, or to just return counts for
+trips/routes for each date. When False, summ_ops becomes useless,
+and should therefore nothing should be passed when calling this
+function (so it remains as the default), by default False.</p>
+</dd>
+<dt>sort_by_route_type<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to sort the resulting dataframe by route_type.
+This only impacts the resulting df when to_days=True,
+by default False.</p>
 </dd>
 </dl>
 </section>
 <section id="id19">
 <h3>Returns<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>pd.DataFrame</dt><dd><p>A dataframe containing the summary</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds">
+<span class="sig-name descname"><span class="pre">validate_empty_feeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.validate_empty_feeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.validate_empty_feeds" title="Link to this definition"></a></dt>
+<dd><p>Ensure the feeds in MultiGtfsInstance are not empty.</p>
+<section id="id20">
+<h3>Parameters<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>delete<span class="classifier">bool, optional</span></dt><dd><p>Whether or not to delete the empty feeds, by default False</p>
+</dd>
+</dl>
+</section>
+<section id="id21">
+<h3>Returns<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>list</dt><dd><p>A list of feeds that are empty and their index in GtfsInstance.</p>
 </dd>
@@ -469,8 +514,8 @@ by default False.</p>
 <dt class="sig sig-object py" id="transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops">
 <span class="sig-name descname"><span class="pre">viz_stops</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_viz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtered_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Map</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/transport_performance/gtfs/multi_validation.html#MultiGtfsInstance.viz_stops"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#transport_performance.gtfs.multi_validation.MultiGtfsInstance.viz_stops" title="Link to this definition"></a></dt>
 <dd><p>Visualise all stops from all of the GTFS files.</p>
-<section id="id20">
-<h3>Parameters<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<section id="id22">
+<h3>Parameters<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>path<span class="classifier">Union[str, pathlib.Path], optional</span></dt><dd><p>The path to save the folium map to, by default None.</p>
 </dd>
@@ -481,8 +526,8 @@ are present in the stop_times table, by default True.</p>
 </dd>
 </dl>
 </section>
-<section id="id21">
-<h3>Returns<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<section id="id23">
+<h3>Returns<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>folium.Map</dt><dd><p>A folium map with all stops plotted on it.</p>
 </dd>
@@ -490,8 +535,8 @@ are present in the stop_times table, by default True.</p>
 </dd>
 </dl>
 </section>
-<section id="id22">
-<h3>Raises<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<section id="id24">
+<h3>Raises<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
 <dl class="simple">
 <dt>ValueError</dt><dd><p>An error is raised if bot parameters are None as the map won’t be
 saved or returned.</p>
