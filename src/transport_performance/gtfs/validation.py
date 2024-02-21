@@ -1324,6 +1324,7 @@ class GtfsInstance:
             "stops": self.feed.stops,
             "trips": self.feed.trips,
             "calendar": self.feed.calendar,
+            "full_stop_schedule": self.full_stop_schedule,
         }
 
         # determine which errors/warnings have rows that can be located
