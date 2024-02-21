@@ -73,6 +73,11 @@ outputs/*
 *.jpeg
 *.svg
 
+# specific rules for README images
+!/www/cardiff-street-map.png
+!/www/tp-explained.png
+!/www/transport-performance-newport.png
+
 # The following was created by https://www.toptal.com/developers/gitignore/api/macos,windows,r,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,r,python
 
