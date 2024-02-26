@@ -19,9 +19,11 @@ from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_iterable,
     _type_defence,
+    _check_attribute,
     _validate_datestring,
     _enforce_file_extension,
     _gtfs_defence,
+    _check_item_in_iter,
 )
 from transport_performance.utils.constants import PKG_PATH
 
@@ -284,14 +286,20 @@ def _add_validation_row(
         An error is raised if the validity df does not exist
 
     """
-    # TODO: add dtype defences from defence.py once gtfs-html-new is merged
-    if "validity_df" not in gtfs.__dict__.keys():
-        raise AttributeError(
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(_type, "_type", str)
+    _type_defence(message, "message", str)
+    _type_defence(rows, "rows", list)
+    _check_attribute(
+        gtfs,
+        "validity_df",
+        message=(
             "The validity_df does not exist as an "
             "attribute of your GtfsInstance object, \n"
             "Did you forget to run the .is_valid() method?"
-        )
-
+        ),
+    )
+    _check_item_in_iter(_type, ["warning", "error"], "_type")
     temp_df = pd.DataFrame(
         {
             "type": [_type],
