@@ -8,6 +8,7 @@ import pytest
 from _pytest.python_api import RaisesContext
 import pandas as pd
 from pyprojroot import here
+from contextlib import nullcontext as does_not_raise
 
 from transport_performance.utils.defence import (
     _check_iterable,
@@ -21,6 +22,7 @@ from transport_performance.utils.defence import (
     _is_expected_filetype,
     _enforce_file_extension,
 )
+from transport_performance.gtfs.validation import GtfsInstance
 
 
 class Test_CheckIter(object):
@@ -251,6 +253,10 @@ def test__gtfs_defence():
         ),
     ):
         _gtfs_defence("tester", "test")
+    # passing test
+    with does_not_raise():
+        gtfs = GtfsInstance(here("tests/data/chester-20230816-small_gtfs.zip"))
+        _gtfs_defence(gtfs=gtfs, param_nm="gtfs")
 
 
 class Test_TypeDefence(object):
