@@ -5,11 +5,11 @@ from shapely.geometry import box
 from pyprojroot import here
 import pandas as pd
 import os
-import math
 import plotly.graph_objects as go
 from typing import Union, TYPE_CHECKING
 import pathlib
 from geopandas import GeoDataFrame
+import numpy as np
 import warnings
 
 if TYPE_CHECKING:
@@ -19,9 +19,12 @@ from transport_performance.utils.defence import (
     _is_expected_filetype,
     _check_iterable,
     _type_defence,
+    _check_attribute,
+    _gtfs_defence,
     _validate_datestring,
     _enforce_file_extension,
-    _gtfs_defence,
+    _check_parent_dir_exists,
+    _check_item_in_iter,
 )
 from transport_performance.utils.constants import PKG_PATH
 
@@ -284,14 +287,20 @@ def _add_validation_row(
         An error is raised if the validity df does not exist
 
     """
-    # TODO: add dtype defences from defence.py once gtfs-html-new is merged
-    if "validity_df" not in gtfs.__dict__.keys():
-        raise AttributeError(
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(_type, "_type", str)
+    _type_defence(message, "message", str)
+    _type_defence(rows, "rows", list)
+    _check_attribute(
+        gtfs,
+        "validity_df",
+        message=(
             "The validity_df does not exist as an "
             "attribute of your GtfsInstance object, \n"
             "Did you forget to run the .is_valid() method?"
-        )
-
+        ),
+    )
+    _check_item_in_iter(_type, ["warning", "error"], "_type")
     temp_df = pd.DataFrame(
         {
             "type": [_type],
@@ -311,7 +320,6 @@ def filter_gtfs_around_trip(
     gtfs,
     trip_id: str,
     buffer_dist: int = 10000,
-    units: str = "m",
     crs: str = "27700",
     out_pth=os.path.join("data", "external", "trip_gtfs.zip"),
 ) -> None:
@@ -325,8 +333,6 @@ def filter_gtfs_around_trip(
         The trip ID
     buffer_dist : int, optional
         The distance to create a buffer around the trip, by default 10000
-    units : str, optional
-        Distance units of the original GTFS, by default "m"
     crs : str, optional
         The CRS to use for adding a buffer, by default "27700"
     out_pth : _type_, optional
@@ -343,21 +349,21 @@ def filter_gtfs_around_trip(
         An error is raised if a shapeID is not available
 
     """
-    # TODO: Add datatype defences once merged
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(trip_id, "trip_id", str)
+    _type_defence(buffer_dist, "buffer_dist", int)
+    _type_defence(crs, "crs", str)
+    _check_parent_dir_exists(out_pth, "out_pth", create=True)
     trips = gtfs.feed.trips
     shapes = gtfs.feed.shapes
 
     shape_id = list(trips[trips["trip_id"] == trip_id]["shape_id"])[0]
 
     # defence
-    # try/except for math.isnan() returning TypeError for strings
-    try:
-        if math.isnan(shape_id):
-            raise ValueError(
-                "'shape_id' not available for trip with trip_id: " f"{trip_id}"
-            )
-    except TypeError:
-        pass
+    if pd.isna(shape_id):
+        raise ValueError(
+            "'shape_id' not available for trip with trip_id: " f"{trip_id}"
+        )
 
     # create a buffer around the trip
     trip_shape = shapes[shapes["shape_id"] == shape_id]
@@ -376,7 +382,7 @@ def filter_gtfs_around_trip(
         in_pth=gtfs.gtfs_path,
         bbox=list(bbox),
         crs=crs,
-        units=units,
+        units=gtfs.units,
         out_pth=out_pth,
     )
 
@@ -465,3 +471,143 @@ def convert_pandas_to_plotly(
     if return_html:
         return fig.to_html(full_html=False)
     return fig
+
+
+def _get_validation_warnings(
+    gtfs, message: str, return_type: str = "values"
+) -> pd.DataFrame:
+    """Get warnings from the validity_df table based on a regex.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance()
+        The gtfs instance to obtain the warnings from.
+    message : str
+        The regex to use for filtering the warnings.
+    return_type : str, optional
+        The return type of the warnings. Can be either 'values' or 'dataframe',
+        by default 'values'
+
+    Returns
+    -------
+    pd.DataFrame
+        A dataframe containing all warnings matching the regex.
+
+    """
+    _gtfs_defence(gtfs, "gtfs")
+    _check_attribute(
+        gtfs,
+        "validity_df",
+        message=(
+            "The gtfs has not been validated, therefore no"
+            "warnings can be identified."
+        ),
+    )
+    _type_defence(message, "message", str)
+    return_type = return_type.lower().strip()
+    if return_type not in ["values", "dataframe"]:
+        raise ValueError(
+            "'return_type' expected one of ['values', 'dataframe]"
+            f". Got {return_type}"
+        )
+    needed_warnings = gtfs.validity_df[
+        gtfs.validity_df["message"].str.contains(message, regex=True, na=False)
+    ].copy()
+    if return_type == "dataframe":
+        return needed_warnings
+    return needed_warnings.values
+
+
+def _remove_validation_row(
+    gtfs, message: str = None, index: Union[list, np.array] = None
+) -> None:
+    """Remove rows from the 'validity_df' attr of a GtfsInstance().
+
+    Both a regex on messages and index locations can be used to drop drops. If
+    values are passed to both the 'index' and 'message' params, rows will be
+    removed using the regex passed to the 'message' param.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GtfsInstance to remove the warnings/errors from.
+    message : str, optional
+        The regex to filter messages by, by default None.
+    index : Union[list, np.array], optional
+        The index locations of rows to be removed, by default None.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        Error raised if both 'message' and 'index' params are None.
+    UserWarning
+        A warning is raised if both 'message' and 'index' params are not None.
+
+    """
+    # defences
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(message, "message", (str, type(None)))
+    _type_defence(index, "index", (list, np.ndarray, type(None)))
+    _check_attribute(gtfs, "validity_df")
+    if message is None and index is None:
+        raise ValueError(
+            "Both 'message' and 'index' are None, therefore no"
+            "warnings/errors are able to be cleaned."
+        )
+    if message is not None and index is not None:
+        warnings.warn(
+            UserWarning(
+                "Both 'index' and 'message' are not None. Warnings/"
+                "Errors have been cleaned on 'message'"
+            )
+        )
+    # remove row from validation table
+    if message is not None:
+        gtfs.validity_df = gtfs.validity_df[
+            ~gtfs.validity_df.message.str.contains(
+                message, regex=True, na=False
+            )
+        ]
+        return None
+
+    gtfs.validity_df = gtfs.validity_df.loc[
+        list(set(gtfs.validity_df.index) - set(index))
+    ]
+    return None
+
+
+def _function_pipeline(
+    gtfs, func_map: dict, operations: Union[dict, type(None)]
+) -> None:
+    """Iterate through and act on a functional pipeline."""
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(func_map, "func_map", dict)
+    _type_defence(operations, "operations", (dict, type(None)))
+    if operations:
+        for key in operations.keys():
+            if key not in func_map.keys():
+                raise KeyError(
+                    f"'{key}' function passed to 'operations' is not a "
+                    "known operation. Known operation include: "
+                    f"{func_map.keys()}"
+                )
+        for operation in operations:
+            # check value is dict or none (for kwargs)
+            _type_defence(
+                operations[operation],
+                f"operations[{operation}]",
+                (dict, type(None)),
+            )
+            operations[operation] = (
+                {} if operations[operation] is None else operations[operation]
+            )
+            func_map[operation](gtfs=gtfs, **operations[operation])
+    # if no operations passed, carry out all operations
+    else:
+        for operation in func_map:
+            func_map[operation](gtfs=gtfs)
+    return None

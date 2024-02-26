@@ -10,6 +10,13 @@ from transport_performance.gtfs.cleaners import (
     drop_trips,
     clean_consecutive_stop_fast_travel_warnings,
     clean_multiple_stop_fast_travel_warnings,
+    core_cleaners,
+    clean_unrecognised_column_warnings,
+    clean_duplicate_stop_times,
+)
+from transport_performance.gtfs.gtfs_utils import (
+    _get_validation_warnings,
+    _remove_validation_row,
 )
 
 
@@ -64,6 +71,10 @@ class Test_DropTrips(object):
         ]
         assert len(found_df) == 0, "Failed to drop trip in format 'string'"
 
+        # test dropping non existent trip
+        with pytest.warns(UserWarning, match="trip_id .* not found in GTFS"):
+            drop_trips(gtfs_fixture, ["NOT_AT_TRIP_ID"])
+
     def test_drop_trips_on_pass(self, gtfs_fixture):
         """General tests for drop_trips()."""
         fixture = gtfs_fixture
@@ -117,7 +128,7 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
     def test_clean_consecutive_stop_fast_travel_warnings_defence(
         self, gtfs_fixture
     ):
-        """Defensive tests forclean_consecutive_stop_fast_travel_warnings()."""
+        """Defensive tests for clean_consecutive_stop_fast_travel_warnings."""
         with pytest.raises(
             AttributeError,
             match=re.escape(
@@ -127,15 +138,13 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
                 "gtfs."
             ),
         ):
-            clean_consecutive_stop_fast_travel_warnings(
-                gtfs=gtfs_fixture, validate=False
-            )
+            clean_consecutive_stop_fast_travel_warnings(gtfs=gtfs_fixture)
 
     def test_clean_consecutive_stop_fast_travel_warnings_on_pass(
         self, gtfs_fixture
     ):
         """General tests for clean_consecutive_stop_fast_travel_warnings()."""
-        gtfs_fixture.is_valid(far_stops=True)
+        gtfs_fixture.is_valid()
         original_validation = {
             "type": {
                 0: "warning",
@@ -180,18 +189,15 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
         assert (
             original_validation == gtfs_fixture.validity_df.to_dict()
         ), "Original validity df is not as expected"
-        clean_consecutive_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=False
-        )
+        clean_consecutive_stop_fast_travel_warnings(gtfs=gtfs_fixture)
         gtfs_fixture.is_valid()
         assert expected_validation == gtfs_fixture.validity_df.to_dict(), (
             "Validation table is not as expected after cleaning consecutive "
             "stop fast travel warnings"
         )
         # test validation; test gtfs with no warnings
-        clean_consecutive_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=True
-        )
+        gtfs_fixture.is_valid()
+        clean_consecutive_stop_fast_travel_warnings(gtfs=gtfs_fixture)
 
 
 class Test_CleanMultipleStopFastTravelWarnings(object):
@@ -210,15 +216,13 @@ class Test_CleanMultipleStopFastTravelWarnings(object):
                 "gtfs."
             ),
         ):
-            clean_multiple_stop_fast_travel_warnings(
-                gtfs=gtfs_fixture, validate=False
-            )
+            clean_multiple_stop_fast_travel_warnings(gtfs=gtfs_fixture)
 
     def test_clean_multiple_stop_fast_travel_warnings_on_pass(
         self, gtfs_fixture
     ):
         """General tests for clean_multiple_stop_fast_travel_warnings()."""
-        gtfs_fixture.is_valid(far_stops=True)
+        gtfs_fixture.is_valid()
         original_validation = {
             "type": {
                 0: "warning",
@@ -263,15 +267,211 @@ class Test_CleanMultipleStopFastTravelWarnings(object):
         assert (
             original_validation == gtfs_fixture.validity_df.to_dict()
         ), "Original validity df is not as expected"
-        clean_multiple_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=False
-        )
+        clean_multiple_stop_fast_travel_warnings(gtfs=gtfs_fixture)
         gtfs_fixture.is_valid()
         assert expected_validation == gtfs_fixture.validity_df.to_dict(), (
             "Validation table is not as expected after cleaning consecutive "
             "stop fast travel warnings"
         )
         # test validation; test gtfs with no warnings
-        clean_multiple_stop_fast_travel_warnings(
-            gtfs=gtfs_fixture, validate=True
-        )
+        gtfs_fixture.is_valid()
+        clean_multiple_stop_fast_travel_warnings(gtfs=gtfs_fixture)
+
+
+class TestCoreCleaner(object):
+    """Tests for core_cleaners().
+
+    Notes
+    -----
+    There are no passing tests for this function as it relies on function from
+    gtfs-kit which have already been tested.
+
+    """
+
+    @pytest.mark.parametrize(
+        (
+            "clean_ids, clean_times, clean_route_short_names, drop_zombies, "
+            "raises, match"
+        ),
+        [
+            (
+                1,
+                True,
+                True,
+                True,
+                TypeError,
+                r".*expected .*bool.* Got .*int.*",
+            ),
+            (
+                True,
+                dict(),
+                True,
+                True,
+                TypeError,
+                r".*expected .*bool.* Got .*dict.*",
+            ),
+            (
+                True,
+                True,
+                "test string",
+                True,
+                TypeError,
+                r".*expected .*bool.* Got .*str.*",
+            ),
+            (
+                True,
+                True,
+                True,
+                2.12,
+                TypeError,
+                r".*expected .*bool.* Got .*float.*",
+            ),
+        ],
+    )
+    def test_core_claners_defence(
+        self,
+        gtfs_fixture,
+        clean_ids,
+        clean_times,
+        clean_route_short_names,
+        drop_zombies,
+        raises,
+        match,
+    ):
+        """Defensive tests for core_cleaners."""
+        with pytest.raises(raises, match=match):
+            gtfs_fixture.is_valid()
+            core_cleaners(
+                gtfs_fixture,
+                clean_ids,
+                clean_times,
+                clean_route_short_names,
+                drop_zombies,
+            )
+
+    def test_core_cleaners_drop_zombies_warns(self, gtfs_fixture):
+        """Test that warnings are emitted when shape_id isn't present in...
+
+        trips.
+        """
+        gtfs_fixture.feed.trips.drop("shape_id", axis=1, inplace=True)
+        with pytest.warns(
+            UserWarning,
+            match=r".*drop_zombies cleaner was unable to operate.*",
+        ):
+            gtfs_fixture.is_valid(validators={"core_validation": None})
+            gtfs_fixture.clean_feed()
+
+
+class TestCleanUnrecognisedColumnWarnings(object):
+    """Tests for clean_unrecognised_column_warnings."""
+
+    def test_clean_unrecognised_column_warnings(self, gtfs_fixture):
+        """Tests for clean_unrecognised_column_warnings."""
+        # initial assertions to ensure test data is correct
+        gtfs_fixture.is_valid(validators={"core_validation": None})
+        assert len(gtfs_fixture.validity_df) == 3, "validity_df wrong length"
+        assert np.array_equal(
+            gtfs_fixture.feed.trips.columns,
+            [
+                "route_id",
+                "service_id",
+                "trip_id",
+                "trip_headsign",
+                "block_id",
+                "shape_id",
+                "wheelchair_accessible",
+                "vehicle_journey_code",
+            ],
+        ), "Initial trips columns not as expected"
+        # clean warnings
+        clean_unrecognised_column_warnings(gtfs_fixture)
+        assert len(gtfs_fixture.validity_df) == 0, "Warnings no cleaned"
+        assert np.array_equal(
+            gtfs_fixture.feed.trips.columns,
+            [
+                "route_id",
+                "service_id",
+                "trip_id",
+                "trip_headsign",
+                "block_id",
+                "shape_id",
+                "wheelchair_accessible",
+            ],
+        ), "Failed to drop unrecognised columns"
+
+
+class TestCleanDuplicateStopTimes(object):
+    """Tests for clean_duplicate_stop_times."""
+
+    def test_clean_duplicate_stop_times_defence(self):
+        """Defensive functionality tests for clean_duplicate_stop_times."""
+        with pytest.raises(
+            TypeError, match=".*gtfs.* GtfsInstance object.*bool"
+        ):
+            clean_duplicate_stop_times(True)
+
+    def test_clean_duplicate_stop_times_on_pass(self):
+        """General functionality tests for clean_duplicate_stop_times."""
+        gtfs = GtfsInstance("tests/data/gtfs/repeated_pair_gtfs_fixture.zip")
+        gtfs.is_valid(validators={"core_validation": None})
+        _warnings = _get_validation_warnings(
+            gtfs, r"Repeated pair \(trip_id, departure_time\)"
+        )[0]
+        # check that the correct number of rows are impacted
+        assert (
+            len(_warnings[3]) == 24
+        ), "Unexpected number of rows originally impacted"
+        # test case for one of the instances that are removed (1)
+        assert 309 in _warnings[3], "Test case (1) missing from data"
+        assert np.array_equal(
+            list(gtfs.feed.stop_times.loc[309].values),
+            [
+                "VJf98a18e2c314219b4a98f75c5fa44e3f9618e72f",
+                "08:57:56",
+                "08:57:56",
+                "5540AWB33241",
+                3,
+                np.nan,
+                0,
+                0,
+                1.38726,
+                0,
+            ],
+        ), "data for test case (1) invalid"
+        # test case for one of the instances that remain (2)
+        assert 18 in _warnings[3], "Test case (2) missing from data"
+        assert np.array_equal(
+            list(gtfs.feed.stop_times.loc[18].values),
+            [
+                "VJ1b6f3baad353b0ba8d42e0290bfd0b39cb1130bc",
+                "11:10:23",
+                "11:10:23",
+                "5540AWA17133",
+                6,
+                np.nan,
+                0,
+                0,
+                np.nan,
+                0,
+            ],
+        ), "data for test case (2) invalid"
+        # clean gtfs
+        clean_duplicate_stop_times(gtfs)
+        _warnings = _get_validation_warnings(
+            gtfs, r"Repeated pair \(trip_id, departure_time\)"
+        )[0]
+        assert (
+            len(_warnings[3]) == 6
+        ), "Unexpected number of rows impacted after cleaning"
+        # assert test case (1) is removed from the data
+        with pytest.raises(KeyError, match=".*309.*"):
+            gtfs.feed.stop_times.loc[309]
+        # assert test case (2) remains part of the data
+        assert (
+            len(gtfs.feed.stop_times.loc[18]) > 0
+        ), "Test case removed from data"
+
+        # test return of none when no warnings are found (for cov)
+        _remove_validation_row(gtfs, message=r".* \(trip_id, departure_time\)")
+        assert clean_duplicate_stop_times(gtfs) is None

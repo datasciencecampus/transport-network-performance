@@ -8,8 +8,12 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
 from plotly.graph_objects import Figure as PlotlyFigure
+import numpy as np
 
-from transport_performance.gtfs.validation import GtfsInstance
+from transport_performance.gtfs.validation import (
+    GtfsInstance,
+    VALIDATE_FEED_FUNC_MAP,
+)
 from transport_performance.gtfs.gtfs_utils import (
     bbox_filter_gtfs,
     filter_gtfs,
@@ -17,6 +21,9 @@ from transport_performance.gtfs.gtfs_utils import (
     filter_gtfs_around_trip,
     convert_pandas_to_plotly,
     _validate_datestring,
+    _remove_validation_row,
+    _get_validation_warnings,
+    _function_pipeline,
 )
 
 # location of GTFS test fixture
@@ -276,7 +283,7 @@ class Test_AddValidationRow(object):
     """Tests for _add_validation_row()."""
 
     def test__add_validation_row_defence(self):
-        """Defensive tests for _add_test_validation_row()."""
+        """Defensive tests for _add_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         with pytest.raises(
             AttributeError,
@@ -291,9 +298,9 @@ class Test_AddValidationRow(object):
             )
 
     def test__add_validation_row_on_pass(self):
-        """General tests for _add_test_validation_row()."""
+        """General tests for _add_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
-        gtfs.is_valid(far_stops=False)
+        gtfs.is_valid(validators={"core_validation": None})
 
         _add_validation_row(
             gtfs=gtfs, _type="warning", message="test", table="stops"
@@ -335,12 +342,12 @@ class Test_FilterGtfsAroundTrip(object):
             trip_id="VJbedb4cfd0673348e017d42435abbdff3ddacbf82",
             out_pth=out_pth,
         )
-        assert os.path.exists(out_pth), "Failed to filtere GTFS around trip."
+        assert os.path.exists(out_pth), "Failed to filter GTFS around trip."
         # check the new gtfs can be read
         feed = GtfsInstance(gtfs_pth=out_pth)
         assert isinstance(
             feed, GtfsInstance
-        ), f"Expected class `Gtfs_Instance but found: {type(feed)}`"
+        ), f"Expected class `GtfsInstance` but found: {type(feed)}`"
 
 
 @pytest.fixture(scope="function")
@@ -387,6 +394,171 @@ class TestConvertPandasToPlotly(object):
             "Expected type plotly.graph_objects.Figure but "
             f"{type(fig_return)} found"
         )
+
+
+class TestGetValidationWarnings(object):
+    """Tests for _get_validation_warnings."""
+
+    def test__get_validation_warnings_defence(self):
+        """Test thhe defences of _get_validation_warnings."""
+        with pytest.raises(
+            TypeError, match=".* expected a GtfsInstance object"
+        ):
+            _get_validation_warnings(True, "test_msg")
+        gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
+        with pytest.raises(
+            AttributeError, match="The gtfs has not been validated.*"
+        ):
+            _get_validation_warnings(gtfs, "test")
+        gtfs.is_valid()
+        with pytest.raises(
+            ValueError, match=r"'return_type' expected one of \[.*\]\. Got .*"
+        ):
+            _get_validation_warnings(gtfs, "tester", "tester")
+
+    def test__get_validation_warnings(self):
+        """Test _get_validation_warnings on pass."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid()
+        # test return types
+        df_exp = _get_validation_warnings(
+            gtfs, "test", return_type="dataframe"
+        )
+        assert isinstance(
+            df_exp, pd.DataFrame
+        ), f"Expected df, got {type(df_exp)}"
+        ndarray_exp = _get_validation_warnings(gtfs, "test")
+        assert isinstance(
+            ndarray_exp, np.ndarray
+        ), f"Expected np.ndarray, got {type(ndarray_exp)}"
+        # test with valld regex (assertions on DF data without DF)
+        regex_matches = _get_validation_warnings(
+            gtfs, "Unrecognized column *.", return_type="dataframe"
+        )
+        assert len(regex_matches) == 5, (
+            "Getting validaiton warnings returned"
+            "unexpected number of warnings"
+        )
+        assert list(regex_matches["type"].unique()) == [
+            "warning"
+        ], "Dataframe type column not asd expected"
+        assert list(regex_matches.table) == [
+            "agency",
+            "stop_times",
+            "stops",
+            "trips",
+            "trips",
+        ], "Dataframe table column not as expected"
+        # test with matching message (no regex)
+        exact_match = _get_validation_warnings(
+            gtfs, "Unrecognized column agency_noc", return_type="Dataframe"
+        )
+        assert list(exact_match.values[0]) == [
+            "warning",
+            "Unrecognized column agency_noc",
+            "agency",
+            [],
+        ], "Dataframe values not as expected"
+        assert (
+            len(exact_match) == 1
+        ), f"Expected one match, found {len(exact_match)}"
+        # test with no matches (regex)
+        regex_no_match = _get_validation_warnings(
+            gtfs, ".*This is a test.*", return_type="Dataframe"
+        )
+        assert len(regex_no_match) == 0, "No matches expected. Matches found"
+        # test with no match (no regex)
+        no_match = _get_validation_warnings(
+            gtfs, "This is a test!!!", return_type="Dataframe"
+        )
+        assert len(no_match) == 0, "No matches expected. Matched found"
+
+
+class TestRemoveValidationRow(object):
+    """Tests for _remove_validation_row."""
+
+    def test__remove_validation_row_defence(self):
+        """Tests the defences of _remove_validation_row."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid()
+        # no message or index provided
+        with pytest.raises(
+            ValueError, match=r"Both .* and .* are None, .* to be cleaned"
+        ):
+            _remove_validation_row(gtfs)
+        # both provided
+        with pytest.warns(
+            UserWarning,
+            match=r"Both .* and .* are not None.* cleaned on 'message'",
+        ):
+            _remove_validation_row(gtfs, message="test", index=[0, 1])
+
+    def test__remove_validation_row_on_pass(self):
+        """Tests for _remove_validation_row on pass."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid(validators={"core_validation": None})
+        # with message
+        msg = "Unrecognized column agency_noc"
+        _remove_validation_row(gtfs, message=msg)
+        assert len(gtfs.validity_df) == 6, "DF is incorrect size"
+        found_cols = _get_validation_warnings(
+            gtfs, message=msg, return_type="dataframe"
+        )
+        assert (
+            len(found_cols) == 0
+        ), "Invalid errors/warnings still in validity_df"
+        # with index (removing the same error)
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        gtfs.is_valid(validators={"core_validation": None})
+        ind = [1]
+        _remove_validation_row(gtfs, index=ind)
+        assert len(gtfs.validity_df) == 6, "DF is incorrect size"
+        found_cols = _get_validation_warnings(
+            gtfs, message=msg, return_type="dataframe"
+        )
+        print(gtfs.validity_df)
+        assert (
+            len(found_cols) == 0
+        ), "Invalid errors/warnings still in validity_df"
+
+
+class TestFunctionPipeline(object):
+    """Tests for _function_pipeline.
+
+    Notes
+    -----
+    Not testing on pass here as better cases can be found in the tests for
+    GtfsInstance's is_valid() and clean_feed() methods.
+
+    """
+
+    @pytest.mark.parametrize(
+        "operations, raises, match",
+        [
+            # invalid type for 'validators'
+            (True, TypeError, ".*expected .*dict.*. Got .*bool.*"),
+            # invalid validator
+            (
+                {"not_a_valid_validator": None},
+                KeyError,
+                (
+                    r"'not_a_valid_validator' function passed to 'operations'"
+                    r" is not a known operation.*"
+                ),
+            ),
+            # invalid type for kwargs for validator
+            (
+                {"core_validation": pd.DataFrame()},
+                TypeError,
+                ".* expected .*dict.*NoneType.*",
+            ),
+        ],
+    )
+    def test_function_pipeline_defence(self, operations, raises, match):
+        """Defensive test for _function_pipeline."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        with pytest.raises(raises, match=match):
+            _function_pipeline(gtfs, VALIDATE_FEED_FUNC_MAP, operations)
 
 
 class Test_ValidateDatestring(object):

@@ -1,12 +1,17 @@
 """A set of functions that validate the GTFS data."""
 from typing import TYPE_CHECKING
+import os
 
 import numpy as np
 import pandas as pd
 from haversine import Unit, haversine_vector
 
-from transport_performance.gtfs.gtfs_utils import _add_validation_row
-from transport_performance.utils.defence import _gtfs_defence
+from transport_performance.gtfs.gtfs_utils import (
+    _add_validation_row,
+    _get_validation_warnings,
+    _remove_validation_row,
+)
+from transport_performance.utils.defence import _gtfs_defence, _check_attribute
 
 if TYPE_CHECKING:
     from transport_performance.gtfs.validation import GtfsInstance
@@ -25,6 +30,28 @@ VEHICLE_SPEED_BOUNDS = {
     12: 150,
     200: 120,
 }
+
+# EXPECTED GTFS FILES
+# DESC: USED TO RAISE WARNINGS WHEN .TXT FILES INCLUDED IN THE ZIP PASSED TO
+#       GTFSINSTANCE AREN'T A RECOGNISED GTFS TABLE#
+# NOTE: 'Levels' and 'Translation' tables are ignored by gtfs-kit
+
+ACCEPTED_GTFS_TABLES = [
+    "agency",
+    "attributions",
+    "calendar",
+    "calendar_dates",
+    "fare_attributes",
+    "fare_rules",
+    "feed_info",
+    "frequencies",
+    "routes",
+    "shapes",
+    "stops",
+    "stop_times",
+    "transfers",
+    "trips",
+]
 
 
 def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
@@ -145,6 +172,8 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
     )
 
     gtfs.full_stop_schedule = stop_sched
+    gtfs.table_map["full_stop_schedule"] = gtfs.full_stop_schedule
+
     # find the stops that exceed the speed boundary
     invalid_stops = stop_sched[stop_sched["speed"] > stop_sched["speed_bound"]]
 
@@ -153,7 +182,6 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
         return invalid_stops
 
     # add the error to the validation table
-    # TODO: After merge add full_stop_schedule to HTML output table keys
     _add_validation_row(
         gtfs=gtfs,
         _type="warning",
@@ -252,9 +280,8 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
         }
     )
 
-    # TODO: Add this table to the lookup once gtfs HTML is merged
     gtfs.multiple_stops_invalid = far_stops_df
-
+    gtfs.table_map["multiple_stops_invalid"] = gtfs.multiple_stops_invalid
     if len(gtfs.multiple_stops_invalid) > 0:
         _add_validation_row(
             gtfs=gtfs,
@@ -265,3 +292,98 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
         )
 
     return far_stops_df
+
+
+def validate_route_type_warnings(gtfs: "GtfsInstance") -> None:
+    """Valiidate that the route type warnings are reasonable and just.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The GtfsInstance to validate the warnings of.
+
+    Returns
+    -------
+    None
+
+    """
+    # defences
+    _gtfs_defence(gtfs, "gtfs")
+    _check_attribute(gtfs, "validity_df")
+    # identify and clean warnings
+    warnings = _get_validation_warnings(gtfs, "Invalid route_type.*")
+    if len(warnings) <= 0:
+        return None
+    route_rows = gtfs.feed.routes.loc[warnings[0][3]].copy()
+    route_rows = route_rows[
+        ~route_rows.route_type.astype("str").isin(
+            gtfs.ROUTE_LKP["route_type"].unique()
+        )
+    ]
+    _remove_validation_row(gtfs, "Invalid route_type.*")
+    if len(route_rows) > 0:
+        _add_validation_row(
+            gtfs,
+            _type="error",
+            message="Invalid route_type; maybe has extra space characters",
+            table="routes",
+            rows=list(route_rows.index),
+        )
+    return None
+
+
+def core_validation(gtfs: "GtfsInstance"):
+    """Carry out the main validators of gtfs-kit."""
+    _gtfs_defence(gtfs, "gtfs")
+    validation_df = gtfs.feed.validate()
+    gtfs.validity_df = pd.concat(
+        [validation_df, gtfs.validity_df], axis=0
+    ).reset_index(drop=True)
+
+
+def validate_gtfs_files(gtfs: "GtfsInstance") -> None:
+    """Validate to raise warnings if tables in GTFS zip aren't being read.
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The gtfs instance to run the validation on.
+
+    Returns
+    -------
+    None
+
+    """
+    _gtfs_defence(gtfs, "gtfs")
+    files = gtfs.get_gtfs_files()
+    invalid_extensions = []
+    non_implemented_files = []
+    for fname in files:
+        root, ext = os.path.splitext(fname)
+        # check for instances of invalid file extensions (only .txt accepted)
+        if ext.lower() != ".txt":
+            invalid_extensions.append(fname)
+        # check that each file is within the GTFS specification.
+        # NOTE: The 'levels' and 'translation' tables are in the GTFS spec
+        #       but aren't used by gtfs-kit.
+        # GTFS REFERENCE: https://developers.google.com/transit/gtfs/reference
+        if root not in ACCEPTED_GTFS_TABLES:
+            non_implemented_files.append(fname)
+    # raise warnings
+    if len(invalid_extensions) > 0:
+        msg = (
+            "GTFS zip includes files not of type '.txt'. These files "
+            f"include {invalid_extensions}"
+        )
+        _add_validation_row(
+            gtfs, _type="warning", message=msg, table="", rows=[]
+        )
+    if len(non_implemented_files) > 0:
+        msg = (
+            "GTFS zip includes files that aren't recognised by the GTFS "
+            f"spec. These include {non_implemented_files}"
+        )
+        _add_validation_row(
+            gtfs, _type="warning", message=msg, table="", rows=[]
+        )
+    return None
