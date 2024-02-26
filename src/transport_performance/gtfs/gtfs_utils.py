@@ -5,7 +5,6 @@ from shapely.geometry import box
 from pyprojroot import here
 import pandas as pd
 import os
-import math
 import plotly.graph_objects as go
 from typing import Union, TYPE_CHECKING
 import pathlib
@@ -20,9 +19,10 @@ from transport_performance.utils.defence import (
     _check_iterable,
     _type_defence,
     _check_attribute,
+    _gtfs_defence,
     _validate_datestring,
     _enforce_file_extension,
-    _gtfs_defence,
+    _check_parent_dir_exists,
     _check_item_in_iter,
 )
 from transport_performance.utils.constants import PKG_PATH
@@ -351,21 +351,22 @@ def filter_gtfs_around_trip(
         An error is raised if a shapeID is not available
 
     """
-    # TODO: Add datatype defences once merged
+    # NOTE: No defence for units as its deleted later on
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(trip_id, "trip_id", str)
+    _type_defence(buffer_dist, "buffer_dist", int)
+    _type_defence(crs, "crs", str)
+    _check_parent_dir_exists(out_pth, "out_pth", create=True)
     trips = gtfs.feed.trips
     shapes = gtfs.feed.shapes
 
     shape_id = list(trips[trips["trip_id"] == trip_id]["shape_id"])[0]
 
     # defence
-    # try/except for math.isnan() returning TypeError for strings
-    try:
-        if math.isnan(shape_id):
-            raise ValueError(
-                "'shape_id' not available for trip with trip_id: " f"{trip_id}"
-            )
-    except TypeError:
-        pass
+    if pd.isna(shape_id):
+        raise ValueError(
+            "'shape_id' not available for trip with trip_id: " f"{trip_id}"
+        )
 
     # create a buffer around the trip
     trip_shape = shapes[shapes["shape_id"] == shape_id]
