@@ -293,7 +293,7 @@ class Test_AddValidationRow(object):
     def test__add_validation_row_on_pass(self):
         """General tests for _add_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
-        gtfs.is_valid(validators={"core_validation": None})
+        gtfs.is_valid()
 
         _add_validation_row(
             gtfs=gtfs, _type="warning", message="test", table="stops"
