@@ -17,6 +17,8 @@ from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
 from geopandas import GeoDataFrame
 
+import transport_performance.gtfs.cleaners as cleaners
+import transport_performance.gtfs.validators as gtfs_validators
 from transport_performance.gtfs.validators import (
     validate_travel_over_multiple_stops,
     validate_travel_between_consecutive_stops,
@@ -40,15 +42,35 @@ from transport_performance.utils.defence import (
     _check_attribute,
     _enforce_file_extension,
 )
-
 from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
 )
-
 from transport_performance.gtfs.gtfs_utils import filter_gtfs
-
 from transport_performance.utils.constants import PKG_PATH
+
+# THESE MAPPINGS CAN NOT BE MOVED TO CONSTANTS AS THEY INTRODUCE DEPENDENCY
+# ISSUES.
+# TODO: Update these once further cleaners/validators are merged
+CLEAN_FEED_FUNCTION_MAP = {
+    "core_cleaners": cleaners.core_cleaners,
+    "clean_consecutive_stop_fast_travel_warnings": (
+        cleaners.clean_consecutive_stop_fast_travel_warnings
+    ),
+    "clean_multiple_stop_fast_travel_warnings": (
+        cleaners.clean_multiple_stop_fast_travel_warnings
+    ),
+}
+
+VALIDATE_FEED_FUNC_MAP = {
+    "core_validation": gtfs_validators.core_validation,
+    "validate_travel_between_consecutive_stops": (
+        gtfs_validators.validate_travel_between_consecutive_stops
+    ),
+    "validate_travel_over_multiple_stops": (
+        gtfs_validators.validate_travel_over_multiple_stops
+    ),
+}
 
 
 def _get_intermediate_dates(
