@@ -9,7 +9,10 @@ import geopandas as gpd
 from shapely.geometry import box
 from plotly.graph_objects import Figure as PlotlyFigure
 
-from transport_performance.gtfs.validation import GtfsInstance
+from transport_performance.gtfs.validation import (
+    GtfsInstance,
+    VALIDATE_FEED_FUNC_MAP,
+)
 from transport_performance.gtfs.gtfs_utils import (
     bbox_filter_gtfs,
     filter_gtfs,
@@ -17,6 +20,7 @@ from transport_performance.gtfs.gtfs_utils import (
     filter_gtfs_around_trip,
     convert_pandas_to_plotly,
     _validate_datestring,
+    _function_pipeline,
 )
 
 # location of GTFS test fixture
@@ -293,7 +297,7 @@ class Test_AddValidationRow(object):
     def test__add_validation_row_on_pass(self):
         """General tests for _add_test_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
-        gtfs.is_valid(far_stops=False)
+        gtfs.is_valid(validators={"core_validation": {}})
 
         _add_validation_row(
             gtfs=gtfs, _type="warning", message="test", table="stops"
@@ -387,6 +391,45 @@ class TestConvertPandasToPlotly(object):
             "Expected type plotly.graph_objects.Figure but "
             f"{type(fig_return)} found"
         )
+
+
+class TestFunctionPipeline(object):
+    """Tests for _function_pipeline.
+
+    Notes
+    -----
+    Not testing on pass here as better cases can be found in the tests for
+    GtfsInstance's is_valid() and clean_feed() methods.
+
+    """
+
+    @pytest.mark.parametrize(
+        "operations, raises, match",
+        [
+            # invalid type for 'validators'
+            (True, TypeError, ".*expected .*dict.*. Got .*bool.*"),
+            # invalid validator
+            (
+                {"not_a_valid_validator": None},
+                KeyError,
+                (
+                    r"'not_a_valid_validator' function passed to 'operations'"
+                    r" is not a known operation.*"
+                ),
+            ),
+            # invalid type for kwargs for validator
+            (
+                {"core_validation": pd.DataFrame()},
+                TypeError,
+                ".* expected .*dict.*NoneType.*",
+            ),
+        ],
+    )
+    def test_function_pipeline_defence(self, operations, raises, match):
+        """Defensive test for _function_pipeline."""
+        gtfs = GtfsInstance(GTFS_FIX_PTH)
+        with pytest.raises(raises, match=match):
+            _function_pipeline(gtfs, VALIDATE_FEED_FUNC_MAP, operations)
 
 
 class Test_ValidateDatestring(object):

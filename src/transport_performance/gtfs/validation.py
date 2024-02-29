@@ -17,15 +17,9 @@ from typing import Union, Callable
 from plotly.graph_objects import Figure as PlotlyFigure
 from geopandas import GeoDataFrame
 
-from transport_performance.gtfs.validators import (
-    validate_travel_over_multiple_stops,
-    validate_travel_between_consecutive_stops,
-)
+import transport_performance.gtfs.cleaners as cleaners
+import transport_performance.gtfs.validators as gtfs_validators
 from transport_performance.gtfs.calendar import create_calendar_from_dates
-from transport_performance.gtfs.cleaners import (
-    clean_consecutive_stop_fast_travel_warnings,
-    clean_multiple_stop_fast_travel_warnings,
-)
 from transport_performance.gtfs.routes import (
     scrape_route_type_lookup,
     get_saved_route_type_lookup,
@@ -40,15 +34,38 @@ from transport_performance.utils.defence import (
     _check_attribute,
     _enforce_file_extension,
 )
-
 from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
 )
-
-from transport_performance.gtfs.gtfs_utils import filter_gtfs
-
+from transport_performance.gtfs.gtfs_utils import (
+    filter_gtfs,
+    _function_pipeline,
+)
 from transport_performance.utils.constants import PKG_PATH
+
+# THESE MAPPINGS CAN NOT BE MOVED TO CONSTANTS AS THEY INTRODUCE DEPENDENCY
+# ISSUES.
+# TODO: Update these once further cleaners/validators are merged
+CLEAN_FEED_FUNCTION_MAP = {
+    "core_cleaners": cleaners.core_cleaners,
+    "clean_consecutive_stop_fast_travel_warnings": (
+        cleaners.clean_consecutive_stop_fast_travel_warnings
+    ),
+    "clean_multiple_stop_fast_travel_warnings": (
+        cleaners.clean_multiple_stop_fast_travel_warnings
+    ),
+}
+
+VALIDATE_FEED_FUNC_MAP = {
+    "core_validation": gtfs_validators.core_validation,
+    "validate_travel_between_consecutive_stops": (
+        gtfs_validators.validate_travel_between_consecutive_stops
+    ),
+    "validate_travel_over_multiple_stops": (
+        gtfs_validators.validate_travel_over_multiple_stops
+    ),
+}
 
 
 def _get_intermediate_dates(
@@ -376,14 +393,13 @@ class GtfsInstance:
         self.file_list = file_list
         return self.file_list
 
-    def is_valid(self, far_stops: bool = True) -> pd.DataFrame:
+    def is_valid(self, validators: dict = None) -> pd.DataFrame:
         """Check a feed is valid with `gtfs_kit`.
 
         Parameters
         ----------
-        far_stops : bool, optional
-            Whether or not to perform validation for far stops (both
-            between consecutive stops and over multiple stops)
+        validators : dict, optional
+            A dictionary of function name to kwargs mappings.
 
         Returns
         -------
@@ -391,10 +407,14 @@ class GtfsInstance:
             Table of errors, warnings & their descriptions.
 
         """
-        self.validity_df = self.feed.validate()
-        if far_stops:
-            validate_travel_between_consecutive_stops(self)
-            validate_travel_over_multiple_stops(self)
+        _type_defence(validators, "validators", (dict, type(None)))
+        # create validity df
+        self.validity_df = pd.DataFrame(
+            columns=["type", "message", "table", "rows"]
+        )
+        _function_pipeline(
+            gtfs=self, func_map=VALIDATE_FEED_FUNC_MAP, operations=validators
+        )
         return self.validity_df
 
     def print_alerts(self, alert_type: str = "error") -> None:
@@ -445,34 +465,27 @@ class GtfsInstance:
 
         return None
 
-    def clean_feed(
-        self, validate: bool = False, fast_travel: bool = True
-    ) -> None:
-        """Attempt to clean feed using `gtfs_kit`.
+    def clean_feed(self, cleansers: dict = None) -> None:
+        """Clean the gtfs feed.
 
         Parameters
         ----------
-        validate: bool, optional
-            Whether or not to validate the dataframe before cleaning
-        fast_travel: bool, optional
-            Whether or not to clean warnings related to fast travel.
+        cleansers : dict, optional
+            A mapping of cleansing functions and kwargs, by default None
+
+        Returns
+        -------
+        None
 
         """
-        _type_defence(fast_travel, "fast_travel", bool)
-        _type_defence(validate, "valiidate", bool)
-        if validate:
-            self.is_valid(far_stops=fast_travel)
-        try:
-            # In cases where shape_id is missing, keyerror is raised.
-            # https://developers.google.com/transit/gtfs/reference#shapestxt
-            # shows that shapes.txt is optional file.
-            self.feed = self.feed.clean()
-            if fast_travel:
-                clean_consecutive_stop_fast_travel_warnings(self)
-                clean_multiple_stop_fast_travel_warnings(self)
-        except KeyError:
-            # TODO: Issue 74 - Improve this to clean feed when KeyError raised
-            print("KeyError. Feed was not cleaned.")
+        # DEV NOTE: Opting not to allow for validation in clean_feed().
+        #           .is_valid() should be used before hand.
+        # DEV NOTE 2: Use of param name 'cleansers' is to avoid conflicts
+        _type_defence(cleansers, "cleansers", (dict, type(None)))
+        _function_pipeline(
+            gtfs=self, func_map=CLEAN_FEED_FUNCTION_MAP, operations=cleansers
+        )
+        return None
 
     def _produce_stops_map(
         self, what_geoms: str, is_filtered: bool, crs: Union[int, str]
@@ -1486,9 +1499,10 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed(validate=True, fast_travel=True)
+        self.is_valid()
+        self.clean_feed()
         # re-validate to clean any newly raised errors/warnings
-        validation_dataframe = self.is_valid(far_stops=True)
+        validation_dataframe = self.is_valid()
 
         # create extended reports if requested
         if extended_validation:

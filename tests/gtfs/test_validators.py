@@ -37,7 +37,7 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
 
     def test_validate_travel_between_consecutive_stops(self, gtfs_fixture):
         """General tests for validating travel between consecutive stops."""
-        gtfs_fixture.is_valid(far_stops=False)
+        gtfs_fixture.is_valid(validators={"core_validation": {}})
         validate_travel_between_consecutive_stops(gtfs=gtfs_fixture)
 
         expected_validation = {
@@ -74,7 +74,7 @@ class Test_ValidateTravelOverMultipleStops(object):
 
     def test_validate_travel_over_multiple_stops(self, gtfs_fixture):
         """General tests for validate_travel_over_multiple_stops()."""
-        gtfs_fixture.is_valid(far_stops=False)
+        gtfs_fixture.is_valid(validators={"core_validation": {}})
         validate_travel_over_multiple_stops(gtfs=gtfs_fixture)
 
         expected_validation = {

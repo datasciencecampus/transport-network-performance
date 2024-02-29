@@ -1,9 +1,20 @@
 """A set of functions that clean the gtfs data."""
 from typing import Union
+import warnings
 
 import numpy as np
+from gtfs_kit.cleaners import (
+    clean_ids as clean_ids_gk,
+    clean_route_short_names as clean_route_short_names_gk,
+    clean_times as clean_times_gk,
+    drop_zombies as drop_zombies_gk,
+)
 
-from transport_performance.utils.defence import _gtfs_defence, _check_iterable
+from transport_performance.utils.defence import (
+    _gtfs_defence,
+    _check_iterable,
+    _type_defence,
+)
 
 
 def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
@@ -167,4 +178,64 @@ def clean_multiple_stop_fast_travel_warnings(
     gtfs.multiple_stops_invalid = gtfs.multiple_stops_invalid[
         ~gtfs.multiple_stops_invalid["trip_id"].isin(trip_ids)
     ]
+    return None
+
+
+def core_cleaners(
+    gtfs,
+    clean_ids: bool = True,
+    clean_times: bool = True,
+    clean_route_short_names: bool = True,
+    drop_zombies: bool = True,
+) -> None:
+    """Clean the gtfs with the core cleaners of gtfs-kit.
+
+    The source code for the cleaners, along with detailed descriptions of the
+    cleaning they are performing can be found here:
+    https://github.com/mrcagney/gtfs_kit/blob/master/gtfs_kit/cleaners.py
+
+    All credit for these cleaners goes to the creators of the gtfs_kit package.
+    HOMEPAGE:  https://github.com/mrcagney/gtfs_kit
+
+    Parameters
+    ----------
+    gtfs : GtfsInstance
+        The gtfs to clean
+    clean_ids : bool, optional
+        Whether or not to use clean_ids, by default True
+    clean_times : bool, optional
+        Whether or not to use clean_times, by default True
+    clean_route_short_names : bool, optional
+        Whether or not to use clean_route_short_names, by default True
+    drop_zombies : bool, optional
+        Whether or not to use drop_zombies, by default True
+
+    Returns
+    -------
+    None
+
+    """
+    # defences
+    _gtfs_defence(gtfs, "gtfs")
+    _type_defence(clean_ids, "clean_ids", bool)
+    _type_defence(clean_times, "clean_times", bool)
+    _type_defence(clean_route_short_names, "clean_route_short_names", bool)
+    _type_defence(drop_zombies, "drop_zombies", bool)
+    # cleaning
+    if clean_ids:
+        clean_ids_gk(gtfs.feed)
+    if clean_times:
+        clean_times_gk(gtfs.feed)
+    if clean_route_short_names:
+        clean_route_short_names_gk(gtfs.feed)
+    if drop_zombies:
+        try:
+            drop_zombies_gk(gtfs.feed)
+        except KeyError:
+            warnings.warn(
+                UserWarning(
+                    "The drop_zombies cleaner was unable to operate on "
+                    "clean_feed as the trips table has no shape_id column"
+                )
+            )
     return None
