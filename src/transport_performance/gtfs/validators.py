@@ -265,3 +265,12 @@ def validate_travel_over_multiple_stops(gtfs: "GtfsInstance") -> None:
         )
 
     return far_stops_df
+
+
+def core_validation(gtfs: "GtfsInstance"):
+    """Carry out the main validators of gtfs-kit."""
+    _gtfs_defence(gtfs, "gtfs")
+    validation_df = gtfs.feed.validate()
+    gtfs.validity_df = pd.concat(
+        [validation_df, gtfs.validity_df], axis=0
+    ).reset_index(drop=True)
