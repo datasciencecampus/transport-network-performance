@@ -135,7 +135,7 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
         self, gtfs_fixture
     ):
         """General tests for clean_consecutive_stop_fast_travel_warnings()."""
-        gtfs_fixture.is_valid(far_stops=True)
+        gtfs_fixture.is_valid()
         original_validation = {
             "type": {
                 0: "warning",
@@ -218,7 +218,7 @@ class Test_CleanMultipleStopFastTravelWarnings(object):
         self, gtfs_fixture
     ):
         """General tests for clean_multiple_stop_fast_travel_warnings()."""
-        gtfs_fixture.is_valid(far_stops=True)
+        gtfs_fixture.is_valid()
         original_validation = {
             "type": {
                 0: "warning",

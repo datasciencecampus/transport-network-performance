@@ -1499,9 +1499,10 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed(validate=True, fast_travel=True)
+        self.is_valid()
+        self.clean_feed()
         # re-validate to clean any newly raised errors/warnings
-        validation_dataframe = self.is_valid(far_stops=True)
+        validation_dataframe = self.is_valid()
 
         # create extended reports if requested
         if extended_validation:

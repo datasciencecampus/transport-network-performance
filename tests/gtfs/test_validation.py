@@ -688,17 +688,6 @@ class TestGtfsInstance(object):
         ):
             gtfs_fixture.summarise_routes(return_summary="true")
 
-    @patch("builtins.print")
-    def test_clean_feed_defence(self, mock_print, gtfs_fixture):
-        """Check defensive behaviours of clean_feed()."""
-        # Simulate condition where shapes.txt has no shape_id
-        gtfs_fixture.feed.shapes.drop("shape_id", axis=1, inplace=True)
-        gtfs_fixture.clean_feed()
-        fun_out = mock_print.mock_calls
-        assert fun_out == [
-            call("KeyError. Feed was not cleaned.")
-        ], f"Expected print statement about KeyError. Found: {fun_out}."
-
     def test_summarise_trips_on_pass(self, gtfs_fixture):
         """Assertions about the outputs from summarise_trips()."""
         gtfs_fixture.summarise_trips()

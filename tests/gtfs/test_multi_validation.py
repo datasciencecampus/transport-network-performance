@@ -264,7 +264,7 @@ class TestMultiGtfsInstance(object):
 
     def test_clean_feeds_defences(self, multi_gtfs_fixture):
         """Defensive tests for .clean_feeds()."""
-        with pytest.raises(TypeError, match=".*clean_kwargs.*dict.*bool"):
+        with pytest.raises(TypeError, match=".*cleansers.*dict.*bool"):
             multi_gtfs_fixture.clean_feeds(True)
 
     def test_clean_feeds_on_pass(self, multi_gtfs_fixture):
@@ -275,8 +275,10 @@ class TestMultiGtfsInstance(object):
         # clean feed
         multi_gtfs_fixture.clean_feeds()
         # ensure cleaning has occured
-        new_valid = multi_gtfs_fixture.is_valid()
-        assert len(new_valid) == 9
+        new_valid = multi_gtfs_fixture.is_valid(
+            validators={"core_validation": {}}
+        )
+        assert len(new_valid) == 10
         assert np.array_equal(
             list(new_valid.iloc[3][["type", "table"]].values),
             ["error", "routes"],
@@ -284,7 +286,7 @@ class TestMultiGtfsInstance(object):
 
     def test_is_valid_defences(self, multi_gtfs_fixture):
         """Defensive tests for .is_valid()."""
-        with pytest.raises(TypeError, match=".*validation_kwargs.*dict.*bool"):
+        with pytest.raises(TypeError, match=".*validators.*dict.*bool"):
             multi_gtfs_fixture.is_valid(True)
 
     def test_is_valid_on_pass(self, multi_gtfs_fixture):

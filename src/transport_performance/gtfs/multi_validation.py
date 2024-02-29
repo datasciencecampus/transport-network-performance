@@ -188,12 +188,12 @@ class MultiGtfsInstance:
             inst.save(path, overwrite=overwrite)
         return None
 
-    def clean_feeds(self, clean_kwargs: Union[dict, None] = None) -> None:
+    def clean_feeds(self, cleansers: Union[dict, None] = None) -> None:
         """Clean each of the feeds in the MultiGtfsInstance.
 
         Parameters
         ----------
-        clean_kwargs : Union[dict, None], optional
+        cleansers : Union[dict, None], optional
             The kwargs to pass to GtfsInstance.clean_feed() for each Gtfs in
             the MultiGtfsInstance, by default None
 
@@ -203,28 +203,26 @@ class MultiGtfsInstance:
 
         """
         # defences
-        _type_defence(clean_kwargs, "clean_kwargs", (dict, type(None)))
-        if isinstance(clean_kwargs, type(None)):
-            clean_kwargs = {}
+        _type_defence(cleansers, "cleansers", (dict, type(None)))
+        if isinstance(cleansers, type(None)):
+            cleansers = {}
         # clean GTFS instances
         progress = tqdm(
             zip(self.paths, self.instances), total=len(self.instances)
         )
         for path, inst in progress:
             progress.set_description(f"Cleaning GTFS from path {path}")
-            inst.clean_feed(**clean_kwargs)
+            inst.clean_feed(cleansers=cleansers)
         return None
 
-    def is_valid(
-        self, validation_kwargs: Union[dict, None] = None
-    ) -> pd.DataFrame:
+    def is_valid(self, validators: Union[dict, None] = None) -> pd.DataFrame:
         """Validate each of the feeds in the MultiGtfsInstance.
 
         Parameters
         ----------
-        validation_kwargs : Union[dict, None], optional
-            The kwargs to pass to GtfsInstance.is_valid() for each Gtfs in
-            the MultiGtfsInstance, by default None
+        validators : Union[dict, None], optional
+            The kwargs to pass to GtfsInstance.is_valid(validators) for each
+            Gtfs in the MultiGtfsInstance, by default None
 
         Returns
         -------
@@ -234,18 +232,16 @@ class MultiGtfsInstance:
 
         """
         # defences
-        _type_defence(
-            validation_kwargs, "validation_kwargs", (dict, type(None))
-        )
-        if isinstance(validation_kwargs, type(None)):
-            validation_kwargs = {}
+        _type_defence(validators, "validators", (dict, type(None)))
+        if isinstance(validators, type(None)):
+            validators = {}
         # clean GTFS instances
         progress = tqdm(
             zip(self.paths, self.instances), total=len(self.instances)
         )
         for path, inst in progress:
             progress.set_description(f"Validating GTFS from path {path}")
-            inst.is_valid(**validation_kwargs)
+            inst.is_valid(validators=validators)
 
         # concat all validation tables into one
         tables = []
