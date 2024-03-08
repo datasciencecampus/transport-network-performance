@@ -1,13 +1,14 @@
 """Transport performance helper functions."""
+import pathlib
+import warnings
+from typing import Union
 
+import polars as pl
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pathlib
-import warnings
-
 from haversine import haversine_vector
-from typing import Union
+from numpy import arccos, cos, radians, sin
 
 
 def _transport_performance_pandas(
@@ -18,7 +19,7 @@ def _transport_performance_pandas(
     distance_threshold: float = 11.25,
     sources_col: str = "from_id",
     destinations_col: str = "to_id",
-) -> pd.DataFrame:
+) -> gpd.GeoDataFrame:
     """Calculate transport performance using pandas.
 
     Parameters
@@ -45,7 +46,7 @@ def _transport_performance_pandas(
 
     Returns
     -------
-    pd.DataFrame
+    gpd.GeoDataFrame
         Transport performance metrics, grouped by destination column IDs.
 
     """
@@ -136,6 +137,163 @@ def _transport_performance_pandas(
     ).drop([destinations_col], axis=1)
 
     return perf_gdf
+
+
+def _transport_performance_polars(
+    filepath_or_dirpath: pathlib.Path,
+    centroids: gpd.GeoDataFrame,
+    populations: gpd.GeoDataFrame,
+    travel_time_threshold: int = 45,
+    distance_threshold: float = 11.25,
+    sources_col: str = "from_id",
+    destinations_col: str = "to_id",
+) -> gpd.GeoDataFrame:
+    """Calculate transport performance using polars (and some pandas).
+
+    Parameters
+    ----------
+    filepath_or_dirpath : Union[str, pathlib.Path]
+        File path or directory path to `analyse_network` output(s). Files must
+        be in '.parquet' format.
+    centroids : gpd.GeoDataFrame
+        Populations geodataframe containing centroid geometries.
+    populations : gpd.GeoDataFrame
+        Populations geodataframe containing population data and cell
+        geometries.
+    travel_time_threshold : int, optional
+        Maximum threshold for travel times, by default 45 (minutes). Used when
+        calculating accessibility.
+    distance_threshold : float, optional
+        Maximum threshold for source/destination distance, by default 11.25
+        (km). Used when calculating accessibility and proximity.
+    sources_col : str, optional
+        The sources column name in the travel time data, by default "from_id".
+    destinations_col : str, optional
+        The destinations column name in the travel time data, by default
+        "to_id".
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        Transport performance metrics, grouped by destination column IDs.
+
+    """
+
+    def _haversine(lat1, lon1, lat2, lon2):
+        """Haversine function for use with polars.
+
+        Description
+        -----------
+        Return an array of the haversine distance in KM. Assumes coordinates
+        are in degrees.
+        """
+        return 6371 * arccos(
+            (sin(radians(lat1)) * sin(radians(lat2)))
+            + cos(radians(lat1))
+            * cos(radians(lat2))
+            * cos(radians(lon2) - radians(lon1))
+        )
+
+    # create local copy before manipulation since `centroids` is a mutable
+    # dtype - create pass-by-value effect and won't impact input variable.
+    centroids_gdf = centroids.copy()
+    # make centroid coords individual columns
+    centroids_gdf["centroid_x"] = centroids_gdf["centroid"].apply(
+        lambda coord: coord.x
+    )
+    centroids_gdf["centroid_y"] = centroids_gdf["centroid"].apply(
+        lambda coord: coord.y
+    )
+    centroids_gdf.drop("centroid", axis=1, inplace=True)
+    # create relevant polars LazyFrame's
+    batch_lf = (
+        pl.scan_parquet(filepath_or_dirpath)
+        .select([sources_col, destinations_col, "travel_time"])
+        .lazy()
+    )
+    pop_lf = pl.from_pandas(populations[["population", "id"]]).lazy()
+    centroids_lf = pl.from_pandas(centroids_gdf).lazy()
+    # combine for a faster join
+    cent_pop_lf = centroids_lf.join(
+        pop_lf.select({"id", "population"}), on="id", how="left"
+    )
+    # merge all datasetss
+    merged = (
+        batch_lf.select(pl.exclude("within_urban_centre"))
+        .join(
+            cent_pop_lf.select(
+                ["id", "centroid_x", "centroid_y", "population"]
+            ),
+            left_on=sources_col,
+            right_on="id",
+            how="left",
+        )
+        .rename(
+            {
+                "centroid_x": "from_centroid_x",
+                "centroid_y": "from_centroid_y",
+                "population": "from_population",
+            }
+        )
+        .join(
+            centroids_lf.select(["id", "centroid_x", "centroid_y"]),
+            left_on=destinations_col,
+            right_on="id",
+            how="left",
+        )
+        .rename({"centroid_x": "to_centroid_x", "centroid_y": "to_centroid_y"})
+        .with_columns(
+            _haversine(
+                pl.col("from_centroid_y"),
+                pl.col("from_centroid_x"),
+                pl.col("to_centroid_y"),
+                pl.col("to_centroid_x"),
+            ).alias("dist")
+        )
+    )
+    # calculate accessible and proximity populations for TP
+    accessibility = (
+        merged.filter(pl.col("dist") <= distance_threshold)
+        .filter(pl.col("travel_time") <= travel_time_threshold)
+        .group_by(destinations_col)
+        .sum()
+        .select(destinations_col, "from_population")
+        .rename({"from_population": "accessible_population"})
+    )
+
+    proximity = (
+        merged.filter(pl.col("dist") <= 11.25)
+        .group_by(destinations_col)
+        .sum()
+        .select(destinations_col, "from_population")
+        .rename({"from_population": "proximity_population"})
+    )
+    # calculate TP and covert back to pandas
+    perf_df = (
+        (
+            accessibility.join(
+                proximity, on=destinations_col, validate="1:1"
+            ).with_columns(
+                (
+                    pl.col("accessible_population").truediv(
+                        pl.col("proximity_population")
+                    )
+                )
+                .mul(100)
+                .alias("transport_performance")
+            )
+        )
+        .collect()
+        .to_pandas()
+    )
+    # re-join geometry
+    perf_df = perf_df.merge(
+        populations[["id", "within_urban_centre", "geometry"]],
+        how="left",
+        left_on=destinations_col,
+        right_on="id",
+    )
+    return perf_df
 
 
 def _transport_performance_stats(
