@@ -351,7 +351,6 @@ def filter_gtfs_around_trip(
         An error is raised if a shapeID is not available
 
     """
-    # NOTE: No defence for units as its deleted later on
     _gtfs_defence(gtfs, "gtfs")
     _type_defence(trip_id, "trip_id", str)
     _type_defence(buffer_dist, "buffer_dist", int)
