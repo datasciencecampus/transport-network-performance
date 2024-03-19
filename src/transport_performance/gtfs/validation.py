@@ -1324,6 +1324,7 @@ class GtfsInstance:
             "stops": self.feed.stops,
             "trips": self.feed.trips,
             "calendar": self.feed.calendar,
+            "full_stop_schedule": self.full_stop_schedule,
         }
 
         # determine which errors/warnings have rows that can be located
@@ -1447,6 +1448,7 @@ class GtfsInstance:
         overwrite: bool = False,
         summary_type: str = "mean",
         extended_validation: bool = True,
+        clean_feed: bool = True,
     ) -> None:
         """Generate a HTML report describing the GTFS data.
 
@@ -1462,7 +1464,9 @@ class GtfsInstance:
             default "mean"
         extended_validation : bool, optional
             Whether or not to create extended reports for gtfs validation
-            errors/warnings.
+            errors/warnings, by default True
+        clean_feed : bool, optional
+            Whether or not to clean the feed before validating, by default True
 
         Returns
         -------
@@ -1475,6 +1479,8 @@ class GtfsInstance:
 
         """
         _type_defence(overwrite, "overwrite", bool)
+        _type_defence(clean_feed, "clean_feed", bool)
+        _type_defence(extended_validation, "extended_validation", bool)
         _type_defence(summary_type, "summary_type", str)
         _set_up_report_dir(path=report_dir, overwrite=overwrite)
         summary_type = summary_type.lower().strip()
@@ -1486,7 +1492,8 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed(validate=True, fast_travel=True)
+        if clean_feed:
+            self.clean_feed(validate=True, fast_travel=True)
         # re-validate to clean any newly raised errors/warnings
         validation_dataframe = self.is_valid(far_stops=True)
 
