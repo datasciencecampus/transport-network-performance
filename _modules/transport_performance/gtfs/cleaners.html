@@ -89,6 +89,7 @@
   <h1>Source code for transport_performance.gtfs.cleaners</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;A set of functions that clean the gtfs data.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -135,6 +136,12 @@
         <span class="n">check_elements</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">exp_type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span>
+
+    <span class="c1"># warn users if passed one of the passed trip_id&#39;s is not present in the</span>
+    <span class="c1"># GTFS.</span>
+    <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="n">trip_id</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="o">.</span><span class="n">trip_id</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="ne">UserWarning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;trip_id &#39;</span><span class="si">{</span><span class="n">_id</span><span class="si">}</span><span class="s2">&#39; not found in GTFS&quot;</span><span class="p">))</span>
 
     <span class="c1"># drop relevant records from tables</span>
     <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span> <span class="o">=</span> <span class="n">gtfs</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="p">[</span>
