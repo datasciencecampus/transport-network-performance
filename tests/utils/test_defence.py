@@ -10,6 +10,11 @@ import pandas as pd
 from pyprojroot import here
 from contextlib import nullcontext as does_not_raise
 
+# INFO on the use of 'does_not_raise'
+# https://docs.pytest.org/en/6.2.x/example/parametrize.html...#parametrizing...
+# -conditional-raising
+#
+
 from transport_performance.utils.defence import (
     _check_iterable,
     _check_parent_dir_exists,
