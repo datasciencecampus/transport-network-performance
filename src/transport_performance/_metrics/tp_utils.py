@@ -2,6 +2,7 @@
 import pathlib
 import warnings
 from typing import Union
+import os
 
 import polars as pl
 import geopandas as gpd
@@ -129,12 +130,16 @@ def _transport_performance_pandas(
     )
 
     # merge on population geospatial data
-    perf_gdf = populations.merge(
-        perf_df,
-        left_on="id",
-        right_on=destinations_col,
-        how="right",
-    ).drop([destinations_col], axis=1)
+    perf_gdf = (
+        populations.merge(
+            perf_df,
+            left_on="id",
+            right_on=destinations_col,
+            how="right",
+        )
+        .drop([destinations_col], axis=1)
+        .sort_values("id", ascending=True)
+    )
 
     return perf_gdf
 
@@ -205,6 +210,9 @@ def _transport_performance_polars(
         lambda coord: coord.y
     )
     centroids_gdf.drop("centroid", axis=1, inplace=True)
+    # fix batch path if dir
+    if os.path.splitext(filepath_or_dirpath)[1] == "":
+        filepath_or_dirpath = os.path.join(filepath_or_dirpath, "*")
     # create relevant polars LazyFrame's
     batch_lf = (
         pl.scan_parquet(filepath_or_dirpath)
@@ -262,7 +270,7 @@ def _transport_performance_polars(
     )
 
     proximity = (
-        merged.filter(pl.col("dist") <= 11.25)
+        merged.filter(pl.col("dist") <= distance_threshold)
         .group_by(destinations_col)
         .sum()
         .select(destinations_col, "from_population")
@@ -286,14 +294,20 @@ def _transport_performance_polars(
         .collect()
         .to_pandas()
     )
-    # re-join geometry
-    perf_df = perf_df.merge(
-        populations[["id", "within_urban_centre", "geometry"]],
-        how="left",
-        left_on=destinations_col,
-        right_on="id",
+    # merge on population geospatial data
+    perf_gdf = (
+        populations.merge(
+            perf_df,
+            left_on="id",
+            right_on=destinations_col,
+            how="right",
+        )
+        .drop([destinations_col], axis=1)
+        .sort_values("id", ascending=True)
+        .reset_index(drop=True)
     )
-    return perf_df
+
+    return perf_gdf
 
 
 def _transport_performance_stats(

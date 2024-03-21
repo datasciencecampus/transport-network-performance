@@ -14,6 +14,7 @@ import os
 import pathlib
 import pandas as pd
 import pytest
+import shutil
 
 from pyprojroot import here
 from typing import Union
@@ -111,6 +112,8 @@ def expected_transport_performance() -> Union[
 def multi_tt_fixture(tt_fixture, tmp_path) -> pathlib.Path:
     """Build a mock travel time input across multiple parquet files."""
     multi_tt_path = os.path.join(tmp_path, "mock_multi_tt")
+    if os.path.exists(multi_tt_path):
+        shutil.rmtree(multi_tt_path)
     os.makedirs(multi_tt_path)
     tt = pd.read_parquet(tt_fixture)
     for id in tt.to_id.unique():
