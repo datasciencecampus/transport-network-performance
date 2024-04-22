@@ -3,6 +3,20 @@
 This folder contains all the source files needed to build package documentation
 using [`sphinx`](https://www.sphinx-doc.org/en/master/).
 
+
+## Using Quarto with Quartodoc
+
+To build the documentation using Quarto and quartodoc, you will need to install [Quarto](https://quarto.org/docs/get-started/).
+
+The Python package, `quartodoc`, is included in the project 'requirements.txt'.
+
+Run `quartodoc build` in the top-level folder; this will create a new directory, `docs/reference/` and populate it with automatically generated `.qmd` files for each reference documentation page.
+
+Then run `quarto preview` to view a local rendering of the website.
+
+New tutorials can be added to `docs/tutorials/`
+
+
 ## Building the documentation locally
 
 This is useful whilst editing the documentation locally and previewing new

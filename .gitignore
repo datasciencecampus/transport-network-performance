@@ -370,3 +370,10 @@ $RECYCLE.BIN/
 .vscode/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,r,python
+
+# venv
+.venv/
+
+# Quarto
+/.quarto/
+_site/

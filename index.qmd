@@ -1,0 +1,23 @@
+---
+title: Transport Performance Documentation
+toc: false
+sidebar: false
+about:
+    template: marquee
+    links:
+        - icon: github
+          href: https://github.com/datasciencecampus/transport-network-performance
+          text: GitHub
+---
+
+## What is this and why does it exist?
+
+Description
+
+## Where do I go now?
+
+If you're looking to get stuck in with the package, head over to our
+[tutorials](docs/tutorials/index.qmd).
+
+For more focused, technical details of how this all works, see our
+[API reference](docs/reference/index.qmd).

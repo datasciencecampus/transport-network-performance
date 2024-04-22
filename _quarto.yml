@@ -1,0 +1,85 @@
+project:
+  type: website
+  render:
+    - "index.qmd"
+    - "docs/"
+    - "!notebooks/"
+    - "!docs/source/"
+    - "!*.ipynb"
+    - "!docs/gtfs/*"
+
+website:
+  title: "Transport Performance"
+  navbar:
+    left:
+      - href: docs/tutorials/index.qmd
+        text: Tutorials
+      - href: docs/reference/index.qmd
+        text: API Reference
+    right:
+      - icon: github
+        menu:
+          - text: Source code
+            url: https://github.com/datasciencecampus/transport-network-performance
+          - text: Open an issue
+            url: https://github.com/datasciencecampus/transport-network-performance/issues
+  sidebar:
+    style: docked
+    search: true
+    contents:
+      - text: About
+        href: index.qmd
+      - auto: "*.qmd"
+  reader-mode: true
+  page-footer:
+    left: >
+      All content is available under the
+      [Open Government Licence V3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
+      except where otherwise stated.
+    center: >
+      Built using [Quarto](https://quarto.org/).
+
+format:
+  html:
+    mainfont: Arial
+    theme:
+      light: flatly
+      dark: darkly
+    lang: en-GB
+
+metadata-files:
+  - docs/_sidebar.yml
+
+quartodoc:
+  title: API reference
+  package: transport_performance
+  dir: docs/reference
+  sidebar: docs/_sidebar.yml
+  sections:
+    - title: gtfs
+      desc: >
+        Tools for working with GTFS files.
+      package: transport_performance.gtfs
+      contents:
+        - calendar
+        - cleaners
+        # - gtfs_utils
+        # - multi_validation
+        - routes
+        # - validation
+        - validators
+    - title: population
+      desc: Population tools.
+      package: transport_performance.population
+      contents:
+       # - rasterpop
+        - vectorpop
+    - title: utils
+      desc: Utilities
+      package: transport_performance.utils
+      contents:
+        - constants
+        - defence
+        - io
+        # - raster
+        - test_utils
