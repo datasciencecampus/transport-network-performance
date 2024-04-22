@@ -13,7 +13,14 @@ Press `CMD+SHIFT+I` to add a python block:
 
 import subprocess
 
-World = subprocess.run(['git','config','user.name'],stdout=subprocess.PIPE).stdout.strip().decode()
+World = (
+        subprocess.run(['git','config','user.name'],
+            stdout=subprocess.PIPE,
+            )
+        .stdout
+        .strip()
+        .decode()
+        )
 
 print(f"Hello {World}.")
 ```
