@@ -5,4 +5,17 @@ format: html
 ---
 
 
-This is a quick run-through
+This is a quick run-through.
+
+Press `CMD+SHIFT+I` to add a python block:
+
+```{python}
+
+import subprocess
+
+World = subprocess.run(['git','config','user.name'],stdout=subprocess.PIPE).stdout.strip().decode()
+
+print(f"Hello {World}.")
+```
+
+Head over to [Quarto](https://quarto.org/) for more.
