@@ -17,7 +17,7 @@
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -1442,6 +1442,7 @@
             <span class="s2">&quot;stops&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">stops</span><span class="p">,</span>
             <span class="s2">&quot;trips&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">trips</span><span class="p">,</span>
             <span class="s2">&quot;calendar&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">feed</span><span class="o">.</span><span class="n">calendar</span><span class="p">,</span>
+            <span class="s2">&quot;full_stop_schedule&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_stop_schedule</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="c1"># determine which errors/warnings have rows that can be located</span>
@@ -1567,6 +1568,7 @@
         <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">summary_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
         <span class="n">extended_validation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">clean_feed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a HTML report describing the GTFS data.</span>
 
@@ -1582,7 +1584,9 @@
 <span class="sd">            default &quot;mean&quot;</span>
 <span class="sd">        extended_validation : bool, optional</span>
 <span class="sd">            Whether or not to create extended reports for gtfs validation</span>
-<span class="sd">            errors/warnings.</span>
+<span class="sd">            errors/warnings, by default True</span>
+<span class="sd">        clean_feed : bool, optional</span>
+<span class="sd">            Whether or not to clean the feed before validating, by default True</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1595,6 +1599,8 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_type_defence</span><span class="p">(</span><span class="n">overwrite</span><span class="p">,</span> <span class="s2">&quot;overwrite&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">clean_feed</span><span class="p">,</span> <span class="s2">&quot;clean_feed&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+        <span class="n">_type_defence</span><span class="p">(</span><span class="n">extended_validation</span><span class="p">,</span> <span class="s2">&quot;extended_validation&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="n">_type_defence</span><span class="p">(</span><span class="n">summary_type</span><span class="p">,</span> <span class="s2">&quot;summary_type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="n">_set_up_report_dir</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">report_dir</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
         <span class="n">summary_type</span> <span class="o">=</span> <span class="n">summary_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -1606,7 +1612,8 @@
         <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-%m-%Y&quot;</span><span class="p">)</span>
 
         <span class="c1"># feed evaluation</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clean_feed</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fast_travel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clean_feed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clean_feed</span><span class="p">(</span><span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fast_travel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="c1"># re-validate to clean any newly raised errors/warnings</span>
         <span class="n">validation_dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">far_stops</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
