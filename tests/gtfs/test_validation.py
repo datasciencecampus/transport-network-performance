@@ -149,9 +149,9 @@ class TestGtfsInstance(object):
         ), f"Expected DataFrame. Found: {type(gtfs_fixture.validity_df)}"
         shp = gtfs_fixture.validity_df.shape
         assert shp == (
-            7,
+            8,
             4,
-        ), f"Attribute `validity_df` expected a shape of (7,4). Found: {shp}"
+        ), f"Attribute `validity_df` expected a shape of (8,4). Found: {shp}"
         exp_cols = pd.Index(["type", "message", "table", "rows"])
         found_cols = gtfs_fixture.validity_df.columns
         assert (
@@ -334,6 +334,7 @@ class TestGtfsInstance(object):
         fun_out = mocked_print.mock_calls
         assert fun_out == [
             call("Unrecognized column agency_noc"),
+            call("Feed expired"),
             call("Repeated pair (route_short_name, route_long_name)"),
             call("Unrecognized column stop_direction_name"),
             call("Unrecognized column platform_code"),

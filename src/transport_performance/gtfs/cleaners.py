@@ -1,5 +1,6 @@
 """A set of functions that clean the gtfs data."""
 from typing import Union
+import warnings
 
 import numpy as np
 
@@ -44,6 +45,12 @@ def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
         check_elements=True,
         exp_type=str,
     )
+
+    # warn users if passed one of the passed trip_id's is not present in the
+    # GTFS.
+    for _id in trip_id:
+        if _id not in gtfs.feed.trips.trip_id.unique():
+            warnings.warn(UserWarning(f"trip_id '{_id}' not found in GTFS"))
 
     # drop relevant records from tables
     gtfs.feed.trips = gtfs.feed.trips[
