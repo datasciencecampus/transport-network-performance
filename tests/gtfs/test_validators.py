@@ -1,7 +1,9 @@
 """Tests for validation module."""
+import re
+
+import pandas as pd
 from pyprojroot import here
 import pytest
-import re
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.validators import (
@@ -35,93 +37,28 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
             validate_travel_between_consecutive_stops(gtfs_fixture)
         pass
 
-    def test_validate_travel_between_consecutive_stops(self, gtfs_fixture):
+    def test_validate_travel_between_consecutive_stops(
+        self, gtfs_fixture, _EXPECTED_CHESTER_VALIDITY_DF
+    ):
         """General tests for validating travel between consecutive stops."""
         gtfs_fixture.is_valid(far_stops=False)
         validate_travel_between_consecutive_stops(gtfs=gtfs_fixture)
-
-        expected_validation = {
-            "type": {
-                0: "warning",
-                1: "warning",
-                2: "warning",
-                3: "warning",
-                4: "warning",
-            },
-            "message": {
-                0: "Unrecognized column agency_noc",
-                1: "Feed expired",
-                2: "Unrecognized column platform_code",
-                3: "Unrecognized column vehicle_journey_code",
-                4: "Fast Travel Between Consecutive Stops",
-            },
-            "table": {
-                0: "agency",
-                1: "calendar",
-                2: "stops",
-                3: "trips",
-                4: "full_stop_schedule",
-            },
-            "rows": {
-                0: [],
-                1: [],
-                2: [],
-                3: [],
-                4: [457, 458, 4596, 4597, 5788, 5789],
-            },
-        }
-
-        found_dataframe = gtfs_fixture.validity_df
-        assert (
-            expected_validation == found_dataframe.to_dict()
-        ), "validity_df not as expected."
+        # This assertion should not contain the final row of the chester
+        # fixture, which is created on validate_travel_over_multiple_stops()
+        pd.testing.assert_frame_equal(
+            _EXPECTED_CHESTER_VALIDITY_DF[:-1], gtfs_fixture.validity_df
+        )
 
 
 class Test_ValidateTravelOverMultipleStops(object):
     """Tests for validate_travel_over_multiple_stops()."""
 
-    def test_validate_travel_over_multiple_stops(self, gtfs_fixture):
+    def test_validate_travel_over_multiple_stops(
+        self, gtfs_fixture, _EXPECTED_CHESTER_VALIDITY_DF
+    ):
         """General tests for validate_travel_over_multiple_stops()."""
         gtfs_fixture.is_valid(far_stops=False)
         validate_travel_over_multiple_stops(gtfs=gtfs_fixture)
-
-        expected_validation = {
-            "type": {
-                0: "warning",
-                1: "warning",
-                2: "warning",
-                3: "warning",
-                4: "warning",
-                5: "warning",
-            },
-            "message": {
-                0: "Unrecognized column agency_noc",
-                1: "Feed expired",
-                2: "Unrecognized column platform_code",
-                3: "Unrecognized column vehicle_journey_code",
-                4: "Fast Travel Between Consecutive Stops",
-                5: "Fast Travel Over Multiple Stops",
-            },
-            "table": {
-                0: "agency",
-                1: "calendar",
-                2: "stops",
-                3: "trips",
-                4: "full_stop_schedule",
-                5: "multiple_stops_invalid",
-            },
-            "rows": {
-                0: [],
-                1: [],
-                2: [],
-                3: [],
-                4: [457, 458, 4596, 4597, 5788, 5789],
-                5: [0, 1, 2],
-            },
-        }
-
-        found_dataframe = gtfs_fixture.validity_df
-
-        assert (
-            expected_validation == found_dataframe.to_dict()
-        ), "validity_df not as expected."
+        pd.testing.assert_frame_equal(
+            _EXPECTED_CHESTER_VALIDITY_DF, gtfs_fixture.validity_df
+        )

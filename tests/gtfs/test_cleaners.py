@@ -134,12 +134,12 @@ class Test_CleanConsecutiveStopFastTravelWarnings(object):
             )
 
     def test_clean_consecutive_stop_fast_travel_warnings_on_pass(
-        self, gtfs_fixture, _EXPECTED_VALIDITY_DF
+        self, gtfs_fixture, _EXPECTED_NEWPORT_VALIDITY_DF
     ):
         """General tests for clean_consecutive_stop_fast_travel_warnings()."""
         gtfs_fixture.is_valid(far_stops=True)
         pd.testing.assert_frame_equal(
-            _EXPECTED_VALIDITY_DF, gtfs_fixture.validity_df
+            _EXPECTED_NEWPORT_VALIDITY_DF, gtfs_fixture.validity_df
         )
         expected_validation = {
             "type": {
@@ -198,12 +198,12 @@ class Test_CleanMultipleStopFastTravelWarnings(object):
             )
 
     def test_clean_multiple_stop_fast_travel_warnings_on_pass(
-        self, gtfs_fixture, _EXPECTED_VALIDITY_DF
+        self, gtfs_fixture, _EXPECTED_NEWPORT_VALIDITY_DF
     ):
         """General tests for clean_multiple_stop_fast_travel_warnings()."""
         gtfs_fixture.is_valid(far_stops=True)
         pd.testing.assert_frame_equal(
-            _EXPECTED_VALIDITY_DF, gtfs_fixture.validity_df
+            _EXPECTED_NEWPORT_VALIDITY_DF, gtfs_fixture.validity_df
         )
         expected_validation = {
             "type": {
