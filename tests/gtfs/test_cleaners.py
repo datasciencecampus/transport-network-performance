@@ -239,7 +239,3 @@ class Test_CleanMultipleStopFastTravelWarnings(object):
             "Validation table is not as expected after cleaning consecutive "
             "stop fast travel warnings"
         )
-        # test validation; test gtfs with no warnings
-        # clean_multiple_stop_fast_travel_warnings(
-        #     gtfs=gtfs_fixture, validate=True
-        # )
