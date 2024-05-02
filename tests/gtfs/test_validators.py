@@ -45,8 +45,12 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
         validate_travel_between_consecutive_stops(gtfs=gtfs_fixture)
         # This assertion should not contain the final row of the chester
         # fixture, which is created on validate_travel_over_multiple_stops()
+        _expected_chester_valid_df = _EXPECTED_CHESTER_VALIDITY_DF.loc[
+            "Fast Travel Over Multiple Stops"
+            != _EXPECTED_CHESTER_VALIDITY_DF["message"]
+        ]
         pd.testing.assert_frame_equal(
-            _EXPECTED_CHESTER_VALIDITY_DF[:-1], gtfs_fixture.validity_df
+            _expected_chester_valid_df, gtfs_fixture.validity_df
         )
 
 
