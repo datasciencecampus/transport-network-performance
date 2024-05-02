@@ -5,6 +5,7 @@ Reworked example from pytest docs:
 https://docs.pytest.org/en/latest/example/simple.html.
 """
 
+import pandas as pd
 import pytest
 
 
@@ -95,3 +96,44 @@ def pytest_collection_modifyitems(config, items):  # noqa:C901
         for item in items:
             if "sanitycheck" in item.keywords:
                 item.add_marker(skip_sanitycheck)
+
+
+@pytest.fixture(scope="session")
+def _EXPECTED_VALIDITY_DF():
+    validity_df = pd.DataFrame(
+        {
+            "type": [
+                "warning",
+                "warning",
+                "warning",
+                "warning",
+                "warning",
+                "warning",
+            ],
+            "message": [
+                "Unrecognized column agency_noc",
+                "Feed expired",
+                "Unrecognized column platform_code",
+                "Unrecognized column vehicle_journey_code",
+                "Fast Travel Between Consecutive Stops",
+                "Fast Travel Over Multiple Stops",
+            ],
+            "table": [
+                "agency",
+                "calendar",
+                "stops",
+                "trips",
+                "full_stop_schedule",
+                "multiple_stops_invalid",
+            ],
+            "rows": [
+                [],
+                [],
+                [],
+                [],
+                [457, 458, 4596, 4597, 5788, 5789],
+                [0, 1, 2],
+            ],
+        }
+    )
+    return validity_df
