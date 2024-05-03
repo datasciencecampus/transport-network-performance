@@ -1,6 +1,5 @@
 """Testing routes module."""
 import pytest
-import pandas as pd
 from pyprojroot import here
 from unittest.mock import call
 from typing import Union, Type
@@ -10,6 +9,7 @@ import re
 import pickle
 import os
 
+import pandas as pd
 
 from transport_performance.gtfs.routes import (
     scrape_route_type_lookup,
