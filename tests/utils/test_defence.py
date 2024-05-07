@@ -1,33 +1,33 @@
 """Tests for defence.py. These internals may be covered elsewhere."""
-import re
 import os
 import pathlib
-from typing import Union, Type
+import re
+from contextlib import nullcontext as does_not_raise
+from typing import Type, Union
 
+import pandas as pd
 import pytest
 from _pytest.python_api import RaisesContext
-import pandas as pd
 from pyprojroot import here
-from contextlib import nullcontext as does_not_raise
+
+from transport_performance.gtfs.validation import GtfsInstance
+from transport_performance.utils.defence import (
+    _check_attribute,
+    _check_column_in_df,
+    _check_item_in_iter,
+    _check_iterable,
+    _check_parent_dir_exists,
+    _enforce_file_extension,
+    _gtfs_defence,
+    _handle_path_like,
+    _is_expected_filetype,
+    _type_defence,
+)
 
 # INFO on the use of 'does_not_raise'
 # https://docs.pytest.org/en/6.2.x/example/parametrize.html...#parametrizing...
 # -conditional-raising
 #
-
-from transport_performance.utils.defence import (
-    _check_iterable,
-    _check_parent_dir_exists,
-    _gtfs_defence,
-    _type_defence,
-    _check_column_in_df,
-    _check_item_in_iter,
-    _check_attribute,
-    _handle_path_like,
-    _is_expected_filetype,
-    _enforce_file_extension,
-)
-from transport_performance.gtfs.validation import GtfsInstance
 
 
 class Test_CheckIter(object):

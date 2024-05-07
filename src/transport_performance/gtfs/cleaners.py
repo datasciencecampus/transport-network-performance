@@ -1,10 +1,10 @@
 """A set of functions that clean the gtfs data."""
-from typing import Union
 import warnings
+from typing import Union
 
 import numpy as np
 
-from transport_performance.utils.defence import _gtfs_defence, _check_iterable
+from transport_performance.utils.defence import _check_iterable, _gtfs_defence
 
 
 def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:

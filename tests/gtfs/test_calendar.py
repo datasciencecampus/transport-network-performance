@@ -1,8 +1,8 @@
 """Test calendar utilities."""
 import calendar
-import pytest
 
 import pandas as pd
+import pytest
 
 from transport_performance.gtfs.calendar import create_calendar_from_dates
 

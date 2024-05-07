@@ -6,21 +6,22 @@ to 200x200m grids). The original design intention is for these to form part of
 gridded population data pre-processing.
 """
 
-import os
 import glob
-import re
-import rioxarray
+import os
 import pathlib
-
+import re
 from typing import Union
-from rioxarray.merge import merge_arrays
+
+import rioxarray
 from rasterio.warp import Resampling
+from rioxarray.merge import merge_arrays
+
 from transport_performance.utils.defence import (
-    _handle_path_like,
     _check_parent_dir_exists,
+    _enforce_file_extension,
+    _handle_path_like,
     _is_expected_filetype,
     _type_defence,
-    _enforce_file_extension,
 )
 
 

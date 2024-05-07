@@ -1,23 +1,21 @@
 """Tests for multi_validation.py."""
 import calendar
-import pytest
-import os
 import glob
+import os
 import pathlib
 import shutil
 import subprocess
 import zipfile
 from copy import deepcopy
 
+import folium
 import numpy as np
 import pandas as pd
-import folium
-from pyprojroot import here
 import plotly.graph_objs as go
+import pytest
+from pyprojroot import here
 
-from transport_performance.gtfs.multi_validation import (
-    MultiGtfsInstance,
-)
+from transport_performance.gtfs.multi_validation import MultiGtfsInstance
 from transport_performance.gtfs.validation import GtfsInstance
 
 

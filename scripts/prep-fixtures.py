@@ -12,13 +12,13 @@ Newport GTFS created with tight bounding box filter around Newport train
 station, filtered to a date of 20230613.
 """
 import os
-import gtfs_kit as gk
+
 import geopandas as gpd
-from shapely.geometry import box
+import gtfs_kit as gk
 from pyprojroot import here
+from shapely.geometry import box
 
 from transport_performance.osm.osm_utils import filter_osm
-
 
 fix_dat = os.path.join("tests", "data", "gtfs")
 gtfs_zip = [

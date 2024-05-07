@@ -1,23 +1,23 @@
 """Tests for validation module."""
-import re
 import os
-import pytest
 import pathlib
-from pyprojroot import here
+import re
 from contextlib import nullcontext as does_not_raise
+from unittest.mock import call, patch
 
 import gtfs_kit as gk
-import pandas as pd
-from unittest.mock import patch, call
-from geopandas import GeoDataFrame
 import numpy as np
+import pandas as pd
+import pytest
+from geopandas import GeoDataFrame
 from plotly.graph_objects import Figure as PlotlyFigure
+from pyprojroot import here
 
 from transport_performance.gtfs.validation import (
     GtfsInstance,
-    _get_intermediate_dates,
-    _create_map_title_text,
     _convert_multi_index_to_single,
+    _create_map_title_text,
+    _get_intermediate_dates,
 )
 from transport_performance.utils.constants import PKG_PATH
 

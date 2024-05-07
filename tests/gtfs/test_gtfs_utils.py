@@ -1,24 +1,24 @@
 """Test GTFS utility functions."""
 
 import os
-import pytest
-import re
 import pathlib
+import re
 
-import pandas as pd
 import geopandas as gpd
-from shapely.geometry import box
+import pandas as pd
+import pytest
 from plotly.graph_objects import Figure as PlotlyFigure
+from shapely.geometry import box
 
-from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.gtfs_utils import (
-    bbox_filter_gtfs,
-    filter_gtfs,
     _add_validation_row,
-    filter_gtfs_around_trip,
-    convert_pandas_to_plotly,
     _validate_datestring,
+    bbox_filter_gtfs,
+    convert_pandas_to_plotly,
+    filter_gtfs,
+    filter_gtfs_around_trip,
 )
+from transport_performance.gtfs.validation import GtfsInstance
 
 # location of GTFS test fixture
 GTFS_FIX_PTH = os.path.join(

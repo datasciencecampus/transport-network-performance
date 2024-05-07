@@ -1,13 +1,13 @@
 """Transport performance helper functions."""
 
+import pathlib
+import warnings
+from typing import Union
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pathlib
-import warnings
-
 from haversine import haversine_vector
-from typing import Union
 
 
 def _transport_performance_pandas(

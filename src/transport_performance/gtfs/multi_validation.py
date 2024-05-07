@@ -1,26 +1,26 @@
 """Validating multiple GTFS at once."""
-from typing import Union
-from tqdm import tqdm
-import pathlib
 import glob
 import os
+import pathlib
 import warnings
 from copy import deepcopy
+from typing import Union
 
-from geopandas import GeoDataFrame
+import folium
 import numpy as np
 import pandas as pd
-import folium
-from folium.plugins import FastMarkerCluster
 import plotly.express as px
 import plotly.graph_objs as go
+from folium.plugins import FastMarkerCluster
+from geopandas import GeoDataFrame
+from tqdm import tqdm
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.utils.defence import (
-    _type_defence,
-    _is_expected_filetype,
     _check_parent_dir_exists,
     _enforce_file_extension,
+    _is_expected_filetype,
+    _type_defence,
 )
 
 

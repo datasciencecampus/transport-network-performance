@@ -6,8 +6,9 @@ part of the main test suite, and will only be run as needed.
 This test module can be run with the pytest flag --runsetup.
 """
 
-import pytest
 import os
+
+import pytest
 
 
 class TestSetup:

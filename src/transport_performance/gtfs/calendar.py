@@ -5,8 +5,8 @@ from copy import deepcopy
 import pandas as pd
 
 from transport_performance.utils.defence import (
-    _type_defence,
     _check_column_in_df,
+    _type_defence,
 )
 
 

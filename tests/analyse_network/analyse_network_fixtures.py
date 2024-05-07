@@ -1,19 +1,19 @@
 """Fixtures for transport_performance/analyse_network/analyse network."""
+import os
+
 import geopandas as gpd
 import numpy as np
-import os
 import pandas as pd
 import pytest
-
 from pyprojroot import here
 from shapely.geometry import Point
 
 import transport_performance.analyse_network as an
 
-
 ############
 # fixtures #
 ############
+
 
 # gtfs file
 @pytest.fixture(scope="module")

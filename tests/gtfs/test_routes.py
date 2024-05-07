@@ -1,19 +1,19 @@
 """Testing routes module."""
-import pytest
-from pyprojroot import here
-from unittest.mock import call
-from typing import Union, Type
-import pathlib
-from _pytest.python_api import RaisesContext
-import re
-import pickle
 import os
+import pathlib
+import pickle
+import re
+from typing import Type, Union
+from unittest.mock import call
 
 import pandas as pd
+import pytest
+from _pytest.python_api import RaisesContext
+from pyprojroot import here
 
 from transport_performance.gtfs.routes import (
-    scrape_route_type_lookup,
     get_saved_route_type_lookup,
+    scrape_route_type_lookup,
 )
 from transport_performance.utils.constants import PKG_PATH
 

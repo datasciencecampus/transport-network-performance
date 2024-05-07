@@ -27,13 +27,13 @@ European Union, 2021, https://data.europa.eu/doi/10.2785/706535
 # %%
 import os
 
-import geopandas as gpd
-from shapely.geometry import box
-from pyprojroot import here
-import rioxarray as rxr
-from rioxarray.merge import merge_arrays
-import matplotlib.pyplot as plt
 import folium
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import rioxarray as rxr
+from pyprojroot import here
+from rioxarray.merge import merge_arrays
+from shapely.geometry import box
 
 import transport_performance.urban_centres.raster_uc as ucc
 

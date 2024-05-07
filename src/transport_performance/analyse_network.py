@@ -2,17 +2,16 @@
 import glob
 import pathlib
 import warnings
+from math import ceil
+from typing import Union
 
 import dask.dataframe as dd
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-
 from haversine import Unit, haversine_vector
-from math import ceil
 from r5py import TransportNetwork, TravelTimeMatrixComputer
 from tqdm import tqdm
-from typing import Union
 
 import transport_performance.utils.defence as d
 

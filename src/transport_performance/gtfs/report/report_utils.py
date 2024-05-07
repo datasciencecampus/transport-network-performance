@@ -1,15 +1,15 @@
 """Utils to assist in the creation of a HTML report for GTFS."""
-from typing import Union
+import os
 import pathlib
 import shutil
-import os
+from typing import Union
 
-from transport_performance.utils.defence import (
-    _type_defence,
-    _handle_path_like,
-    _check_parent_dir_exists,
-)
 from transport_performance.utils.constants import PKG_PATH
+from transport_performance.utils.defence import (
+    _check_parent_dir_exists,
+    _handle_path_like,
+    _type_defence,
+)
 
 
 class TemplateHTML:

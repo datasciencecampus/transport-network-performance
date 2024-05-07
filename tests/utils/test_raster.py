@@ -9,17 +9,18 @@ function by making assertions on the bounds of the inputs and merged output.
 """
 
 import os
-import re
-import pytest
 import pathlib
-import numpy as np
-import rasterio as rio
-import xarray as xr
-import rioxarray  # noqa: F401 - import required for xarray but not needed here
-
+import re
 from typing import Type
-from pytest_lazyfixture import lazy_fixture
+
+import numpy as np
+import pytest
+import rasterio as rio
+import rioxarray  # noqa: F401 - import required for xarray but not needed here
+import xarray as xr
 from _pytest.python_api import RaisesContext
+from pytest_lazyfixture import lazy_fixture
+
 from transport_performance.utils.raster import (
     merge_raster_files,
     sum_resample_file,

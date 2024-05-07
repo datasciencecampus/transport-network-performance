@@ -1,9 +1,9 @@
 """Tests for validation module."""
 import re
-import pytest
-from pyprojroot import here
 
 import pandas as pd
+import pytest
+from pyprojroot import here
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.validators import (

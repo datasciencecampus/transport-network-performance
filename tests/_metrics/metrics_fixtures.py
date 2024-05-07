@@ -9,14 +9,14 @@ tests that use them, so reuse between tests will not present issues.
 
 """
 
-import geopandas as gpd
 import os
 import pathlib
+from typing import Union
+
+import geopandas as gpd
 import pandas as pd
 import pytest
-
 from pyprojroot import here
-from typing import Union
 
 from transport_performance.utils.io import from_pickle
 
