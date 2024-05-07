@@ -200,7 +200,6 @@ class TestGtfsInstance(object):
             fixture = chest_gtfs_fixture
         df = fixture.is_valid(validators=validators)
         assert isinstance(df, pd.DataFrame), "is_valid() failed to return df"
-        print(shape, df.shape)
         assert shape == df.shape, "validity_df not as expected"
 
     @pytest.mark.sanitycheck
