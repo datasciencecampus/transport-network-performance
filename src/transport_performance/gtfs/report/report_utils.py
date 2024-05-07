@@ -147,7 +147,7 @@ def _set_up_report_dir(
         raise FileExistsError(
             "Report already exists at path: "
             f"[{path}]."
-            "Consider setting overwrite=True"
+            "Consider setting overwrite=True "
             "if you'd like to overwrite this."
         )
 

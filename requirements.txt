@@ -31,7 +31,7 @@ kaleido
 numpy>=1.25.0 # test suite will fail if user installed lower than this
 sphinx
 sphinx-rtd-theme
-dask
+dask[dataframe]
 pyarrow >= 14.0.1 # 14.0.0 has security vulnerability
 osmium # has dependencies on `cmake` and `boost` which require brew install
 tqdm

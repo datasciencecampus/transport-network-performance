@@ -4,6 +4,7 @@ import os
 import pytest
 import re
 import pathlib
+
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
@@ -280,7 +281,7 @@ class Test_AddValidationRow(object):
     """Tests for _add_validation_row()."""
 
     def test__add_validation_row_defence(self):
-        """Defensive tests for _add_test_validation_row()."""
+        """Defensive tests for _add_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         with pytest.raises(
             AttributeError,
@@ -295,7 +296,7 @@ class Test_AddValidationRow(object):
             )
 
     def test__add_validation_row_on_pass(self):
-        """General tests for _add_test_validation_row()."""
+        """General tests for _add_validation_row()."""
         gtfs = GtfsInstance(gtfs_pth=GTFS_FIX_PTH)
         gtfs.is_valid(validators={"core_validation": {}})
 

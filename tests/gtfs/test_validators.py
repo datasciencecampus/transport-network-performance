@@ -1,7 +1,9 @@
 """Tests for validation module."""
-from pyprojroot import here
-import pytest
 import re
+import pytest
+from pyprojroot import here
+
+import pandas as pd
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.validators import (
@@ -35,82 +37,32 @@ class Test_ValidateTravelBetweenConsecutiveStops(object):
             validate_travel_between_consecutive_stops(gtfs_fixture)
         pass
 
-    def test_validate_travel_between_consecutive_stops(self, gtfs_fixture):
+    def test_validate_travel_between_consecutive_stops(
+        self, gtfs_fixture, _EXPECTED_CHESTER_VALIDITY_DF
+    ):
         """General tests for validating travel between consecutive stops."""
         gtfs_fixture.is_valid(validators={"core_validation": {}})
         validate_travel_between_consecutive_stops(gtfs=gtfs_fixture)
-
-        expected_validation = {
-            "type": {0: "warning", 1: "warning", 2: "warning", 3: "warning"},
-            "message": {
-                0: "Unrecognized column agency_noc",
-                1: "Unrecognized column platform_code",
-                2: "Unrecognized column vehicle_journey_code",
-                3: "Fast Travel Between Consecutive Stops",
-            },
-            "table": {
-                0: "agency",
-                1: "stops",
-                2: "trips",
-                3: "full_stop_schedule",
-            },
-            "rows": {
-                0: [],
-                1: [],
-                2: [],
-                3: [457, 458, 4596, 4597, 5788, 5789],
-            },
-        }
-
-        found_dataframe = gtfs_fixture.validity_df
-        assert expected_validation == found_dataframe.to_dict(), (
-            "'_validate_travel_between_consecutive_stops()' failed to raise "
-            "warnings in the validity df"
+        # This assertion should not contain the final row of the chester
+        # fixture, which is created on validate_travel_over_multiple_stops()
+        _expected_chester_valid_df = _EXPECTED_CHESTER_VALIDITY_DF.loc[
+            "Fast Travel Over Multiple Stops"
+            != _EXPECTED_CHESTER_VALIDITY_DF["message"]
+        ]
+        pd.testing.assert_frame_equal(
+            _expected_chester_valid_df, gtfs_fixture.validity_df
         )
 
 
 class Test_ValidateTravelOverMultipleStops(object):
     """Tests for validate_travel_over_multiple_stops()."""
 
-    def test_validate_travel_over_multiple_stops(self, gtfs_fixture):
+    def test_validate_travel_over_multiple_stops(
+        self, gtfs_fixture, _EXPECTED_CHESTER_VALIDITY_DF
+    ):
         """General tests for validate_travel_over_multiple_stops()."""
         gtfs_fixture.is_valid(validators={"core_validation": {}})
         validate_travel_over_multiple_stops(gtfs=gtfs_fixture)
-
-        expected_validation = {
-            "type": {
-                0: "warning",
-                1: "warning",
-                2: "warning",
-                3: "warning",
-                4: "warning",
-            },
-            "message": {
-                0: "Unrecognized column agency_noc",
-                1: "Unrecognized column platform_code",
-                2: "Unrecognized column vehicle_journey_code",
-                3: "Fast Travel Between Consecutive Stops",
-                4: "Fast Travel Over Multiple Stops",
-            },
-            "table": {
-                0: "agency",
-                1: "stops",
-                2: "trips",
-                3: "full_stop_schedule",
-                4: "multiple_stops_invalid",
-            },
-            "rows": {
-                0: [],
-                1: [],
-                2: [],
-                3: [457, 458, 4596, 4597, 5788, 5789],
-                4: [0, 1, 2],
-            },
-        }
-
-        found_dataframe = gtfs_fixture.validity_df
-
-        assert expected_validation == found_dataframe.to_dict(), (
-            "'_validate_travel_over_multiple_stops()' failed to raise "
-            "warnings in the validity df"
+        pd.testing.assert_frame_equal(
+            _EXPECTED_CHESTER_VALIDITY_DF, gtfs_fixture.validity_df
         )
