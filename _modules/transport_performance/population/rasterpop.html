@@ -89,29 +89,30 @@
   <h1>Source code for transport_performance.population.rasterpop</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Class to handle raster population data.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
+<span class="kn">import</span> <span class="nn">cartopy.io.img_tiles</span> <span class="k">as</span> <span class="nn">cimgt</span>
+<span class="kn">import</span> <span class="nn">folium</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">rasterio</span> <span class="k">as</span> <span class="nn">rio</span>
 <span class="kn">import</span> <span class="nn">rioxarray</span>
-<span class="kn">import</span> <span class="nn">folium</span>
-<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
-<span class="kn">import</span> <span class="nn">cartopy.io.img_tiles</span> <span class="k">as</span> <span class="nn">cimgt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">geocube.vector</span> <span class="kn">import</span> <span class="n">vectorize</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Tuple</span>
-<span class="kn">from</span> <span class="nn">shapely.geometry.polygon</span> <span class="kn">import</span> <span class="n">Polygon</span>
-<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">colormaps</span>
 <span class="kn">from</span> <span class="nn">cartopy.mpl.geoaxes</span> <span class="kn">import</span> <span class="n">GeoAxes</span>
+<span class="kn">from</span> <span class="nn">geocube.vector</span> <span class="kn">import</span> <span class="n">vectorize</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">colormaps</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry.polygon</span> <span class="kn">import</span> <span class="n">Polygon</span>
+
 <span class="kn">from</span> <span class="nn">transport_performance.utils.defence</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">_is_expected_filetype</span><span class="p">,</span>
-    <span class="n">_type_defence</span><span class="p">,</span>
-    <span class="n">_handle_path_like</span><span class="p">,</span>
+    <span class="n">_check_iter_length</span><span class="p">,</span>
     <span class="n">_check_parent_dir_exists</span><span class="p">,</span>
     <span class="n">_enforce_file_extension</span><span class="p">,</span>
-    <span class="n">_check_iter_length</span><span class="p">,</span>
+    <span class="n">_handle_path_like</span><span class="p">,</span>
+    <span class="n">_is_expected_filetype</span><span class="p">,</span>
+    <span class="n">_type_defence</span><span class="p">,</span>
 <span class="p">)</span>
 
 
