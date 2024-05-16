@@ -7,6 +7,11 @@ project:
     - "!docs/source/"
     - "!*.ipynb"
     - "!docs/gtfs/*"
+  preview:
+    port: 1111
+    browser: true
+    watch-inputs: true
+    navigate: true
 
 website:
   title: "Transport Performance"
