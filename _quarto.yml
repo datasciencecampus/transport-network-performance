@@ -5,6 +5,7 @@ project:
     - "docs/"
     - "!notebooks/"
     - "!docs/source/"
+    - "!docs/build/"
     - "!*.ipynb"
     - "!docs/gtfs/*"
   preview:
@@ -19,6 +20,7 @@ website:
   title: "Transport Performance"
   favicon: docs/_static/favicon.ico
   navbar:
+    logo: docs/_static/tp_logo_white_background.png
     left:
       - href: docs/tutorials/index.qmd
         text: Tutorials

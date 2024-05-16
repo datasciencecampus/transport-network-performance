@@ -1,5 +1,5 @@
 ---
-title: Transport Performance Documentation
+title: "`transport_performance` documentation"
 toc: false
 sidebar: false
 about:
@@ -10,11 +10,13 @@ about:
           text: GitHub
 ---
 
-## What is this and why does it exist?
+![](docs/_static/tp_logo_white_background.png){width="15em" fig-align="center"}
+
+### What is this and why does it exist?
 
 Description
 
-## Where do I go now?
+### Where do I go now?
 
 If you're looking to get stuck in with the package, head over to our
 [tutorials](docs/tutorials/index.qmd).
