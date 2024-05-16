@@ -18,8 +18,12 @@ Description
 
 ### Where do I go now?
 
-If you're looking to get stuck in with the package, head over to our
-[tutorials](docs/tutorials/index.qmd).
+These docs are structures in accordance with the [Diátaxis][diataxis] framework:
 
-For more focused, technical details of how this all works, see our
-[API reference](docs/reference/index.qmd).
+- If you're looking to get stuck in with the package quickly, head over to the [Getting Started](docs/getting_started.qmd) page.
+- Would you like a detailed understanding of what Transport Performance it? Is so, check out the [Explanation](docs/explanation/index.qmd) articles.
+- The [How-To](docs/how_to/index.qmd) pages will provide you with instructions of getting things done, like retrieving input data for example.
+- If you're interested in leanring how to use the `transport_performance` package, head over to our [Tutorials](docs/tutorials/index.qmd).
+- For more focused, technical details of how this all works, see our [API reference](docs/reference/index.qmd).
+
+[diataxis]: https://diataxis.fr/
