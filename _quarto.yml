@@ -22,6 +22,8 @@ website:
   navbar:
     logo: docs/_static/tp_logo_white_background.png
     left:
+      - href: docs/getting_started.qmd
+        text: Getting Started
       - href: docs/tutorials/index.qmd
         text: Tutorials
       - href: docs/reference/index.qmd
@@ -36,10 +38,18 @@ website:
   sidebar:
     style: docked
     search: true
+    collapse-level: 1
     contents:
-      - text: About
-        href: index.qmd
-      - auto: "*.qmd"
+      - text: Getting Started
+        href: docs/getting_started.qmd
+      - section: Tutorials
+        href: docs/tutorials/index.qmd
+        contents:
+          - auto: "docs/tutorials/*.qmd"
+      - section: API Reference
+        href: docs/reference/index.qmd
+        contents:
+          - auto: "docs/reference/*.qmd"
   reader-mode: true
   page-footer:
     left: >
