@@ -69,14 +69,14 @@ website:
   reader-mode: true
   page-footer:
     left: >
-      These docs are built using [Quarto](https://quarto.org/) and [quartodoc](https://machow.github.io/quartodoc/get-started/overview.html).
+      These docs are built using [Quarto](https://quarto.org/), [quartodoc](https://machow.github.io/quartodoc/get-started/overview.html), and [Diátaxis](https://diataxis.fr/).
     center: >
       All content is available under the
       [Open Government Licence V3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
       except where otherwise stated.
     right: >
       <a href="https://datasciencecampus.ons.gov.uk/">
-        <img src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/05/DSC.png" alt="Data Science Campus logo" style="height:22px;">
+        <img src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/05/DSC.png" alt="Data Science Campus logo" style="height:27px;">
       </a>
 
 format:
