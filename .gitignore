@@ -192,6 +192,8 @@ docs/build/
 !docs/gtfs
 !docs/source/_static/dsc.png
 !docs/source/_templates/footer.html
+docs/_sidebar.yml
+docs/reference/
 
 # PyBuilder
 .pybuilder/
@@ -377,3 +379,4 @@ $RECYCLE.BIN/
 # Quarto
 /.quarto/
 _site/
+objects.json
