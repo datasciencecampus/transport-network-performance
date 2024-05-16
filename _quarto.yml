@@ -53,7 +53,9 @@ website:
       - section: Tutorials
         href: docs/tutorials/index.qmd
         contents:
-          - auto: "docs/tutorials/*.qmd"
+          - section: GTFS
+            contents:
+            - auto: "docs/tutorials/gtfs/*.qmd"
       - section: API Reference
         href: docs/reference/index.qmd
         contents:
