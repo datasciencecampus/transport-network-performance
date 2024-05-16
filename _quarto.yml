@@ -24,6 +24,8 @@ website:
     left:
       - href: docs/getting_started.qmd
         text: Getting Started
+      - href: docs/explanation/index.qmd
+        text: Explanation
       - href: docs/tutorials/index.qmd
         text: Tutorials
       - href: docs/reference/index.qmd
@@ -42,6 +44,12 @@ website:
     contents:
       - text: Getting Started
         href: docs/getting_started.qmd
+      - section: Explanation
+        href: docs/explanation/index.qmd
+        contents:
+          - "docs/explanation/what_is_tp/index.qmd"
+          - "docs/explanation/calculate_tp/index.qmd"
+          - "docs/explanation/limitations/index.qmd"
       - section: Tutorials
         href: docs/tutorials/index.qmd
         contents:
