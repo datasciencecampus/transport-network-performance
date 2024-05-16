@@ -12,9 +12,12 @@ project:
     browser: true
     watch-inputs: true
     navigate: true
+  resources:
+    - "docs/_static/**"
 
 website:
   title: "Transport Performance"
+  favicon: docs/_static/favicon.ico
   navbar:
     left:
       - href: docs/tutorials/index.qmd
