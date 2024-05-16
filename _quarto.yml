@@ -41,18 +41,22 @@ website:
   reader-mode: true
   page-footer:
     left: >
+      These docs are built using [Quarto](https://quarto.org/) and [quartodoc](https://machow.github.io/quartodoc/get-started/overview.html).
+    center: >
       All content is available under the
       [Open Government Licence V3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
       except where otherwise stated.
-    center: >
-      Built using [Quarto](https://quarto.org/).
+    right: >
+      <a href="https://datasciencecampus.ons.gov.uk/">
+        <img src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/05/DSC.png" alt="Data Science Campus logo" style="height:25px;">
+      </a>
 
 format:
   html:
     mainfont: Arial
     theme:
-      light: flatly
-      dark: darkly
+      - flatly
+      - docs/_static/custom.scss
     lang: en-GB
 
 metadata-files:
