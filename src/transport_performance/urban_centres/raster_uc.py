@@ -44,12 +44,6 @@ class UrbanCentre:
         GeoDataFrame including vector information for the urban centre, buffer
         and bounding box limits.
 
-    Methods
-    -------
-    get_urban_centre
-        Calculates urban centre from population raster and returns vectorised
-        geography for urban centre, buffer and bounding box.
-
     Raises
     ------
     TypeError
