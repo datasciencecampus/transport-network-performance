@@ -39,11 +39,6 @@ class AnalyseNetwork:
         R5py object that contains a transport network initialised with data
         from OpenStreetMap and GTFS.
 
-    Methods
-    -------
-    od_matrix
-        Method that calculates the full O-D matrix and saves it as parquet.
-
     Raises
     ------
     NotImplementedError
