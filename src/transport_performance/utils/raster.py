@@ -73,12 +73,7 @@ def merge_raster_files(
 
     2. The default rioxarry behaviours are assumed when merging inputs, i.e.,
     the `CRS`, resolution and `nodata` values will be taken from the first
-    input DataArray. See [1]_ for more details.
-
-    References
-    ----------
-    .. [1] https://corteva.github.io/rioxarray/html/rioxarray.html#rioxarray.m
-    erge.merge_arrays
+    input DataArray.
 
     """
     # defend against case where the provided input dir does not exist
