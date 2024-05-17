@@ -22,7 +22,7 @@ website:
   navbar:
     logo: docs/_static/tp_logo_white_background.png
     left:
-      - href: docs/getting_started.qmd
+      - href: docs/getting_started/index.qmd
         text: Getting Started
       - href: docs/explanation/index.qmd
         text: Explanation
@@ -45,7 +45,7 @@ website:
     collapse-level: 1
     contents:
       - text: Getting Started
-        href: docs/getting_started.qmd
+        href: docs/getting_started/index.qmd
       - section: Explanation
         href: docs/explanation/index.qmd
         contents:
