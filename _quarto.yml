@@ -108,6 +108,15 @@ quartodoc:
       package: transport_performance.urban_centres.raster_uc
       contents:
         - UrbanCentre
+    - title: "`population`"
+      desc: >
+        Modules for preprocessing population data.
+    - subtitle: "`population.rasterpop.RasterPop`"
+      desc: >
+        A class for preprocessing rastered population estimates.
+      package: transport_performance.population.rasterpop
+      contents:
+        - RasterPop
 
     # - title: gtfs
     #   desc: >
