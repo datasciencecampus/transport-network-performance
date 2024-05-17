@@ -169,7 +169,7 @@ class GtfsInstance:
     ----------
     gtfs_pth : Union[str, bytes, os.PathLike]
         File path to GTFS archive.
-    units: str, optionl
+    units : str, optionl
         Spatial units of the GTFS file, defaults to "km".
     route_lookup_pth : Union[str, pathlib.Path], optional
         The path to the route type lookup. If left empty, the default path will
@@ -184,69 +184,18 @@ class GtfsInstance:
         The path to the GTFS archive.
     file_list: list
         Files in the GTFS archive.
-    validity_df: pd.DataFrame
+    validity_df : pd.DataFrame
         Table of GTFS errors, warnings & their descriptions.
-    dated_trip_counts: pd.DataFrame
+    dated_trip_counts : pd.DataFrame
         Dated trip counts by modality.
-    daily_trip_summary: pd.DataFrame
+    daily_trip_summary : pd.DataFrame
         Summarized trip results by day of the week and modality.
-    daily_route_summary: pd.DataFrame
+    daily_route_summary : pd.DataFrame
         Dated route counts by modality.
-    route_mode_summary_df: pd.DataFrame
+    route_mode_summary_df : pd.DataFrame
         Summarized route counts by day of the week and modality.
-    pre_processed_trips: pd.DataFrame
+    pre_processed_trips : pd.DataFrame
         A table of pre-processed trip data.
-
-    Methods
-    -------
-    ensure_populated_calendar()
-        Creates a calendar from calendar_dates if needed.
-    get_gtfs_files()
-        Returns the `file_list` attribute.
-    is_valid()
-        Returns the `validity_df` attribute.
-    print_alerts()
-        Print validity errors & warning messages in full.
-    clean_feed()
-        Attempt to clean the `feed` attribute using `gtfs_kit`.
-    viz_stops()
-        Visualise the stops on a map as points or convex hull. Writes file.
-    get_route_modes()
-        Returns the `route_mode_summary_df` attribute.
-    summarise_trips()
-        Returns the `daily_trip_summary` attribute.
-    summarise_routes()
-        Returns the `daily_route_summary` attribute.
-    html_report()
-        Generate a HTML report describing the GTFS data.
-    save()
-        Save the current GtfsInstance().
-    filter_to_date()
-        Filter a GtfsInstance to a specific dates or set of dates.
-    filter_to_bbox()
-        Crop a GtfsInstance to a given bbox.
-    _produce_stops_map()
-        Produces the stops map for use in `viz_stops()`.
-    _order_dataframe_by_day()
-        Orders tables by day. Used in `summarise_trips()` and
-        `summarise_routes()`.
-    _preprocess_trips_and_routes()
-        Produces a table of dated trips for use in `_get_pre_processed_trips()`
-        .
-    _get_pre_processed_trips()
-        Attempts to access the `pre_processed_trips` attribute and instantiates
-        it with `_preprocess_trips_and_routes()` if not found.
-    _summary_defence()
-        Check the summary parameters for `summarise_trips()` and
-        `summarise_routes()`
-    _plot_summary()
-        Save a plotly summary table, used in `html_report()`.
-    _create_extended_repeated_pair_table()
-        Return a table of repeated pair warnings. Used in
-        `_extended_validation()`.
-    _extended_validation()
-        Generate HTML warning & error summary tables for use in `html_report()`
-        .
 
     Raises
     ------
@@ -334,11 +283,6 @@ class GtfsInstance:
 
         Saves calendar table to feed.calendar. Shallow wrapper around
         gtfs.calendar.create_calendar_from_dates.
-
-        Warns
-        -----
-        UserWarning
-            Calendar is empty and calendar_dates will be used to create one.
 
         Raises
         ------
