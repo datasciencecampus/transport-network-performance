@@ -147,13 +147,11 @@ quartodoc:
       package: transport_performance
       contents:
         - metrics
-
-    # - title: utils
-    #   desc: Utilities
-    #   package: transport_performance.utils
-    #   contents:
-    #     - constants
-    #     - defence
-    #     - io
-    #     # - raster
-    #     - test_utils
+    - title: "`utils`"
+      desc: >
+        Modules to handle common pacakge utility functions.
+      package: transport_performance.utils
+      contents:
+        - defence
+        - io
+        - raster
