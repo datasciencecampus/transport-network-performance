@@ -141,6 +141,12 @@ quartodoc:
       package: transport_performance.analyse_network
       contents:
         - AnalyseNetwork
+    - title: "`metrics`"
+      desc: >
+        Functions for calculating transport metrics, such as transport performance.
+      package: transport_performance
+      contents:
+        - metrics
 
     # - title: utils
     #   desc: Utilities
