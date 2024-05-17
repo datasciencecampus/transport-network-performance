@@ -135,6 +135,12 @@ quartodoc:
       package: transport_performance.osm
       contents:
         - osm_utils
+    - title: "`analyse_network`"
+      desc: >
+        A class wrapping r5py network routing to calculate travel times between all origin/destination cells.
+      package: transport_performance.analyse_network
+      contents:
+        - AnalyseNetwork
 
     # - title: utils
     #   desc: Utilities
