@@ -117,25 +117,19 @@ quartodoc:
       package: transport_performance.population.rasterpop
       contents:
         - RasterPop
+    - title: "`gtfs`"
+      desc: >
+        Modules for working with GTFS public transit schedule files.
+      package: transport_performance.gtfs
+      contents:
+        - calendar
+        - cleaners
+        - gtfs_utils
+        - multi_validation
+        - routes
+        - validation
+        - validators
 
-    # - title: gtfs
-    #   desc: >
-    #     Tools for working with GTFS files.
-    #   package: transport_performance.gtfs
-    #   contents:
-    #     - calendar
-    #     - cleaners
-    #     # - gtfs_utils
-    #     # - multi_validation
-    #     - routes
-    #     # - validation
-    #     - validators
-    # - title: population
-    #   desc: Population tools.
-    #   package: transport_performance.population
-    #   contents:
-    #    # - rasterpop
-    #     - vectorpop
     # - title: utils
     #   desc: Utilities
     #   package: transport_performance.utils
