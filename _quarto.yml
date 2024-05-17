@@ -59,9 +59,12 @@ website:
       - section: Tutorials
         href: docs/tutorials/index.qmd
         contents:
-          - section: GTFS
-            contents:
-            - auto: "docs/tutorials/gtfs/*.qmd"
+          - "docs/tutorials/urban_centre/index.qmd"
+          - "docs/tutorials/population/index.qmd"
+          - "docs/tutorials/gtfs/index.qmd"
+          - "docs/tutorials/osm/index.qmd"
+          - "docs/tutorials/analyse_network/index.qmd"
+          - "docs/tutorials/metrics/index.qmd"
       - section: API Reference
         href: docs/reference/index.qmd
         contents:
@@ -76,7 +79,7 @@ website:
       except where otherwise stated.
     right: >
       <a href="https://datasciencecampus.ons.gov.uk/">
-        <img src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/05/DSC.png" alt="Data Science Campus logo" style="height:27px;">
+        <img src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/05/DSC.png" alt="Data Science Campus logo" style="height:22px;">
       </a>
 
 format:

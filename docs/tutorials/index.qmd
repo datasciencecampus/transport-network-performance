@@ -5,7 +5,7 @@ listing:
     contents:
         - "/**/*.qmd"
     fields: [title, description, reading-time]
-    sort: title desc
+    sort: title
     sort-ui: true
     filter-ui: true
 ---
