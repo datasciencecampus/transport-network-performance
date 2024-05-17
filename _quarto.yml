@@ -99,30 +99,40 @@ quartodoc:
   dir: docs/reference
   sidebar: docs/_sidebar.yml
   sections:
-    - title: gtfs
+    - title: "`urban_centres`"
       desc: >
-        Tools for working with GTFS files.
-      package: transport_performance.gtfs
+        Modules for detecting urban centres.
+    - subtitle: "`urban_centres.raster_uc.UrbanCentre`"
+      desc: >
+        A class for detecting urban centres using rastered population estimates.
+      package: transport_performance.urban_centres.raster_uc
       contents:
-        - calendar
-        - cleaners
-        # - gtfs_utils
-        # - multi_validation
-        - routes
-        # - validation
-        - validators
-    - title: population
-      desc: Population tools.
-      package: transport_performance.population
-      contents:
-       # - rasterpop
-        - vectorpop
-    - title: utils
-      desc: Utilities
-      package: transport_performance.utils
-      contents:
-        - constants
-        - defence
-        - io
-        # - raster
-        - test_utils
+        - UrbanCentre
+
+    # - title: gtfs
+    #   desc: >
+    #     Tools for working with GTFS files.
+    #   package: transport_performance.gtfs
+    #   contents:
+    #     - calendar
+    #     - cleaners
+    #     # - gtfs_utils
+    #     # - multi_validation
+    #     - routes
+    #     # - validation
+    #     - validators
+    # - title: population
+    #   desc: Population tools.
+    #   package: transport_performance.population
+    #   contents:
+    #    # - rasterpop
+    #     - vectorpop
+    # - title: utils
+    #   desc: Utilities
+    #   package: transport_performance.utils
+    #   contents:
+    #     - constants
+    #     - defence
+    #     - io
+    #     # - raster
+    #     - test_utils
