@@ -129,6 +129,12 @@ quartodoc:
         - routes
         - validation
         - validators
+    - title: "`osm`"
+      desc: >
+        Modules for OpenStreetMap utilities, such are cropping .pbf files to a bounding box.
+      package: transport_performance.osm
+      contents:
+        - osm_utils
 
     # - title: utils
     #   desc: Utilities
