@@ -50,34 +50,6 @@ class MultiGtfsInstance:
         A combined summary of statistics for routes from all GTFS files in the
         MultiGtfsInstance.
 
-    Methods
-    -------
-    save_feeds()
-        Saves each GtfsInstance to a directory.
-    clean_feeds()
-        Cleans all of the GTFS files.
-    is_valid()
-        Validates all of the GTFS files.
-    filter_to_date()
-        Filter all of the GTFS files to a specific date(s).
-    filter_to_bbox()
-        Filter all of the GTFS files to a specific bbox.
-    summarise_trips()
-        Create a summary of all of the routes throughout all GTFS files.
-    summarise_routes()
-        Create a summary of all of the trips throughout all GTFS files.
-    viz_stops()
-        Plot each of the stops from all GtfsInstance's on a folium Map object.
-    validate_empty_feeds()
-        Check if there are empty feeds within the MultiGtfsInstance.
-    ensure_populated_calendars()
-        Check all feeds have populated calendars. If calendar is absent,
-        creates a calendar table from calendar_times.
-    get_dates()
-        Get the range of dates that the gtfs(s) span.
-    plot_service()
-        Plot a timeseries of route or trip counts.
-
     Raises
     ------
     TypeError
