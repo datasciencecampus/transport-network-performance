@@ -46,14 +46,6 @@ class RasterPop:
         A geopandas dataframe of grid centroids, converted to EPSG:4326 for
         transport analysis.
 
-    Methods
-    -------
-    get_pop
-        Read and preprocess population estimates into a geopandas dataframe.
-    plot
-        Build static and interactive visualisations of population data. Can
-        only use this method once `get_pop` has been called.
-
     Raises
     ------
     FileNotFoundError
