@@ -149,7 +149,7 @@ quartodoc:
         - metrics
     - title: "`utils`"
       desc: >
-        Modules to handle common pacakge utility functions.
+        Modules to handle common package utility functions.
       package: transport_performance.utils
       contents:
         - defence
