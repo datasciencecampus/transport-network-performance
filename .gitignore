@@ -1,3 +1,6 @@
+docs/tutorials/*_files/
+docs/tutorials/outputs/
+
 # transport modelling data formats
 **/*.pbf
 **/*.mapdb
