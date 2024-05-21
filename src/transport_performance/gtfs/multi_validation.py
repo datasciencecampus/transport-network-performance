@@ -33,8 +33,8 @@ class MultiGtfsInstance:
     Parameters
     ----------
     path : Union[str, list, pathlib.Path]
-        A list of paths, a singular paath object, or a glob string.
-        See more informtion on glob strings here:
+        A list of paths, a singular path object, or a glob string.
+        See more information on glob strings here:
         https://docs.python.org/3/library/glob.html
 
     Attributes
@@ -60,7 +60,7 @@ class MultiGtfsInstance:
         There are no GTFS files found in the passed list of paths, or from the
         glob string.
     ValueError
-        Path as no file extension.
+        Path has no file extension.
     ValueError
         One (or more) of the paths passed are not of the filetype '.zip'.
 
@@ -95,7 +95,7 @@ class MultiGtfsInstance:
         self.instances = [GtfsInstance(fpath) for fpath in path]
 
     def ensure_populated_calendars(self) -> None:
-        """Check if calendar is absent and creates from calendar_dates.
+        """Check if calendar is absent and creates one from calendar_dates.
 
         Shallow wrapper around GtfsInstance.ensure_populated_calendar().
 
@@ -202,7 +202,7 @@ class MultiGtfsInstance:
         -------
         self.validity_df : pd.DataFrame
             A dataframe containing the validation messages from all of the
-            GtfsInstance's.
+            GtfsInstances.
 
         """
         # defences
@@ -240,7 +240,8 @@ class MultiGtfsInstance:
         Returns
         -------
         list
-            A list of feeds that are empty and their index in GtfsInstance.
+            A list of feeds that are empty and their index in
+            MultiGtfsInstance.instances
 
         """
         empty_feeds = [
@@ -379,7 +380,7 @@ class MultiGtfsInstance:
             Which summary to create. Options include ['trips', 'routes'],
             by default "trips"
         summ_ops : list, optional
-            A list of numpy operators to gather a summary on. Accepts operators
+            A list of numpy operators to summarise with. Accepts operators
               (e.g., np.min) or strings ("min"),
             by default [np.min, np.max, np.mean, np.median]
         return_summary : bool, optional
@@ -388,8 +389,8 @@ class MultiGtfsInstance:
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
-            and should therefore nothing should be passed when calling this
-            function (so it remains as the default), by default False.
+            and therefore nothing should be passed when calling this function
+            (so it remains as the default), by default False.
         sort_by_route_type : bool, optional
             Whether or not to sort the resulting dataframe by route_type.
             This only impacts the resulting df when to_days=True,
@@ -485,8 +486,7 @@ class MultiGtfsInstance:
         Parameters
         ----------
         summ_ops : list, optional
-            A list of numpy operators to gather a summary on. Accepts
-            operators
+            A list of numpy operators to summarise with. Accepts operators
             (e.g., np.min) or strings ("min")
             ,by default [np.min, np.max, np.mean, np.median]
         return_summary: bool, optional
@@ -495,8 +495,8 @@ class MultiGtfsInstance:
         to_days : bool, optional
             Whether or not to aggregate to days, or to just return counts for
             trips/routes for each date. When False, summ_ops becomes useless,
-            and should therefore nothing should be passed when calling this
-            function (so it remains as the default), by default False.
+            and therefore nothing should be passed when calling this function
+            (so it remains as the default), by default False.
         sort_by_route_type : bool, optional
             Whether or not to sort the resulting dataframe by route_type.
             This only impacts the resulting df when to_days=True,
@@ -589,8 +589,8 @@ class MultiGtfsInstance:
         Raises
         ------
         ValueError
-            An error is raised if bot parameters are None as the map won't be
-            saved or returned.
+            An error is raised if both `path` and `return_viz` parameters are
+            None as the map won't be saved or returned.
 
         """
         # defences
@@ -834,12 +834,12 @@ class MultiGtfsInstance:
         rolling_average : Union[int, None], optional
             How many days to calculate the rolling average over. When left as
             None, rolling average is not used.
-            The rolling average is calculated from the center, meaning if ra=3,
+            The rolling average is calculated from the centre, meaning if ra=3,
             the average will be calculated from the current date, previous date
             and following date. Missing dates are imputed and treated as having
             values of 0.
         line_date : Union[str, None], optional
-            A data to draw a dashed vertical line on. Date should be in format:
+            A date to draw a dashed vertical line on. Date should be in format:
             YYYY-MM-DD, by default None
 
         Returns
