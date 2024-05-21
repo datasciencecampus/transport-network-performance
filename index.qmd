@@ -12,27 +12,29 @@ about:
 
 ![](docs/_static/tp_logo_white_background.png){width="15em" fig-align="center"}
 
-### What is this and why does it exist?
+## What is this and why does it exist?
 
 Description
 
-### Where do I go now?
+## Where do I go now?
 
 These docs are structured in accordance with the [Diátaxis][diataxis] framework:
 
-- If you're looking to get stuck in with the package quickly, head over to the [Getting Started](docs/getting_started/index.qmd) page.
-- Would you like a better understanding of what Transport Performance is? If so, check out the [Explanation](docs/explanation/index.qmd) articles.
-- The [How-To](docs/how_to/index.qmd) pages will provide you with instructions on things like retrieving input data.
-- If you're interested in leanring how to use the package, head over to our [Tutorials](docs/tutorials/index.qmd).
-- For more focused, technical details of how this all works, see our [API reference](docs/reference/index.qmd).
+- If you're looking to get started with the package quickly, head over to the [Getting Started](docs/getting_started/index.qmd) page.
+- For more information on the `transport_performance` package, refer to the [Explanation section](docs/explanation/index.qmd).
+- The [How-To](docs/how_to/index.qmd) pages provide you with instructions on things like retrieving input data.
+- If you're interested in learning how to use the package, head over to the [Tutorials](docs/tutorials/index.qmd).
+- The `transport_performance` technical reference can be found here: [API reference](docs/reference/index.qmd).
 
 ::: {.callout-tip}
 
-If you're looking for a more ready-to-go, reproducible way to use this package, check out our [Docker image][tp-docker] 🐳
-
+Please refer to our [Docker image][tp-docker] 🐳 to see how we reproduce
+analysis with the `transport_performance` package.
 :::
 
 [diataxis]: https://diataxis.fr/
 [tp-docker]: https://github.com/datasciencecampus/transport-performance-docker
 
-### Looking to Contribute?
+## Looking to Contribute?
+
+Find the `transport_performance` code on the [GitHub repo](https://github.com/datasciencecampus/transport-network-performance).
