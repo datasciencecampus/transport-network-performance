@@ -1,0 +1,217 @@
+---
+title: Validating GTFS Data.
+description: A tutorial quality assuring General Transit Feed Specification.
+format: html
+jupyter:
+  kernelspec:
+    name: "conda-env-transport-performance-py"
+    language: "python"
+    display_name: "transport-performance"
+css: www/styles.css
+---
+
+## Outcomes
+
+This tutorial will takes the user through how to reduce the size of
+[General Transit Feed Specification (GTFS)](https://gtfs.org/) feeds. This is
+an important step when reducing the cost of routing operations.
+
+While working towards this outcome, we will:
+
+* Download open source GTFS data.
+* Carry out some basic checks across the entire GTFS feed.
+* Visualise the GTFS feed's stop locations on an interactive map.
+* Filter the GTFS feed to a specific bounding box.
+* Filter the GTFS feed to a specific date range.
+* Check if our filter operations has resulted in an empty feed.
+* Reverse-engineer a calendar.txt if it is missing.
+* Write the filtered feed to disk.
+
+## Requirements
+
+To complete this tutorial, you will need:
+
+* python 3.9
+* Stable internet connection
+* Installed the `transport_performance` package (see the
+[getting started explanation](<INSERT_LINK>) for help)
+
+
+
+
+```{python}
+import datetime
+import os
+import subprocess
+import tempfile
+
+import geopandas as gpd
+from pyprojroot import here
+from shapely.geometry import Polygon
+
+from transport_performance.gtfs.multi_validation import MultiGtfsInstance
+
+
+```
+
+
+```{python}
+BUS_PTH = here("TMP_GTFS/bus_gtfs.zip")
+RAIL_PTH = here("TMP_GTFS/rail_gtfs.zip")
+
+if os.path.exists(BUS_PTH) and os.path.exists(RAIL_PTH):
+    pass
+else:
+    # tmp_path = tempfile.TemporaryDirectory()
+    # bus_path = os.path.join(tmp_path.name, "provence_ciotabus_gtfs.zip")
+    # rail_path = os.path.join(tmp_path.name, "intercity_rail_gtfs.zip")
+    BUS_URL = "https://app.mecatran.com/utw/ws/gtfsfeed/static/mamp-cio?apiKey=2b37114236244f1e115f6542331d243617772448"
+    RAIL_URL = "https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip"
+    # subprocess.run(["curl", BUS_URL, "-o", bus_path])
+    # subprocess.run(["curl", RAIL_URL, "-o", rail_path])
+    # assert os.path.exists(gtfs_path)
+    # assert os.path.exists(rail_path)
+    subprocess.run(["curl", BUS_URL, "-o", BUS_PTH])
+    subprocess.run(["curl", RAIL_URL, "-o", RAIL_PTH])
+
+```
+
+Let's take a look at the `MultiGtfsInstance` class documentation to help understand how it works.
+
+:::{.scrolling}
+
+```{python}
+help(MultiGtfsInstance)
+```
+
+:::
+
+```{python}
+gtfs_pth = here("TMP_GTFS/")
+try:
+    feed = MultiGtfsInstance(path=gtfs_pth)
+except ValueError:
+    raise ValueError(f"location of here is: {here()}")
+
+```
+
+## Basic Checks
+
+```{python}
+s0, e0 = feed.get_dates()
+print(f"Feed starts at: {s0}\nFeed ends at: {e0}")
+```
+
+```{python}
+feed.is_valid(validation_kwargs={"far_stops": False})
+```
+
+
+## Viz Stops
+
+```{python}
+feed.viz_stops()
+```
+
+## Filtering GTFS
+
+```{python}
+out = subprocess.run(
+    ["du", "-sh", here("TMP_GTFS")], capture_output=True, text=True)
+print(out.stdout.strip().split("\t")[0])
+```
+
+### By Bounding Box
+
+```{python}
+help(feed.filter_to_bbox)
+```
+
+Get a bounding box from a service like [klokantech](https://boundingbox.klokantech.com/) in csv format. It should be in epsg:4326 projection (Universal mercator).
+
+```{python}
+BBOX = [4.932916,43.121441,5.644253,43.546931]
+xmin, ymin, xmax, ymax = BBOX
+poly = Polygon(((xmin,ymin), (xmin,ymax), (xmax,ymax), (xmax,ymin)))
+poly_gdf = gpd.GeoDataFrame({"geometry": poly}, crs=4326, index=[0])
+poly_gdf.explore()
+
+```
+
+```{python}
+feed.filter_to_bbox(BBOX)
+```
+
+
+```{python}
+imap = feed.viz_stops()
+poly_gdf.explore(m=imap)
+
+```
+
+
+### By Date
+
+```{python}
+today = datetime.datetime.today().strftime(format="%Y%m%d")
+feed.filter_to_date(today)
+print(f"Filtered GTFS feed to {today}")
+```
+
+```{python}
+s1, e1 = feed.get_dates()
+print(f"After filtering to {today}\nstart date: {s1}\nend date: {e1}")
+```
+
+
+## Check Empty Feeds
+
+```{python}
+feed.validate_empty_feeds()
+
+```
+
+## Create Calendar
+
+```{python}
+for i, inst in enumerate(feed.instances):
+    if inst.feed.calendar is None:
+        problem_ind = i
+print(f"Feed instance {i} has no calendar.txt")
+
+```
+
+```{python}
+feed.ensure_populated_calendars()
+
+```
+
+```{python}
+print("Newly populated calendar table:")
+print(feed.instances[problem_ind].feed.calendar.head())
+
+```
+
+
+## Write Filtered Feed
+
+Write new feed to disk
+
+```{python}
+filtered_pth = here("TMP_GTFS/filtered_feed")
+try:
+    os.mkdir(filtered_pth)
+except FileExistsError:
+    pass
+
+feed.save_feeds(filtered_pth, overwrite=True)
+
+```
+
+Check filtered file size
+
+```{python}
+out = subprocess.run(
+    ["du", "-sh", filtered_pth], capture_output=True, text=True)
+print(out.stdout.strip().split("\t")[0])
+```
