@@ -1,31 +1,32 @@
 """Utility functions for GTFS archives."""
-import gtfs_kit as gk
-import geopandas as gpd
-from shapely.geometry import box
-from pyprojroot import here
-import pandas as pd
 import os
-import plotly.graph_objects as go
-from typing import Union, TYPE_CHECKING
 import pathlib
-from geopandas import GeoDataFrame
 import warnings
+from typing import TYPE_CHECKING, Union
+
+import geopandas as gpd
+import gtfs_kit as gk
+import pandas as pd
+import plotly.graph_objects as go
+from geopandas import GeoDataFrame
+from pyprojroot import here
+from shapely.geometry import box
 
 if TYPE_CHECKING:
     from transport_performance.gtfs.validation import GtfsInstance
 
-from transport_performance.utils.defence import (
-    _is_expected_filetype,
-    _check_iterable,
-    _type_defence,
-    _check_attribute,
-    _gtfs_defence,
-    _validate_datestring,
-    _enforce_file_extension,
-    _check_parent_dir_exists,
-    _check_item_in_iter,
-)
 from transport_performance.utils.constants import PKG_PATH
+from transport_performance.utils.defence import (
+    _check_attribute,
+    _check_item_in_iter,
+    _check_iterable,
+    _check_parent_dir_exists,
+    _enforce_file_extension,
+    _gtfs_defence,
+    _is_expected_filetype,
+    _type_defence,
+    _validate_datestring,
+)
 
 
 def _validate_bbox_list(bbox: list) -> None:

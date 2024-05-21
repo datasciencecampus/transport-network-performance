@@ -1,8 +1,7 @@
 """Functions to calculate urban centres following Eurostat definition."""
-from collections import Counter
-
-from typing import Union
 import pathlib
+from collections import Counter
+from typing import Union
 
 import affine
 import geopandas as gpd

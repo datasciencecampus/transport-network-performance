@@ -74,7 +74,7 @@ class TestSetUpReportDir(object):
                 re.escape(
                     "Report already exists at path: "
                     f"[{tmp_path}]."
-                    "Consider setting overwrite=True"
+                    "Consider setting overwrite=True "
                     "if you'd like to overwrite this."
                 )
             ),

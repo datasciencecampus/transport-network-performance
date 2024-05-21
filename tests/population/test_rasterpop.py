@@ -7,22 +7,21 @@ in Newport. The data vales do not represent any real or meaningfull measurments
 """
 
 import os
-import pytest
+from contextlib import nullcontext as does_not_raise
+from typing import Tuple, Type
+
+import geopandas as gpd
 import numpy as np
+import pytest
 import rasterio as rio
 import xarray as xr
-import geopandas as gpd
-
-from typing import Type, Tuple
-from shapely.geometry import Polygon, Point
+from _pytest.python_api import RaisesContext
 from numpy.dtypes import Float64DType
 from pytest_lazyfixture import lazy_fixture
-from _pytest.python_api import RaisesContext
-from contextlib import nullcontext as does_not_raise
+from shapely.geometry import Point, Polygon
 
 from transport_performance.population.rasterpop import RasterPop
 from transport_performance.utils.test_utils import _np_to_rioxarray
-
 
 # value to test thresholding (removal of populations below this value)
 THRESHOLD_TEST = 5

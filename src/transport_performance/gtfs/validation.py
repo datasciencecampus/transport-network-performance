@@ -1,54 +1,52 @@
 """Validating GTFS data."""
-import gtfs_kit as gk
-import pandas as pd
-import geopandas as gpd
-import folium
 import datetime
-import numpy as np
-import os
 import inspect
+import os
+import pathlib
+import warnings
+import zipfile
+from typing import Callable, Union
+
+import folium
+import geopandas as gpd
+import gtfs_kit as gk
+import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.io as plotly_io
-from pretty_html_table import build_table
-import zipfile
-import warnings
-import pathlib
-from typing import Union, Callable
-from plotly.graph_objects import Figure as PlotlyFigure
 from geopandas import GeoDataFrame
+from plotly.graph_objects import Figure as PlotlyFigure
+from pretty_html_table import build_table
 
-from transport_performance.gtfs.validators import (
-    validate_travel_over_multiple_stops,
-    validate_travel_between_consecutive_stops,
-)
 from transport_performance.gtfs.calendar import create_calendar_from_dates
 from transport_performance.gtfs.cleaners import (
     clean_consecutive_stop_fast_travel_warnings,
     clean_multiple_stop_fast_travel_warnings,
 )
-from transport_performance.gtfs.routes import (
-    scrape_route_type_lookup,
-    get_saved_route_type_lookup,
-)
-from transport_performance.utils.defence import (
-    _is_expected_filetype,
-    _check_namespace_export,
-    _check_parent_dir_exists,
-    _check_column_in_df,
-    _type_defence,
-    _check_item_in_iter,
-    _check_attribute,
-    _enforce_file_extension,
-)
-
+from transport_performance.gtfs.gtfs_utils import filter_gtfs
 from transport_performance.gtfs.report.report_utils import (
     TemplateHTML,
     _set_up_report_dir,
 )
-
-from transport_performance.gtfs.gtfs_utils import filter_gtfs
-
+from transport_performance.gtfs.routes import (
+    get_saved_route_type_lookup,
+    scrape_route_type_lookup,
+)
+from transport_performance.gtfs.validators import (
+    validate_travel_between_consecutive_stops,
+    validate_travel_over_multiple_stops,
+)
 from transport_performance.utils.constants import PKG_PATH
+from transport_performance.utils.defence import (
+    _check_attribute,
+    _check_column_in_df,
+    _check_item_in_iter,
+    _check_namespace_export,
+    _check_parent_dir_exists,
+    _enforce_file_extension,
+    _is_expected_filetype,
+    _type_defence,
+)
 
 
 def _get_intermediate_dates(
@@ -1268,6 +1266,7 @@ class GtfsInstance:
             "stops": self.feed.stops,
             "trips": self.feed.trips,
             "calendar": self.feed.calendar,
+            "full_stop_schedule": self.full_stop_schedule,
         }
 
         # determine which errors/warnings have rows that can be located
@@ -1391,6 +1390,7 @@ class GtfsInstance:
         overwrite: bool = False,
         summary_type: str = "mean",
         extended_validation: bool = True,
+        clean_feed: bool = True,
     ) -> None:
         """Generate a HTML report describing the GTFS data.
 
@@ -1406,7 +1406,9 @@ class GtfsInstance:
             default "mean"
         extended_validation : bool, optional
             Whether or not to create extended reports for gtfs validation
-            errors/warnings.
+            errors/warnings, by default True
+        clean_feed : bool, optional
+            Whether or not to clean the feed before validating, by default True
 
         Returns
         -------
@@ -1419,6 +1421,8 @@ class GtfsInstance:
 
         """
         _type_defence(overwrite, "overwrite", bool)
+        _type_defence(clean_feed, "clean_feed", bool)
+        _type_defence(extended_validation, "extended_validation", bool)
         _type_defence(summary_type, "summary_type", str)
         _set_up_report_dir(path=report_dir, overwrite=overwrite)
         summary_type = summary_type.lower().strip()
@@ -1430,7 +1434,8 @@ class GtfsInstance:
         date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
 
         # feed evaluation
-        self.clean_feed(validate=True, fast_travel=True)
+        if clean_feed:
+            self.clean_feed(validate=True, fast_travel=True)
         # re-validate to clean any newly raised errors/warnings
         validation_dataframe = self.is_valid(far_stops=True)
 

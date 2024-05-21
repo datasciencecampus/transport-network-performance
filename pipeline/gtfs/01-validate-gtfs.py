@@ -10,10 +10,11 @@
 8. new - modalities available (including extended spec)
 9. new - feed stats by is-weekend
 """
+import subprocess
+import time
+
 import toml
 from pyprojroot import here
-import time
-import subprocess
 
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.utils.defence import _is_expected_filetype

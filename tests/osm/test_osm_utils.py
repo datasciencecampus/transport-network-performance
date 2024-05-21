@@ -1,10 +1,10 @@
 """Test osm_utils module."""
-import pytest
-import os
-from unittest.mock import patch, call
-import re
 import glob
+import os
+import re
+from unittest.mock import call, patch
 
+import pytest
 from pyprojroot import here
 
 from transport_performance.osm.osm_utils import filter_osm

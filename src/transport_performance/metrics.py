@@ -1,20 +1,20 @@
 """Metrics to assess the performance of transport networks."""
 
 import os
-import pandas as pd
-import geopandas as gpd
 import pathlib
-
 from glob import glob
 from typing import Optional, Tuple, Union
+
+import geopandas as gpd
+import pandas as pd
 
 from transport_performance._metrics.tp_utils import (
     _transport_performance_pandas,
     _transport_performance_stats,
 )
 from transport_performance.utils.defence import (
-    _type_defence,
     _is_expected_filetype,
+    _type_defence,
 )
 
 

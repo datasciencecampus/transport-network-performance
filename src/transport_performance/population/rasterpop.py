@@ -1,28 +1,29 @@
 """Class to handle raster population data."""
 
-import geopandas as gpd
 import os
+from datetime import datetime
+from typing import Tuple, Type, Union
+
+import cartopy.crs as ccrs
+import cartopy.io.img_tiles as cimgt
+import folium
+import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 import rasterio as rio
 import rioxarray
-import folium
-import cartopy.crs as ccrs
-import cartopy.io.img_tiles as cimgt
-import matplotlib.pyplot as plt
-
-from datetime import datetime
-from geocube.vector import vectorize
-from typing import Union, Type, Tuple
-from shapely.geometry.polygon import Polygon
-from matplotlib import colormaps
 from cartopy.mpl.geoaxes import GeoAxes
+from geocube.vector import vectorize
+from matplotlib import colormaps
+from shapely.geometry.polygon import Polygon
+
 from transport_performance.utils.defence import (
-    _is_expected_filetype,
-    _type_defence,
-    _handle_path_like,
+    _check_iter_length,
     _check_parent_dir_exists,
     _enforce_file_extension,
-    _check_iter_length,
+    _handle_path_like,
+    _is_expected_filetype,
+    _type_defence,
 )
 
 

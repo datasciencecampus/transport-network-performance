@@ -1,8 +1,8 @@
 """A notebook containing viable code for additional stop_id validation."""
 # %%
 # IMPORTS
-from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.gtfs_utils import _add_validation_row
+from transport_performance.gtfs.validation import GtfsInstance
 
 
 # %%

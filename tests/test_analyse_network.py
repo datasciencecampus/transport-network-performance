@@ -2,19 +2,18 @@
 import datetime
 import glob
 import os
+import pathlib
+from contextlib import nullcontext as does_not_raise
+from typing import Any, Type
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pathlib
 import pytest
 import r5py
-
-from contextlib import nullcontext as does_not_raise
+from _pytest.python_api import RaisesContext
 from haversine import Unit
 from r5py import TransportMode
-from typing import Type, Any
-from _pytest.python_api import RaisesContext
 
 import transport_performance.analyse_network as an
 

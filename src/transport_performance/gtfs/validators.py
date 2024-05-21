@@ -153,7 +153,6 @@ def validate_travel_between_consecutive_stops(gtfs: "GtfsInstance"):
         return invalid_stops
 
     # add the error to the validation table
-    # TODO: After merge add full_stop_schedule to HTML output table keys
     _add_validation_row(
         gtfs=gtfs,
         _type="warning",

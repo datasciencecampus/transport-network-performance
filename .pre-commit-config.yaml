@@ -32,6 +32,15 @@ repos:
         - --extra-keys
         - "metadata.colab metadata.kernelspec cell.metadata.colab cell.metadata.executionInfo cell.metadata.id cell.metadata.outputId"
 
+# ----- isort - imports sorting
+- repo: https://github.com/pycqa/isort
+  rev: 5.12.0
+  hooks:
+      - id: isort
+        name: isort (python)
+        types: [python]
+        args: [ "--profile", "black", "--filter-files" ]
+
 # ----- black - code formatting
 - repo: https://github.com/psf/black
   rev: 22.3.0 # Replace by any tag/version: https://github.com/psf/black/tags
@@ -48,15 +57,6 @@ repos:
   hooks:
     - id: flake8
       name: flake8 - Python linting
-
-# ----- isort - imports sorting
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
-  hooks:
-    - id: isort
-      name: isort - Sort Python imports (auto-fixes)
-      types: [ cython, pyi, python ]
-      args: [ "--profile", "black", "--filter-files" ]
 
 # ----- nbQA - notebook quality assuring
 - repo: https://github.com/nbQA-dev/nbQA

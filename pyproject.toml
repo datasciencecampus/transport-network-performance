@@ -47,6 +47,8 @@ exclude_lines = [
 # `isort` configurations
 [tool.isort]
 profile = "black"
+skip_glob = ["notebooks/*"]
+line_length = 79
 
 # `pytest` configurations
 [tool.pytest.ini_options]

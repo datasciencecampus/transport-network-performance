@@ -10,29 +10,27 @@ transport network using `r5py` and calculating a performance metric.
 Call in script wide imports and the configuration information.
 """
 
-# %%
-import toml
-import os
 import datetime
-import geopandas as gpd
-import pandas as pd
-import gtfs_kit as gk
+import os
+
 import folium
+import geopandas as gpd
+import gtfs_kit as gk
+import pandas as pd
 import seaborn as sns
 
-from pyprojroot import here
-from shapely.geometry import box
+# %%
+import toml
 from folium.map import Icon
-from r5py import (
-    TransportNetwork,
-    TravelTimeMatrixComputer,
-    TransportMode,
-)
-from transport_performance.urban_centres.raster_uc import UrbanCentre
-from transport_performance.population.rasterpop import RasterPop
+from pyprojroot import here
+from r5py import TransportMode, TransportNetwork, TravelTimeMatrixComputer
+from shapely.geometry import box
+
 from transport_performance.gtfs.gtfs_utils import bbox_filter_gtfs
 from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.osm.osm_utils import filter_osm
+from transport_performance.population.rasterpop import RasterPop
+from transport_performance.urban_centres.raster_uc import UrbanCentre
 from transport_performance.utils.raster import (
     merge_raster_files,
     sum_resample_file,

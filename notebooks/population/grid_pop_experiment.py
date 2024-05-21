@@ -49,34 +49,35 @@ A/GHS_POP_E2015_GLOBE_R2023A_54009_100/V1-0/tiles/GHS_POP_E2015_GLOBE_R2023A_54
 
 """
 
-# %%
-import rasterio as rio
+import logging
 import os
 import sys
-import logging
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import textwrap
+from datetime import datetime
+
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
-import rioxarray
-import xarray as xr
-import requests
-import textwrap
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
-from datetime import datetime
-from pyproj import Transformer
-from pyprojroot import here
+# %%
+import rasterio as rio
+import requests
+import rioxarray
+import seaborn as sns
+import xarray as xr
+from geocube.vector import vectorize
 from matplotlib import colormaps
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import AutoMinorLocator
+from pyproj import Transformer
+from pyprojroot import here
 from rasterio.warp import Resampling
-from geocube.vector import vectorize
-from rioxarray.merge import merge_arrays
-from rioxarray.exceptions import NoDataInBounds
 from requests.exceptions import HTTPError
+from rioxarray.exceptions import NoDataInBounds
+from rioxarray.merge import merge_arrays
 from shapely.geometry.polygon import Polygon
 from xarray import DataArray
 

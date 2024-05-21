@@ -21,17 +21,17 @@ The API classes expose logic that enables users to:
 from pathlib import Path
 from typing import Union
 
+import folium
+import geopandas as gpd
 import osmium
 import pandas as pd
-import geopandas as gpd
 from shapely import Point
-import folium
 
 from transport_performance.utils.defence import (
     _check_item_in_iter,
     _check_iterable,
-    _type_defence,
     _is_expected_filetype,
+    _type_defence,
 )
 
 # ---------utilities-----------

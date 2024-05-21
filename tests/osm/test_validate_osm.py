@@ -1,18 +1,18 @@
 """Test validate_osm."""
-import pytest
 import re
 
-from pyprojroot import here
-import geopandas as gpd
 import folium
+import geopandas as gpd
 import pandas as pd
+import pytest
+from pyprojroot import here
 
 from transport_performance.osm.validate_osm import (
-    _filter_target_dict_with_list,
     FindIds,
     FindLocations,
     FindTags,
     _convert_osm_dict_to_gdf,
+    _filter_target_dict_with_list,
 )
 
 osm_pth = here("tests/data/small-osm.pbf")

@@ -1,23 +1,21 @@
 """Tests for multi_validation.py."""
 import calendar
-import pytest
-import os
 import glob
+import os
 import pathlib
 import shutil
 import subprocess
 import zipfile
 from copy import deepcopy
 
+import folium
 import numpy as np
 import pandas as pd
-import folium
-from pyprojroot import here
 import plotly.graph_objs as go
+import pytest
+from pyprojroot import here
 
-from transport_performance.gtfs.multi_validation import (
-    MultiGtfsInstance,
-)
+from transport_performance.gtfs.multi_validation import MultiGtfsInstance
 from transport_performance.gtfs.validation import GtfsInstance
 
 
@@ -271,18 +269,18 @@ class TestMultiGtfsInstance(object):
         """General tests for .clean_feeds()."""
         # validate and do quick check on validity_df
         valid_df = multi_gtfs_fixture.is_valid()
-        n = 13
+        n = 14
         n_out = len(valid_df)
         assert n_out == n, f"Expected validity_df of len {n}, found {n_out}"
         # clean feed
         multi_gtfs_fixture.clean_feeds()
         # ensure cleaning has occured
         new_valid = multi_gtfs_fixture.is_valid()
-        n = 10
+        n = 11
         n_out = len(new_valid)
         assert n_out == n, f"Expected validity_df of len {n}, found {n_out}"
         assert np.array_equal(
-            list(new_valid.iloc[3][["type", "table"]].values),
+            list(new_valid.iloc[4][["type", "table"]].values),
             ["error", "routes"],
         ), "Validity df after cleaning not as expected"
 
@@ -294,11 +292,11 @@ class TestMultiGtfsInstance(object):
     def test_is_valid_on_pass(self, multi_gtfs_fixture):
         """General tests for is_valid()."""
         valid_df = multi_gtfs_fixture.is_valid()
-        n = 13
+        n = 14
         n_out = len(valid_df)
         assert n_out == n, f"Expected validity_df of len {n}, found {n_out}"
         assert np.array_equal(
-            list(valid_df.iloc[3][["type", "message"]].values),
+            list(valid_df.iloc[4][["type", "message"]].values),
             (["warning", "Fast Travel Between Consecutive Stops"]),
         )
         assert hasattr(

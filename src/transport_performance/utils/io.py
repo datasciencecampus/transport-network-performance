@@ -2,7 +2,6 @@
 
 import pathlib
 import pickle
-
 from typing import Union
 
 from transport_performance.utils.defence import (
