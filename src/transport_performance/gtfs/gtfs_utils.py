@@ -166,7 +166,8 @@ def bbox_filter_gtfs(
 
     Optionally filter to a list of given dates.
 
-    WARNING: THIS FUNCTION IS DEPRECATED AND WILL INEVITABLY BE REMOVED.
+    WARNING: THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED IN A FUTURE
+    VERSION. USE `filter_gtfs()` INSTEAD.
 
     Parameters
     ----------
