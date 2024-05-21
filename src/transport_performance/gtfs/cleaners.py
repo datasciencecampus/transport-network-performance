@@ -8,7 +8,7 @@ from transport_performance.utils.defence import _check_iterable, _gtfs_defence
 
 
 def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
-    """Drop trip{s} from a GtfsInstance object.
+    """Drop trip(s) from a GtfsInstance object.
 
     Parameters
     ----------
