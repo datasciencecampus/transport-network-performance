@@ -1,0 +1,210 @@
+[
+  {
+    "objectID": "docs/how_to/osm/index.html",
+    "href": "docs/how_to/osm/index.html",
+    "title": "2. Get OpenStreetMap Data",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "How-To",
+      "2. Get OpenStreetMap Data"
+    ]
+  },
+  {
+    "objectID": "docs/how_to/index.html",
+    "href": "docs/how_to/index.html",
+    "title": "How-To",
+    "section": "",
+    "text": "These pages are short step-by-step instructions on how-to get something done, in particular retrieve the required input data for transport_performance.\n\n\n\n\n\n\n   \n     \n     \n       Order By\n       Default\n         \n          Title\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nTitle\n\n\nDescription\n\n\nReading Time\n\n\n\n\n\n\n1. Get Public Transit Schedule Data (GTFS)\n\n\nInstructions on retrieving public transit schedule GTFS data.\n\n\n1 min\n\n\n\n\n2. Get OpenStreetMap Data\n\n\nInstructions on retrieving OpenStreetMap data.\n\n\n1 min\n\n\n\n\n3. Get Gridded Population Estimates\n\n\nInstructions on retrieving gridded population estimates for calculating urban centres and population distributions.\n\n\n1 min\n\n\n\n\n\nNo matching items",
+    "crumbs": [
+      "Getting Started",
+      "How-To"
+    ]
+  },
+  {
+    "objectID": "docs/explanation/calculate_tp/index.html",
+    "href": "docs/explanation/calculate_tp/index.html",
+    "title": "2. Transport Performance: An Example",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Explanation",
+      "2. Transport Performance: An Example"
+    ]
+  },
+  {
+    "objectID": "docs/explanation/what_is_tp/index.html",
+    "href": "docs/explanation/what_is_tp/index.html",
+    "title": "1. What is Transport Performance?",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Explanation",
+      "1. What is Transport Performance?"
+    ]
+  },
+  {
+    "objectID": "docs/tutorials/osm/index.html",
+    "href": "docs/tutorials/osm/index.html",
+    "title": "4. OSM",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Tutorials",
+      "4. OSM"
+    ]
+  },
+  {
+    "objectID": "docs/tutorials/analyse_network/index.html",
+    "href": "docs/tutorials/analyse_network/index.html",
+    "title": "5. Analyse Network",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Tutorials",
+      "5. Analyse Network"
+    ]
+  },
+  {
+    "objectID": "docs/tutorials/population/index.html",
+    "href": "docs/tutorials/population/index.html",
+    "title": "2. Population",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Tutorials",
+      "2. Population"
+    ]
+  },
+  {
+    "objectID": "docs/tutorials/index.html",
+    "href": "docs/tutorials/index.html",
+    "title": "Tutorials",
+    "section": "",
+    "text": "These tutorials walk you through some of the essential workflows for calculating transport performance. The purpose of these documents is for you to learn how to use the transport_performance package for your own projects.\n\n\n\n\n\n\n   \n     \n     \n       Order By\n       Default\n         \n          Title\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nTitle\n\n\nDescription\n\n\nReading Time\n\n\n\n\n\n\n1. Urban Centre\n\n\nLearn how to use the transport_performance.urban_centre module through examples.\n\n\n1 min\n\n\n\n\n2. Population\n\n\nLearn how to use the transport_performance.population module through examples.\n\n\n1 min\n\n\n\n\n3. GTFS\n\n\nLearn how to use the transport_performance.gtfs module through examples.\n\n\n1 min\n\n\n\n\n4. OSM\n\n\nLearn how to use the transport_performance.osm module through examples.\n\n\n1 min\n\n\n\n\n5. Analyse Network\n\n\nLearn how to use the transport_performance.analyse_network module through examples.\n\n\n1 min\n\n\n\n\n6. Metrics\n\n\nLearn how to use the transport_performance.metrics module through examples.\n\n\n1 min\n\n\n\n\n\nNo matching items",
+    "crumbs": [
+      "Getting Started",
+      "Tutorials"
+    ]
+  },
+  {
+    "objectID": "index.html#what-is-this-and-why-does-it-exist",
+    "href": "index.html#what-is-this-and-why-does-it-exist",
+    "title": "transport_performance documentation",
+    "section": "What is this and why does it exist?",
+    "text": "What is this and why does it exist?\nDescription"
+  },
+  {
+    "objectID": "index.html#where-do-i-go-now",
+    "href": "index.html#where-do-i-go-now",
+    "title": "transport_performance documentation",
+    "section": "Where do I go now?",
+    "text": "Where do I go now?\nThese docs are structured in accordance with the Diátaxis framework:\n\nIf you’re looking to get started with the package quickly, head over to the Getting Started page.\nFor more information on the transport_performance package, refer to the Explanation section.\nThe How-To pages provide you with instructions on things like retrieving input data.\nIf you’re interested in learning how to use the package, head over to the Tutorials.\nThe transport_performance technical reference can be found here: API reference.\n\n\n\n\n\n\n\nTip\n\n\n\nPlease refer to our Docker image 🐳 to see how we reproduce analysis with the transport_performance package."
+  },
+  {
+    "objectID": "index.html#looking-to-contribute",
+    "href": "index.html#looking-to-contribute",
+    "title": "transport_performance documentation",
+    "section": "Looking to Contribute?",
+    "text": "Looking to Contribute?\nFind the transport_performance code on the GitHub repo."
+  },
+  {
+    "objectID": "docs/getting_started/index.html",
+    "href": "docs/getting_started/index.html",
+    "title": "Getting Started",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started"
+    ]
+  },
+  {
+    "objectID": "docs/tutorials/gtfs/index.html",
+    "href": "docs/tutorials/gtfs/index.html",
+    "title": "3. GTFS",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Tutorials",
+      "3. GTFS"
+    ]
+  },
+  {
+    "objectID": "docs/tutorials/urban_centre/index.html",
+    "href": "docs/tutorials/urban_centre/index.html",
+    "title": "1. Urban Centre",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Tutorials",
+      "1. Urban Centre"
+    ]
+  },
+  {
+    "objectID": "docs/tutorials/metrics/index.html",
+    "href": "docs/tutorials/metrics/index.html",
+    "title": "6. Metrics",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Tutorials",
+      "6. Metrics"
+    ]
+  },
+  {
+    "objectID": "docs/explanation/index.html",
+    "href": "docs/explanation/index.html",
+    "title": "Explanation",
+    "section": "",
+    "text": "These explanation pages provide an understanding of what Transport Performance is, how it is calculated, and methodology limitations.\n\n\n\n\n\n\n   \n     \n     \n       Order By\n       Default\n         \n          Title\n        \n     \n  \n    \n      \n      \n    \n\n\n\n\n\nTitle\n\n\nDescription\n\n\nReading Time\n\n\n\n\n\n\n1. What is Transport Performance?\n\n\nAn insight into what transport performance is and what it tells us about transport networks.\n\n\n1 min\n\n\n\n\n2. Transport Performance: An Example\n\n\nAn overview of how we used transport_performance to calculate the transport performance of urban centre public transit networks.\n\n\n1 min\n\n\n\n\n3. Limitations and Caveats\n\n\nA discussion around the main transport_performance package limitations.\n\n\n1 min\n\n\n\n\n\nNo matching items",
+    "crumbs": [
+      "Getting Started",
+      "Explanation"
+    ]
+  },
+  {
+    "objectID": "docs/explanation/limitations/index.html",
+    "href": "docs/explanation/limitations/index.html",
+    "title": "3. Limitations and Caveats",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "Explanation",
+      "3. Limitations and Caveats"
+    ]
+  },
+  {
+    "objectID": "docs/how_to/uc_pop/index.html",
+    "href": "docs/how_to/uc_pop/index.html",
+    "title": "3. Get Gridded Population Estimates",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "How-To",
+      "3. Get Gridded Population Estimates"
+    ]
+  },
+  {
+    "objectID": "docs/how_to/gtfs/index.html",
+    "href": "docs/how_to/gtfs/index.html",
+    "title": "1. Get Public Transit Schedule Data (GTFS)",
+    "section": "",
+    "text": "🚧 Page under construction 🚧",
+    "crumbs": [
+      "Getting Started",
+      "How-To",
+      "1. Get Public Transit Schedule Data (GTFS)"
+    ]
+  }
+]

@@ -1,9 +1,0 @@
-..
-  base.rst
-
-filter\_osm
-===========
-
-.. currentmodule:: transport_performance.osm.osm_utils
-
-.. autofunction:: filter_osm
