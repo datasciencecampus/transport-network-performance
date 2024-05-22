@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Transport Performance - Explanation</title>
+<title>Transport Performance</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -31,8 +31,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
 <link href="../../docs/_static/favicon.ico" rel="icon">
-<script src="../../site_libs/quarto-listing/list.min.js"></script>
-<script src="../../site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -69,65 +67,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-description','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -206,7 +146,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/explanation/index.html">Explanation</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/RasterPop.html">RasterPop</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -234,13 +174,13 @@ window.Quarto = {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../docs/explanation/index.html" class="sidebar-item-text sidebar-link active">
+            <a href="../../docs/explanation/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Explanation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/explanation/what_is_tp/index.html" class="sidebar-item-text sidebar-link">
@@ -341,11 +281,11 @@ window.Quarto = {
       <div class="sidebar-item-container"> 
             <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">API Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/AnalyseNetwork.html" class="sidebar-item-text sidebar-link">
@@ -408,7 +348,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/RasterPop.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/RasterPop.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">RasterPop</span></a>
   </div>
 </li>
@@ -447,101 +387,311 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Explanation</h1>
-</div>
 
 
 
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<p>These explanation pages provide an understanding of what Transport Performance is, how it is calculated, and methodology limitations.</p>
-
-
-
-
-<div class="quarto-listing quarto-listing-container-table" id="listing-listing">
-<div class="listing-actions-group">
-   <div class="input-group input-group-sm quarto-listing-sort">
-     <span class="input-group-text"><i class="bi bi-sort-down"></i></span>
-     <select id="listing-listing-sort" class="form-select" aria-label="Order By" onchange="window['quarto-listings']['listing-listing'].sort(this.options[this.selectedIndex].value, { order: this.options[this.selectedIndex].getAttribute('data-direction')})">
-       <option value="" disabled="" selected="" hidden="">Order By</option>
-       <option value="index" data-direction="asc">Default</option>
-         <option value="listing-title-sort" data-direction="asc">
-          Title
-        </option>
-     </select>
-  </div>
-    <div class="input-group input-group-sm quarto-listing-filter">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="search form-control" placeholder="Filter">
-    </div>
-</div>
-<table class="quarto-listing-table table">
+<section id="transport_performance.population.rasterpop.RasterPop" class="level1">
+<h1>RasterPop</h1>
+<p><code>population.rasterpop.RasterPop(self, filepath)</code></p>
+<p>Prepare raster population inputs for trasport analysis.</p>
+<p>This class is suited to working with rastered population data (e.g. gridded population estimates).</p>
+<section id="parameters" class="level2">
+<h2 class="anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 44%">
+<col style="width: 30%">
+<col style="width: 12%">
+</colgroup>
 <thead>
-<tr>
-<th>
-<a class="sort" data-sort="listing-title-sort" onclick="if (this.classList.contains('sort-asc')) { this.classList.add('sort-desc'); this.classList.remove('sort-asc') } else { this.classList.add('sort-asc'); this.classList.remove('sort-desc')} return false;">Title</a>
-</th>
-<th>
-Description
-</th>
-<th>
-Reading Time
-</th>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
 </tr>
 </thead>
-<tbody class="list">
-<tr data-index="0" data-categories="Explanation" data-listing-file-modified-sort="1716393450108" data-listing-reading-time-sort="1" data-listing-word-count-sort="5" data-listing-title-sort="1. What is Transport Performance?" data-listing-filename-sort="index.qmd">
-<td>
-<a href="../../docs/explanation/what_is_tp/index.html" class="title listing-title">1. What is Transport Performance?</a>
-</td>
-<td>
-<span class="listing-description">An insight into what transport performance is and what it tells us about transport networks.</span>
-</td>
-<td>
-<span class="listing-reading-time">1 min</span>
-</td>
-</tr>
-<tr data-index="1" data-categories="Explanation" data-listing-file-modified-sort="1716393450108" data-listing-reading-time-sort="1" data-listing-word-count-sort="5" data-listing-title-sort="2. Transport Performance: An Example" data-listing-filename-sort="index.qmd">
-<td>
-<a href="../../docs/explanation/calculate_tp/index.html" class="title listing-title">2. Transport Performance: An Example</a>
-</td>
-<td>
-<span class="listing-description">An overview of how we used <code>transport_performance</code> to calculate the transport performance of urban centre public transit networks.</span>
-</td>
-<td>
-<span class="listing-reading-time">1 min</span>
-</td>
-</tr>
-<tr data-index="2" data-categories="Explanation" data-listing-file-modified-sort="1716393450108" data-listing-reading-time-sort="1" data-listing-word-count-sort="5" data-listing-title-sort="3. Limitations and Caveats" data-listing-filename-sort="index.qmd">
-<td>
-<a href="../../docs/explanation/limitations/index.html" class="title listing-title">3. Limitations and Caveats</a>
-</td>
-<td>
-<span class="listing-description">A discussion around the main <code>transport_performance</code> package limitations.</span>
-</td>
-<td>
-<span class="listing-reading-time">1 min</span>
-</td>
+<tbody>
+<tr class="odd">
+<td><code>filepath</code></td>
+<td>typing.Union[str, bytes, os.os.PathLike]</td>
+<td>File path to population data</td>
+<td><em>required</em></td>
 </tr>
 </tbody>
 </table>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</section>
+<section id="attributes" class="level2">
+<h2 class="anchored" data-anchor-id="attributes">Attributes</h2>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 20%">
+<col style="width: 70%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pop_gdf</td>
+<td>geopandas.geopandas.GeoDataFrame</td>
+<td>A geopandas dataframe of the input data, with gridded geometry. This is in the same CRS as the input raster data.</td>
+</tr>
+<tr class="even">
+<td>centroid_gdf</td>
+<td>geopandas.geopandas.GeoDataFrame</td>
+<td>A geopandas dataframe of grid centroids, converted to EPSG:4326 for transport analysis.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level2">
+<h2 class="anchored" data-anchor-id="raises">Raises</h2>
+<table class="table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 73%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FileNotFoundError</td>
+<td>When <code>filepath</code> is not a file or can not be found.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#transport_performance.population.rasterpop.RasterPop.get_pop">get_pop</a></td>
+<td>Get population data.</td>
+</tr>
+<tr class="even">
+<td><a href="#transport_performance.population.rasterpop.RasterPop.plot">plot</a></td>
+<td>Plot population data.</td>
+</tr>
+</tbody>
+</table>
+<section id="transport_performance.population.rasterpop.RasterPop.get_pop" class="level3">
+<h3 class="anchored" data-anchor-id="transport_performance.population.rasterpop.RasterPop.get_pop">get_pop</h3>
+<p><code>population.rasterpop.RasterPop.get_pop(aoi_bounds, aoi_crs=None, round=False, threshold=None, var_name='population', urban_centre_bounds=None, urban_centre_crs=None, band=1)</code></p>
+<p>Get population data.</p>
+<section id="parameters-1" class="level4">
+<h4 class="anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 17%">
+<col style="width: 68%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>aoi_bounds</code></td>
+<td>typing.Type[shapely.geometry.polygon.Polygon]</td>
+<td>A shapely polygon defining the boundary of the area of interest. Assumed to be in the same CRS as the rastered population data. If it is different, set <code>aoi_crs</code> to the CRS of this boundary.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>aoi_crs</code></td>
+<td>str</td>
+<td>CRS string for <code>aoi_bounds</code> (e.g.&nbsp;“EPSG:4326”), by default None which means it is assumed to have the same CRS as the population data.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>round</code></td>
+<td>bool</td>
+<td>Round population estimates to the nearest whole integer.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td><code>threshold</code></td>
+<td>typing.Union[int, float]</td>
+<td>Threshold population estimates, where values below the set threshold will be set to nan, by default None which means no thresholding will occur.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>var_name</code></td>
+<td>str</td>
+<td>The variable name, by default “population”</td>
+<td><code>'population'</code></td>
+</tr>
+<tr class="even">
+<td><code>urban_centre_bounds</code></td>
+<td>typing.Type[shapely.geometry.polygon.Polygon]</td>
+<td>Polygon defining an urban centre boundary, by default None meaning information concerning whether the grid resides within the urban centre will not be added.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>urban_centre_crs</code></td>
+<td>str</td>
+<td>The urban centre polygon CRS, by default None meaning this is the same CRS as the input raster data. Only used when <code>urban_centre_bounds</code> is set.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td><code>band</code></td>
+<td>int</td>
+<td>The band to select from the raster, by default 1.</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4">
+<h4 class="anchored" data-anchor-id="returns">Returns</h4>
+<table class="table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>geopandas.geopandas.GeoDataFrame</td>
+<td>A geopandas dataframe of the input data, with gridded geometry. This is in the same CRS as the input raster data.</td>
+</tr>
+<tr class="even">
+<td>centroid_gdf</td>
+<td>A geopandas dataframe of grid centroids, converted to EPSG:4326 for transport analysis.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.population.rasterpop.RasterPop.plot" class="level3">
+<h3 class="anchored" data-anchor-id="transport_performance.population.rasterpop.RasterPop.plot">plot</h3>
+<p><code>population.rasterpop.RasterPop.plot(which='folium', save=None, **kwargs)</code></p>
+<p>Plot population data.</p>
+<section id="parameters-2" class="level4">
+<h4 class="anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 77%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>which</code></td>
+<td>str</td>
+<td>Package to use for plotting. Must be one of {“matplotlib”, “cartopy”, “folium”}, by default “folium”.</td>
+<td><code>'folium'</code></td>
+</tr>
+<tr class="even">
+<td><code>save</code></td>
+<td>str</td>
+<td>Filepath to save file, with the file extension, by default None meaning a file will not be saved.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td><code>kwargs</code></td>
+<td>dict</td>
+<td>Extra arguments passed to plotting functions to configure the plot styling. See Notes for more support.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4">
+<h4 class="anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 67%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>typing.Union[folium.folium.Map, typing.Type[cartopy.mpl.geoaxes.GeoAxes], matplotlib.pyplot.matplotlib.pyplot.Axes, None]</td>
+<td>A folium map is returned when the <code>folium</code> backend is used. A matplotlib Axes object is returned when the <code>matplotlib</code> backend is used. A matplotlib/cartopy GeoAxes object is returned when the <code>cartopy</code> backend is used. None will be returned when saving to file.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-1" class="level4">
+<h4 class="anchored" data-anchor-id="raises-1">Raises</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ValueError</td>
+<td>Unexpected value of <code>which</code>.</td>
+</tr>
+<tr class="even">
+<td>NotImplementedError</td>
+<td>When plot is called without reading data.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes" class="level4">
+<h4 class="anchored" data-anchor-id="notes">Notes</h4>
+<p>Calling <code>help</code> as follows will provide more insights on possible kwarg arguments for the valid plotting backends:</p>
+<ul>
+<li>Folium backend: <code>help(RasterPop._plot_folium)</code></li>
+<li>Matplotlib backend: <code>help(RasterPop._plot_matplotlib)</code></li>
+<li>Cartopy backend: <code>help(RasterPop._plot_cartopy)</code></li>
+</ul>
+
+
+</section>
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

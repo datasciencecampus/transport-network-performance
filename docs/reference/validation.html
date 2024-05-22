@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Transport Performance - Explanation</title>
+<title>Transport Performance</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -31,8 +31,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
 <link href="../../docs/_static/favicon.ico" rel="icon">
-<script src="../../site_libs/quarto-listing/list.min.js"></script>
-<script src="../../site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="../../site_libs/quarto-html/quarto.js"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -69,65 +67,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-description','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -206,7 +146,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/explanation/index.html">Explanation</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/validation.html">validation</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -234,13 +174,13 @@ window.Quarto = {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../../docs/explanation/index.html" class="sidebar-item-text sidebar-link active">
+            <a href="../../docs/explanation/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Explanation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/explanation/what_is_tp/index.html" class="sidebar-item-text sidebar-link">
@@ -341,11 +281,11 @@ window.Quarto = {
       <div class="sidebar-item-container"> 
             <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">API Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/AnalyseNetwork.html" class="sidebar-item-text sidebar-link">
@@ -426,7 +366,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/validation.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/validation.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">validation</span></a>
   </div>
 </li>
@@ -447,101 +387,1004 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Explanation</h1>
-</div>
 
 
 
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<p>These explanation pages provide an understanding of what Transport Performance is, how it is calculated, and methodology limitations.</p>
-
-
-
-
-<div class="quarto-listing quarto-listing-container-table" id="listing-listing">
-<div class="listing-actions-group">
-   <div class="input-group input-group-sm quarto-listing-sort">
-     <span class="input-group-text"><i class="bi bi-sort-down"></i></span>
-     <select id="listing-listing-sort" class="form-select" aria-label="Order By" onchange="window['quarto-listings']['listing-listing'].sort(this.options[this.selectedIndex].value, { order: this.options[this.selectedIndex].getAttribute('data-direction')})">
-       <option value="" disabled="" selected="" hidden="">Order By</option>
-       <option value="index" data-direction="asc">Default</option>
-         <option value="listing-title-sort" data-direction="asc">
-          Title
-        </option>
-     </select>
-  </div>
-    <div class="input-group input-group-sm quarto-listing-filter">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="search form-control" placeholder="Filter">
-    </div>
-</div>
-<table class="quarto-listing-table table">
+<section id="transport_performance.gtfs.validation" class="level1">
+<h1>validation</h1>
+<p><code>gtfs.validation</code></p>
+<p>Validating GTFS data.</p>
+<section id="classes" class="level2">
+<h2 class="anchored" data-anchor-id="classes">Classes</h2>
+<table class="table">
 <thead>
-<tr>
-<th>
-<a class="sort" data-sort="listing-title-sort" onclick="if (this.classList.contains('sort-asc')) { this.classList.add('sort-desc'); this.classList.remove('sort-asc') } else { this.classList.add('sort-asc'); this.classList.remove('sort-desc')} return false;">Title</a>
-</th>
-<th>
-Description
-</th>
-<th>
-Reading Time
-</th>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
 </tr>
 </thead>
-<tbody class="list">
-<tr data-index="0" data-categories="Explanation" data-listing-file-modified-sort="1716393450108" data-listing-reading-time-sort="1" data-listing-word-count-sort="5" data-listing-title-sort="1. What is Transport Performance?" data-listing-filename-sort="index.qmd">
-<td>
-<a href="../../docs/explanation/what_is_tp/index.html" class="title listing-title">1. What is Transport Performance?</a>
-</td>
-<td>
-<span class="listing-description">An insight into what transport performance is and what it tells us about transport networks.</span>
-</td>
-<td>
-<span class="listing-reading-time">1 min</span>
-</td>
-</tr>
-<tr data-index="1" data-categories="Explanation" data-listing-file-modified-sort="1716393450108" data-listing-reading-time-sort="1" data-listing-word-count-sort="5" data-listing-title-sort="2. Transport Performance: An Example" data-listing-filename-sort="index.qmd">
-<td>
-<a href="../../docs/explanation/calculate_tp/index.html" class="title listing-title">2. Transport Performance: An Example</a>
-</td>
-<td>
-<span class="listing-description">An overview of how we used <code>transport_performance</code> to calculate the transport performance of urban centre public transit networks.</span>
-</td>
-<td>
-<span class="listing-reading-time">1 min</span>
-</td>
-</tr>
-<tr data-index="2" data-categories="Explanation" data-listing-file-modified-sort="1716393450108" data-listing-reading-time-sort="1" data-listing-word-count-sort="5" data-listing-title-sort="3. Limitations and Caveats" data-listing-filename-sort="index.qmd">
-<td>
-<a href="../../docs/explanation/limitations/index.html" class="title listing-title">3. Limitations and Caveats</a>
-</td>
-<td>
-<span class="listing-description">A discussion around the main <code>transport_performance</code> package limitations.</span>
-</td>
-<td>
-<span class="listing-reading-time">1 min</span>
-</td>
+<tbody>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance">GtfsInstance</a></td>
+<td>Create a feed instance for validation, cleaning &amp; visualisation.</td>
 </tr>
 </tbody>
 </table>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+<section id="transport_performance.gtfs.validation.GtfsInstance" class="level3">
+<h3 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance">GtfsInstance</h3>
+<p><code>gtfs.validation.GtfsInstance(self, gtfs_pth, units='km', route_lookup_pth=None)</code></p>
+<p>Create a feed instance for validation, cleaning &amp; visualisation.</p>
+<section id="parameters" class="level4">
+<h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 17%">
+<col style="width: 69%">
+<col style="width: 4%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>gtfs_pth</code></td>
+<td>typing.Union[str, bytes, os.os.PathLike]</td>
+<td>File path to GTFS archive.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>units</code></td>
+<td>(str, optionl)</td>
+<td>Spatial units of the GTFS file, defaults to “km”.</td>
+<td><code>'km'</code></td>
+</tr>
+<tr class="odd">
+<td><code>route_lookup_pth</code></td>
+<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>The path to the route type lookup. If left empty, the default path will be used. When None, route lookup table is read from file saved within this package, defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes" class="level4">
+<h4 class="anchored" data-anchor-id="attributes">Attributes</h4>
+<table class="table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 32%">
+<col style="width: 49%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>feed</td>
+<td>gtfs_kit.gtfs_kit.Feed</td>
+<td>A gtfs_kit feed produced using the files at <code>gtfs_pth</code> on init.</td>
+</tr>
+<tr class="even">
+<td>gtfs_path</td>
+<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>The path to the GTFS archive.</td>
+</tr>
+<tr class="odd">
+<td>file_list</td>
+<td>list</td>
+<td>Files in the GTFS archive.</td>
+</tr>
+<tr class="even">
+<td>validity_df</td>
+<td>pandas.pandas.DataFrame</td>
+<td>Table of GTFS errors, warnings &amp; their descriptions.</td>
+</tr>
+<tr class="odd">
+<td>dated_trip_counts</td>
+<td>pandas.pandas.DataFrame</td>
+<td>Dated trip counts by modality.</td>
+</tr>
+<tr class="even">
+<td>daily_trip_summary</td>
+<td>pandas.pandas.DataFrame</td>
+<td>Summarised trip results by day of the week and modality.</td>
+</tr>
+<tr class="odd">
+<td>daily_route_summary</td>
+<td>pandas.pandas.DataFrame</td>
+<td>Dated route counts by modality.</td>
+</tr>
+<tr class="even">
+<td>route_mode_summary_df</td>
+<td>pandas.pandas.DataFrame</td>
+<td>Summarised route counts by day of the week and modality.</td>
+</tr>
+<tr class="odd">
+<td>pre_processed_trips</td>
+<td>pandas.pandas.DataFrame</td>
+<td>A table of pre-processed trip data.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level4">
+<h4 class="anchored" data-anchor-id="raises">Raises</h4>
+<table class="table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 89%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TypeError</td>
+<td>1. <code>pth</code> is not either of string or pathlib.Path. 2. <code>units</code> is not of type str.</td>
+</tr>
+<tr class="even">
+<td>FileExistsError</td>
+<td><code>pth</code> does not exist on disk.</td>
+</tr>
+<tr class="odd">
+<td>ValueError</td>
+<td>1. <code>pth</code> does not have the expected file extension(s). 2. <code>units</code> are not one of: “m”, “km”, “metres”, “meters”, “kilometres”, “kilometers”.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.clean_feed">clean_feed</a></td>
+<td>Attempt to clean feed using <code>gtfs_kit</code>.</td>
+</tr>
+<tr class="even">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.ensure_populated_calendar">ensure_populated_calendar</a></td>
+<td>If calendar is absent, creates one from calendar_dates.</td>
+</tr>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.filter_to_bbox">filter_to_bbox</a></td>
+<td>Very shallow wrapper around filter_gfts().</td>
+</tr>
+<tr class="even">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.filter_to_date">filter_to_date</a></td>
+<td>Very shallow wrapper around filter_gtfs().</td>
+</tr>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.get_gtfs_files">get_gtfs_files</a></td>
+<td>Return a list of files present in the GTFS feed.</td>
+</tr>
+<tr class="even">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.get_route_modes">get_route_modes</a></td>
+<td>Summarise the available routes by their associated <code>route_type</code>.</td>
+</tr>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.html_report">html_report</a></td>
+<td>Generate a HTML report describing the GTFS data.</td>
+</tr>
+<tr class="even">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.is_valid">is_valid</a></td>
+<td>Check a feed is valid with <code>gtfs_kit</code>.</td>
+</tr>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.print_alerts">print_alerts</a></td>
+<td>Print validity errors &amp; warning messages in full.</td>
+</tr>
+<tr class="even">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.save">save</a></td>
+<td>Save the cleaned gtfs feed.</td>
+</tr>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.summarise_routes">summarise_routes</a></td>
+<td>Produce a summarised table of route statistics by day of week.</td>
+</tr>
+<tr class="even">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.summarise_trips">summarise_trips</a></td>
+<td>Produce a summarised table of trip statistics by day of week.</td>
+</tr>
+<tr class="odd">
+<td><a href="#transport_performance.gtfs.validation.GtfsInstance.viz_stops">viz_stops</a></td>
+<td>Visualise the stops on a map as points or convex hull. Writes file.</td>
+</tr>
+</tbody>
+</table>
+<section id="transport_performance.gtfs.validation.GtfsInstance.clean_feed" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.clean_feed">clean_feed</h5>
+<p><code>gtfs.validation.GtfsInstance.clean_feed(validate=False, fast_travel=True)</code></p>
+<p>Attempt to clean feed using <code>gtfs_kit</code>.</p>
+<section id="parameters-1" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-1">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 8%">
+<col style="width: 63%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>validate</code></td>
+<td>bool</td>
+<td>Whether or not to validate the dataframe before cleaning</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td><code>fast_travel</code></td>
+<td>bool</td>
+<td>Whether or not to clean warnings related to fast travel.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.ensure_populated_calendar" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.ensure_populated_calendar">ensure_populated_calendar</h5>
+<p><code>gtfs.validation.GtfsInstance.ensure_populated_calendar()</code></p>
+<p>If calendar is absent, creates one from calendar_dates.</p>
+<p>Saves calendar table to feed.calendar. Shallow wrapper around gtfs.calendar.create_calendar_from_dates.</p>
+<section id="raises-1" class="level6">
+<h6 class="anchored" data-anchor-id="raises-1">Raises</h6>
+<table class="table">
+<colgroup>
+<col style="width: 24%">
+<col style="width: 75%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FileNotFoundError</td>
+<td>Calendar and calendar_dates are missing, GTFS is invalid.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.filter_to_bbox" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.filter_to_bbox">filter_to_bbox</h5>
+<p><code>gtfs.validation.GtfsInstance.filter_to_bbox(bbox, crs='epsg:4326')</code></p>
+<p>Very shallow wrapper around filter_gfts().</p>
+<p>Filters GTFS to a bbox.</p>
+<section id="parameters-2" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-2">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 24%">
+<col style="width: 63%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>bbox</code></td>
+<td>typing.Union[list, geopandas.GeoDataFrame]</td>
+<td>The bbox to filter the GTFS to. Leave as none if the GTFS does not need to be cropped. Format - [xmin, ymin, xmax, ymax]</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>crs</code></td>
+<td>typing.Union[str, int]</td>
+<td>The CRS of the given bbox, by default “epsg:4326”</td>
+<td><code>'epsg:4326'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level6">
+<h6 class="anchored" data-anchor-id="returns">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.filter_to_date" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.filter_to_date">filter_to_date</h5>
+<p><code>gtfs.validation.GtfsInstance.filter_to_date(dates)</code></p>
+<p>Very shallow wrapper around filter_gtfs().</p>
+<p>Filters GTFS to date(s)</p>
+<section id="parameters-3" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-3">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 32%">
+<col style="width: 42%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>dates</code></td>
+<td>typing.Union[str, list]</td>
+<td>The date(s) to filter the GTFS to</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level6">
+<h6 class="anchored" data-anchor-id="returns-1">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.get_gtfs_files" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.get_gtfs_files">get_gtfs_files</h5>
+<p><code>gtfs.validation.GtfsInstance.get_gtfs_files()</code></p>
+<p>Return a list of files present in the GTFS feed.</p>
+<section id="returns-2" class="level6">
+<h6 class="anchored" data-anchor-id="returns-2">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>list</td>
+<td>A list of files that present within the GTFS file</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.get_route_modes" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.get_route_modes">get_route_modes</h5>
+<p><code>gtfs.validation.GtfsInstance.get_route_modes()</code></p>
+<p>Summarise the available routes by their associated <code>route_type</code>.</p>
+<section id="returns-3" class="level6">
+<h6 class="anchored" data-anchor-id="returns-3">Returns</h6>
+<table class="table">
+<colgroup>
+<col style="width: 56%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pandas.pandas.core.pandas.core.frame.pandas.core.frame.DataFrame</td>
+<td>Summary table of route counts by transport mode.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.html_report" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.html_report">html_report</h5>
+<p><code>gtfs.validation.GtfsInstance.html_report(report_dir='outputs', overwrite=False, summary_type='mean', extended_validation=True, clean_feed=True)</code></p>
+<p>Generate a HTML report describing the GTFS data.</p>
+<section id="parameters-4" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-4">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 23%">
+<col style="width: 57%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>report_dir</code></td>
+<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>The directory to save the report to, by default “outputs”</td>
+<td><code>'outputs'</code></td>
+</tr>
+<tr class="even">
+<td><code>overwrite</code></td>
+<td>bool</td>
+<td>Whether or not to overwrite the existing report if it already exists in the report_dir, by default False</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td><code>summary_type</code></td>
+<td>str</td>
+<td>The type of summary to show on the summaries on the gtfs report, by default “mean”</td>
+<td><code>'mean'</code></td>
+</tr>
+<tr class="even">
+<td><code>extended_validation</code></td>
+<td>bool</td>
+<td>Whether or not to create extended reports for gtfs validation errors/warnings, by default True</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td><code>clean_feed</code></td>
+<td>bool</td>
+<td>Whether or not to clean the feed before validating, by default True</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-4" class="level6">
+<h6 class="anchored" data-anchor-id="returns-4">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-2" class="level6">
+<h6 class="anchored" data-anchor-id="raises-2">Raises</h6>
+<table class="table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 82%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ValueError</td>
+<td>An error raised if the type of summary passed is invalid</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.is_valid" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.is_valid">is_valid</h5>
+<p><code>gtfs.validation.GtfsInstance.is_valid(far_stops=True)</code></p>
+<p>Check a feed is valid with <code>gtfs_kit</code>.</p>
+<section id="parameters-5" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-5">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 5%">
+<col style="width: 77%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>far_stops</code></td>
+<td>bool</td>
+<td>Whether or not to perform validation for far stops (both between consecutive stops and over multiple stops)</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-5" class="level6">
+<h6 class="anchored" data-anchor-id="returns-5">Returns</h6>
+<table class="table">
+<colgroup>
+<col style="width: 57%">
+<col style="width: 42%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pandas.pandas.core.pandas.core.frame.pandas.core.frame.DataFrame</td>
+<td>Table of errors, warnings &amp; their descriptions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.print_alerts" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.print_alerts">print_alerts</h5>
+<p><code>gtfs.validation.GtfsInstance.print_alerts(alert_type='error')</code></p>
+<p>Print validity errors &amp; warning messages in full.</p>
+<section id="parameters-6" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-6">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 7%">
+<col style="width: 69%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>alert_type</code></td>
+<td>str</td>
+<td>The alert type to print. Also accepts “warning”. Defaults to “error”.</td>
+<td><code>'error'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-6" class="level6">
+<h6 class="anchored" data-anchor-id="returns-6">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-3" class="level6">
+<h6 class="anchored" data-anchor-id="raises-3">Raises</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AttributeError</td>
+<td>No <code>validity_df()</code> attrubute was found.</td>
+</tr>
+<tr class="even">
+<td>UserWarning</td>
+<td>No alerts of the specified <code>alert_type</code> were found.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.save" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.save">save</h5>
+<p><code>gtfs.validation.GtfsInstance.save(path, overwrite=False)</code></p>
+<p>Save the cleaned gtfs feed.</p>
+<section id="parameters-7" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-7">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 31%">
+<col style="width: 50%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>path</code></td>
+<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>The path to save the GTFS file to. E.g., outputs/cleaned_gtfs.zip</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>overwrite</code></td>
+<td>bool</td>
+<td>Whether or not to overwrite any pre-existing files at the given path</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-7" class="level6">
+<h6 class="anchored" data-anchor-id="returns-7">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.summarise_routes" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.summarise_routes">summarise_routes</h5>
+<p><code>gtfs.validation.GtfsInstance.summarise_routes(summ_ops=[np.min, np.max, np.mean, np.median], return_summary=True)</code></p>
+<p>Produce a summarised table of route statistics by day of week.</p>
+<p>For route count summaries, function counts route_id only, irrespective of which service_id the routes map to. If the services run on different calendar days, they will be counted separately. In cases where more than one service runs the same route on the same day, these will not be counted as distinct routes.</p>
+<section id="parameters-8" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-8">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 4%">
+<col style="width: 62%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>summ_ops</code></td>
+<td>list</td>
+<td>A list of operators used to get a summary of a given day, by default [np.min, np.max, np.mean, np.median].</td>
+<td><code>[np.min, np.max, np.mean, np.median]</code></td>
+</tr>
+<tr class="even">
+<td><code>return_summary</code></td>
+<td>bool</td>
+<td>When True, a summary is returned. When False, route data for each date is returned, by default True.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-8" class="level6">
+<h6 class="anchored" data-anchor-id="returns-8">Returns</h6>
+<table class="table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 73%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pandas.pandas.DataFrame</td>
+<td>A dataframe containing either summarised results or dated route data.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-4" class="level6">
+<h6 class="anchored" data-anchor-id="raises-4">Raises</h6>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 90%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TypeError</td>
+<td>1. return_summary is not of type pd.df. 2. summ_ops must be a numpy function or a list. 3. Each item in a summ_ops list must be a function. 4. Each item in a summ_ops list must be a numpy namespace export.</td>
+</tr>
+<tr class="even">
+<td>NotImplementedError</td>
+<td>summ_ops is a function not exported from numpy.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.summarise_trips" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.summarise_trips">summarise_trips</h5>
+<p><code>gtfs.validation.GtfsInstance.summarise_trips(summ_ops=[np.min, np.max, np.mean, np.median], return_summary=True)</code></p>
+<p>Produce a summarised table of trip statistics by day of week.</p>
+<p>For trip count summaries, function counts distinct trip_id only. These are then summarised into average/median/min/max (default) number of trips per day. Raw data for each date can also be obtained by setting the ‘return_summary’ parameter to False (bool).</p>
+<section id="parameters-9" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-9">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 4%">
+<col style="width: 62%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>summ_ops</code></td>
+<td>list</td>
+<td>A list of operators used to get a summary of a given day, by default [np.min, np.max, np.mean, np.median].</td>
+<td><code>[np.min, np.max, np.mean, np.median]</code></td>
+</tr>
+<tr class="even">
+<td><code>return_summary</code></td>
+<td>bool</td>
+<td>When True, a summary is returned. When False, trip data for each date is returned, by default True.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-9" class="level6">
+<h6 class="anchored" data-anchor-id="returns-9">Returns</h6>
+<table class="table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 73%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pandas.pandas.DataFrame</td>
+<td>A dataframe containing either summarised results or dated trip data.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-5" class="level6">
+<h6 class="anchored" data-anchor-id="raises-5">Raises</h6>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 90%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TypeError</td>
+<td>1. return_summary is not of type pd.df. 2. summ_ops must be a numpy function or a list. 3. Each item in a summ_ops list must be a function. 4. Each item in a summ_ops list must be a numpy namespace export.</td>
+</tr>
+<tr class="even">
+<td>NotImplementedError</td>
+<td>summ_ops is a function not exported from numpy.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="transport_performance.gtfs.validation.GtfsInstance.viz_stops" class="level5">
+<h5 class="anchored" data-anchor-id="transport_performance.gtfs.validation.GtfsInstance.viz_stops">viz_stops</h5>
+<p><code>gtfs.validation.GtfsInstance.viz_stops(out_pth, geoms='point', geom_crs=27700, create_out_parent=False, filtered_only=True)</code></p>
+<p>Visualise the stops on a map as points or convex hull. Writes file.</p>
+<section id="parameters-10" class="level6">
+<h6 class="anchored" data-anchor-id="parameters-10">Parameters</h6>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 76%">
+<col style="width: 3%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>out_pth</code></td>
+<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Path to write the map file html document to, including the file name. Must end with ‘.html’ file extension.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td><code>geoms</code></td>
+<td>str</td>
+<td>Type of map to plot. If <code>geoms=point</code> (the default) uses <code>gtfs_kit</code> to map point locations of available stops. If <code>geoms=hull</code>, calculates the convex hull &amp; its area, defaults to “point”.</td>
+<td><code>'point'</code></td>
+</tr>
+<tr class="odd">
+<td><code>geom_crs</code></td>
+<td>typing.Union[str, int]</td>
+<td>Geometric CRS to use for the calculation of the convex hull area only, defaults to “27700” (OSGB36, British National Grid).</td>
+<td><code>27700</code></td>
+</tr>
+<tr class="even">
+<td><code>create_out_parent</code></td>
+<td>bool</td>
+<td>Should the parent directory of <code>out_pth</code> be created if not found, defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td><code>filtered_only</code></td>
+<td>bool</td>
+<td>When True, only stops referenced within stop_times.txt will be plotted. When False, stops referenced in stops.txt will be plotted. Note that gtfs_kit filtering behaviour removes stops from stop_times.txt but not stops.txt, defaults to True.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-10" class="level6">
+<h6 class="anchored" data-anchor-id="returns-10">Returns</h6>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-6" class="level6">
+<h6 class="anchored" data-anchor-id="raises-6">Raises</h6>
+<table class="table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 91%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TypeError</td>
+<td>1. <code>out_pth</code> is not either of string or pathlib.PosixPath. 2. <code>geoms</code> is not of type str 3. <code>geom_crs</code> is not of type str or int 4. <code>create_out_parent</code> or <code>filtered_only</code> are not of type bool</td>
+</tr>
+<tr class="even">
+<td>FileNotFoundError</td>
+<td>Raised if the parent directory of <code>out_pth</code> could not be found on disk and <code>create_out_parent</code> is False.</td>
+</tr>
+<tr class="odd">
+<td>KeyError</td>
+<td>The stops table has no ‘stops_code’ column.</td>
+</tr>
+<tr class="even">
+<td>UserWarning</td>
+<td>If the file extension of <code>out_pth</code> is not .html, the extension will be changed to .html.</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+</section>
+</section>
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
