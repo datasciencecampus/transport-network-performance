@@ -121,7 +121,17 @@ else:
 
 :::
 
-Let's take a look at the `MultiGtfsInstance` class documentation to help understand how it works.
+***
+
+Now that we have ingested the GTFS feed(s), you may wish to open the files up
+on your file system and inspect the contents. GTFS feeds come in compressed
+formats and contain multiple text files. These files can be read together, a
+bit like a relational database, to produce a feed object that is useful when
+undertaking routing with public transport modalities.
+
+To do this, we will need to use a class from the `transport_performance`
+package called `MultiGtfsInstance`. Let's take a look at the class docstring to
+help us understand how it works.
 
 :::{.scrolling}
 
@@ -131,19 +141,86 @@ help(MultiGtfsInstance)
 
 :::
 
+***
+
+`MultiGtfsInstance`; as the name sounds; can cope with multiple GTFS feeds at a
+time. If you have chosen to download several feeds, then point the `path`
+parameter at a directory that contains all of the feeds. If you have chosen to
+download a single feed, then you may pass the full path to the feed.
+
+:::{.panel-tabset}
+
+### Task
+
+Instantiate a `feed` object by pointing the `MultiGtfsInstance` class at a path
+to the GTFS feed(s) that you have downloaded. Once you have successfully
+instantiated `feed`, inspect the correct attribute in order to confirm the
+number of separate feeds instances contained within it.
+
+### Hint
+
+```{python}
+#| eval: false
+gtfs_pth = "<INSERT_PATH_TO_GTFS>"
+feed = MultiGtfsInstance(path=gtfs_pth)
+print(len(feed.<INSERT_CORRECT_ATTRIBUTE>))
+
+```
+
+### Solution
+
 ```{python}
 gtfs_pth = here("TMP_GTFS/")
-
 try:
     feed = MultiGtfsInstance(path=gtfs_pth)
 except ValueError:
     raise ValueError(f"location of here is: {gtfs_pth}")
 except FileNotFoundError:
-
     raise FileNotFoundError(f"location of here is: {os.listdir(gtfs_pth)}")
-
+print(f"There are {len(feed.instances)} feed instances")
 
 ```
+
+:::
+
+Each individual feed can be accessed seperately. Their contents should confirm
+their file contents on disk.
+
+:::{.scrolling}
+
+```{python}
+help(feed.instances[0].feed)
+
+```
+
+:::
+
+:::{.panel-tabset}
+
+### Task
+
+By accessing the appropriate attribute, print out the first 5 stops of the
+first instance within the `feed` object.
+
+### Hint
+
+```{python}
+#| eval: false
+feed.<INSERT_CORRECT_ATTR>[0].feed.stops.<INSERT_CORRECT_METHOD>(5)
+```
+
+These records will match the contents of the stops.txt file within the feed
+that you downloaded.
+
+***
+
+### Solution
+
+```{python}
+feed.instances[0].feed.stops.head(5)
+```
+
+:::
 
 ## Basic Checks
 
