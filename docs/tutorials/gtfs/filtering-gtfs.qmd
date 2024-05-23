@@ -1,5 +1,5 @@
 ---
-title: Validating GTFS Data.
+title: Filtering GTFS Feeds
 description: A tutorial quality assuring General Transit Feed Specification.
 format: html
 jupyter:
