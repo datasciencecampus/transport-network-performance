@@ -2,6 +2,7 @@
 title: Filtering GTFS Feeds
 description: A tutorial quality assuring General Transit Feed Specification.
 format: html
+toc: true
 jupyter:
   kernelspec:
     name: "conda-env-transport-performance-py"
@@ -10,7 +11,9 @@ jupyter:
 css: /www/styles.css
 ---
 
-## Outcomes
+## Introduction
+
+### Outcomes
 
 This tutorial will takes the user through how to reduce the size of
 [General Transit Feed Specification (GTFS)](https://gtfs.org/) feeds. This is
@@ -24,20 +27,31 @@ While working towards this outcome, we will:
 * Filter the GTFS feed to a specific bounding box.
 * Filter the GTFS feed to a specific date range.
 * Check if our filter operations has resulted in an empty feed.
+* Attempt to clean the feed.
 * Reverse-engineer a calendar.txt if it is missing.
 * Write the filtered feed to disk.
 
-## Requirements
+### Requirements
 
 To complete this tutorial, you will need:
 
 * python 3.9
 * Stable internet connection
 * Installed the `transport_performance` package (see the
-[getting started explanation](<INSERT_LINK>) for help)
+[getting started explanation](/docs/getting_started/index.qmd) for help)
+* The following requirements:
 
+```{.abc filename=requirements.txt}
+geopandas
+pyprojroot
+shapely
+. # ensure transport_performance is installed
 
+```
 
+## Working With GTFS
+
+Let's import the necessary dependencies:
 
 ```{python}
 import datetime
@@ -51,9 +65,38 @@ from shapely.geometry import Polygon
 
 from transport_performance.gtfs.multi_validation import MultiGtfsInstance
 
+```
+
+We require a source of public transit schedule data in GTFS format. The French
+government publish all of their data, along with may useful validation tools to
+the website [transport.data.gouv.fr](https://transport.data.gouv.fr/datasets/).
+
+:::{.panel-tabset}
+
+### Task
+
+Searching through this site for various regions and data types, you may be able
+to find an example of GTFS for an area of interest. Make a note of the
+transport modality of your GTFS, is it bus, rail or something else?
+
+You may wish to manually download at least one GTFS feed and store somewhere in
+your file system. Alternatively you may programmatically download the data, as
+in the solution here.
+
+### Hint
+
+```{python}
+#| eval: false
+BUS_PTH = here("<INSERT_SOME_PATH_FOR_BUS_GTFS>")
+RAIL_PTH = here("<INSERT_SOME_PATH_FOR_RAIL_GTFS>")
+BUS_URL = "<INSERT_SOME_URL_TO_BUS_GTFS>"
+RAIL_URL = "<INSERT_SOME_URL_TO_RAIL_GTFS>"
+subprocess.run(["curl", BUS_URL, "-o", BUS_PTH])
+subprocess.run(["curl", RAIL_URL, "-o", RAIL_PTH])
 
 ```
 
+### Solution
 
 ```{python}
 BUS_PTH = here("TMP_GTFS/bus_gtfs.zip")
@@ -75,6 +118,8 @@ else:
     pass
 
 ```
+
+:::
 
 Let's take a look at the `MultiGtfsInstance` class documentation to help understand how it works.
 
