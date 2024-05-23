@@ -7,7 +7,7 @@ jupyter:
     name: "conda-env-transport-performance-py"
     language: "python"
     display_name: "transport-performance"
-css: www/styles.css
+css: /www/styles.css
 ---
 
 ## Outcomes
@@ -56,8 +56,8 @@ from transport_performance.gtfs.multi_validation import MultiGtfsInstance
 
 
 ```{python}
-BUS_PTH = here("TMP_GTFS/bus_gtfs.zip")
-RAIL_PTH = here("TMP_GTFS/rail_gtfs.zip")
+BUS_PTH = here("TMP_GTFS/filtered_feed/bus_gtfs.zip")
+RAIL_PTH = here("TMP_GTFS/filtered_feed/rail_gtfs.zip")
 
 if os.path.exists(BUS_PTH) and os.path.exists(RAIL_PTH):
     pass
@@ -87,11 +87,14 @@ help(MultiGtfsInstance)
 :::
 
 ```{python}
-gtfs_pth = here("TMP_GTFS/")
+gtfs_pth = here("TMP_GTFS/filtered_feed")
 try:
     feed = MultiGtfsInstance(path=gtfs_pth)
 except ValueError:
-    raise ValueError(f"location of here is: {here()}")
+    raise ValueError(f"location of here is: {gtfs_pth}")
+except FileNotFoundError:
+    raise FileNotFoundError(f"location of here is: {os.listdir(gtfs_pth)}")
+
 
 ```
 
