@@ -1,0 +1,13 @@
+---
+title: How-To
+listing:
+    type: table
+    contents:
+        - "/**/*.qmd"
+    fields: [title, description, reading-time]
+    sort: title
+    sort-ui: true
+    filter-ui: true
+---
+
+These pages are short step-by-step instructions on how-to get something done, in particular retrieve the required input data for `transport_performance`.

@@ -57,7 +57,7 @@ def transport_performance(
         "to_id".
     backend : str, optional
         The 'backend' to use to calculate transport performance, by default
-        "pandas". Must be one of: {"pandas"}.
+        "pandas". Other backends not yet implemented.
     descriptive_stats : bool, optional
         Calculate transport performance descriptive statistics and return them
         in a separate dataframe. By default True, means descriptive statistics

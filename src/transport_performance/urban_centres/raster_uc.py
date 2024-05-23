@@ -43,12 +43,6 @@ class UrbanCentre:
         GeoDataFrame including vector information for the urban centre, buffer
         and bounding box limits.
 
-    Methods
-    -------
-    get_urban_centre
-        Calculates urban centre from population raster and returns vectorised
-        geography for urban centre, buffer and bounding box.
-
     Raises
     ------
     TypeError
@@ -144,21 +138,20 @@ class UrbanCentre:
         Notes
         -----
         Buffer estimation: To detemine a buffer around the urban centre an
-        apporiate CRS is needed to ensure distances are preserved. The CRSs
+        appropriate CRS is needed to ensure distances are preserved. The CRSs
         adopted for raster data typically preserve area (e.g., Mollweide/
         ESRI:54009 is an equal area projection). The solution to this problem
         would be to provide an appropriate CRS to use when estimating the
         buffer geometry, such as those used for topographic mapping and
         engineering surveying of specific countries. To date, the following
-        CRSs have been utilised for their respective contries when estimating
+        CRS have been utilised for their respective countries when estimating
         buffers around urban centres:
 
-        ======= =====
-        Country CRS
-        ======= =====
-        UK      EPSG:27700
-        France  EPSG:2154
-        ======= =====
+
+        | Country | CRS        |
+        | ------- | ---------- |
+        | UK      | EPSG:27700 |
+        | France  | EPSG:2154  |
 
         """
         # window raster based on bbox

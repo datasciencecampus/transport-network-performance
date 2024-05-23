@@ -32,16 +32,13 @@ class AnalyseNetwork:
 
     Attributes
     ----------
-    gdf
-    out_path
+    gdf : gpd.GeoDataFrame
+        Geodataframe with the population centroids.
+    out_path : Union[str, pathlib.Path]
+        Path to save the output as parquet files.
     transport_network : TransportNetwork
         R5py object that contains a transport network initialised with data
         from OpenStreetMap and GTFS.
-
-    Methods
-    -------
-    od_matrix
-        Method that calculates the full O-D matrix and saves it as parquet.
 
     Raises
     ------
@@ -121,16 +118,16 @@ class AnalyseNetwork:
             performance using the whole dataset or batching by origin
             (iteratively calculating the transport performance of each origin
             and all destinations within range). Should be True for large urban
-            centres where the whole O-D matrix may be to large to be hold in
-            memory. Defaults to False.
+            centres where the whole Origin-Destination (O-D) matrix may be too
+            large to be held in memory. Defaults to False.
         partition_size : int
-            Maximum size of each individual parquet file. If data would
-            exceed this size, it will be split in several parquet files.
+            Maximum size of each individual parquet file. If data exceeds this
+            size, it will be split in several parquet files.
         destination_col : str
             Column indicating what centroids should be considered as
             destinations. Default is "within_urban_centre".
         distance: Union[int, float]
-            Distance to filter destinations.in km. Points further away from
+            Distance to filter destinations in km. Points further away from
             origin are removed from output. Default is 11.25 km.
         unit : Unit
             Unit to calculate distance. Default is km.

@@ -1,0 +1,10 @@
+---
+title: "2. Transport Performance: An Example"
+description: An overview of how we used `transport_performance` to calculate the transport performance of urban centre public transit networks.
+date-modified: 05/16/2024  # must be in MM/DD/YYYY format
+categories: ["Explanation"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
+toc: true
+date-format: iso
+---
+
+🚧 Page under construction 🚧

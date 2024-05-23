@@ -47,14 +47,6 @@ class RasterPop:
         A geopandas dataframe of grid centroids, converted to EPSG:4326 for
         transport analysis.
 
-    Methods
-    -------
-    get_pop
-        Read and preprocess population estimates into a geopandas dataframe.
-    plot
-        Build static and interactive visualisations of population data. Can
-        only use this method once `get_pop` has been called.
-
     Raises
     ------
     FileNotFoundError
@@ -109,7 +101,7 @@ class RasterPop:
         var_name : str, optional
             The variable name, by default "population"
         urban_centre_bounds : Type[Polygon], optional
-            Polygon defining an urban centre bounday, by default None meaning
+            Polygon defining an urban centre boundary, by default None meaning
             information concerning whether the grid resides within the urban
             centre will not be added.
         urban_centre_crs : str, optional
@@ -354,7 +346,7 @@ class RasterPop:
         Parameters
         ----------
         urban_centre_bounds : Type[Polygon]
-            Polygon defining urban centre bounday
+            Polygon defining urban centre boundary
         urban_centre_crs : str, optional
             The urban centre polygon CRS, by default None meaning this is the
             same CRS as the input raster data.

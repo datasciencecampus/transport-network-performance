@@ -159,7 +159,7 @@ def get_saved_route_type_lookup(
         os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
     )
 ) -> pd.DataFrame:
-    """Get the lcoally saved route type lookup as a dataframe.
+    """Get the locally saved route type lookup as a dataframe.
 
     Parameters
     ----------

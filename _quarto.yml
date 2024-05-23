@@ -1,0 +1,157 @@
+project:
+  type: website
+  render:
+    - "index.qmd"
+    - "docs/"
+    - "!notebooks/"
+    - "!docs/source/"
+    - "!docs/build/"
+    - "!*.ipynb"
+    - "!docs/gtfs/*"
+  preview:
+    port: 1111
+    browser: true
+    watch-inputs: true
+    navigate: true
+  resources:
+    - "docs/_static/**"
+
+website:
+  title: "Transport Performance"
+  favicon: docs/_static/favicon.ico
+  navbar:
+    logo: docs/_static/tp_logo_white_background.png
+    left:
+      - href: docs/getting_started/index.qmd
+        text: Getting Started
+      - href: docs/explanation/index.qmd
+        text: Explanation
+      - href: docs/how_to/index.qmd
+        text: How-To
+      - href: docs/tutorials/index.qmd
+        text: Tutorials
+      - href: docs/reference/index.qmd
+        text: API Reference
+    right:
+      - icon: github
+        menu:
+          - text: Source code
+            url: https://github.com/datasciencecampus/transport-network-performance
+          - text: Open an issue
+            url: https://github.com/datasciencecampus/transport-network-performance/issues
+  sidebar:
+    style: docked
+    search: true
+    collapse-level: 1
+    contents:
+      - text: Getting Started
+        href: docs/getting_started/index.qmd
+      - section: Explanation
+        href: docs/explanation/index.qmd
+        contents:
+          - "docs/explanation/what_is_tp/index.qmd"
+          - "docs/explanation/calculate_tp/index.qmd"
+          - "docs/explanation/limitations/index.qmd"
+      - section: How-To
+        href: docs/how_to/index.qmd
+        contents:
+          - auto: "docs/how_to/**/*.qmd"
+      - section: Tutorials
+        href: docs/tutorials/index.qmd
+        contents:
+          - "docs/tutorials/urban_centre/index.qmd"
+          - "docs/tutorials/population/index.qmd"
+          - "docs/tutorials/gtfs/index.qmd"
+          - "docs/tutorials/osm/index.qmd"
+          - "docs/tutorials/analyse_network/index.qmd"
+          - "docs/tutorials/metrics/index.qmd"
+      - section: API Reference
+        href: docs/reference/index.qmd
+        contents:
+          - auto: "docs/reference/*.qmd"
+  reader-mode: true
+  page-footer:
+    left: >
+      These docs are built using [Quarto](https://quarto.org/), [quartodoc](https://machow.github.io/quartodoc/get-started/overview.html), and [Diátaxis](https://diataxis.fr/).
+    center: >
+      All content is available under the
+      [Open Government Licence V3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/),
+      except where otherwise stated.
+    right: >
+      <a href="https://datasciencecampus.ons.gov.uk/">
+        <img src="https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2019/05/DSC.png" alt="Data Science Campus logo" style="height:22px;">
+      </a>
+
+format:
+  html:
+    mainfont: Arial
+    theme:
+      - flatly
+      - docs/_static/custom.scss
+    lang: en-GB
+
+metadata-files:
+  - docs/_sidebar.yml
+
+quartodoc:
+  title: API reference
+  package: transport_performance
+  dir: docs/reference
+  sidebar: docs/_sidebar.yml
+  sections:
+    - title: "`urban_centres`"
+      desc: >
+        Modules for detecting urban centres.
+    - subtitle: "`urban_centres.raster_uc.UrbanCentre`"
+      desc: >
+        A class for detecting urban centres using rastered population estimates.
+      package: transport_performance.urban_centres.raster_uc
+      contents:
+        - UrbanCentre
+    - title: "`population`"
+      desc: >
+        Modules for preprocessing population data.
+    - subtitle: "`population.rasterpop.RasterPop`"
+      desc: >
+        A class for preprocessing rastered population estimates.
+      package: transport_performance.population.rasterpop
+      contents:
+        - RasterPop
+    - title: "`gtfs`"
+      desc: >
+        Modules for working with GTFS public transit schedule files.
+      package: transport_performance.gtfs
+      contents:
+        - calendar
+        - cleaners
+        - gtfs_utils
+        - multi_validation
+        - routes
+        - validation
+        - validators
+    - title: "`osm`"
+      desc: >
+        Modules for OpenStreetMap utilities, such are cropping .pbf files to a bounding box.
+      package: transport_performance.osm
+      contents:
+        - osm_utils
+    - title: "`analyse_network`"
+      desc: >
+        A class wrapping r5py network routing to calculate travel times between all origin/destination cells.
+      package: transport_performance.analyse_network
+      contents:
+        - AnalyseNetwork
+    - title: "`metrics`"
+      desc: >
+        Functions for calculating transport metrics, such as transport performance.
+      package: transport_performance
+      contents:
+        - metrics
+    - title: "`utils`"
+      desc: >
+        Modules to handle common package utility functions.
+      package: transport_performance.utils
+      contents:
+        - defence
+        - io
+        - raster

@@ -1,0 +1,13 @@
+---
+title: Explanation
+listing:
+    type: table
+    contents:
+        - "/**/*.qmd"
+    fields: [title, description, reading-time]
+    sort: title
+    sort-ui: true
+    filter-ui: true
+---
+
+These explanation pages provide an understanding of what Transport Performance is, how it is calculated, and methodology limitations.

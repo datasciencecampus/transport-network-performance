@@ -54,7 +54,7 @@ def merge_raster_files(
         A dictionary summarising the boundaries of all input rasters and the
         merged output. The "inputs" key is a list of the respective input
         boundaries. The "output" key is a list containing the bounds of the
-        merged result. Useful to checking consistency of merged output.
+        merged result. Useful for checking consistency of merged output.
 
     Raises
     ------
@@ -74,12 +74,7 @@ def merge_raster_files(
 
     2. The default rioxarry behaviours are assumed when merging inputs, i.e.,
     the `CRS`, resolution and `nodata` values will be taken from the first
-    input DataArray. See [1]_ for more details.
-
-    References
-    ----------
-    .. [1] https://corteva.github.io/rioxarray/html/rioxarray.html#rioxarray.m
-    erge.merge_arrays
+    input DataArray.
 
     """
     # defend against case where the provided input dir does not exist

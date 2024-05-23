@@ -167,12 +167,12 @@ class GtfsInstance:
     ----------
     gtfs_pth : Union[str, bytes, os.PathLike]
         File path to GTFS archive.
-    units: str, optionl
+    units : str, optionl
         Spatial units of the GTFS file, defaults to "km".
     route_lookup_pth : Union[str, pathlib.Path], optional
         The path to the route type lookup. If left empty, the default path will
-        be used. The default path points to a route lookup table that is held
-        within this package, defaults to None.
+        be used. When None, route lookup table is read from file saved within
+        this package, defaults to None.
 
     Attributes
     ----------
@@ -182,82 +182,29 @@ class GtfsInstance:
         The path to the GTFS archive.
     file_list: list
         Files in the GTFS archive.
-    validity_df: pd.DataFrame
+    validity_df : pd.DataFrame
         Table of GTFS errors, warnings & their descriptions.
-    dated_trip_counts: pd.DataFrame
+    dated_trip_counts : pd.DataFrame
         Dated trip counts by modality.
-    daily_trip_summary: pd.DataFrame
-        Summarized trip results by day of the week and modality.
-    daily_route_summary: pd.DataFrame
+    daily_trip_summary : pd.DataFrame
+        Summarised trip results by day of the week and modality.
+    daily_route_summary : pd.DataFrame
         Dated route counts by modality.
-    route_mode_summary_df: pd.DataFrame
-        Summarized route counts by day of the week and modality.
-    pre_processed_trips: pd.DataFrame
+    route_mode_summary_df : pd.DataFrame
+        Summarised route counts by day of the week and modality.
+    pre_processed_trips : pd.DataFrame
         A table of pre-processed trip data.
-
-    Methods
-    -------
-    ensure_populated_calendar()
-        Creates a calendar from calendar_dates if needed.
-    get_gtfs_files()
-        Returns the `file_list` attribute.
-    is_valid()
-        Returns the `validity_df` attribute.
-    print_alerts()
-        Print validity errors & warning messages in full.
-    clean_feed()
-        Attempt to clean the `feed` attribute using `gtfs_kit`.
-    viz_stops()
-        Visualise the stops on a map as points or convex hull. Writes file.
-    get_route_modes()
-        Returns the `route_mode_summary_df` attribute.
-    summarise_trips()
-        Returns the `daily_trip_summary` attribute.
-    summarise_routes()
-        Returns the `daily_route_summary` attribute.
-    html_report()
-        Generate a HTML report describing the GTFS data.
-    save()
-        Save the current GtfsInstance().
-    filter_to_date()
-        Filter a GtfsInstance to a specific dates or set of dates.
-    filter_to_bbox()
-        Crop a GtfsInstance to a given bbox.
-    _produce_stops_map()
-        Produces the stops map for use in `viz_stops()`.
-    _order_dataframe_by_day()
-        Orders tables by day. Used in `summarise_trips()` and
-        `summarise_routes()`.
-    _preprocess_trips_and_routes()
-        Produces a table of dated trips for use in `_get_pre_processed_trips()`
-        .
-    _get_pre_processed_trips()
-        Attempts to access the `pre_processed_trips` attribute and instantiates
-        it with `_preprocess_trips_and_routes()` if not found.
-    _summary_defence()
-        Check the summary parameters for `summarise_trips()` and
-        `summarise_routes()`
-    _plot_summary()
-        Save a plotly summary table, used in `html_report()`.
-    _create_extended_repeated_pair_table()
-        Return a table of repeated pair warnings. Used in
-        `_extended_validation()`.
-    _extended_validation()
-        Generate HTML warning & error summary tables for use in `html_report()`
-        .
 
     Raises
     ------
     TypeError
-        `pth` is not either of string or pathlib.Path.
-    TypeError
-        `units` is not of type str.
+        1. `pth` is not either of string or pathlib.Path.
+        2. `units` is not of type str.
     FileExistsError
         `pth` does not exist on disk.
     ValueError
-        `pth` does not have the expected file extension(s).
-    ValueError
-        `units` are not one of: "m", "km", "metres", "meters", "kilometres",
+        1. `pth` does not have the expected file extension(s).
+        2. `units` are not one of: "m", "km", "metres", "meters", "kilometres",
         "kilometers".
 
     """
@@ -333,11 +280,6 @@ class GtfsInstance:
         Saves calendar table to feed.calendar. Shallow wrapper around
         gtfs.calendar.create_calendar_from_dates.
 
-        Warns
-        -----
-        UserWarning
-            Calendar is empty and calendar_dates will be used to create one.
-
         Raises
         ------
         FileNotFoundError
@@ -362,12 +304,12 @@ class GtfsInstance:
                 )
 
     def get_gtfs_files(self) -> list:
-        """Return a list of files making up the GTFS file.
+        """Return a list of files present in the GTFS feed.
 
         Returns
         -------
         list
-            A list of files that create the GTFS file
+            A list of files that present within the GTFS file
 
         """
         file_list = zipfile.ZipFile(self.gtfs_path).namelist()
@@ -401,8 +343,8 @@ class GtfsInstance:
         Parameters
         ----------
         alert_type : str, optional
-                The alert type to print messages. Also accepts "warning".
-                Defaults to "error".
+                The alert type to print. Also accepts "warning". Defaults to
+                "error".
 
         Returns
         -------
@@ -570,10 +512,10 @@ class GtfsInstance:
         Raises
         ------
         TypeError
-            `out_pth` is not either of string or pathlib.PosixPath.
-            `geoms` is not of type str
-            `geom_crs` is not of type str or int
-            `create_out_parent` or `filtered_only` are not of type bool
+            1. `out_pth` is not either of string or pathlib.PosixPath.
+            2. `geoms` is not of type str
+            3. `geom_crs` is not of type str or int
+            4. `create_out_parent` or `filtered_only` are not of type bool
         FileNotFoundError
             Raised if the parent directory of `out_pth` could not be found on
             disk and `create_out_parent` is False.
@@ -645,8 +587,8 @@ class GtfsInstance:
         Raises
         ------
         TypeError
-            `df` is not of type pd.DataFrame.
-            `day_column_name` is not of type str
+            1. `df` is not of type pd.DataFrame.
+            2. `day_column_name` is not of type str
 
         """
         # defences for parameters
@@ -773,10 +715,10 @@ class GtfsInstance:
         Raises
         ------
         TypeError
-            `return_summary` is not of type pd.df.
-            `summ_ops` must be a numpy function or a list.
-            Each item in a `summ_ops` list must be a function.
-            Each item in a `summ_ops` list must be a numpy namespace export.
+            1. `return_summary` is not of type pd.df.
+            2. `summ_ops` must be a numpy function or a list.
+            3. Each item in a `summ_ops` list must be a function.
+            4. Each item in a `summ_ops` list must be a numpy namespace export.
         NotImplementedError
             `summ_ops` is a function not exported from numpy.
 
@@ -820,7 +762,7 @@ class GtfsInstance:
     ) -> pd.DataFrame:
         """Produce a summarised table of trip statistics by day of week.
 
-        For trip count summaries, func counts distinct trip_id only. These
+        For trip count summaries, function counts distinct trip_id only. These
         are then summarised into average/median/min/max (default) number
         of trips per day. Raw data for each date can also be obtained by
         setting the 'return_summary' parameter to False (bool).
@@ -837,16 +779,16 @@ class GtfsInstance:
         Returns
         -------
         pd.DataFrame
-            A dataframe containing either summarized results or dated trip
+            A dataframe containing either summarised results or dated trip
             data.
 
         Raises
         ------
         TypeError
-            return_summary is not of type pd.df.
-            summ_ops must be a numpy function or a list.
-            Each item in a summ_ops list must be a function.
-            Each item in a summ_ops list must be a numpy namespace export.
+            1. return_summary is not of type pd.df.
+            2. summ_ops must be a numpy function or a list.
+            3. Each item in a summ_ops list must be a function.
+            4. Each item in a summ_ops list must be a numpy namespace export.
         NotImplementedError
             summ_ops is a function not exported from numpy.
 
@@ -897,8 +839,8 @@ class GtfsInstance:
     ) -> pd.DataFrame:
         """Produce a summarised table of route statistics by day of week.
 
-        For route count summaries, func counts route_id only, irrespective of
-        which service_id the routes map to. If the services run on different
+        For route count summaries, function counts route_id only, irrespective
+        of which service_id the routes map to. If the services run on different
         calendar days, they will be counted separately. In cases where more
         than one service runs the same route on the same day, these will not be
         counted as distinct routes.
@@ -915,16 +857,16 @@ class GtfsInstance:
         Returns
         -------
         pd.DataFrame
-            A dataframe containing either summarized results or dated route
+            A dataframe containing either summarised results or dated route
             data.
 
         Raises
         ------
         TypeError
-            return_summary is not of type pd.df.
-            summ_ops must be a numpy function or a list.
-            Each item in a summ_ops list must be a function.
-            Each item in a summ_ops list must be a numpy namespace export.
+            1. return_summary is not of type pd.df.
+            2. summ_ops must be a numpy function or a list.
+            3. Each item in a summ_ops list must be a function.
+            4. Each item in a summ_ops list must be a numpy namespace export.
         NotImplementedError
             summ_ops is a function not exported from numpy.
 
@@ -1076,9 +1018,8 @@ class GtfsInstance:
         Raises
         ------
         ValueError
-            An error is raised if orientation is not 'v' or 'h'.
-        ValueError
-            An error is raised if an invalid iamge type is passed.
+            1. An error is raised if orientation is not 'v' or 'h'.
+            2. An error is raised if an invalid iamge type is passed.
 
         """
         # parameter type defences
@@ -1693,7 +1634,7 @@ class GtfsInstance:
     def save(
         self, path: Union[str, pathlib.Path], overwrite: bool = False
     ) -> None:
-        """Save the cleaned gtfs file.
+        """Save the cleaned gtfs feed.
 
         Parameters
         ----------
