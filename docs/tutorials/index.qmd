@@ -3,7 +3,7 @@ title: Tutorials
 listing:
     type: table
     contents:
-        - "/**/*.qmd"
+        - "/**/index.qmd"
     fields: [title, description, reading-time]
     sort: title
     sort-ui: true
