@@ -28,7 +28,7 @@ from transport_performance.utils.defence import (
 
 
 class RasterPop:
-    """Prepare raster population inputs for trasport analysis.
+    """Prepare raster population inputs for transport analysis.
 
     This class is suited to working with rastered population data (e.g.
     gridded population estimates).

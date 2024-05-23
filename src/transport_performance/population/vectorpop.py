@@ -2,7 +2,7 @@
 
 
 class VectorPop:
-    """Prepare vector population inputs for trasport analysis.
+    """Prepare vector population inputs for transport analysis.
 
     This class is suited to working with vectored population data (e.g.
     population data defined within administitive boundaries).
