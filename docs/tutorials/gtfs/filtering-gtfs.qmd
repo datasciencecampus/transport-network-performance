@@ -56,23 +56,23 @@ from transport_performance.gtfs.multi_validation import MultiGtfsInstance
 
 
 ```{python}
-BUS_PTH = here("TMP_GTFS/filtered_feed/bus_gtfs.zip")
-RAIL_PTH = here("TMP_GTFS/filtered_feed/rail_gtfs.zip")
+BUS_PTH = here("TMP_GTFS/bus_gtfs.zip")
+RAIL_PTH = here("TMP_GTFS/rail_gtfs.zip")
+BUS_URL = "https://app.mecatran.com/utw/ws/gtfsfeed/static/mamp-cio?apiKey=2b37114236244f1e115f6542331d243617772448"
+RAIL_URL = "https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip"
 
-if os.path.exists(BUS_PTH) and os.path.exists(RAIL_PTH):
-    pass
-else:
+if not os.path.exists(BUS_PTH):
     # tmp_path = tempfile.TemporaryDirectory()
     # bus_path = os.path.join(tmp_path.name, "provence_ciotabus_gtfs.zip")
     # rail_path = os.path.join(tmp_path.name, "intercity_rail_gtfs.zip")
-    BUS_URL = "https://app.mecatran.com/utw/ws/gtfsfeed/static/mamp-cio?apiKey=2b37114236244f1e115f6542331d243617772448"
-    RAIL_URL = "https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip"
     # subprocess.run(["curl", BUS_URL, "-o", bus_path])
     # subprocess.run(["curl", RAIL_URL, "-o", rail_path])
     # assert os.path.exists(gtfs_path)
     # assert os.path.exists(rail_path)
     subprocess.run(["curl", BUS_URL, "-o", BUS_PTH])
     subprocess.run(["curl", RAIL_URL, "-o", RAIL_PTH])
+else:
+    pass
 
 ```
 
@@ -87,12 +87,14 @@ help(MultiGtfsInstance)
 :::
 
 ```{python}
-gtfs_pth = here("TMP_GTFS/filtered_feed")
+gtfs_pth = here("TMP_GTFS/")
+
 try:
     feed = MultiGtfsInstance(path=gtfs_pth)
 except ValueError:
     raise ValueError(f"location of here is: {gtfs_pth}")
 except FileNotFoundError:
+
     raise FileNotFoundError(f"location of here is: {os.listdir(gtfs_pth)}")
 
 
@@ -105,10 +107,14 @@ s0, e0 = feed.get_dates()
 print(f"Feed starts at: {s0}\nFeed ends at: {e0}")
 ```
 
+
+:::{.scrolling}
+
 ```{python}
 feed.is_valid(validation_kwargs={"far_stops": False})
 ```
 
+:::
 
 ## Viz Stops
 
@@ -130,7 +136,7 @@ print(out.stdout.strip().split("\t")[0])
 help(feed.filter_to_bbox)
 ```
 
-Get a bounding box from a service like [klokantech](https://boundingbox.klokantech.com/) in csv format. It should be in epsg:4326 projection (Universal mercator).
+Get a bounding box from a service like [klokantech](https://boundingbox.klokantech.com/) in csv format. It should be in epsg:4326 projection (longitude & latitude).
 
 ```{python}
 BBOX = [4.932916,43.121441,5.644253,43.546931]
@@ -195,6 +201,17 @@ print(feed.instances[problem_ind].feed.calendar.head())
 
 ```
 
+## Clean Feed
+
+:::{.scrolling}
+
+```{python}
+feed.clean_feeds()
+feed.is_valid(validation_kwargs={"far_stops": False})
+
+```
+
+:::
 
 ## Write Filtered Feed
 
@@ -206,9 +223,7 @@ try:
     os.mkdir(filtered_pth)
 except FileExistsError:
     pass
-
 feed.save_feeds(filtered_pth, overwrite=True)
-
 ```
 
 Check filtered file size
