@@ -50,7 +50,6 @@ Let's import the necessary dependencies:
 
 ```{python}
 import datetime
-import glob
 import os
 import pathlib
 import subprocess
@@ -157,7 +156,7 @@ print(len(feed.<INSERT_CORRECT_ATTRIBUTE>))
 ### Solution
 
 ```{python}
-gtfs_pth = pathlib.Path(tmp_path.name)
+gtfs_pth = pathlib.Path(tmp_path.name) # need to use pathlib for tmp_path
 feed = MultiGtfsInstance(path=gtfs_pth)
 print(f"There are {len(feed.instances)} feed instances")
 ```
