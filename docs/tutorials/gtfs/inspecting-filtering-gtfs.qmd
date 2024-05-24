@@ -82,10 +82,12 @@ in the solution here.
 
 ```{python}
 #| eval: false
-BUS_PTH = here("<INSERT_SOME_PATH_FOR_BUS_GTFS>")
-RAIL_PTH = here("<INSERT_SOME_PATH_FOR_RAIL_GTFS>")
 BUS_URL = "<INSERT_SOME_URL_TO_BUS_GTFS>"
 RAIL_URL = "<INSERT_SOME_URL_TO_RAIL_GTFS>"
+
+BUS_PTH = "<INSERT_SOME_PATH_FOR_BUS_GTFS>"
+RAIL_PTH = "<INSERT_SOME_PATH_FOR_RAIL_GTFS>"
+
 subprocess.run(["curl", BUS_URL, "-o", BUS_PTH])
 subprocess.run(["curl", RAIL_URL, "-o", RAIL_PTH])
 
