@@ -462,12 +462,28 @@ dates.
 
 ## Check Empty Feeds
 
+After performing the filter operations on GTFS, it is advisable to check in
+case any of the filtered feeds are now empty. Empty feeds can cause errors when
+undertaking routing analysis. Empty feeds can easily arise when filtering GTFS
+to mismatched dates or bounding boxes.
+
+We check for empty feeds in the following way:
+
 ```{python}
 feed.validate_empty_feeds()
-
 ```
 
 ## Create Calendar
+
+Occasionally, providers will publish feeds that use a calendar-dates.txt file
+rather than a calendar.txt. This is permitted within GTFS and is an alternative
+approach to encoding the same sort of information about the feed timetable.
+
+However, missing calendar.txt files currently cause exceptions when attempting
+to route with these feeds with r5py. To avoid this issue, we can use a
+calendar-dates.txt to populate the required calendar.txt file.
+
+We can check whether any of our feed instances have no calendar file:
 
 ```{python}
 for i, inst in enumerate(feed.instances):
@@ -477,16 +493,38 @@ print(f"Feed instance {i} has no calendar.txt")
 
 ```
 
+:::{.panel-tabset}
+
+### Task
+
+If any of your feeds are missing calendars, ensure that these files are created
+from the calendar-dates files. Once complete, print out the head of the
+calendar table to ensure it is populated.
+
+### Hint
+
+Examine the `MultiGtfsInstance` docstring to find the appropriate method.
+Access the calendar DataFrame attribute from the same feed and print the first
+few rows.
+
+```{python}
+#| eval: false
+feed.<INSERT_CORRECT_METHOD>()
+print(feed.instances[<INDEX_OF_MISSING_CALENDAR>].feed.calendar.head())
+```
+
+### Solution
+
 ```{python}
 feed.ensure_populated_calendars()
-
 ```
 
 ```{python}
 print("Newly populated calendar table:")
 print(feed.instances[problem_ind].feed.calendar.head())
-
 ```
+
+:::
 
 ## Clean Feed
 
