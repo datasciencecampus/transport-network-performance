@@ -354,16 +354,22 @@ print(f"Unfiltered feed is: {size_out}")
 
 ### By Bounding Box
 
+To help understand the requirements for spatially cropping a feed, inspect the
+docstring for the `filter_to_bbox()` method:
+
 ```{python}
 help(feed.filter_to_bbox)
 ```
 
-Get a bounding box from a service such as
+To perform this crop, we need to get a bounding box from a service such as
 [klokantech](https://boundingbox.klokantech.com/) in csv format. It should be
 in epsg:4326 projection (longitude & latitude).
 
+Below I define a bounding box and visualise for context. Feel free to update
+the code with your own bounding box values.
+
 ```{python}
-BBOX = [4.932916,43.121441,5.644253,43.546931]
+BBOX = [4.932916,43.121441,5.644253,43.546931] # crop around Marseille
 xmin, ymin, xmax, ymax = BBOX
 poly = Polygon(((xmin,ymin), (xmin,ymax), (xmax,ymax), (xmax,ymin)))
 poly_gdf = gpd.GeoDataFrame({"geometry": poly}, crs=4326, index=[0])
@@ -371,10 +377,31 @@ poly_gdf.explore()
 
 ```
 
+:::{.panel-tabset}
+
+#### Task
+
+Crop your feed to the extent of your bounding box.
+
+#### Hint
+
+Pass the `BBOX` list in [xmin, ymin, xmax, ymax] order to the
+`filter_to_bbox()` method.
+
+#### Solution
+
 ```{python}
 feed.filter_to_bbox(BBOX)
 ```
 
+:::
+
+Notice that a progress bar confirms the number of successful filter operations
+performed depending on the number of seperate GTFS zip files passed to
+`MultiGtfsInstance`.
+
+Below I plot the filtered feed stop locations in relation to the bounding box
+used to restrict the feed's extent.
 
 ```{python}
 imap = feed.viz_stops()
@@ -382,6 +409,10 @@ poly_gdf.explore(m=imap)
 
 ```
 
+Although there should be fewer stops observed, you will likely observe that
+stops outside of the bounding box you provided remain in the filtered feed.
+This is to be expected, particularly where GTFS feeds contain long-haul
+schedules that intersect with the bounding box that you provided.
 
 ### By Date
 
