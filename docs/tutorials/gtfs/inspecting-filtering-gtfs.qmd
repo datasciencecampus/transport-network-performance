@@ -3,11 +3,6 @@ title: Inspecting & Filtering GTFS Feeds
 description: A tutorial quality assuring General Transit Feed Specification.
 format: html
 toc: true
-jupyter:
-  kernelspec:
-    name: "conda-env-transport-performance-py"
-    language: "python"
-    display_name: "transport-performance"
 css: /www/styles.css
 ---
 
