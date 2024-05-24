@@ -416,17 +416,49 @@ schedules that intersect with the bounding box that you provided.
 
 ### By Date
 
+If the routing analysis you wish to perform takes place over a specific time
+window, we can further reduce the GTFS data volume by restricting to dates.
+To do this, we need to specify either a single datestring, or a list of
+datestrings. The format of the date should be "YYYYMMDD".
 ```{python}
 today = datetime.datetime.today().strftime(format="%Y%m%d")
+print(f"The date this document was updated at would be passed as: {today}")
+```
+
+
+:::{.panel-tabset}
+
+#### Task
+
+Filter your GTFS feed to a date or range of dates.
+
+#### Hint
+
+Pass either a single date string in "YYYYMMDD" format, or a list of datestrings
+in this format, to the `filter_to_date` method. Print out the new start and end
+dates of your feed by calling the `get_dates()` method once more.
+
+#### Solution
+
+```{python}
 feed.filter_to_date(today)
 print(f"Filtered GTFS feed to {today}")
 ```
+
 
 ```{python}
 s1, e1 = feed.get_dates()
 print(f"After filtering to {today}\nstart date: {s1}\nend date: {e1}")
 ```
 
+:::
+
+Notice that even if we specify a single date to restrict the feed to,
+`filter_to_date()` may still return a range of dates. The filtering method
+restricts the GTFS to stops, trips or shapes active upon the specified date(s).
+If your GTFS contains a stop that is active across a range of dates including
+the date you wish to restrict to, you will return the full range of that stop's
+dates.
 
 ## Check Empty Feeds
 
