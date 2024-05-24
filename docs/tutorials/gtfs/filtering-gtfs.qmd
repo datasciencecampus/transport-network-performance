@@ -26,7 +26,7 @@ While working towards this outcome, we will:
 * Visualise the GTFS feed's stop locations on an interactive map.
 * Filter the GTFS feed to a specific bounding box.
 * Filter the GTFS feed to a specific date range.
-* Check if our filter operations has resulted in an empty feed.
+* Check if our filter operations have resulted in an empty feed.
 * Attempt to clean the feed.
 * Reverse-engineer a calendar.txt if it is missing.
 * Write the filtered feed to disk.
@@ -183,7 +183,7 @@ print(f"There are {len(feed.instances)} feed instances")
 
 :::
 
-Each individual feed can be accessed seperately. Their contents should confirm
+Each individual feed can be accessed separately. Their contents should confirm
 their file contents on disk.
 
 :::{.scrolling}
@@ -291,7 +291,7 @@ feed.is_valid(validation_kwargs={"far_stops": False})
 
 :::
 
-Note that it is common to come across multiple warnings when workign with GTFS.
+Note that it is common to come across multiple warnings when working with GTFS.
 Many providers include additional columns that are not part of the GTFS. This
 typically poses no problem when using the feed for routing operations.
 
@@ -397,7 +397,7 @@ feed.filter_to_bbox(BBOX)
 :::
 
 Notice that a progress bar confirms the number of successful filter operations
-performed depending on the number of seperate GTFS zip files passed to
+performed depending on the number of separate GTFS zip files passed to
 `MultiGtfsInstance`.
 
 Below I plot the filtered feed stop locations in relation to the bounding box
@@ -530,7 +530,7 @@ print(feed.instances[problem_ind].feed.calendar.head())
 
 We can attempt to remove common issues with GTFS feeds by running the
 `clean_feeds()` method. This may remove problems associated with trips, routes
-or where the speficiation is violated.
+or where the specification is violated.
 
 :::{.scrolling}
 
@@ -593,7 +593,7 @@ size on disk.
 
 To continue learning how to work with the `transport_performance` package, it
 is suggested that you continue with the
-[Open Street Map tutorials](/docs/tutorials/osm/index.qmd)
+[OpenStreetMap tutorials](/docs/tutorials/osm/index.qmd)
 
 For any problems encountered with this tutorial or the `transport_performance`
 package, please open an issue on our [GitHub repository](https://github.com/datasciencecampus/transport-network-performance/issues).
