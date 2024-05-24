@@ -1,5 +1,5 @@
 ---
-title: Filtering GTFS Feeds
+title: Inspecting & Filtering GTFS Feeds
 description: A tutorial quality assuring General Transit Feed Specification.
 format: html
 toc: true
@@ -55,12 +55,13 @@ Let's import the necessary dependencies:
 
 ```{python}
 import datetime
+import glob
 import os
+import pathlib
 import subprocess
 import tempfile
 
 import geopandas as gpd
-from pyprojroot import here
 from shapely.geometry import Polygon
 
 from transport_performance.gtfs.multi_validation import MultiGtfsInstance
@@ -99,23 +100,14 @@ subprocess.run(["curl", RAIL_URL, "-o", RAIL_PTH])
 ### Solution
 
 ```{python}
-BUS_PTH = here("TMP_GTFS/bus_gtfs.zip")
-RAIL_PTH = here("TMP_GTFS/rail_gtfs.zip")
 BUS_URL = "https://app.mecatran.com/utw/ws/gtfsfeed/static/mamp-cio?apiKey=2b37114236244f1e115f6542331d243617772448"
 RAIL_URL = "https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip"
-
-if not os.path.exists(BUS_PTH):
-    # tmp_path = tempfile.TemporaryDirectory()
-    # bus_path = os.path.join(tmp_path.name, "provence_ciotabus_gtfs.zip")
-    # rail_path = os.path.join(tmp_path.name, "intercity_rail_gtfs.zip")
-    # subprocess.run(["curl", BUS_URL, "-o", bus_path])
-    # subprocess.run(["curl", RAIL_URL, "-o", rail_path])
-    # assert os.path.exists(gtfs_path)
-    # assert os.path.exists(rail_path)
-    subprocess.run(["curl", BUS_URL, "-o", BUS_PTH])
-    subprocess.run(["curl", RAIL_URL, "-o", RAIL_PTH])
-else:
-    pass
+# using tmp for tutorial but not necessary
+tmp_path = tempfile.TemporaryDirectory()
+bus_path = os.path.join(tmp_path.name, "provence_ciotabus_gtfs.zip")
+rail_path = os.path.join(tmp_path.name, "intercity_rail_gtfs.zip")
+subprocess.run(["curl", BUS_URL, "-o", bus_path])
+subprocess.run(["curl", RAIL_URL, "-o", rail_path])
 
 ```
 
@@ -170,15 +162,9 @@ print(len(feed.<INSERT_CORRECT_ATTRIBUTE>))
 ### Solution
 
 ```{python}
-gtfs_pth = here("TMP_GTFS/")
-try:
-    feed = MultiGtfsInstance(path=gtfs_pth)
-except ValueError:
-    raise ValueError(f"location of here is: {gtfs_pth}")
-except FileNotFoundError:
-    raise FileNotFoundError(f"location of here is: {os.listdir(gtfs_pth)}")
+gtfs_pth = pathlib.Path(tmp_path.name)
+feed = MultiGtfsInstance(path=gtfs_pth)
 print(f"There are {len(feed.instances)} feed instances")
-
 ```
 
 :::
@@ -347,7 +333,7 @@ Before undertaking the filter operations, examine the size of our feed on disk:
 
 ```{python}
 out = subprocess.run(
-    ["du", "-sh", here("TMP_GTFS")], capture_output=True, text=True)
+    ["du", "-sh", tmp_path.name], capture_output=True, text=True)
 size_out = out.stdout.strip().split("\t")[0]
 print(f"Unfiltered feed is: {size_out}")
 ```
@@ -565,7 +551,7 @@ filtered feed.
 ### Solution
 
 ```{python}
-filtered_pth = here("TMP_GTFS/filtered_feed")
+filtered_pth = os.path.join(tmp_path.name, "filtered_feed")
 try:
     os.mkdir(filtered_pth)
 except FileExistsError:
