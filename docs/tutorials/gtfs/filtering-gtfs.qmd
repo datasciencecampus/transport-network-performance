@@ -335,10 +335,21 @@ concur with the road network depicted on the folium basemap.
 
 ## Filtering GTFS
 
+Cropping GTFS feeds can help optimise routing procedures. GTFS feeds can often
+be much larger than needed for smaller, more constrained routing operations.
+Holding an entire GTFS in memory may be unnecessary and burdensome. In this
+section, we will crop our feeds in two ways:
+
+* Spatially by restricting the feed to a specified bounding box.
+* Temporally by providing a date (or list of dates).
+
+Before undertaking the filter operations, examine the size of our feed on disk:
+
 ```{python}
 out = subprocess.run(
     ["du", "-sh", here("TMP_GTFS")], capture_output=True, text=True)
-print(out.stdout.strip().split("\t")[0])
+size_out = out.stdout.strip().split("\t")[0]
+print(f"Unfiltered feed is: {size_out}")
 ```
 
 ### By Bounding Box
@@ -347,7 +358,9 @@ print(out.stdout.strip().split("\t")[0])
 help(feed.filter_to_bbox)
 ```
 
-Get a bounding box from a service like [klokantech](https://boundingbox.klokantech.com/) in csv format. It should be in epsg:4326 projection (longitude & latitude).
+Get a bounding box from a service such as
+[klokantech](https://boundingbox.klokantech.com/) in csv format. It should be
+in epsg:4326 projection (longitude & latitude).
 
 ```{python}
 BBOX = [4.932916,43.121441,5.644253,43.546931]
@@ -442,5 +455,6 @@ Check filtered file size
 ```{python}
 out = subprocess.run(
     ["du", "-sh", filtered_pth], capture_output=True, text=True)
-print(out.stdout.strip().split("\t")[0])
+filtered_size = out.stdout.strip().split("\t")[0]
+print(f"After filtering, feed size reduced from {size_out} to {filtered_size}")
 ```
