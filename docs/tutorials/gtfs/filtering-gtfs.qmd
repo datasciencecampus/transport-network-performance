@@ -222,19 +222,72 @@ feed.instances[0].feed.stops.head(5)
 
 :::
 
-## Basic Checks
+## Checking Validity
+
+Transport routing operations require services that run upon a specified date.
+It is a useful sanity check to confirm that the dates that you expect to
+perform routing on exist within the GTFS feed. To do this, we can use the
+`get_dates()` method to print out the first and last date in the available date
+range, as below.
 
 ```{python}
 s0, e0 = feed.get_dates()
 print(f"Feed starts at: {s0}\nFeed ends at: {e0}")
 ```
 
+:::{.panel-tabset}
+
+### Task
+
+How can we have this method print out the full list of dates available within
+the feed?
+
+### Hint
+
+Examine the `MultiGtfsInstance` docstring printed earlier and find the name of
+the parameter that controls the behaviour of `get_dates()`.
+
+### Solution
+
+:::{.scrolling}
+
+```{python}
+feed.get_dates(return_range=False)
+
+```
+
+:::
+
+:::
+
+Openly published GTFS feeds from a variety of different providers have varying
+degrees of quality and not all feeds strictly adhere to the defined
+specification for this type of data. When working with new sources of GTFS, it
+is advisable to investigate the types of errors or warnings associated with
+your particular feed(s).
+
+:::{.panel-tabset}
+
+### Task
+
+Check if the feed you've instantiated contains valid GTFS.
+
+### Hint
+
+Check the docstring we printed earlier for an appropriate method. Depending
+upon the source of the GTFS, you may need to ensure that checking of fast
+travel is switched off. To turn off fast travel checks, pass the following
+dictionary to the method's appropriate argument: `{"far_stops": False}`
+
+### Solution
 
 :::{.scrolling}
 
 ```{python}
 feed.is_valid(validation_kwargs={"far_stops": False})
 ```
+
+:::
 
 :::
 
