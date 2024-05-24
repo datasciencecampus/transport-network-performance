@@ -528,6 +528,10 @@ print(feed.instances[problem_ind].feed.calendar.head())
 
 ## Clean Feed
 
+We can attempt to remove common issues with GTFS feeds by running the
+`clean_feeds()` method. This may remove problems associated with trips, routes
+or where the speficiation is violated.
+
 :::{.scrolling}
 
 ```{python}
@@ -540,7 +544,25 @@ feed.is_valid(validation_kwargs={"far_stops": False})
 
 ## Write Filtered Feed
 
-Write new feed to disk
+Once we have finished the filter and cleaning operations, we can now go ahead
+and write the feed out to disk, for use in future routing operations.
+
+
+:::{.panel-tabset}
+
+### Task
+
+Write your filtered feed out to a new location on disk. Confirm that the size
+of the filtered feed on disk is smaller than that of the original feed.
+
+### Hint
+
+1. Pass a string or a pathlike object to the `save_feeds()` method of
+`MultiGtfsInstance`.
+2. Once the feed is written successfully, check the disk usage of the new
+filtered feed.
+
+### Solution
 
 ```{python}
 filtered_pth = here("TMP_GTFS/filtered_feed")
@@ -559,3 +581,19 @@ out = subprocess.run(
 filtered_size = out.stdout.strip().split("\t")[0]
 print(f"After filtering, feed size reduced from {size_out} to {filtered_size}")
 ```
+
+:::
+
+## Conclusion
+
+Congratulations, you have successfully completed this tutorial. We have
+successfully examined the features, errors and warnings within a GTFS feed. We
+have also filtered the feed by bounding box and by date in order to reduce its
+size on disk.
+
+To continue learning how to work with the `transport_performance` package, it
+is suggested that you continue with the
+[Open Street Map tutorials](/docs/tutorials/osm/index.qmd)
+
+For any problems encountered with this tutorial or the `transport_performance`
+package, please open an issue on our [GitHub repository](https://github.com/datasciencecampus/transport-network-performance/issues).
