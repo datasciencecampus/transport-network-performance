@@ -291,11 +291,47 @@ feed.is_valid(validation_kwargs={"far_stops": False})
 
 :::
 
+Note that it is common to come across multiple warnings when workign with GTFS.
+Many providers include additional columns that are not part of the GTFS. This
+typically poses no problem when using the feed for routing operations.
+
+In certain feeds, you may notice errors flagged due to unrecognised route
+types. This is because certain providers publish feeds that conform to
+[Google's proposed GTFS extension](https://developers.google.com/transit/gtfs/reference/extended-route-types).
+Although flagged as an error, valid codes associated with the proposed
+extension typically do not cause problems with routing operations.
+
 ## Viz Stops
+
+A sensible check when working with GTFS for an area of interest, is to
+visualise the stop locations of your feed.
+
+:::{.panel-tabset}
+
+### Task
+
+By accessing an appropriate method for your feed, plot the stop locations on an
+interactive folium map.
+
+### Hint
+
+Inspect the `MultiGtfsInstance` docstring for the appropriate method.
+
+```{python}
+#| eval: false
+feed.viz_...()
+```
+
+### Solution
 
 ```{python}
 feed.viz_stops()
 ```
+
+:::
+
+By inspecting the location of the stops, you can visually assess that they
+concur with the road network depicted on the folium basemap.
 
 ## Filtering GTFS
 
