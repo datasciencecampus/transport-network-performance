@@ -96,11 +96,11 @@ subprocess.run(["curl", RAIL_URL, "-o", RAIL_PTH])
 ### Solution
 
 ```{python}
-BUS_URL = "https://app.mecatran.com/utw/ws/gtfsfeed/static/mamp-cio?apiKey=2b37114236244f1e115f6542331d243617772448"
+BUS_URL = "https://tsvc.pilote4.cityway.fr/api/Export/v1/GetExportedDataFile?ExportFormat=Gtfs&OperatorCode=RTM"
 RAIL_URL = "https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip"
 # using tmp for tutorial but not necessary
 tmp_path = tempfile.TemporaryDirectory()
-bus_path = os.path.join(tmp_path.name, "provence_ciotabus_gtfs.zip")
+bus_path = os.path.join(tmp_path.name, "rtm_gtfs.zip")
 rail_path = os.path.join(tmp_path.name, "intercity_rail_gtfs.zip")
 subprocess.run(["curl", BUS_URL, "-o", bus_path])
 subprocess.run(["curl", RAIL_URL, "-o", rail_path])
