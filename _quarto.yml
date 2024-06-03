@@ -84,6 +84,7 @@ website:
 
 format:
   html:
+    css: docs/_static/styles.css
     mainfont: Arial
     theme:
       - flatly

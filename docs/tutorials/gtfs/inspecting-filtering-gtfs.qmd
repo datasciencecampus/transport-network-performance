@@ -3,7 +3,6 @@ title: Inspecting & Filtering GTFS Feeds
 description: A tutorial quality assuring General Transit Feed Specification.
 format: html
 toc: true
-css: /www/styles.css
 ---
 
 ## Introduction
