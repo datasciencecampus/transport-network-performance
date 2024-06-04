@@ -55,7 +55,9 @@ website:
       - section: How-To
         href: docs/how_to/index.qmd
         contents:
-          - auto: "docs/how_to/**/*.qmd"
+          - "docs/how_to/uc_pop/index.qmd"
+          - "docs/how_to/gtfs/index.qmd"
+          - "docs/how_to/osm/index.qmd"
       - section: Tutorials
         href: docs/tutorials/index.qmd
         contents:
