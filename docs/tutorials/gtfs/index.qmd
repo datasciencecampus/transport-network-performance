@@ -112,8 +112,6 @@ subprocess.run(["curl", RAIL_URL, "-o", rail_path])
 
 :::
 
-***
-
 Now that we have ingested the GTFS feed(s), you may wish to open the files up
 on your file system and inspect the contents. GTFS feeds come in compressed
 formats and contain multiple text files. These files can be read together, a
@@ -121,18 +119,9 @@ bit like a relational database, to produce a feed object that is useful when
 undertaking routing with public transport modalities.
 
 To do this, we will need to use a class from the `transport_performance`
-package called `MultiGtfsInstance`. Let's take a look at the class docstring to
-help us understand how it works.
-
-:::{.scrolling}
-
-```{python}
-help(MultiGtfsInstance)
-```
-
-:::
-
-***
+package called `MultiGtfsInstance`. Take a look at the
+[`MultiGtfsInstance` API documentation](../../reference/multi_validation.qmd#transport_performance.gtfs.multi_validation.MultiGtfsInstance)
+for full details on how this class works.
 
 `MultiGtfsInstance`; as the name sounds; can cope with multiple GTFS feeds at a
 time. If you have chosen to download several feeds, then point the `path`
@@ -341,11 +330,8 @@ print(f"Unfiltered feed is: {size_out}")
 ### By Bounding Box
 
 To help understand the requirements for spatially cropping a feed, inspect the
-docstring for the `filter_to_bbox()` method:
-
-```{python}
-help(feed.filter_to_bbox)
-```
+[API documentation for the `filter_to_bbox()`](../../reference/multi_validation.qmd#transport_performance.gtfs.multi_validation.MultiGtfsInstance.filter_to_bbox)
+method.
 
 To perform this crop, we need to get a bounding box. This could be:
 
