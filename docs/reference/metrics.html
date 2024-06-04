@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -396,7 +397,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Metrics to assess the performance of transport networks.</p>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -416,11 +417,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Calculate the transport performance.</p>
 <section id="parameters" class="level4">
 <h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 9%">
-<col style="width: 15%">
-<col style="width: 70%">
+<col style="width: 10%">
+<col style="width: 74%">
 <col style="width: 4%">
 </colgroup>
 <thead>
@@ -434,19 +435,19 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>travel_times_path</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>File path or directory path to <code>analyse_network</code> output(s). Files must be in ‘.parquet’ format.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>centroid_gdf</code></td>
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>Cell centroid geometry. Output from <code>RasterPop.get_pop()</code>.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
 <td><code>pop_gdf</code></td>
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>Cell geometry with population estimates. Output from <code>RasterPop.get_pop()</code>.</td>
 <td><em>required</em></td>
 </tr>
@@ -458,7 +459,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td><code>distance_threshold</code></td>
-<td>typing.Union[int, float]</td>
+<td>Union[int, float]</td>
 <td>Maximum threshold for source/destination distance, by default 11.25 (km). Used when calculating accessibility and proximity.</td>
 <td><code>11.25</code></td>
 </tr>
@@ -500,7 +501,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td><code>urban_centre_gdf</code></td>
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>Output from <code>UrbanCentre</code>, containg the urban centre geometry information. By default None meaning the urban centre area will not be calculated. Only considered when <code>descriptive_stats</code> is True.</td>
 <td><code>None</code></td>
 </tr>
@@ -509,10 +510,10 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 26%">
-<col style="width: 73%">
+<col style="width: 17%">
+<col style="width: 82%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -522,7 +523,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>typing.Tuple[pandas.pandas.DataFrame, typing.Optional[pandas.pandas.DataFrame]]</td>
+<td>Tuple[pd.DataFrame, Optional[pd.DataFrame]]</td>
 <td>The first element of the tuple is the Transport performance metrics dataframe, grouped by destination column IDs. When <code>descriptive_stats</code> is <code>True</code> the second element will be the descriptive statistics output, otherwise this is <code>None</code>.</td>
 </tr>
 </tbody>
@@ -530,7 +531,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level4">
 <h4 class="anchored" data-anchor-id="raises">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -396,7 +397,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Utility functions for GTFS archives.</p>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -430,12 +431,12 @@ ul.task-list li input[type="checkbox"] {
 <p>WARNING: THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED IN A FUTURE VERSION. USE <code>filter_gtfs()</code> INSTEAD.</p>
 <section id="parameters" class="level4">
 <h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 5%">
-<col style="width: 22%">
-<col style="width: 46%">
-<col style="width: 25%">
+<col style="width: 6%">
+<col style="width: 15%">
+<col style="width: 50%">
+<col style="width: 27%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -448,19 +449,19 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>in_pth</code></td>
-<td>typing.Union[pathlib.pathlib.Path, str]</td>
+<td>Union[pathlib.Path, str]</td>
 <td>Path to the unfiltered GTFS feed. Defaults to os.path.join(PKG_PATH, “data”, “gtfs”, “newport-20230613_gtfs.zip”).</td>
 <td><code>(os.path.join(PKG_PATH, 'data', 'gtfs', 'newport-20230613_gtfs.zip'))</code></td>
 </tr>
 <tr class="even">
 <td><code>out_pth</code></td>
-<td>typing.Union[pathlib.pathlib.Path, str]</td>
+<td>Union[pathlib.Path, str]</td>
 <td>Path to write the filtered feed to. Defaults to here(“data/external/filtered_gtfs.zip”).</td>
 <td><code>pathlib.Path(here('data/external/filtered_gtfs.zip'))</code></td>
 </tr>
 <tr class="odd">
 <td><code>bbox</code></td>
-<td>typing.Union[geopandas.geopandas.GeoDataFrame, list(float)]</td>
+<td>Union[gpd.GeoDataFrame, list(float)]</td>
 <td>A list of x and y values in the order of minx, miny, maxx, maxy. Defaults to [-3.077081, 51.52222, -2.925075, 51.593596].</td>
 <td><code>[-3.077081, 51.52222, -2.925075, 51.593596]</code></td>
 </tr>
@@ -487,7 +488,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -504,7 +505,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level4">
 <h4 class="anchored" data-anchor-id="raises">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 7%">
 <col style="width: 92%">
@@ -538,12 +539,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Convert a pandas dataframe to a visual plotly figure.</p>
 <section id="parameters-1" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
+<col style="width: 14%">
 <col style="width: 13%">
-<col style="width: 22%">
-<col style="width: 53%">
-<col style="width: 10%">
+<col style="width: 59%">
+<col style="width: 11%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -556,7 +557,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>df</code></td>
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>A pandas dataframe to convert to plotly (single index only)</td>
 <td><em>required</em></td>
 </tr>
@@ -571,11 +572,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-1" class="level4">
 <h4 class="anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
-<colgroup>
-<col style="width: 51%">
-<col style="width: 48%">
-</colgroup>
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -584,7 +581,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>plotly.graph_objects.plotly.graph_objects.Figure</td>
+<td>go.Figure</td>
 <td>A plotly figure containing the drawn dataframe</td>
 </tr>
 </tbody>
@@ -592,7 +589,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises-1" class="level4">
 <h4 class="anchored" data-anchor-id="raises-1">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 17%">
 <col style="width: 82%">
@@ -622,12 +619,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Filter the GTFS to either a bbox or a date.</p>
 <section id="parameters-2" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-2">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 7%">
-<col style="width: 23%">
-<col style="width: 62%">
-<col style="width: 6%">
+<col style="width: 16%">
+<col style="width: 67%">
+<col style="width: 7%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -640,19 +637,19 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>gtfs</code></td>
-<td>transport_performance.gtfs.validation.GtfsInstance</td>
+<td>GtfsInstance</td>
 <td>The GTFS to filter</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>bbox</code></td>
-<td>typing.Union[geopandas.GeoDataFrame, list, None]</td>
+<td>Union[GeoDataFrame, list, None]</td>
 <td>The bbox to filter the GTFS to. Leave as none if the GTFS does not need to be cropped. Format - [xmin, ymin, xmax, ymax], by default None</td>
 <td><code>None</code></td>
 </tr>
 <tr class="odd">
 <td><code>crs</code></td>
-<td>typing.Union[str, int]</td>
+<td>Union[str, int]</td>
 <td>The CRS of the given bbox, by default “epsg:4326”</td>
 <td><code>'epsg:4326'</code></td>
 </tr>
@@ -667,7 +664,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-2" class="level4">
 <h4 class="anchored" data-anchor-id="returns-2">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -684,7 +681,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises-2" class="level4">
 <h4 class="anchored" data-anchor-id="raises-2">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
 <col style="width: 86%">
@@ -710,12 +707,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Filter a GTFS file to an area around a given trip in the GTFS.</p>
 <section id="parameters-3" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-3">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 6%">
-<col style="width: 23%">
-<col style="width: 44%">
-<col style="width: 24%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 54%">
+<col style="width: 29%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -728,7 +725,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>gtfs</code></td>
-<td>transport_performance.gtfs.validation.GtfsInstance</td>
+<td>GtfsInstance</td>
 <td>The GtfsInstance object to crop</td>
 <td><em>required</em></td>
 </tr>
@@ -767,7 +764,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-3" class="level4">
 <h4 class="anchored" data-anchor-id="returns-3">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -784,7 +781,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises-3" class="level4">
 <h4 class="anchored" data-anchor-id="raises-3">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>

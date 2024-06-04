@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -393,16 +394,16 @@ ul.task-list li input[type="checkbox"] {
 <section id="transport_performance.population.rasterpop.RasterPop" class="level1">
 <h1>RasterPop</h1>
 <p><code>population.rasterpop.RasterPop(self, filepath)</code></p>
-<p>Prepare raster population inputs for trasport analysis.</p>
+<p>Prepare raster population inputs for transport analysis.</p>
 <p>This class is suited to working with rastered population data (e.g. gridded population estimates).</p>
 <section id="parameters" class="level2">
 <h2 class="anchored" data-anchor-id="parameters">Parameters</h2>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
-<col style="width: 44%">
-<col style="width: 30%">
-<col style="width: 12%">
+<col style="width: 13%">
+<col style="width: 38%">
+<col style="width: 34%">
+<col style="width: 13%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -415,7 +416,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>filepath</code></td>
-<td>typing.Union[str, bytes, os.os.PathLike]</td>
+<td>Union[str, bytes, os.PathLike]</td>
 <td>File path to population data</td>
 <td><em>required</em></td>
 </tr>
@@ -424,11 +425,11 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="attributes" class="level2">
 <h2 class="anchored" data-anchor-id="attributes">Attributes</h2>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 20%">
-<col style="width: 70%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 78%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -440,12 +441,12 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td>pop_gdf</td>
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>A geopandas dataframe of the input data, with gridded geometry. This is in the same CRS as the input raster data.</td>
 </tr>
 <tr class="even">
 <td>centroid_gdf</td>
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>A geopandas dataframe of grid centroids, converted to EPSG:4326 for transport analysis.</td>
 </tr>
 </tbody>
@@ -453,7 +454,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level2">
 <h2 class="anchored" data-anchor-id="raises">Raises</h2>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 26%">
 <col style="width: 73%">
@@ -474,7 +475,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -498,12 +499,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Get population data.</p>
 <section id="parameters-1" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
+<col style="width: 9%">
 <col style="width: 8%">
-<col style="width: 17%">
-<col style="width: 68%">
-<col style="width: 5%">
+<col style="width: 76%">
+<col style="width: 6%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -516,7 +517,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>aoi_bounds</code></td>
-<td>typing.Type[shapely.geometry.polygon.Polygon]</td>
+<td>Type[Polygon]</td>
 <td>A shapely polygon defining the boundary of the area of interest. Assumed to be in the same CRS as the rastered population data. If it is different, set <code>aoi_crs</code> to the CRS of this boundary.</td>
 <td><em>required</em></td>
 </tr>
@@ -534,7 +535,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td><code>threshold</code></td>
-<td>typing.Union[int, float]</td>
+<td>Union[int, float]</td>
 <td>Threshold population estimates, where values below the set threshold will be set to nan, by default None which means no thresholding will occur.</td>
 <td><code>None</code></td>
 </tr>
@@ -546,7 +547,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="even">
 <td><code>urban_centre_bounds</code></td>
-<td>typing.Type[shapely.geometry.polygon.Polygon]</td>
+<td>Type[Polygon]</td>
 <td>Polygon defining an urban centre boundary, by default None meaning information concerning whether the grid resides within the urban centre will not be added.</td>
 <td><code>None</code></td>
 </tr>
@@ -567,10 +568,10 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 22%">
-<col style="width: 77%">
+<col style="width: 13%">
+<col style="width: 86%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -580,7 +581,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>A geopandas dataframe of the input data, with gridded geometry. This is in the same CRS as the input raster data.</td>
 </tr>
 <tr class="even">
@@ -597,7 +598,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Plot population data.</p>
 <section id="parameters-2" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-2">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 7%">
 <col style="width: 5%">
@@ -636,10 +637,10 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-1" class="level4">
 <h4 class="anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 32%">
-<col style="width: 67%">
+<col style="width: 16%">
+<col style="width: 83%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -649,7 +650,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>typing.Union[folium.folium.Map, typing.Type[cartopy.mpl.geoaxes.GeoAxes], matplotlib.pyplot.matplotlib.pyplot.Axes, None]</td>
+<td>Union[folium.Map, Type[GeoAxes], plt.Axes, None]</td>
 <td>A folium map is returned when the <code>folium</code> backend is used. A matplotlib Axes object is returned when the <code>matplotlib</code> backend is used. A matplotlib/cartopy GeoAxes object is returned when the <code>cartopy</code> backend is used. None will be returned when saving to file.</td>
 </tr>
 </tbody>
@@ -657,7 +658,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises-1" class="level4">
 <h4 class="anchored" data-anchor-id="raises-1">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>

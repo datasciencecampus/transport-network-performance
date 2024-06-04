@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -397,7 +398,7 @@ ul.task-list li input[type="checkbox"] {
 <p>These were developed to support merging raster files together (e.g., to cover a larger area), and resampling to a different grid size (e.g., 100x100m grids to 200x200m grids). The original design intention is for these to form part of gridded population data pre-processing.</p>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -422,11 +423,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Takes an input directory and merges all <code>.tif</code> files within it. Writes merged raster to file.</p>
 <section id="parameters" class="level4">
 <h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 9%">
-<col style="width: 22%">
-<col style="width: 61%">
+<col style="width: 10%">
+<col style="width: 15%">
+<col style="width: 66%">
 <col style="width: 6%">
 </colgroup>
 <thead>
@@ -440,13 +441,13 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>input_dir</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>Directory containing input raster files.</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>output_dir</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>Directory to write output, merged raster file.</td>
 <td><em>required</em></td>
 </tr>
@@ -467,7 +468,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 2%">
 <col style="width: 97%">
@@ -488,7 +489,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level4">
 <h4 class="anchored" data-anchor-id="raises">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 15%">
 <col style="width: 84%">
@@ -522,11 +523,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Takes an input raster file, resamples to a different grid resolution by summing constituent cells, and writes the resampled raster to file.</p>
 <section id="parameters-1" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 19%">
-<col style="width: 66%">
+<col style="width: 9%">
+<col style="width: 13%">
+<col style="width: 71%">
 <col style="width: 5%">
 </colgroup>
 <thead>
@@ -540,13 +541,13 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>input_filepath</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>Input filpath of GeoTIFF file</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>output_filepath</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>Output filepath for resampled GeoTIFF file</td>
 <td><em>required</em></td>
 </tr>
@@ -561,7 +562,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises-1" class="level4">
 <h4 class="anchored" data-anchor-id="raises-1">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>

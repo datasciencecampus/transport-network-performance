@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -396,7 +397,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Cleaners &amp; utilities specific to the calendar table.</p>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -417,12 +418,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Use this in cases where a gtfs feed has elected to use a calendar-dates table and no calendar. Only adds values for calendar_dates entries tagged as exception_type 1. Exception_type 2 is not treated. Those entries are ignored whilst making the calendar table.</p>
 <section id="parameters" class="level4">
 <h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 21%">
-<col style="width: 30%">
-<col style="width: 32%">
-<col style="width: 14%">
+<col style="width: 25%">
+<col style="width: 19%">
+<col style="width: 38%">
+<col style="width: 16%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -435,7 +436,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>calendar_dates</code></td>
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>The calendar_dates table.</td>
 <td><em>required</em></td>
 </tr>
@@ -444,10 +445,10 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 28%">
-<col style="width: 71%">
+<col style="width: 18%">
+<col style="width: 81%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -457,7 +458,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>A calendar table based on values in the calendar_dates table.</td>
 </tr>
 </tbody>
@@ -465,7 +466,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level4">
 <h4 class="anchored" data-anchor-id="raises">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
 <col style="width: 89%">

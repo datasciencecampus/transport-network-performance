@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -396,7 +397,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Helpers for working with routes.txt.</p>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -420,12 +421,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Get the locally saved route type lookup as a dataframe.</p>
 <section id="parameters" class="level4">
 <h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 3%">
-<col style="width: 18%">
-<col style="width: 45%">
-<col style="width: 32%">
+<col style="width: 12%">
+<col style="width: 48%">
+<col style="width: 34%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -438,7 +439,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>path</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>The path to the route type lookup, defaults to os.path.join(PKG_PATH, “data”, “gtfs”, “route_lookup.pkl”)</td>
 <td><code>pathlib.Path(os.path.join(PKG_PATH, 'data', 'gtfs', 'route_lookup.pkl'))</code></td>
 </tr>
@@ -447,7 +448,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -456,7 +457,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>The route type lookup</td>
 </tr>
 </tbody>
@@ -470,7 +471,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Scrapes HTML tables from <code>gtfs_url</code> to provide a lookup of <code>route_type</code> codes to human readable descriptions. Useful for confirming available modes of transport within a GTFS. If <code>extended_schema</code> is True, then also include the proposed extension of route_type to the GTFS.</p>
 <section id="parameters-1" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 6%">
 <col style="width: 2%">
@@ -509,10 +510,10 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-1" class="level4">
 <h4 class="anchored" data-anchor-id="returns-1">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 58%">
-<col style="width: 41%">
+<col style="width: 34%">
+<col style="width: 65%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -522,7 +523,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>pandas.pandas.core.pandas.core.frame.pandas.core.frame.DataFrame</td>
+<td>pd.core.frame.DataFrame</td>
 <td>A lookup of route_type codes to descriptions.</td>
 </tr>
 </tbody>
@@ -530,7 +531,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level4">
 <h4 class="anchored" data-anchor-id="raises">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 15%">
 <col style="width: 84%">

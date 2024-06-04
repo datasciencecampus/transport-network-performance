@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -396,12 +397,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Object to create and store urban centres.</p>
 <section id="parameters" class="level2">
 <h2 class="anchored" data-anchor-id="parameters">Parameters</h2>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 6%">
-<col style="width: 25%">
-<col style="width: 50%">
-<col style="width: 17%">
+<col style="width: 7%">
+<col style="width: 18%">
+<col style="width: 54%">
+<col style="width: 19%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -414,7 +415,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>path</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>Path to the raw raster file</td>
 <td><em>required</em></td>
 </tr>
@@ -429,11 +430,11 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="attributes" class="level2">
 <h2 class="anchored" data-anchor-id="attributes">Attributes</h2>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 5%">
-<col style="width: 29%">
-<col style="width: 65%">
+<col style="width: 6%">
+<col style="width: 21%">
+<col style="width: 72%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -445,22 +446,22 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td>file</td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>Path to the raw raster file.</td>
 </tr>
 <tr class="even">
 <td>aff</td>
-<td>affine.affine.Affine</td>
+<td>affine.Affine</td>
 <td>Affine transform matrix for the raster file.</td>
 </tr>
 <tr class="odd">
 <td>crs</td>
-<td>rasterio.rasterio.crs.rasterio.crs.CRS</td>
+<td>rasterio.crs.CRS</td>
 <td>CRS string for the raster.</td>
 </tr>
 <tr class="even">
 <td>output</td>
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>GeoDataFrame including vector information for the urban centre, buffer and bounding box limits.</td>
 </tr>
 </tbody>
@@ -468,7 +469,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level2">
 <h2 class="anchored" data-anchor-id="raises">Raises</h2>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 24%">
 <col style="width: 75%">
@@ -501,7 +502,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -522,11 +523,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Wrapper for functions to get urban centre, buffer and bbox.</p>
 <section id="parameters-1" class="level4">
 <h4 class="anchored" data-anchor-id="parameters-1">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 7%">
-<col style="width: 9%">
-<col style="width: 78%">
+<col style="width: 5%">
+<col style="width: 82%">
 <col style="width: 4%">
 </colgroup>
 <thead>
@@ -540,7 +541,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>bbox</code></td>
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>A GeoPandas GeoDataFrame containing boundaries to filter the raster. If the boundaries are a bounding box, the raster is clipped to the box. If it is an irregular shape (e.g.&nbsp;LA boundaries) the raster is clipped to the extent of the shape, and a mask is applied to the shape.</td>
 <td><em>required</em></td>
 </tr>
@@ -609,10 +610,10 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 30%">
-<col style="width: 69%">
+<col style="width: 19%">
+<col style="width: 80%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -622,7 +623,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>geopandas.geopandas.GeoDataFrame</td>
+<td>gpd.GeoDataFrame</td>
 <td>GeoDataFrame with urban centre, buffer and bbox vector polygon boundaries.</td>
 </tr>
 </tbody>
@@ -631,7 +632,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="notes-1" class="level4">
 <h4 class="anchored" data-anchor-id="notes-1">Notes</h4>
 <p>Buffer estimation: To detemine a buffer around the urban centre an appropriate CRS is needed to ensure distances are preserved. The CRSs adopted for raster data typically preserve area (e.g., Mollweide/ ESRI:54009 is an equal area projection). The solution to this problem would be to provide an appropriate CRS to use when estimating the buffer geometry, such as those used for topographic mapping and engineering surveying of specific countries. To date, the following CRS have been utilised for their respective countries when estimating buffers around urban centres:</p>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Country</th>

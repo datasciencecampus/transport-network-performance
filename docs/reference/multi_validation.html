@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.554">
+<meta name="generator" content="quarto-1.4.555">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,6 +69,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
+<link rel="stylesheet" href="../../docs/_static/styles.css">
 </head>
 
 <body class="nav-sidebar docked nav-fixed fullcontent">
@@ -213,19 +214,19 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/uc_pop/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3. Get Gridded Population Estimates</span></a>
+ <span class="menu-text">1. Get Gridded Population Estimates</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/gtfs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. Get Public Transit Schedule Data (GTFS)</span></a>
+ <span class="menu-text">2. Get Public Transit Schedule Data (GTFS)</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/how_to/osm/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">2. Get OpenStreetMap Data</span></a>
+ <span class="menu-text">3. Get OpenStreetMap Data</span></a>
   </div>
 </li>
       </ul>
@@ -396,7 +397,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Validating multiple GTFS at once.</p>
 <section id="classes" class="level2">
 <h2 class="anchored" data-anchor-id="classes">Classes</h2>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -417,11 +418,11 @@ ul.task-list li input[type="checkbox"] {
 <p>This allows for multiple GTFS files to be cleaned, validated, summarised, filtered and saved at the same time.</p>
 <section id="parameters" class="level4">
 <h4 class="anchored" data-anchor-id="parameters">Parameters</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 3%">
-<col style="width: 22%">
-<col style="width: 68%">
+<col style="width: 16%">
+<col style="width: 73%">
 <col style="width: 5%">
 </colgroup>
 <thead>
@@ -435,7 +436,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>path</code></td>
-<td>typing.Union[str, list, pathlib.pathlib.Path]</td>
+<td>Union[str, list, pathlib.Path]</td>
 <td>A list of paths, a singular path object, or a glob string. See more information on glob strings here: https://docs.python.org/3/library/glob.html</td>
 <td><em>required</em></td>
 </tr>
@@ -444,11 +445,11 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="attributes" class="level4">
 <h4 class="anchored" data-anchor-id="attributes">Attributes</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 15%">
-<col style="width: 18%">
-<col style="width: 66%">
+<col style="width: 16%">
+<col style="width: 11%">
+<col style="width: 72%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -470,12 +471,12 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td>daily_trip_summary</td>
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>A combined summary of statistics for trips from all GTFS files in the MultiGtfsInstance.</td>
 </tr>
 <tr class="even">
 <td>daily_route_summary</td>
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>A combined summary of statistics for routes from all GTFS files in the MultiGtfsInstance.</td>
 </tr>
 </tbody>
@@ -483,7 +484,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises" class="level4">
 <h4 class="anchored" data-anchor-id="raises">Raises</h4>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 18%">
 <col style="width: 81%">
@@ -520,7 +521,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns" class="level4">
 <h4 class="anchored" data-anchor-id="returns">Returns</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -537,7 +538,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="methods" class="level4">
 <h4 class="anchored" data-anchor-id="methods">Methods</h4>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -601,12 +602,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Clean each of the feeds in the MultiGtfsInstance.</p>
 <section id="parameters-1" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-1">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
-<col style="width: 17%">
-<col style="width: 65%">
-<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 68%">
+<col style="width: 7%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -619,7 +620,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>clean_kwargs</code></td>
-<td>typing.Union[dict, None]</td>
+<td>Union[dict, None]</td>
 <td>The kwargs to pass to GtfsInstance.clean_feed() for each Gtfs in the MultiGtfsInstance, by default None</td>
 <td><code>None</code></td>
 </tr>
@@ -628,7 +629,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-1" class="level6">
 <h6 class="anchored" data-anchor-id="returns-1">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -651,7 +652,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Shallow wrapper around GtfsInstance.ensure_populated_calendar().</p>
 <section id="returns-2" class="level6">
 <h6 class="anchored" data-anchor-id="returns-2">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -673,11 +674,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Filter GTFS to a bbox.</p>
 <section id="parameters-2" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-2">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 10%">
-<col style="width: 22%">
-<col style="width: 59%">
+<col style="width: 11%">
+<col style="width: 15%">
+<col style="width: 64%">
 <col style="width: 7%">
 </colgroup>
 <thead>
@@ -691,13 +692,13 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>bbox</code></td>
-<td>typing.Union[list, geopandas.GeoDataFrame]</td>
+<td>Union[list, GeoDataFrame]</td>
 <td>The bbox to filter the GTFS to. Leave as none if the GTFS does not need to be cropped. Format - [xmin, ymin, xmax, ymax]</td>
 <td><em>required</em></td>
 </tr>
 <tr class="even">
 <td><code>crs</code></td>
-<td>typing.Union[str, int]</td>
+<td>Union[str, int]</td>
 <td>The CRS of the given bbox, by default “epsg:4326”</td>
 <td><code>'epsg:4326'</code></td>
 </tr>
@@ -712,7 +713,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-3" class="level6">
 <h6 class="anchored" data-anchor-id="returns-3">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -734,11 +735,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Filter each GTFS to date(s).</p>
 <section id="parameters-3" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-3">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
+<col style="width: 20%">
 <col style="width: 18%">
-<col style="width: 23%">
-<col style="width: 47%">
+<col style="width: 50%">
 <col style="width: 10%">
 </colgroup>
 <thead>
@@ -752,7 +753,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>dates</code></td>
-<td>typing.Union[str, list]</td>
+<td>Union[str, list]</td>
 <td>The date(s) to filter the GTFS to</td>
 <td><em>required</em></td>
 </tr>
@@ -767,7 +768,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-4" class="level6">
 <h6 class="anchored" data-anchor-id="returns-4">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -789,7 +790,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Get all available dates from calendar.txt (or calendar_dates.txt).</p>
 <section id="parameters-4" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-4">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 14%">
 <col style="width: 7%">
@@ -816,7 +817,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-5" class="level6">
 <h6 class="anchored" data-anchor-id="returns-5">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
 <col style="width: 90%">
@@ -842,12 +843,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Validate each of the feeds in the MultiGtfsInstance.</p>
 <section id="parameters-5" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-5">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
-<col style="width: 17%">
-<col style="width: 63%">
-<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 66%">
+<col style="width: 7%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -860,7 +861,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>validation_kwargs</code></td>
-<td>typing.Union[dict, None]</td>
+<td>Union[dict, None]</td>
 <td>The kwargs to pass to GtfsInstance.is_valid() for each Gtfs in the MultiGtfsInstance, by default None</td>
 <td><code>None</code></td>
 </tr>
@@ -869,7 +870,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-6" class="level6">
 <h6 class="anchored" data-anchor-id="returns-6">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 29%">
 <col style="width: 70%">
@@ -895,11 +896,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Create a line plot of route or trip counts over time.</p>
 <section id="parameters-6" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-6">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 5%">
-<col style="width: 7%">
-<col style="width: 84%">
+<col style="width: 5%">
+<col style="width: 86%">
 <col style="width: 3%">
 </colgroup>
 <thead>
@@ -949,13 +950,13 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td><code>rolling_average</code></td>
-<td>typing.Union[int, None]</td>
+<td>Union[int, None]</td>
 <td>How many days to calculate the rolling average over. When left as None, rolling average is not used. The rolling average is calculated from the centre, meaning if ra=3, the average will be calculated from the current date, previous date and following date. Missing dates are imputed and treated as having values of 0.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="even">
 <td><code>line_date</code></td>
-<td>typing.Union[str, None]</td>
+<td>Union[str, None]</td>
 <td>A date to draw a dashed vertical line on. Date should be in format: YYYY-MM-DD, by default None</td>
 <td><code>None</code></td>
 </tr>
@@ -964,7 +965,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-7" class="level6">
 <h6 class="anchored" data-anchor-id="returns-7">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -973,7 +974,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>plotly.graph_objs.plotly.graph_objs.Figure</td>
+<td>go.Figure</td>
 <td>The timerseries plot</td>
 </tr>
 </tbody>
@@ -986,11 +987,11 @@ ul.task-list li input[type="checkbox"] {
 <p>Save the GtfsInstances to a directory.</p>
 <section id="parameters-7" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-7">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 4%">
-<col style="width: 14%">
-<col style="width: 76%">
+<col style="width: 9%">
+<col style="width: 80%">
 <col style="width: 4%">
 </colgroup>
 <thead>
@@ -1004,7 +1005,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>dir</code></td>
-<td>typing.Union[pathlib.pathlib.Path, str]</td>
+<td>Union[pathlib.Path, str]</td>
 <td>The directory to export the GTFS files into.</td>
 <td><em>required</em></td>
 </tr>
@@ -1031,7 +1032,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-8" class="level6">
 <h6 class="anchored" data-anchor-id="returns-8">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -1053,7 +1054,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Summarise the combined GTFS data by route_id.</p>
 <section id="parameters-8" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-8">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 6%">
 <col style="width: 2%">
@@ -1098,7 +1099,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-9" class="level6">
 <h6 class="anchored" data-anchor-id="returns-9">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -1107,7 +1108,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>A dataframe containing the summary</td>
 </tr>
 </tbody>
@@ -1120,7 +1121,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Summarise the combined GTFS data by trip_id.</p>
 <section id="parameters-9" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-9">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 6%">
 <col style="width: 2%">
@@ -1165,7 +1166,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-10" class="level6">
 <h6 class="anchored" data-anchor-id="returns-10">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -1174,7 +1175,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>pandas.pandas.DataFrame</td>
+<td>pd.DataFrame</td>
 <td>A dataframe containing the summary</td>
 </tr>
 </tbody>
@@ -1187,7 +1188,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Ensure the feeds in MultiGtfsInstance are not empty.</p>
 <section id="parameters-10" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-10">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 11%">
 <col style="width: 8%">
@@ -1214,7 +1215,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-11" class="level6">
 <h6 class="anchored" data-anchor-id="returns-11">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 9%">
 <col style="width: 90%">
@@ -1240,12 +1241,12 @@ ul.task-list li input[type="checkbox"] {
 <p>Visualise all stops from all of the GTFS files.</p>
 <section id="parameters-11" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-11">Parameters</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 22%">
-<col style="width: 63%">
-<col style="width: 5%">
+<col style="width: 9%">
+<col style="width: 15%">
+<col style="width: 68%">
+<col style="width: 6%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1258,7 +1259,7 @@ ul.task-list li input[type="checkbox"] {
 <tbody>
 <tr class="odd">
 <td><code>path</code></td>
-<td>typing.Union[str, pathlib.pathlib.Path]</td>
+<td>Union[str, pathlib.Path]</td>
 <td>The path to save the folium map to, by default None.</td>
 <td><code>None</code></td>
 </tr>
@@ -1279,7 +1280,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="returns-12" class="level6">
 <h6 class="anchored" data-anchor-id="returns-12">Returns</h6>
-<table class="table">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th>Type</th>
@@ -1288,7 +1289,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td>folium.folium.Map</td>
+<td>folium.Map</td>
 <td>A folium map with all stops plotted on it.</td>
 </tr>
 <tr class="even">
@@ -1300,7 +1301,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="raises-1" class="level6">
 <h6 class="anchored" data-anchor-id="raises-1">Raises</h6>
-<table class="table">
+<table class="caption-top table">
 <colgroup>
 <col style="width: 9%">
 <col style="width: 90%">

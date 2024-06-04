@@ -2,9 +2,9 @@
   {
     "listing": "/docs/how_to/index.html",
     "items": [
+      "/docs/how_to/uc_pop/index.html",
       "/docs/how_to/gtfs/index.html",
-      "/docs/how_to/osm/index.html",
-      "/docs/how_to/uc_pop/index.html"
+      "/docs/how_to/osm/index.html"
     ]
   },
   {
