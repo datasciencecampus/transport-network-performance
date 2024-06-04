@@ -1,7 +1,7 @@
 ---
 title: "3. GTFS"
 description: Learn how to inspect, validate, and clean General Transit Feed Specification inputs using the `transport_performance.gtfs` module.
-date-modified: 06/03/2024  # must be in MM/DD/YYYY format
+date-modified: 06/04/2024  # must be in MM/DD/YYYY format
 categories: ["Tutorial"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
 toc: true
 date-format: iso
@@ -12,8 +12,9 @@ date-format: iso
 ### Outcomes
 
 In this tutorial we will learn how to validate and clean
-[General Transit Feed Specification (GTFS)](https://gtfs.org/schedule/) feeds. This is
-an important step to ensure quality in the inputs and reduce the computational cost of routing operations.
+[General Transit Feed Specification (GTFS)](https://gtfs.org/schedule/) feeds.
+This is an important step to ensure quality in the inputs and reduce the
+computational cost of routing operations.
 
 While working towards this outcome, we will:
 
@@ -443,9 +444,9 @@ print(f"After filtering to {today}\nstart date: {s1}\nend date: {e1}")
 Notice that even if we specify a single date to restrict the feed to,
 `filter_to_date()` may still return a range of dates. The filtering method
 restricts the GTFS to stops, trips or shapes active upon the specified date(s).
-If your GTFS contains trips/routes that are still active across a range of dates including
-the date you wish to restrict to, you will return the full range of that stop's
-dates.
+If your GTFS contains trips/routes that are still active across a range of
+dates including the date you wish to restrict to, you will return the full
+range of that stop's dates.
 
 ## Check Empty Feeds
 
