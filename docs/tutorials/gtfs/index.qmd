@@ -549,7 +549,7 @@ fig = px.line(
     title="Trip Counts by Route Type and Date Across All Input GTFS Feeds",
 )
 
-# set y axis min to zero, improve y axis formating, and overall font style
+# set y axis min to zero, improve y axis formatting, and overall font style
 fig.update_yaxes(rangemode="tozero", tickformat=",.0f")
 fig.update_layout(
     font_family="Arial",
