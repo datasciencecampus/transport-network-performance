@@ -5,6 +5,7 @@ date-modified: 06/04/2024  # must be in MM/DD/YYYY format
 categories: ["Tutorial"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
 toc: true
 date-format: iso
+jupyter: transport-performance
 ---
 
 ## Introduction
@@ -120,8 +121,9 @@ undertaking routing with public transport modalities.
 
 To do this, we will need to use a class from the `transport_performance`
 package called `MultiGtfsInstance`. Take a look at the
-[`MultiGtfsInstance` API documentation](../../reference/multi_validation.qmd#transport_performance.gtfs.multi_validation.MultiGtfsInstance)
-for full details on how this class works.
+<a href="../../reference/multi_validation.qmd#transport_performance.gtfs.multi_validation.MultiGtfsInstance" target="_blank">`MultiGtfsInstance` API documentation</a> for full details on
+how this class works. You may wish to keep this page open for reference in
+later tasks.
 
 `MultiGtfsInstance`; as the name sounds; can cope with multiple GTFS feeds at a
 time. If you have chosen to download several feeds, then point the `path`
@@ -158,16 +160,9 @@ print(f"There are {len(feed.instances)} feed instances")
 :::
 
 Each individual feed can be accessed separately. Their contents should confirm
-their file contents on disk.
-
-:::{.scrolling}
-
-```{python}
-help(feed.instances[0].feed)
-
-```
-
-:::
+their file contents on disk. The
+<a href="../../reference/validation.html#transport_performance.gtfs.validation.GtfsInstance" target="_blank">`GtfsInstance` api documentation</a> can be used to view the
+methods and attributes available for the following task.
 
 :::{.panel-tabset}
 
