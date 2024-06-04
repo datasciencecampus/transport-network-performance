@@ -515,7 +515,7 @@ print(feed.instances[problem_ind].feed.calendar.head())
 
 :::
 
-## Tabular Summaries
+## Trip and Route Summaries
 
 Now that we have ensured all GTFS instances have a calendar table, we can
 calculate tables of counts and other summary statistics on the routes and trips
@@ -551,6 +551,34 @@ feed.summarise_trips(to_days=True)
 ```
 
 :::
+
+From these summaries we can also create visualisations, such as a timeseries
+plot of trip counts by route type and date:
+
+```{python}
+import plotly.express as px
+
+# sort by route_type and date to order plot correctly
+df = feed.summarise_trips().sort_values(["route_type", "date"])
+fig = px.line(
+    df,
+    x="date",
+    y="trip_count",
+    color="route_type",
+    title="Trip Counts by Route Type and Date Across All Input GTFS Feeds",
+)
+
+# set y axis min to zero, improve y axis formating, and overall font style
+fig.update_yaxes(rangemode="tozero", tickformat=",.0f")
+fig.update_layout(
+    font_family="Arial",
+    title_font_family="Arial",
+)
+fig.show()
+```
+
+Visualisations like this can be very helpful when reviewing the quality of the
+input GTFS feeds and determining a suitable routing analysis date.
 
 ## Clean Feed
 
