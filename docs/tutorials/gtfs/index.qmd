@@ -24,8 +24,9 @@ While working towards this outcome, we will:
 * Filter the GTFS feed to a specific bounding box.
 * Filter the GTFS feed to a specific date range.
 * Check if our filter operations have resulted in an empty feed.
-* Attempt to clean the feed.
 * Reverse-engineer a calendar.txt if it is missing.
+* Create summary tables of routes and trips in the feed.
+* Attempt to clean the feed.
 * Write the filtered feed out to file.
 
 ### Requirements
@@ -514,6 +515,43 @@ print(feed.instances[problem_ind].feed.calendar.head())
 
 :::
 
+## Tabular Summaries
+
+Now that we have ensured all GTFS instances have a calendar table, we can
+calculate tables of counts and other summary statistics on the routes and trips
+within the feed.
+
+:::{.panel-tabset}
+
+### Task
+
+Print 2 summary tables:
+
+1. Counts for **routes** on every **date** in the feed.
+2. Statistics for **trips** on every **day** in the feed.
+
+### Hint
+
+Examine the docstring help for `MultiGtfsInstance`. Use the appropriate methods
+to produce the summaries.
+
+1. Use the default behaviour to produce the first table.
+2. Ensure that the appropriate method allowing stats for days of the week is
+toggled to `True` for the trips summary.
+
+### Solution
+
+```{python}
+feed.summarise_routes()
+```
+
+
+```{python}
+feed.summarise_trips(to_days=True)
+```
+
+:::
+
 ## Clean Feed
 
 We can attempt to remove common issues with GTFS feeds by running the
@@ -525,7 +563,6 @@ or where the specification is violated.
 ```{python}
 feed.clean_feeds()
 feed.is_valid(validation_kwargs={"far_stops": False})
-
 ```
 
 :::
