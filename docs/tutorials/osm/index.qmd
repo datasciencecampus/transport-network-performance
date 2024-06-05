@@ -159,6 +159,135 @@ print(f"After filtering, PBF size reduced from {orig_du} to {filtered_du}")
 
 ```
 
+## Count OSM Features
+
+From this point on in the tutorial, it is suggested to work with a small, filtered PBF file as the computations can be slow.
+
+PBF data contain spatial data organised with [tagged (labelled) elements](https://wiki.openstreetmap.org/wiki/Elements). We can access these elements to explore the features stored within the file.
+
+The first step in understanding the contents of your PBF file is to explore the tag IDs that are available.
+
+:::{.panel-tabset}
+
+### Task
+
+Use the `validate_osm.FindIds` class to discover the full list of IDs within the pbf file saved at `filtered_osm_path`. Assign the class instance to `id_finder`.
+
+Use an appropriately named method to count the available IDs within the file.
+
+### Hint
+
+```{python}
+#| eval: false
+id_finder = validate_osm.<INSERT_CLASS_NAME>(osm_pth=filtered_osm_path)
+id_finder.<INSERT_METHOD_NAME>()
+
+```
+
+### Solution
+
+```{python}
+id_finder = validate_osm.FindIds(osm_pth=filtered_osm_path)
+id_finder.count_features()
+
+```
+
+:::
+
+You should find that there are four classes of IDs within the returned dictionary:
+
+* Nodes
+* Ways
+* Relations
+* Areas
+
+For our purposes we can focus on nodes and ways. Nodes will be point locations on the travel network such as junctions or bends in the road whereas ways are collections of nodes forming a road or section of road.
+
+If we have IDs for nodes or ways, we can visualise their locations on a map. To do this, we first need a list of IDs.
+
+## Return IDs for a Way
+
+:::{.panel-tabset}
+
+### Task
+
+Using the `id_finder` instance we instantiated earlier, find all of the IDs labelled as ways in the PBF file. Assign these IDs to a list called `way_ids`. Print the first 10 IDs.
+
+### Hint
+
+```{python}
+#| eval: false
+way_ids = id_finder.<INSERT_METHOD>()["<INSERT_CORRECT_KEY>"]
+way_ids[0:10]
+```
+
+### Solution
+
+```{python}
+way_ids = id_finder.get_feature_ids()["way_ids"]
+way_ids[0:10]
+```
+
+:::
+
+## Retrieve Coordinate Data
+
+Armed with these IDs, we can now locate the features within the PBF file and visualise them against a base map.
+
+:::{.panel-tabset}
+### Task
+
+Assign `validate_osm.FindLocation` to an instance called `loc_finder`. You will need to point this class to the same filtered PBF file as you used previously.
+
+Using the `check_locs_for_ids()` method, pass a list of ten IDs from the `way_ids` list you created in the previous exercise. Assign the extracted coordinates to `way_coords` and print the first **ID** (the IDs you passed to `check_locs_for_ids()` will be keys in the returned dictionary).
+
+### Hint
+
+```{python}
+#| eval: false
+loc_finder = validate_osm.<INSERT_CLASS>(osm_pth=filtered_osm_path)
+way_coords = loc_finder.<INSERT_METHOD>(way_ids[0:10], feature_type="<INSERT_FEATURE_TYPE>")
+way_coords[<INSERT_AN_ID_VALUE>]
+```
+
+### Solution
+
+
+```{python}
+loc_finder = validate_osm.FindLocations(osm_pth=filtered_osm_path)
+way_coords = loc_finder.check_locs_for_ids(way_ids[0:10], feature_type="way")
+way_coords[2954415]
+```
+
+:::
+
+You should notice that this way feature contains multiple nodes with coordinate data.
+
+## Visualising OSM Features
+
+Now that we have returned the coordinate data for the way, it is straight forward to visualise the points on a map.
+
+:::{.panel-tabset}
+
+### Task
+
+Using the `way_ids` list from a previous task, pass the first three IDs to `loc_finder.plot_ids()` in a list. Ensure that you specify that the `feature_type` is `"way"`.
+
+### Hint
+
+```{python}
+#| eval: false
+loc_finder.<INSERT_METHOD>(ids=way_ids[<START>:<END>], feature_type="<INSERT_FEATURE_TYPE>")
+```
+
+### Solution
+
+```{python}
+loc_finder.plot_ids(ids=way_ids[0:3], feature_type="way")
+```
+
+:::
+
 
 ## Conclusion
 
