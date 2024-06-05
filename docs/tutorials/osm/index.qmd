@@ -1,10 +1,173 @@
 ---
-title: "4. OSM"
-description: Learn how to use the `transport_performance.osm` module through examples.
-date-modified: 05/17/2024  # must be in MM/DD/YYYY format
+-title: "4. OpenStreetMap (OSM)"
+-description: Learn how to use the `transport_performance.osm` module through examples.
+-date-modified: 06/05/2024  # must be in MM/DD/YYYY format
 categories: ["Tutorial"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
 toc: true
 date-format: iso
+jupyter: transport-performance
 ---
 
-🚧 Page under construction 🚧
+## Introduction
+
+### Outcomes
+
+[OpenStreetMap](https://welcome.openstreetmap.org/what-is-openstreetmap/#:~:text=OpenStreetMap%20is%20a%20free%2C%20editable,that%20was%20free%20to%20use.)
+(OSM) is a free, community-maintained source of spatial information. It
+contains information about the properties of street networks and has
+international coverage. We use these data in combination with General Transit
+Feed Specification data to build public transit networks for routing
+operations.
+
+In this tutorial we will learn how to prepare OSM data for routing.
+Specifically, we will:
+
+* Download OSM data.
+* Filter the osm files to an area of interest with a bounding box.
+* Examine features of the transit network.
+
+### Requirements
+
+To complete this tutorial, you will need:
+
+* python 3.9
+* Stable internet connection
+* Installed the `transport_performance` package (see the
+[getting started explanation](/docs/getting_started/index.qmd) for help)
+
+:::{.callout-important}
+
+## Requirements
+
+`transport_performance.osm` is built on
+[`osmosis`](https://wiki.openstreetmap.org/wiki/Osmosis/Installation) and is
+tested on macos and linux only.
+:::
+
+## Downloading OSM
+
+Let's import the necessary dependencies:
+
+```{python}
+import subprocess
+
+from pyprojroot import here
+
+from transport_performance.osm.osm_utils import filter_osm
+from transport_performance.osm import validate_osm
+
+```
+
+We require a source of OSM data in
+[Protocolbuffer Binary Format (PBF)](https://wiki.openstreetmap.org/wiki/PBF_Format).
+We recommend sourcing exerpts of this data hosted on
+[Geofabrik's Download Server](https://www.geofabrik.de/data/download.html).
+This server is provided free of charge by Geofabrik and can come under
+considerable demand at certain times of the day. Please use this service
+considerately.
+
+:::{.panel-tabset}
+
+### Task
+
+Navigate the Geofabrik Download Server and download OSM data for an area of
+interest. Save the data and instantiate a path to the file called
+`original_osm_path`.
+
+### Hint
+
+```{python}
+#| eval: false
+original_osm_path = <INSERT_PATH_HERE>
+
+```
+
+### Solution
+
+```{python}
+original_osm_path = here("tests/data/newport-2023-06-13.osm.pbf")
+```
+
+:::
+
+## Define the Area of Interest
+
+:::{.panel-tabset}
+
+Using a service such as [Klokantech](), define a bounding box within the territory of the OSM file that you downloaded.
+
+### Task
+
+Extract the bounding box in comma separated value format. Assign to a list in xmin, ymin, xmax, ymax format. Call the list `BBOX_LIST`.
+
+### Hint
+
+```{python}
+#| eval: false
+BBOX_LIST = [<INSERT_VALUES_HERE>]
+```
+
+### Exercise
+
+```{python}
+BBOX_LIST = [-3.002175, 51.587035, -2.994271, 51.59095]
+```
+
+:::
+
+## Filtering PBF
+
+As PBF files can be very large and contain lots of data that are irrelevant to our routing purposes, we can filter the data to the road network. Ensure that you have `osmosis` installed for this task.
+
+:::{.panel-tabset}
+
+### Task
+
+Define a `filtered_osm_path` object to save the filtered pbf file to.
+
+Use the `filter_osm()` function to restrict the PBF file to the extent of `BBOX_LIST`. Inspect `help(filter_osm)` for information on all available parameters.
+
+### Hint
+
+```{python}
+#| eval: false
+filtered_osm_path = <INSERT_A_PATH>
+filter_osm(pbf_pth=original_osm_path, out_pth=filtered_osm_path, bbox=BBOX_LIST)
+
+```
+
+### Solution
+
+```{python}
+filtered_osm_path = here("foo.pbf")
+filter_osm(
+    pbf_pth=original_osm_path, out_pth=filtered_osm_path, bbox=BBOX_LIST)
+
+```
+
+:::
+
+Notice that `osmosis` is quite chatty and will often print various exceptions originating from the Java code. If the filter operation was performed successfully, you should see `INFO: Pipeline complete.` and an execution time printed to the console.
+
+Now that we have performed the filter, we should notice a significant change in the size of the file on disk.
+
+```{python}
+orig_du = subprocess.run(["du", "-sh", original_osm_path], text=True, capture_output=True).stdout.split("\t")[0]
+orig_du
+filtered_du = subprocess.run(["du", "-sh", filtered_osm_path], text=True, capture_output=True).stdout.split("\t")[0]
+print(f"After filtering, PBF size reduced from {orig_du} to {filtered_du}")
+
+```
+
+
+## Conclusion
+
+Congratulations, ...
+
+To continue learning how to work with the `transport_performance` package, it
+is suggested that you continue with the
+[...](/...)
+
+For any problems encountered with this tutorial or the `transport_performance`
+package, please open an issue on our
+[GitHub repository](https://github.com/datasciencecampus/transport-network-performance/issues).
