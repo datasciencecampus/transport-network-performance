@@ -1,7 +1,7 @@
 ---
 title: "3. GTFS"
 description: Learn how to inspect, validate, and clean General Transit Feed Specification inputs using the `transport_performance.gtfs` module.
-date-modified: 06/04/2024  # must be in MM/DD/YYYY format
+date-modified: 06/06/2024  # must be in MM/DD/YYYY format
 categories: ["Tutorial"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
 toc: true
 date-format: iso
@@ -41,7 +41,7 @@ To complete this tutorial, you will need:
 
 ```{.abc filename=requirements.txt}
 geopandas
-pyprojroot
+plotly
 shapely
 . # ensure transport_performance is installed
 
@@ -59,6 +59,7 @@ import subprocess
 import tempfile
 
 import geopandas as gpd
+import plotly.express as px
 from shapely.geometry import Polygon
 
 from transport_performance.gtfs.multi_validation import MultiGtfsInstance
@@ -536,8 +537,6 @@ From these summaries we can also create visualisations, such as a timeseries
 plot of trip counts by route type and date:
 
 ```{python}
-import plotly.express as px
-
 # sort by route_type and date to order plot correctly
 df = feed.summarise_trips().sort_values(["route_type", "date"])
 fig = px.line(
