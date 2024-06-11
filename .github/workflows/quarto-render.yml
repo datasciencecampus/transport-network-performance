@@ -38,6 +38,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y libgeos-dev
+        sudo apt-get install osmosis
       shell: sh
     - name: Build API reference pages
       run: |
