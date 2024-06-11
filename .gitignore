@@ -198,6 +198,7 @@ docs/build/
 docs/_sidebar.yml
 docs/reference/
 !docs/_static/tp_logo_white_background.png
+!docs/explanation/what_is_tp/*.PNG
 
 # PyBuilder
 .pybuilder/
