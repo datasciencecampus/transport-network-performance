@@ -174,6 +174,15 @@ filter_osm(
 
 :::
 
+::: {.callout-note}
+
+When using `filter_osm()`, the default behaviour is to remove elements tagged
+as buildings, waterways, landuse, and natural since they are not required for
+transport routing and removing them significantly reduces file size.
+If this is not desired, set `tag_filter=False`.
+
+:::
+
 Notice that `osmosis` is quite chatty and will print various exceptions
 originating from the Java code. If the filter operation was performed
 successfully, you should see `INFO: Pipeline complete.` and an execution time
@@ -315,7 +324,9 @@ Visualising these features of the PBF file can help to validate features of the
 local transit network, particularly in areas where changes to infrastructure
 are ongoing. Examining the features present in relation to our bounding box, we
 can see that the geometries may not be neatly cropped to the extent of the
-bounding box.
+bounding box. This is because `filter_osm()` ensures all ways and relations
+are complete when cropping to a bounding box. This means roads and paths that
+traverse the edge of the bounding box remain whole.
 
 Below we display every way (and their member nodes) in the PBF relative to the
 bounding box crop we applied (purple).
