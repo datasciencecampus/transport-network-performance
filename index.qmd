@@ -21,7 +21,8 @@ because of computational complexity, transparency (closed-source and paid
 services), and data consistency (format and availability).
 
 To start resolving these issues, the `transport_performance` Python package
-bringing togethers a range of open source tools and research to allow others to:
+bringing togethers a range of open source tools and research to allow everyone
+to:
 
 - Define an [urban centre] boundary based on population density;
 - Inspect, clean, and process [public transit timetable data][gtfs] and
@@ -41,13 +42,44 @@ This aims to simplify both the dependency installation and end-to-end use of
 
 These docs are structured in accordance with the [Diátaxis][diataxis] framework:
 
-- If you're looking to get started with the package quickly, head over to the [Getting Started](docs/getting_started/index.qmd) page.
-- For information on the methods and tools used within `transport_performance` refer to the [Explanation section](docs/explanation/index.qmd).
-- The [How-To](docs/how_to/index.qmd) pages will provide you with instructions on topics like retrieving input data.
-- If you're interested in learning how to use the package, head over to the [Tutorials](docs/tutorials/index.qmd).
-- The `transport_performance` technical reference can be found here: [API reference](docs/reference/index.qmd).
+<div>
 
-## Looking to Contribute?
+<div class="jumbotron jumbotron-fluid left">
+<p>Want to get up and running with `transport_performance` quickly?</p>
+<a class="btn btn-primary btn-lg" href="./docs/getting_started/" role="button">Getting Started</a>
+</div>
+
+<div class="jumbotron jumbotron-fluid right">
+<p>Need more details on the methods/tools used within `transport_performance`?</p>
+<a class="btn btn-primary btn-lg" href="./docs/explanation" role="button">Explanation</a>
+</div>
+
+</div>
+
+<div>
+
+<div class="jumbotron jumbotron-fluid left">
+<p>Looking for instructions on how to get something done (e.g. find input data)?</p>
+<a class="btn btn-primary btn-lg" href="./docs/how_to" role="button">How-To</a>
+</div>
+
+<div class="jumbotron jumbotron-fluid right">
+<p>Interested in learning how to use `transport_performance` by examples?</p>
+<a class="btn btn-primary btn-lg" href="./docs/tutorials" role="button">Tutorials</a>
+</div>
+
+</div>
+
+<div class="single-jumbotron-container">
+
+<div class="jumbotron jumbotron-fluid center">
+<p>Requiring a technical reference covering the `transport_performance` API?</p>
+<a class="btn btn-primary btn-lg" href="./docs/reference" role="button">API reference</a>
+</div>
+
+</div>
+
+## Want to Contribute?
 
 We hope that the public, other public sector organisations, and National
 Statitical Institues can collaborate and build on this toolkit, to help improve
