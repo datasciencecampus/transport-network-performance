@@ -445,13 +445,6 @@ class FindIds:
     __area_ids : list
         Internal attribute contains list of all area IDs contained in pbf file.
 
-    Methods
-    -------
-    count_features
-        Count of feature IDs by feature type.
-    get_feature_ids
-        Return feature IDs by available feature type.
-
     """
 
     def __init__(
@@ -540,11 +533,6 @@ class FindTags:
     __area_tags : dict
         Tags found for OSM area features.
 
-    Methods
-    -------
-    check_tags_for_ids()
-        Filter tags to the given list of IDs. Updates `found_tags` attribute.
-
     """
 
     def __init__(
@@ -626,17 +614,6 @@ class FindLocations:
         Locations of nodes.
     __way_node_locs : dict
         Locations of nodes that belong to a way.
-
-    Methods
-    -------
-    check_locs_for_ids
-        Filter locations to the given list of IDs. Updates `found_locs`
-        attribute.
-    plot_ids
-        Plot coordinates for nodes or node members of a way.
-    _check_is_implemented
-        Checks `feature_type` requested by user in methods is node or way. If
-        neither, raise NotImplementedError.
 
     """
 
