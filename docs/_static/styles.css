@@ -7,31 +7,46 @@
     border: 1px solid black;
     padding: 15px;
     padding-bottom: 0px;
-    width: 45%;
     text-align: center;
     align-items: center;
-    display: inline-block;
-    margin-bottom: 15px;
 }
 
-.left {
-    float: left;
-    margin-left: 2.5%;
+.grid-container {
+    display: grid;
+    gap: 15px;
 }
 
-.right {
-    float: right;
-    margin-right: 2.5%;
+.item1 {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 1;
 }
 
-.center {
-    margin-left: auto;
-    margin-right: auto;
-    float: center;
+.item2 {
+    grid-column-start: 3;
+    grid-column-end: 5;
+    grid-row-start: 1;
+    grid-row-end: 1;
 }
 
-.single-jumbotron-container{
-    max-width: 100%;
-    text-align: center;
-    align-items: center;
+.item3 {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    grid-row-start: 2;
+    grid-row-end: 2;
+}
+
+.item4 {
+    grid-column-start: 3;
+    grid-column-end: 5;
+    grid-row-start: 2;
+    grid-row-end: 2;
+}
+
+.item5 {
+    grid-column-start: 2;
+    grid-column-end: 4;
+    grid-row-start: 3;
+    grid-row-end: 3;
 }
