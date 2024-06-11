@@ -63,15 +63,23 @@ These docs are structured in accordance with the [Diátaxis][diataxis] framework
 <p>Requiring a technical reference covering the `transport_performance` API?</p>
 <a class="btn btn-primary btn-lg" href="./docs/reference" role="button">API reference</a>
 </div>
+<div class="grid-item item6 jumbotron">
+<p>Want to contribute to the development of `transport_performance`?</p>
+<a class="btn btn-primary btn-lg" href="https://github.com/datasciencecampus/transport-network-performance" role="button">GitHub</a>
+</div>
 </div>
 
-## Want to Contribute?
+::: {.callout-note}
 
-We hope that the public, other public sector organisations, and National
-Statitical Institues can collaborate and build on this toolkit, to help improve
-the international comparability of statistics and enable higher frequency and
-more timely comparisons. You can find the `transport_performance` source code
-on [GitHub](https://github.com/datasciencecampus/transport-network-performance).
+## Notes on contributing...
+
+We hope that the public, other public sector organisations, and other National
+Statitical Institues can collaborate and build on this package. This will
+help improve both the national and international comparability of transport
+statistics whilst enabling higher frequency and more timely comparisons. You can
+find the `transport_performance` source code on [GitHub](https://github.com/datasciencecampus/transport-network-performance).
+
+:::
 
 
 [diataxis]: https://diataxis.fr/
