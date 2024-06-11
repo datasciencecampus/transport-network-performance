@@ -57,3 +57,9 @@
     grid-row-start: 3;
     grid-row-end: 3;
 }
+
+.jumbotron-icon{
+    font-size: 50px;
+    margin-top: -0.5rem;
+    margin-bottom: -0.5rem;
+}
