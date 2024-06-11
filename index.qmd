@@ -1,4 +1,12 @@
 ---
+title: "`transport_performance` documentation"
+title-block-banner: true
+date-format: iso
+description: |
+  <br>
+  A Python package bringing together open-source data, tools, and research to
+  make transport network analyses more simple, reproducible, and consistent for
+  everyone.
 toc: true
 toc-title: "On this homepage"
 sidebar: false
@@ -9,8 +17,6 @@ about:
           href: https://github.com/datasciencecampus/transport-network-performance
           text: GitHub
 ---
-
-![](docs/_static/tp_logo_white_background.png){width="12em" fig-align="center"}
 
 ## What is `transport_performance`?
 
