@@ -2,3 +2,64 @@
     max-height: 500px;
     overflow-y: auto;
 }
+
+.jumbotron {
+    border: 1px solid black;
+    padding: 15px;
+    padding-bottom: 0px;
+    text-align: center;
+    align-items: center;
+}
+
+.grid-container {
+    display: grid;
+    gap: 15px;
+}
+
+.item1 {
+    grid-column-start: 1;
+    grid-column-end: 1;
+    grid-row-start: 1;
+    grid-row-end: 1;
+}
+
+.item2 {
+    grid-column-start: 2;
+    grid-column-end: 2;
+    grid-row-start: 1;
+    grid-row-end: 1;
+}
+
+.item3 {
+    grid-column-start: 1;
+    grid-column-end: 1;
+    grid-row-start: 2;
+    grid-row-end: 2;
+}
+
+.item4 {
+    grid-column-start: 2;
+    grid-column-end: 2;
+    grid-row-start: 2;
+    grid-row-end: 2;
+}
+
+.item5 {
+    grid-column-start: 1;
+    grid-column-end: 1;
+    grid-row-start: 3;
+    grid-row-end: 3;
+}
+
+.item6 {
+    grid-column-start: 2;
+    grid-column-end: 2;
+    grid-row-start: 3;
+    grid-row-end: 3;
+}
+
+.jumbotron-icon{
+    font-size: 50px;
+    margin-top: -0.5rem;
+    margin-bottom: -0.5rem;
+}

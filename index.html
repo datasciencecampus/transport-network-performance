@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="description" content="A Python package bringing together open-source data, tools, and research to make transport network analyses more simple, reproducible, and consistent for everyone.">
 
 <title>Transport Performance - transport_performance documentation</title>
 <style>
@@ -71,10 +72,10 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="docs/_static/styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -143,40 +144,46 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title"><code>transport_performance</code> documentation</h1>
+                  <div>
+        <div class="description">
+          <p>A Python package bringing together open-source data, tools, and research to make transport network analyses more simple, reproducible, and consistent for everyone.</p>
+        </div>
+      </div>
+                </div>
+  </div>
+  <div class="quarto-title-meta">
+    </div>
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this homepage</h2>
+  <ul>
+  <li><a href="#what-is-transport_performance" id="toc-what-is-transport_performance" class="nav-link active" data-scroll-target="#what-is-transport_performance">What is <code>transport_performance</code>?</a></li>
+  <li><a href="#where-do-i-go-now" id="toc-where-do-i-go-now" class="nav-link" data-scroll-target="#where-do-i-go-now">Where do I go now?</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <div class="quarto-about-marquee content">
   <div class="about-image-container">
   </div>
   <div class="about-contents">
-    <header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title"><code>transport_performance</code> documentation</h1>
-</div>
-<div class="quarto-title-meta">
-  </div>
-</header> <main class="content" id="quarto-document-content">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="docs/_static/tp_logo_white_background.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:15em"></p>
-</figure>
-</div>
-<section id="what-is-this-and-why-does-it-exist" class="level2">
-<h2 data-anchor-id="what-is-this-and-why-does-it-exist">What is this and why does it exist?</h2>
-<p>Description</p>
-</section>
-<section id="where-do-i-go-now" class="level2">
-<h2 data-anchor-id="where-do-i-go-now">Where do I go now?</h2>
-<p>These docs are structured in accordance with the <a href="https://diataxis.fr/">Diátaxis</a> framework:</p>
+     <main class="content quarto-banner-title-block" id="quarto-document-content">
+
+<section id="what-is-transport_performance" class="level2">
+<h2 data-anchor-id="what-is-transport_performance">What is <code>transport_performance</code>?</h2>
+<p>The performance of transport networks are highly variable throughout and between countries. There is often a lack of consistent and comparable data which can make it difficult to understand these differences. This is typically because of computational complexity, transparency (closed-source and paid services), and data consistency (format and availability).</p>
+<p>The <code>transport_performance</code> Python package helps to reduce barriers to transport analysis. It allows developers to:</p>
 <ul>
-<li>If you’re looking to get started with the package quickly, head over to the <a href="./docs/getting_started/index.html">Getting Started</a> page.</li>
-<li>For more information on the <code>transport_performance</code> package, refer to the <a href="./docs/explanation/index.html">Explanation section</a>.</li>
-<li>The <a href="./docs/how_to/index.html">How-To</a> pages provide you with instructions on things like retrieving input data.</li>
-<li>If you’re interested in learning how to use the package, head over to the <a href="./docs/tutorials/index.html">Tutorials</a>.</li>
-<li>The <code>transport_performance</code> technical reference can be found here: <a href="./docs/reference/index.html">API reference</a>.</li>
+<li>Define an <a href="https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Urban_centre">urban centre</a> boundary based on population density;</li>
+<li>Inspect, clean, and process <a href="https://gtfs.org/schedule/">public transit timetable data</a> and <a href="https://wiki.openstreetmap.org/wiki/Main_Page">OpenStreetMap data</a>; and</li>
+<li>Conduct <a href="https://r5py.readthedocs.io/en/stable/index.html">multimodal routing</a> and calculate a range of <a href="https://ec.europa.eu/regional_policy/information-sources/publications/working-papers/2020/low-carbon-urban-accessibility_en">transport metrics</a>.</li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -188,13 +195,82 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Please refer to our <a href="https://github.com/datasciencecampus/transport-performance-docker">Docker image</a> 🐳 to see how we reproduce analysis with the <code>transport_performance</code> package.</p>
+<p>Check out the <a href="https://github.com/datasciencecampus/transport-performance-docker">transport performance Docker image</a> 🐳! This aims to simplify the dependency installation and end-to-end use of <code>transport_performance</code>.</p>
 </div>
 </div>
 </section>
-<section id="looking-to-contribute" class="level2">
-<h2 data-anchor-id="looking-to-contribute">Looking to Contribute?</h2>
-<p>Find the <code>transport_performance</code> code on the <a href="https://github.com/datasciencecampus/transport-network-performance">GitHub repo</a>.</p>
+<section id="where-do-i-go-now" class="level2">
+<h2 data-anchor-id="where-do-i-go-now">Where do I go now?</h2>
+<p>These docs are structured in accordance with the <a href="https://diataxis.fr/">Diátaxis</a> framework:</p>
+<div class="grid-container">
+<div class="grid-item item1 jumbotron">
+<p class="jumbotron-icon">
+🏁
+</p>
+<p>
+Want to get up and running with <code>transport_performance</code> quickly?
+</p>
+<p><a class="btn btn-primary btn-lg" href="./docs/getting_started/index.html" role="button">Getting Started</a></p>
+</div>
+<div class="grid-item item2 jumbotron">
+<p class="jumbotron-icon">
+🔎
+</p>
+<p>
+Need more details on the methods/tools used within <code>transport_performance</code>?
+</p>
+<p><a class="btn btn-primary btn-lg" href="./docs/explanation/index.html" role="button">Explanation</a></p>
+</div>
+<div class="grid-item item3 jumbotron">
+<p class="jumbotron-icon">
+🧭
+</p>
+<p>
+Looking for guidance on how to get something done (e.g.&nbsp;find input data)?
+</p>
+<p><a class="btn btn-primary btn-lg" href="./docs/how_to/index.html" role="button">How-To</a></p>
+</div>
+<div class="grid-item item4 jumbotron">
+<p class="jumbotron-icon">
+📝
+</p>
+<p>
+Interested in learning how to use <code>transport_performance</code> by examples?
+</p>
+<p><a class="btn btn-primary btn-lg" href="./docs/tutorials/index.html" role="button">Tutorials</a></p>
+</div>
+<div class="grid-item item5 jumbotron">
+<p class="jumbotron-icon">
+📖
+</p>
+<p>
+Requiring a technical reference covering the <code>transport_performance</code> API?
+</p>
+<p><a class="btn btn-primary btn-lg" href="./docs/reference/index.html" role="button">API reference</a></p>
+</div>
+<div class="grid-item item6 jumbotron">
+<p class="jumbotron-icon">
+🛠️
+</p>
+<p>
+Want to contribute to the development of <code>transport_performance</code>?
+</p>
+<p><a class="btn btn-primary btn-lg" href="https://github.com/datasciencecampus/transport-network-performance" role="button">GitHub</a></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Notes on contributing…
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We hope that the open source and public sector communities will collaborate and build on this package. This will help improve both the national and international comparability of transport statistics while enabling higher frequency and more timely comparisons. You can find the <code>transport_performance</code> source code on <a href="https://github.com/datasciencecampus/transport-network-performance">GitHub</a>.</p>
+</div>
+</div>
 
 
 </section>

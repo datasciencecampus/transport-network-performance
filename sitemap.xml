@@ -2,138 +2,138 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/how_to/osm/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/how_to/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/explanation/calculate_tp/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.287Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/explanation/what_is_tp/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.291Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/UrbanCentre.html</loc>
-    <lastmod>2024-06-11T11:18:50.540Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.594Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/metrics.html</loc>
-    <lastmod>2024-06-11T11:18:50.640Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.714Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/validation.html</loc>
-    <lastmod>2024-06-11T11:18:50.612Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.686Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/osm_utils.html</loc>
-    <lastmod>2024-06-11T11:18:50.616Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.690Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/calendar.html</loc>
-    <lastmod>2024-06-11T11:18:50.552Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.606Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/validate_osm.html</loc>
-    <lastmod>2024-06-11T11:18:50.624Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.702Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/routes.html</loc>
-    <lastmod>2024-06-11T11:18:50.592Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.662Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/AnalyseNetwork.html</loc>
-    <lastmod>2024-06-11T11:18:50.632Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.710Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/RasterPop.html</loc>
-    <lastmod>2024-06-11T11:18:50.548Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.602Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/tutorials/metrics/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/tutorials/urban_centre/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/tutorials/gtfs/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/getting_started/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/tutorials/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/tutorials/population/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/tutorials/analyse_network/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/tutorials/osm/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/io.html</loc>
-    <lastmod>2024-06-11T11:18:50.640Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.718Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/gtfs_utils.html</loc>
-    <lastmod>2024-06-11T11:18:50.564Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.630Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/validators.html</loc>
-    <lastmod>2024-06-11T11:18:50.612Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.686Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/index.html</loc>
-    <lastmod>2024-06-11T11:18:50.524Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.574Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/cleaners.html</loc>
-    <lastmod>2024-06-11T11:18:50.556Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.614Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/multi_validation.html</loc>
-    <lastmod>2024-06-11T11:18:50.588Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.658Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/raster.html</loc>
-    <lastmod>2024-06-11T11:18:50.648Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.726Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/reference/defence.html</loc>
-    <lastmod>2024-06-11T11:18:50.640Z</lastmod>
+    <lastmod>2024-06-13T14:10:54.714Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/explanation/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.287Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/explanation/limitations/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.287Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/how_to/uc_pop/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
   <url>
     <loc>https://datasciencecampus.github.io/transport-network-performance/docs/how_to/gtfs/index.html</loc>
-    <lastmod>2024-06-11T11:17:06.908Z</lastmod>
+    <lastmod>2024-06-13T14:09:10.295Z</lastmod>
   </url>
 </urlset>

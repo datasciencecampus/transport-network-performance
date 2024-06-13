@@ -239,7 +239,7 @@ require(['plotly'], function(Plotly) {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../docs/explanation/what_is_tp/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">1. What is Transport Performance?</span></a>
+ <span class="menu-text">1. Transport Performance: A Definition</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -549,7 +549,7 @@ require(['plotly'], function(Plotly) {
 <section id="working-with-gtfs" class="level2">
 <h2 class="anchored" data-anchor-id="working-with-gtfs">Working With GTFS</h2>
 <p>Let’s import the necessary dependencies:</p>
-<div id="260f8268" class="cell" data-execution_count="1">
+<div id="75b9d9fb" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pathlib</span>
@@ -571,7 +571,7 @@ require(['plotly'], function(Plotly) {
 <p>You may wish to manually download at least one GTFS feed and store somewhere in your file system. Alternatively you may programmatically download the data, as in the solution here.</p>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<div id="5fbe34d9" class="cell" data-execution_count="2">
+<div id="6bc263a3" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>BUS_URL <span class="op">=</span> <span class="st">"&lt;INSERT_SOME_URL_TO_BUS_GTFS&gt;"</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>RAIL_URL <span class="op">=</span> <span class="st">"&lt;INSERT_SOME_URL_TO_RAIL_GTFS&gt;"</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -583,7 +583,7 @@ require(['plotly'], function(Plotly) {
 </div>
 </div>
 <div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
-<div id="c77c69f3" class="cell" data-execution_count="3">
+<div id="7e80faad" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>BUS_URL <span class="op">=</span> <span class="st">"https://tsvc.pilote4.cityway.fr/api/Export/v1/GetExportedDataFile?ExportFormat=Gtfs&amp;OperatorCode=RTM"</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>RAIL_URL <span class="op">=</span> <span class="st">"https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip"</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># using tmp for tutorial but not necessary</span></span>
@@ -595,13 +595,13 @@ require(['plotly'], function(Plotly) {
 <div class="cell-output cell-output-stderr">
 <pre><code>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0 4708k    0  1127    0     0    777      0  1:43:24  0:00:01  1:43:23   777 14 4708k   14  682k    0     0   270k      0  0:00:17  0:00:02  0:00:15  270k 83 4708k   83 3913k    0     0  1136k      0  0:00:04  0:00:03  0:00:01 1136k100 4708k  100 4708k    0     0  1300k      0  0:00:03  0:00:03 --:--:-- 1300k
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  1 4588k    1 92351    0     0  60241      0  0:01:17  0:00:01  0:01:16 60242100 4588k  100 4588k    0     0  2057k      0  0:00:02  0:00:02 --:--:-- 2058k
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0 54 90880   54 49134    0     0  56839      0  0:00:01 --:--:--  0:00:01 56802100 90880  100 90880    0     0    97k      0 --:--:-- --:--:-- --:--:--   97k</code></pre>
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0 91272    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 91272  100 91272    0     0   152k      0 --:--:-- --:--:-- --:--:--  152k</code></pre>
 </div>
 <div class="cell-output cell-output-display" data-execution_count="2">
-<pre><code>CompletedProcess(args=['curl', 'https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip', '-o', '/tmp/tmp8erp864p/intercity_rail_gtfs.zip'], returncode=0)</code></pre>
+<pre><code>CompletedProcess(args=['curl', 'https://eu.ftp.opendatasoft.com/sncf/gtfs/export-intercites-gtfs-last.zip', '-o', '/tmp/tmphr4_iv0c/intercity_rail_gtfs.zip'], returncode=0)</code></pre>
 </div>
 </div>
 </div>
@@ -617,14 +617,14 @@ require(['plotly'], function(Plotly) {
 <p>Instantiate a <code>feed</code> object by pointing the <code>MultiGtfsInstance</code> class at a path to the GTFS feed(s) that you have downloaded. Once you have successfully instantiated <code>feed</code>, inspect the correct attribute in order to confirm the number of separate feeds instances contained within it.</p>
 </div>
 <div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
-<div id="626e14ce" class="cell" data-execution_count="4">
+<div id="416682a9" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>gtfs_pth <span class="op">=</span> <span class="st">"&lt;INSERT_PATH_TO_GTFS&gt;"</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>feed <span class="op">=</span> MultiGtfsInstance(path<span class="op">=</span>gtfs_pth)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(feed.<span class="op">&lt;</span>INSERT_CORRECT_ATTRIBUTE<span class="op">&gt;</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-2-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-3-tab">
-<div id="445523ac" class="cell" data-execution_count="5">
+<div id="08bcb0b3" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>gtfs_pth <span class="op">=</span> pathlib.Path(tmp_path.name) <span class="co"># need to use pathlib for tmp_path</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>feed <span class="op">=</span> MultiGtfsInstance(path<span class="op">=</span>gtfs_pth)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"There are </span><span class="sc">{</span><span class="bu">len</span>(feed.instances)<span class="sc">}</span><span class="ss"> feed instances"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -643,14 +643,14 @@ require(['plotly'], function(Plotly) {
 <p>By accessing the appropriate attribute, print out the first 5 stops of the first instance within the <code>feed</code> object.</p>
 </div>
 <div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
-<div id="34a8e0fa" class="cell" data-execution_count="6">
+<div id="253ca4bb" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>feed.<span class="op">&lt;</span>INSERT_CORRECT_ATTR<span class="op">&gt;</span>[<span class="dv">0</span>].feed.stops.<span class="op">&lt;</span>INSERT_CORRECT_METHOD<span class="op">&gt;</span>(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>These records will match the contents of the stops.txt file within the feed that you downloaded.</p>
 <hr>
 </div>
 <div id="tabset-3-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-3-tab">
-<div id="071a576c" class="cell" data-execution_count="7">
+<div id="5cfeaf67" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>feed.instances[<span class="dv">0</span>].feed.stops.head(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <div>
@@ -745,12 +745,12 @@ require(['plotly'], function(Plotly) {
 <section id="checking-validity" class="level2">
 <h2 class="anchored" data-anchor-id="checking-validity">Checking Validity</h2>
 <p>Transport routing operations require services that run upon a specified date. It is a useful sanity check to confirm that the dates that you expect to perform routing on exist within the GTFS feed. To do this, we can use the <code>get_dates()</code> method to print out the first and last date in the available date range, as below.</p>
-<div id="b6f7e02d" class="cell" data-execution_count="8">
+<div id="fc61000f" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>s0, e0 <span class="op">=</span> feed.get_dates()</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Feed starts at: </span><span class="sc">{</span>s0<span class="sc">}</span><span class="ch">\n</span><span class="ss">Feed ends at: </span><span class="sc">{</span>e0<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Feed starts at: 20240610
-Feed ends at: 20240909</code></pre>
+<pre><code>Feed starts at: 20240612
+Feed ends at: 20240911</code></pre>
 </div>
 </div>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
@@ -764,12 +764,10 @@ Feed ends at: 20240909</code></pre>
 </div>
 <div id="tabset-4-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-3-tab">
 <div class="scrolling">
-<div id="becd306b" class="cell" data-execution_count="9">
+<div id="0fb74988" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>feed.get_dates(return_range<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
-<pre><code>['20240610',
- '20240611',
- '20240612',
+<pre><code>['20240612',
  '20240613',
  '20240614',
  '20240615',
@@ -858,7 +856,9 @@ Feed ends at: 20240909</code></pre>
  '20240906',
  '20240907',
  '20240908',
- '20240909']</code></pre>
+ '20240909',
+ '20240910',
+ '20240911']</code></pre>
 </div>
 </div>
 </div>
@@ -877,10 +877,10 @@ Feed ends at: 20240909</code></pre>
 </div>
 <div id="tabset-5-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-3-tab">
 <div class="scrolling">
-<div id="383fa2b2" class="cell" data-execution_count="10">
+<div id="6fa3e716" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>feed.is_valid(validation_kwargs<span class="op">=</span>{<span class="st">"far_stops"</span>: <span class="va">False</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmp8erp864p/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmp8erp864p/intercity_rail_gtfs.zip:  50%|█████     | 1/2 [00:00&lt;00:00,  5.75it/s]Validating GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip:  50%|█████     | 1/2 [00:00&lt;00:00,  5.75it/s]           Validating GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:04&lt;00:00,  2.44s/it]Validating GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:04&lt;00:00,  2.10s/it]</code></pre>
+<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmphr4_iv0c/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmphr4_iv0c/intercity_rail_gtfs.zip:  50%|█████     | 1/2 [00:00&lt;00:00,  5.72it/s]Validating GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip:  50%|█████     | 1/2 [00:00&lt;00:00,  5.72it/s]           Validating GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:04&lt;00:00,  2.44s/it]Validating GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:04&lt;00:00,  2.10s/it]</code></pre>
 </div>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div>
@@ -904,7 +904,7 @@ Feed ends at: 20240909</code></pre>
 <td>Unrecognized column feed_id</td>
 <td>feed_info</td>
 <td>[]</td>
-<td>/tmp/tmp8erp864p/intercity_rail_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/intercity_rail_gtfs.zip</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">1</td>
@@ -912,7 +912,7 @@ Feed ends at: 20240909</code></pre>
 <td>Unrecognized column conv_rev</td>
 <td>feed_info</td>
 <td>[]</td>
-<td>/tmp/tmp8erp864p/intercity_rail_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/intercity_rail_gtfs.zip</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2</td>
@@ -920,7 +920,7 @@ Feed ends at: 20240909</code></pre>
 <td>Unrecognized column plan_rev</td>
 <td>feed_info</td>
 <td>[]</td>
-<td>/tmp/tmp8erp864p/intercity_rail_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/intercity_rail_gtfs.zip</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">3</td>
@@ -928,7 +928,7 @@ Feed ends at: 20240909</code></pre>
 <td>Repeated pair (trip_id, departure_time)</td>
 <td>stop_times</td>
 <td>[236, 239, 241, 243, 245, 248, 251, 253, 254, ...</td>
-<td>/tmp/tmp8erp864p/rtm_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/rtm_gtfs.zip</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">4</td>
@@ -936,7 +936,7 @@ Feed ends at: 20240909</code></pre>
 <td>Stop has no stop times</td>
 <td>stops</td>
 <td>[2135]</td>
-<td>/tmp/tmp8erp864p/rtm_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/rtm_gtfs.zip</td>
 </tr>
 </tbody>
 </table>
@@ -962,12 +962,12 @@ Feed ends at: 20240909</code></pre>
 </div>
 <div id="tabset-6-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-6-2-tab">
 <p>Inspect the <code>MultiGtfsInstance</code> docstring for the appropriate method.</p>
-<div id="d031f1a7" class="cell" data-execution_count="11">
+<div id="b3629e2c" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>feed.viz_...()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-6-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-6-3-tab">
-<div id="36703108" class="cell" data-execution_count="12">
+<div id="64baaadb" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>feed.viz_stops()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -&gt; Trust Notebook</span><iframe srcdoc="<!DOCTYPE html>
@@ -997,7 +997,7 @@ Feed ends at: 20240909</code></pre>
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_70227374425bf4b138a87cca9168e492 {
+                #map_320423065991f157c3074c00d66ed635 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1014,14 +1014,14 @@ Feed ends at: 20240909</code></pre>
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_70227374425bf4b138a87cca9168e492&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_320423065991f157c3074c00d66ed635&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_70227374425bf4b138a87cca9168e492 = L.map(
-                &quot;map_70227374425bf4b138a87cca9168e492&quot;,
+            var map_320423065991f157c3074c00d66ed635 = L.map(
+                &quot;map_320423065991f157c3074c00d66ed635&quot;,
                 {
                     center: [0.0, 0.0],
                     crs: L.CRS.EPSG3857,
@@ -1030,22 +1030,22 @@ Feed ends at: 20240909</code></pre>
                     preferCanvas: false,
                 }
             );
-            L.control.scale().addTo(map_70227374425bf4b138a87cca9168e492);
+            L.control.scale().addTo(map_320423065991f157c3074c00d66ed635);
 
             
 
         
     
-            var tile_layer_fc599612f9cd4f3bc436bdb9926da122 = L.tileLayer(
+            var tile_layer_b06332fa0dc616c473af8c4b18ed8907 = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {&quot;attribution&quot;: &quot;\u0026copy; \u003ca href=\&quot;https://www.openstreetmap.org/copyright\&quot;\u003eOpenStreetMap\u003c/a\u003e contributors&quot;, &quot;detectRetina&quot;: false, &quot;maxNativeZoom&quot;: 19, &quot;maxZoom&quot;: 19, &quot;minZoom&quot;: 0, &quot;noWrap&quot;: false, &quot;opacity&quot;: 1, &quot;subdomains&quot;: &quot;abc&quot;, &quot;tms&quot;: false}
             );
         
     
-            tile_layer_fc599612f9cd4f3bc436bdb9926da122.addTo(map_70227374425bf4b138a87cca9168e492);
+            tile_layer_b06332fa0dc616c473af8c4b18ed8907.addTo(map_320423065991f157c3074c00d66ed635);
         
     
-            var fast_marker_cluster_1df0b951b0e279acac9b9dffc28451ee = (function(){
+            var fast_marker_cluster_07e402521b462c3ab81b588ba08d612b = (function(){
                 var callback =         function (row) {
             var imarker;
             marker = L.circleMarker(new L.LatLng(row[0], row[1]),
@@ -1087,15 +1087,15 @@ Feed ends at: 20240909</code></pre>
                     marker.addTo(cluster);
                 }
 
-                cluster.addTo(map_70227374425bf4b138a87cca9168e492);
+                cluster.addTo(map_320423065991f157c3074c00d66ed635);
                 return cluster;
             })();
         
     
-            fast_marker_cluster_1df0b951b0e279acac9b9dffc28451ee.addTo(map_70227374425bf4b138a87cca9168e492);
+            fast_marker_cluster_07e402521b462c3ab81b588ba08d612b.addTo(map_320423065991f157c3074c00d66ed635);
         
     
-            map_70227374425bf4b138a87cca9168e492.fitBounds(
+            map_320423065991f157c3074c00d66ed635.fitBounds(
                 [[42.458991, -1.781319], [48.842285, 7.261904]],
                 {}
             );
@@ -1117,13 +1117,13 @@ Feed ends at: 20240909</code></pre>
 <li>Temporally by providing a date (or list of dates).</li>
 </ul>
 <p>Before undertaking the filter operations, examine the size of our feed on disk:</p>
-<div id="21b6d4e4" class="cell" data-execution_count="13">
+<div id="0c64d32b" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> subprocess.run(</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"du"</span>, <span class="st">"-sh"</span>, tmp_path.name], capture_output<span class="op">=</span><span class="va">True</span>, text<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>size_out <span class="op">=</span> out.stdout.strip().split(<span class="st">"</span><span class="ch">\t</span><span class="st">"</span>)[<span class="dv">0</span>]</span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Unfiltered feed is: </span><span class="sc">{</span>size_out<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Unfiltered feed is: 4.7M</code></pre>
+<pre><code>Unfiltered feed is: 4.6M</code></pre>
 </div>
 </div>
 <section id="by-bounding-box" class="level3">
@@ -1136,7 +1136,7 @@ Feed ends at: 20240909</code></pre>
 </ul>
 <p>The bounding box should be in EPSG:4326 projection (longitude &amp; latitude).</p>
 <p>Below I define a bounding box and visualise for context. Feel free to update the code with your own bounding box values.</p>
-<div id="f9d77a53" class="cell" data-execution_count="14">
+<div id="11c54e99" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>BBOX <span class="op">=</span> [<span class="fl">4.932916</span>,<span class="fl">43.121441</span>,<span class="fl">5.644253</span>,<span class="fl">43.546931</span>] <span class="co"># crop around Marseille</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>xmin, ymin, xmax, ymax <span class="op">=</span> BBOX</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>poly <span class="op">=</span> Polygon(((xmin,ymin), (xmin,ymax), (xmax,ymax), (xmax,ymin)))</span>
@@ -1170,7 +1170,7 @@ Feed ends at: 20240909</code></pre>
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_64d55538d9818c3378bdf2f5dd1b5417 {
+                #map_c21ed968bded5498022a39265224d0a0 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1200,14 +1200,14 @@ Feed ends at: 20240909</code></pre>
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_64d55538d9818c3378bdf2f5dd1b5417&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_c21ed968bded5498022a39265224d0a0&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_64d55538d9818c3378bdf2f5dd1b5417 = L.map(
-                &quot;map_64d55538d9818c3378bdf2f5dd1b5417&quot;,
+            var map_c21ed968bded5498022a39265224d0a0 = L.map(
+                &quot;map_c21ed968bded5498022a39265224d0a0&quot;,
                 {
                     center: [43.334186, 5.2885845],
                     crs: L.CRS.EPSG3857,
@@ -1216,79 +1216,79 @@ Feed ends at: 20240909</code></pre>
                     preferCanvas: false,
                 }
             );
-            L.control.scale().addTo(map_64d55538d9818c3378bdf2f5dd1b5417);
+            L.control.scale().addTo(map_c21ed968bded5498022a39265224d0a0);
 
             
 
         
     
-            var tile_layer_55ace5d271f66b93b8a72a94872a03a3 = L.tileLayer(
+            var tile_layer_13acf8323b715431092a2945f2105b52 = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {&quot;attribution&quot;: &quot;\u0026copy; \u003ca href=\&quot;https://www.openstreetmap.org/copyright\&quot;\u003eOpenStreetMap\u003c/a\u003e contributors&quot;, &quot;detectRetina&quot;: false, &quot;maxNativeZoom&quot;: 19, &quot;maxZoom&quot;: 19, &quot;minZoom&quot;: 0, &quot;noWrap&quot;: false, &quot;opacity&quot;: 1, &quot;subdomains&quot;: &quot;abc&quot;, &quot;tms&quot;: false}
             );
         
     
-            tile_layer_55ace5d271f66b93b8a72a94872a03a3.addTo(map_64d55538d9818c3378bdf2f5dd1b5417);
+            tile_layer_13acf8323b715431092a2945f2105b52.addTo(map_c21ed968bded5498022a39265224d0a0);
         
     
-            map_64d55538d9818c3378bdf2f5dd1b5417.fitBounds(
+            map_c21ed968bded5498022a39265224d0a0.fitBounds(
                 [[43.121441, 4.932916], [43.546931, 5.644253]],
                 {}
             );
         
     
-        function geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_styler(feature) {
+        function geo_json_40c5fd4c6c8af5172b107aa185cd4c77_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_highlighter(feature) {
+        function geo_json_40c5fd4c6c8af5172b107aa185cd4c77_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_pointToLayer(feature, latlng) {
+        function geo_json_40c5fd4c6c8af5172b107aa185cd4c77_pointToLayer(feature, latlng) {
             var opts = {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#3388ff&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#3388ff&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 2, &quot;stroke&quot;: true, &quot;weight&quot;: 3};
             
-            let style = geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_styler(feature)
+            let style = geo_json_40c5fd4c6c8af5172b107aa185cd4c77_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_onEachFeature(feature, layer) {
+        function geo_json_40c5fd4c6c8af5172b107aa185cd4c77_onEachFeature(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_45ea2a85e99f338c06c45d8a1e4b94bb.resetStyle(e.target);
+                            geo_json_40c5fd4c6c8af5172b107aa185cd4c77.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_40c5fd4c6c8af5172b107aa185cd4c77_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_45ea2a85e99f338c06c45d8a1e4b94bb = L.geoJson(null, {
-                onEachFeature: geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_onEachFeature,
+        var geo_json_40c5fd4c6c8af5172b107aa185cd4c77 = L.geoJson(null, {
+                onEachFeature: geo_json_40c5fd4c6c8af5172b107aa185cd4c77_onEachFeature,
             
-                style: geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_styler,
-                pointToLayer: geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_pointToLayer,
+                style: geo_json_40c5fd4c6c8af5172b107aa185cd4c77_styler,
+                pointToLayer: geo_json_40c5fd4c6c8af5172b107aa185cd4c77_pointToLayer,
         });
 
-        function geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_add (data) {
-            geo_json_45ea2a85e99f338c06c45d8a1e4b94bb
+        function geo_json_40c5fd4c6c8af5172b107aa185cd4c77_add (data) {
+            geo_json_40c5fd4c6c8af5172b107aa185cd4c77
                 .addData(data);
         }
-            geo_json_45ea2a85e99f338c06c45d8a1e4b94bb_add({&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;features&quot;: [{&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[4.932916, 43.121441], [4.932916, 43.546931], [5.644253, 43.546931], [5.644253, 43.121441], [4.932916, 43.121441]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_40c5fd4c6c8af5172b107aa185cd4c77_add({&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;features&quot;: [{&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[4.932916, 43.121441], [4.932916, 43.546931], [5.644253, 43.546931], [5.644253, 43.121441], [4.932916, 43.121441]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_45ea2a85e99f338c06c45d8a1e4b94bb.bindTooltip(
+    geo_json_40c5fd4c6c8af5172b107aa185cd4c77.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -1297,7 +1297,7 @@ Feed ends at: 20240909</code></pre>
     ,{&quot;className&quot;: &quot;foliumtooltip&quot;, &quot;sticky&quot;: true});
                      
     
-            geo_json_45ea2a85e99f338c06c45d8a1e4b94bb.addTo(map_64d55538d9818c3378bdf2f5dd1b5417);
+            geo_json_40c5fd4c6c8af5172b107aa185cd4c77.addTo(map_c21ed968bded5498022a39265224d0a0);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -1313,10 +1313,10 @@ Feed ends at: 20240909</code></pre>
 <p>Pass the <code>BBOX</code> list in [xmin, ymin, xmax, ymax] order to the <code>filter_to_bbox()</code> method.</p>
 </div>
 <div id="tabset-7-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-7-3-tab">
-<div id="80210a5e" class="cell" data-execution_count="15">
+<div id="718332b0" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>feed.filter_to_bbox(BBOX)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmp8erp864p/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Filtering GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  7.44it/s]Filtering GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  7.41it/s]</code></pre>
+<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmphr4_iv0c/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Filtering GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  7.86it/s]Filtering GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  7.83it/s]</code></pre>
 </div>
 </div>
 </div>
@@ -1324,7 +1324,7 @@ Feed ends at: 20240909</code></pre>
 </div>
 <p>Notice that a progress bar confirms the number of successful filter operations performed depending on the number of separate GTFS zip files passed to <code>MultiGtfsInstance</code>.</p>
 <p>Below I plot the filtered feed stop locations in relation to the bounding box used to restrict the feed’s extent.</p>
-<div id="ca0edda8" class="cell" data-execution_count="16">
+<div id="7286098b" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>imap <span class="op">=</span> feed.viz_stops()</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>poly_gdf.explore(m<span class="op">=</span>imap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
@@ -1355,7 +1355,7 @@ Feed ends at: 20240909</code></pre>
             <meta name=&quot;viewport&quot; content=&quot;width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; />
             <style>
-                #map_31e7a25598bbf48f5e47c6b399cffb5e {
+                #map_7f3c1b98df4ae1aaa2bbb706728393aa {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1388,14 +1388,14 @@ Feed ends at: 20240909</code></pre>
 <body>
     
     
-            <div class=&quot;folium-map&quot; id=&quot;map_31e7a25598bbf48f5e47c6b399cffb5e&quot; ></div>
+            <div class=&quot;folium-map&quot; id=&quot;map_7f3c1b98df4ae1aaa2bbb706728393aa&quot; ></div>
         
 </body>
 <script>
     
     
-            var map_31e7a25598bbf48f5e47c6b399cffb5e = L.map(
-                &quot;map_31e7a25598bbf48f5e47c6b399cffb5e&quot;,
+            var map_7f3c1b98df4ae1aaa2bbb706728393aa = L.map(
+                &quot;map_7f3c1b98df4ae1aaa2bbb706728393aa&quot;,
                 {
                     center: [0.0, 0.0],
                     crs: L.CRS.EPSG3857,
@@ -1404,22 +1404,22 @@ Feed ends at: 20240909</code></pre>
                     preferCanvas: false,
                 }
             );
-            L.control.scale().addTo(map_31e7a25598bbf48f5e47c6b399cffb5e);
+            L.control.scale().addTo(map_7f3c1b98df4ae1aaa2bbb706728393aa);
 
             
 
         
     
-            var tile_layer_9236a74a5e7c63ffc6694d40a8b5933a = L.tileLayer(
+            var tile_layer_731c8f70e7d4b68b8bdff7da63db0cfe = L.tileLayer(
                 &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
                 {&quot;attribution&quot;: &quot;\u0026copy; \u003ca href=\&quot;https://www.openstreetmap.org/copyright\&quot;\u003eOpenStreetMap\u003c/a\u003e contributors&quot;, &quot;detectRetina&quot;: false, &quot;maxNativeZoom&quot;: 19, &quot;maxZoom&quot;: 19, &quot;minZoom&quot;: 0, &quot;noWrap&quot;: false, &quot;opacity&quot;: 1, &quot;subdomains&quot;: &quot;abc&quot;, &quot;tms&quot;: false}
             );
         
     
-            tile_layer_9236a74a5e7c63ffc6694d40a8b5933a.addTo(map_31e7a25598bbf48f5e47c6b399cffb5e);
+            tile_layer_731c8f70e7d4b68b8bdff7da63db0cfe.addTo(map_7f3c1b98df4ae1aaa2bbb706728393aa);
         
     
-            var fast_marker_cluster_d791c60602f2c91bf877470334f0e452 = (function(){
+            var fast_marker_cluster_a7e00403c7cdc6603432db2e522b3a99 = (function(){
                 var callback =         function (row) {
             var imarker;
             marker = L.circleMarker(new L.LatLng(row[0], row[1]),
@@ -1461,72 +1461,72 @@ Feed ends at: 20240909</code></pre>
                     marker.addTo(cluster);
                 }
 
-                cluster.addTo(map_31e7a25598bbf48f5e47c6b399cffb5e);
+                cluster.addTo(map_7f3c1b98df4ae1aaa2bbb706728393aa);
                 return cluster;
             })();
         
     
-            fast_marker_cluster_d791c60602f2c91bf877470334f0e452.addTo(map_31e7a25598bbf48f5e47c6b399cffb5e);
+            fast_marker_cluster_a7e00403c7cdc6603432db2e522b3a99.addTo(map_7f3c1b98df4ae1aaa2bbb706728393aa);
         
     
-            map_31e7a25598bbf48f5e47c6b399cffb5e.fitBounds(
+            map_7f3c1b98df4ae1aaa2bbb706728393aa.fitBounds(
                 [[43.128353, -0.556875], [48.842285, 7.261904]],
                 {}
             );
         
     
-        function geo_json_69abfab3b764b3c00adc01f718366d65_styler(feature) {
+        function geo_json_ff59397ce4046d543758dd91a670da51_styler(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.5, &quot;weight&quot;: 2};
             }
         }
-        function geo_json_69abfab3b764b3c00adc01f718366d65_highlighter(feature) {
+        function geo_json_ff59397ce4046d543758dd91a670da51_highlighter(feature) {
             switch(feature.id) {
                 default:
                     return {&quot;fillOpacity&quot;: 0.75};
             }
         }
-        function geo_json_69abfab3b764b3c00adc01f718366d65_pointToLayer(feature, latlng) {
+        function geo_json_ff59397ce4046d543758dd91a670da51_pointToLayer(feature, latlng) {
             var opts = {&quot;bubblingMouseEvents&quot;: true, &quot;color&quot;: &quot;#3388ff&quot;, &quot;dashArray&quot;: null, &quot;dashOffset&quot;: null, &quot;fill&quot;: true, &quot;fillColor&quot;: &quot;#3388ff&quot;, &quot;fillOpacity&quot;: 0.2, &quot;fillRule&quot;: &quot;evenodd&quot;, &quot;lineCap&quot;: &quot;round&quot;, &quot;lineJoin&quot;: &quot;round&quot;, &quot;opacity&quot;: 1.0, &quot;radius&quot;: 2, &quot;stroke&quot;: true, &quot;weight&quot;: 3};
             
-            let style = geo_json_69abfab3b764b3c00adc01f718366d65_styler(feature)
+            let style = geo_json_ff59397ce4046d543758dd91a670da51_styler(feature)
             Object.assign(opts, style)
             
             return new L.CircleMarker(latlng, opts)
         }
 
-        function geo_json_69abfab3b764b3c00adc01f718366d65_onEachFeature(feature, layer) {
+        function geo_json_ff59397ce4046d543758dd91a670da51_onEachFeature(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                            geo_json_69abfab3b764b3c00adc01f718366d65.resetStyle(e.target);
+                            geo_json_ff59397ce4046d543758dd91a670da51.resetStyle(e.target);
                     }
                 },
                 mouseover: function(e) {
                     if(typeof e.target.setStyle === &quot;function&quot;){
-                        const highlightStyle = geo_json_69abfab3b764b3c00adc01f718366d65_highlighter(e.target.feature)
+                        const highlightStyle = geo_json_ff59397ce4046d543758dd91a670da51_highlighter(e.target.feature)
                         e.target.setStyle(highlightStyle);
                     }
                 },
             });
         };
-        var geo_json_69abfab3b764b3c00adc01f718366d65 = L.geoJson(null, {
-                onEachFeature: geo_json_69abfab3b764b3c00adc01f718366d65_onEachFeature,
+        var geo_json_ff59397ce4046d543758dd91a670da51 = L.geoJson(null, {
+                onEachFeature: geo_json_ff59397ce4046d543758dd91a670da51_onEachFeature,
             
-                style: geo_json_69abfab3b764b3c00adc01f718366d65_styler,
-                pointToLayer: geo_json_69abfab3b764b3c00adc01f718366d65_pointToLayer,
+                style: geo_json_ff59397ce4046d543758dd91a670da51_styler,
+                pointToLayer: geo_json_ff59397ce4046d543758dd91a670da51_pointToLayer,
         });
 
-        function geo_json_69abfab3b764b3c00adc01f718366d65_add (data) {
-            geo_json_69abfab3b764b3c00adc01f718366d65
+        function geo_json_ff59397ce4046d543758dd91a670da51_add (data) {
+            geo_json_ff59397ce4046d543758dd91a670da51
                 .addData(data);
         }
-            geo_json_69abfab3b764b3c00adc01f718366d65_add({&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;features&quot;: [{&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[4.932916, 43.121441], [4.932916, 43.546931], [5.644253, 43.546931], [5.644253, 43.121441], [4.932916, 43.121441]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
+            geo_json_ff59397ce4046d543758dd91a670da51_add({&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;features&quot;: [{&quot;bbox&quot;: [4.932916, 43.121441, 5.644253, 43.546931], &quot;geometry&quot;: {&quot;coordinates&quot;: [[[4.932916, 43.121441], [4.932916, 43.546931], [5.644253, 43.546931], [5.644253, 43.121441], [4.932916, 43.121441]]], &quot;type&quot;: &quot;Polygon&quot;}, &quot;id&quot;: &quot;0&quot;, &quot;properties&quot;: {}, &quot;type&quot;: &quot;Feature&quot;}], &quot;type&quot;: &quot;FeatureCollection&quot;});
 
         
     
-    geo_json_69abfab3b764b3c00adc01f718366d65.bindTooltip(
+    geo_json_ff59397ce4046d543758dd91a670da51.bindTooltip(
     function(layer){
     let div = L.DomUtil.create('div');
     
@@ -1535,7 +1535,7 @@ Feed ends at: 20240909</code></pre>
     ,{&quot;className&quot;: &quot;foliumtooltip&quot;, &quot;sticky&quot;: true});
                      
     
-            geo_json_69abfab3b764b3c00adc01f718366d65.addTo(map_31e7a25598bbf48f5e47c6b399cffb5e);
+            geo_json_ff59397ce4046d543758dd91a670da51.addTo(map_7f3c1b98df4ae1aaa2bbb706728393aa);
         
 </script>
 </html>" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen="" webkitallowfullscreen="" mozallowfullscreen=""></iframe></div></div>
@@ -1546,11 +1546,11 @@ Feed ends at: 20240909</code></pre>
 <section id="by-date" class="level3">
 <h3 class="anchored" data-anchor-id="by-date">By Date</h3>
 <p>If the routing analysis you wish to perform takes place over a specific time window, we can further reduce the GTFS data volume by restricting to dates. To do this, we need to specify either a single datestring, or a list of datestrings. The format of the date should be “YYYYMMDD”.</p>
-<div id="31be5e79" class="cell" data-execution_count="17">
+<div id="67cc98fe" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>today <span class="op">=</span> datetime.datetime.today().strftime(<span class="bu">format</span><span class="op">=</span><span class="st">"%Y%m</span><span class="sc">%d</span><span class="st">"</span>)</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"The date this document was updated at would be passed as: </span><span class="sc">{</span>today<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>The date this document was updated at would be passed as: 20240611</code></pre>
+<pre><code>The date this document was updated at would be passed as: 20240613</code></pre>
 </div>
 </div>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
@@ -1563,23 +1563,23 @@ Feed ends at: 20240909</code></pre>
 <p>Pass either a single date string in “YYYYMMDD” format, or a list of datestrings in this format, to the <code>filter_to_date</code> method. Print out the new start and end dates of your feed by calling the <code>get_dates()</code> method once more.</p>
 </div>
 <div id="tabset-8-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-8-3-tab">
-<div id="ae9e7f2a" class="cell" data-execution_count="18">
+<div id="72b2cdee" class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>feed.filter_to_date(today)</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Filtered GTFS feed to </span><span class="sc">{</span>today<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmp8erp864p/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Filtering GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.31it/s]Filtering GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.30it/s]</code></pre>
+<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmphr4_iv0c/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Filtering GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Filtering GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.01it/s]Filtering GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.01it/s]</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Filtered GTFS feed to 20240611</code></pre>
+<pre><code>Filtered GTFS feed to 20240613</code></pre>
 </div>
 </div>
-<div id="7cdb1e0b" class="cell" data-execution_count="19">
+<div id="3bf59533" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>s1, e1 <span class="op">=</span> feed.get_dates()</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"After filtering to </span><span class="sc">{</span>today<span class="sc">}</span><span class="ch">\n</span><span class="ss">start date: </span><span class="sc">{</span>s1<span class="sc">}</span><span class="ch">\n</span><span class="ss">end date: </span><span class="sc">{</span>e1<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>After filtering to 20240611
-start date: 20240610
-end date: 20240809</code></pre>
+<pre><code>After filtering to 20240613
+start date: 20240612
+end date: 20240811</code></pre>
 </div>
 </div>
 </div>
@@ -1592,7 +1592,7 @@ end date: 20240809</code></pre>
 <h2 class="anchored" data-anchor-id="check-empty-feeds">Check Empty Feeds</h2>
 <p>After performing the filter operations on GTFS, it is advisable to check in case any of the filtered feeds are now empty. Empty feeds can cause errors when undertaking routing analysis. Empty feeds can easily arise when filtering GTFS to mismatched dates or bounding boxes.</p>
 <p>We check for empty feeds in the following way:</p>
-<div id="3088e2e7" class="cell" data-execution_count="20">
+<div id="702239f0" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>feed.validate_empty_feeds()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
 <pre><code>[]</code></pre>
@@ -1604,7 +1604,7 @@ end date: 20240809</code></pre>
 <p>Occasionally, providers will publish feeds that use a calendar-dates.txt file rather than a calendar.txt. This is permitted within GTFS and is an alternative approach to encoding the same sort of information about the feed timetable.</p>
 <p>However, missing calendar.txt files currently cause exceptions when attempting to route with these feeds with r5py. To avoid this issue, we can use a calendar-dates.txt to populate the required calendar.txt file.</p>
 <p>We can check whether any of our feed instances have no calendar file:</p>
-<div id="e9648dd8" class="cell" data-execution_count="21">
+<div id="120fc09d" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, inst <span class="kw">in</span> <span class="bu">enumerate</span>(feed.instances):</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> inst.feed.calendar <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>        problem_ind <span class="op">=</span> i</span>
@@ -1621,39 +1621,39 @@ end date: 20240809</code></pre>
 </div>
 <div id="tabset-9-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-9-2-tab">
 <p>Examine the <code>MultiGtfsInstance</code> docstring to find the appropriate method. Access the calendar DataFrame attribute from the same feed and print the first few rows.</p>
-<div id="fed241b4" class="cell" data-execution_count="22">
+<div id="ab2b4d64" class="cell" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>feed.<span class="op">&lt;</span>INSERT_CORRECT_METHOD<span class="op">&gt;</span>()</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(feed.instances[<span class="op">&lt;</span>INDEX_OF_MISSING_CALENDAR<span class="op">&gt;</span>].feed.calendar.head())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-9-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-9-3-tab">
-<div id="f6365dc6" class="cell" data-execution_count="23">
+<div id="7c6debf6" class="cell" data-execution_count="23">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>feed.ensure_populated_calendars()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>/home/runner/work/transport-network-performance/transport-network-performance/src/transport_performance/gtfs/validation.py:297: UserWarning:
 
-No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from calendar dates
+No calendar found for /tmp/tmphr4_iv0c/intercity_rail_gtfs.zip. Creating from calendar dates
 </code></pre>
 </div>
 </div>
-<div id="7f5e2260" class="cell" data-execution_count="24">
+<div id="02ce6e66" class="cell" data-execution_count="24">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Newly populated calendar table:"</span>)</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(feed.instances[problem_ind].feed.calendar.head())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Newly populated calendar table:
   service_id  monday  tuesday  wednesday  thursday  friday  saturday  sunday  \
-0     000024       0        1          0         0       0         0       0   
-1     000115       0        1          0         0       0         0       0   
-2     000247       0        1          0         0       0         0       0   
-3     000274       0        1          0         0       0         0       0   
-4     000295       0        1          0         0       0         0       0   
+0     000024       0        0          0         1       0         0       0   
+1     000116       0        0          0         1       0         0       0   
+2     000247       0        0          0         1       0         0       0   
+3     000273       0        0          0         1       0         0       0   
+4     000295       0        0          0         1       0         0       0   
 
   start_date  end_date  
-0   20240611  20240611  
-1   20240611  20240611  
-2   20240611  20240611  
-3   20240611  20240611  
-4   20240611  20240611  </code></pre>
+0   20240613  20240613  
+1   20240613  20240613  
+2   20240613  20240613  
+3   20240613  20240613  
+4   20240613  20240613  </code></pre>
 </div>
 </div>
 </div>
@@ -1681,7 +1681,7 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 </ol>
 </div>
 <div id="tabset-10-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-10-3-tab">
-<div id="57225cd7" class="cell" data-execution_count="25">
+<div id="7ad28a24" class="cell" data-execution_count="25">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>feed.summarise_routes()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
 <div>
@@ -1699,31 +1699,31 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <tbody>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">0</td>
-<td>2024-06-10</td>
+<td>2024-06-12</td>
 <td>0</td>
 <td>3</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">1</td>
-<td>2024-06-10</td>
+<td>2024-06-12</td>
 <td>1</td>
 <td>2</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2</td>
-<td>2024-06-10</td>
+<td>2024-06-12</td>
 <td>3</td>
-<td>115</td>
+<td>95</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">3</td>
-<td>2024-06-10</td>
+<td>2024-06-12</td>
 <td>4</td>
 <td>4</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">4</td>
-<td>2024-06-11</td>
+<td>2024-06-13</td>
 <td>0</td>
 <td>3</td>
 </tr>
@@ -1734,43 +1734,43 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <td>...</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">183</td>
-<td>2024-08-07</td>
-<td>4</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">184</td>
-<td>2024-08-08</td>
-<td>3</td>
-<td>22</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">185</td>
-<td>2024-08-08</td>
-<td>4</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">186</td>
+<td data-quarto-table-cell-role="th">150</td>
 <td>2024-08-09</td>
 <td>3</td>
 <td>22</td>
 </tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">187</td>
+<tr class="even">
+<td data-quarto-table-cell-role="th">151</td>
 <td>2024-08-09</td>
+<td>4</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">153</td>
+<td>2024-08-10</td>
+<td>4</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">152</td>
+<td>2024-08-10</td>
+<td>3</td>
+<td>14</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">154</td>
+<td>2024-08-11</td>
 <td>4</td>
 <td>1</td>
 </tr>
 </tbody>
 </table>
 
-<p>188 rows × 3 columns</p>
+<p>155 rows × 3 columns</p>
 </div>
 </div>
 </div>
-<div id="67b416b2" class="cell" data-execution_count="26">
+<div id="03888722" class="cell" data-execution_count="26">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>feed.summarise_trips(to_days<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <div>
@@ -1801,27 +1801,27 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <tr class="even">
 <td data-quarto-table-cell-role="th">1</td>
 <td>monday</td>
-<td>1</td>
-<td>816</td>
-<td>816.0</td>
-<td>816.0</td>
-<td>816</td>
+<td>3</td>
+<td>10533</td>
+<td>4470.0</td>
+<td>2916.0</td>
+<td>1563</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2</td>
 <td>monday</td>
-<td>3</td>
-<td>10534</td>
-<td>5143.0</td>
-<td>3649.0</td>
-<td>1563</td>
+<td>4</td>
+<td>231</td>
+<td>175.0</td>
+<td>156.0</td>
+<td>156</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">3</td>
-<td>monday</td>
+<td>tuesday</td>
 <td>4</td>
 <td>231</td>
-<td>181.0</td>
+<td>175.0</td>
 <td>156.0</td>
 <td>156</td>
 </tr>
@@ -1829,9 +1829,9 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <td data-quarto-table-cell-role="th">4</td>
 <td>tuesday</td>
 <td>3</td>
-<td>10534</td>
-<td>5144.0</td>
-<td>3649.0</td>
+<td>10533</td>
+<td>4470.0</td>
+<td>2916.0</td>
 <td>1563</td>
 </tr>
 <tr class="even">
@@ -1845,7 +1845,7 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">6</td>
-<td>tuesday</td>
+<td>wednesday</td>
 <td>4</td>
 <td>231</td>
 <td>181.0</td>
@@ -1854,7 +1854,7 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">7</td>
-<td>tuesday</td>
+<td>wednesday</td>
 <td>1</td>
 <td>816</td>
 <td>816.0</td>
@@ -1863,25 +1863,25 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">8</td>
-<td>tuesday</td>
-<td>2</td>
-<td>12</td>
-<td>12.0</td>
-<td>12.0</td>
-<td>12</td>
+<td>wednesday</td>
+<td>0</td>
+<td>986</td>
+<td>986.0</td>
+<td>986.0</td>
+<td>986</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">9</td>
 <td>wednesday</td>
 <td>3</td>
-<td>10534</td>
-<td>5143.0</td>
+<td>10533</td>
+<td>5015.0</td>
 <td>3649.0</td>
 <td>1563</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">10</td>
-<td>wednesday</td>
+<td>thursday</td>
 <td>4</td>
 <td>231</td>
 <td>181.0</td>
@@ -1890,42 +1890,24 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">11</td>
-<td>wednesday</td>
-<td>0</td>
-<td>986</td>
-<td>986.0</td>
-<td>986.0</td>
-<td>986</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">12</td>
-<td>wednesday</td>
-<td>1</td>
-<td>816</td>
-<td>816.0</td>
-<td>816.0</td>
-<td>816</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">13</td>
-<td>thursday</td>
-<td>4</td>
-<td>231</td>
-<td>181.0</td>
-<td>156.0</td>
-<td>156</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">14</td>
 <td>thursday</td>
 <td>3</td>
-<td>10534</td>
+<td>10533</td>
 <td>5143.0</td>
 <td>3649.0</td>
 <td>1563</td>
 </tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">12</td>
+<td>thursday</td>
+<td>0</td>
+<td>986</td>
+<td>986.0</td>
+<td>986.0</td>
+<td>986</td>
+</tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">15</td>
+<td data-quarto-table-cell-role="th">13</td>
 <td>thursday</td>
 <td>1</td>
 <td>816</td>
@@ -1934,16 +1916,16 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <td>816</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">16</td>
+<td data-quarto-table-cell-role="th">14</td>
 <td>thursday</td>
-<td>0</td>
-<td>986</td>
-<td>986.0</td>
-<td>986.0</td>
-<td>986</td>
+<td>2</td>
+<td>12</td>
+<td>12.0</td>
+<td>12.0</td>
+<td>12</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">17</td>
+<td data-quarto-table-cell-role="th">15</td>
 <td>friday</td>
 <td>0</td>
 <td>986</td>
@@ -1952,7 +1934,7 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <td>986</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">18</td>
+<td data-quarto-table-cell-role="th">16</td>
 <td>friday</td>
 <td>4</td>
 <td>231</td>
@@ -1961,94 +1943,67 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <td>156</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">19</td>
+<td data-quarto-table-cell-role="th">17</td>
 <td>friday</td>
 <td>3</td>
-<td>10534</td>
+<td>10533</td>
 <td>5128.0</td>
 <td>3649.0</td>
 <td>1563</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">20</td>
-<td>friday</td>
-<td>1</td>
-<td>816</td>
-<td>816.0</td>
-<td>816.0</td>
-<td>816</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">21</td>
+<td data-quarto-table-cell-role="th">18</td>
 <td>saturday</td>
 <td>4</td>
 <td>231</td>
-<td>175.0</td>
+<td>173.0</td>
 <td>156.0</td>
 <td>156</td>
 </tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">22</td>
+<tr class="even">
+<td data-quarto-table-cell-role="th">19</td>
 <td>saturday</td>
 <td>3</td>
-<td>10534</td>
+<td>10533</td>
+<td>4078.0</td>
+<td>2182.0</td>
+<td>946</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">20</td>
+<td>saturday</td>
+<td>0</td>
+<td>986</td>
+<td>986.0</td>
+<td>986.0</td>
+<td>986</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">21</td>
+<td>sunday</td>
+<td>0</td>
+<td>986</td>
+<td>986.0</td>
+<td>986.0</td>
+<td>986</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">22</td>
+<td>sunday</td>
+<td>3</td>
+<td>10533</td>
 <td>4470.0</td>
 <td>2916.0</td>
 <td>1563</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">23</td>
-<td>saturday</td>
-<td>1</td>
-<td>816</td>
-<td>816.0</td>
-<td>816.0</td>
-<td>816</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">24</td>
-<td>saturday</td>
-<td>0</td>
-<td>986</td>
-<td>986.0</td>
-<td>986.0</td>
-<td>986</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">25</td>
-<td>sunday</td>
-<td>1</td>
-<td>816</td>
-<td>816.0</td>
-<td>816.0</td>
-<td>816</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">26</td>
-<td>sunday</td>
-<td>0</td>
-<td>986</td>
-<td>986.0</td>
-<td>986.0</td>
-<td>986</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">27</td>
 <td>sunday</td>
 <td>4</td>
 <td>231</td>
-<td>175.0</td>
+<td>173.0</td>
 <td>156.0</td>
 <td>156</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">28</td>
-<td>sunday</td>
-<td>3</td>
-<td>10534</td>
-<td>4470.0</td>
-<td>2916.0</td>
-<td>1563</td>
 </tr>
 </tbody>
 </table>
@@ -2060,7 +2015,7 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 </div>
 </div>
 <p>From these summaries we can also create visualisations, such as a timeseries plot of trip counts by route type and date:</p>
-<div id="65a3ec8f" class="cell" data-execution_count="27">
+<div id="8be45694" class="cell" data-execution_count="27">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sort by route_type and date to order plot correctly</span></span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> feed.summarise_trips().sort_values([<span class="st">"route_type"</span>, <span class="st">"date"</span>])</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>fig <span class="op">=</span> px.line(</span>
@@ -2079,9 +2034,9 @@ No calendar found for /tmp/tmp8erp864p/intercity_rail_gtfs.zip. Creating from ca
 <span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>fig.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<div>                            <div id="922a3025-b925-4b54-98f7-589cd92e109c" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("922a3025-b925-4b54-98f7-589cd92e109c")) {                    Plotly.newPlot(                        "922a3025-b925-4b54-98f7-589cd92e109c",                        [{"hovertemplate":"route_type=0\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"0","line":{"color":"#636efa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"0","orientation":"v","showlegend":true,"x":["2024-06-10T00:00:00","2024-06-11T00:00:00","2024-06-12T00:00:00","2024-06-13T00:00:00","2024-06-14T00:00:00","2024-06-15T00:00:00","2024-06-16T00:00:00","2024-06-17T00:00:00","2024-06-18T00:00:00","2024-06-19T00:00:00","2024-06-20T00:00:00","2024-06-21T00:00:00","2024-06-22T00:00:00","2024-06-23T00:00:00","2024-06-24T00:00:00","2024-06-25T00:00:00","2024-06-26T00:00:00","2024-06-27T00:00:00","2024-06-28T00:00:00","2024-06-29T00:00:00","2024-06-30T00:00:00","2024-07-01T00:00:00","2024-07-02T00:00:00","2024-07-03T00:00:00","2024-07-04T00:00:00","2024-07-05T00:00:00","2024-07-06T00:00:00","2024-07-07T00:00:00","2024-07-08T00:00:00","2024-07-09T00:00:00","2024-07-10T00:00:00","2024-07-11T00:00:00","2024-07-12T00:00:00"],"xaxis":"x","y":[986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=1\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"1","line":{"color":"#EF553B","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"1","orientation":"v","showlegend":true,"x":["2024-06-10T00:00:00","2024-06-11T00:00:00","2024-06-12T00:00:00","2024-06-13T00:00:00","2024-06-14T00:00:00","2024-06-15T00:00:00","2024-06-16T00:00:00","2024-06-17T00:00:00","2024-06-18T00:00:00","2024-06-19T00:00:00","2024-06-20T00:00:00","2024-06-21T00:00:00","2024-06-22T00:00:00","2024-06-23T00:00:00","2024-06-24T00:00:00","2024-06-25T00:00:00","2024-06-26T00:00:00","2024-06-27T00:00:00","2024-06-28T00:00:00","2024-06-29T00:00:00","2024-06-30T00:00:00","2024-07-01T00:00:00","2024-07-02T00:00:00","2024-07-03T00:00:00","2024-07-04T00:00:00","2024-07-05T00:00:00","2024-07-06T00:00:00","2024-07-07T00:00:00","2024-07-08T00:00:00","2024-07-09T00:00:00","2024-07-10T00:00:00","2024-07-11T00:00:00"],"xaxis":"x","y":[816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816,816],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=2\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"2","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"2","orientation":"v","showlegend":true,"x":["2024-06-11T00:00:00"],"xaxis":"x","y":[12],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=3\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"3","line":{"color":"#ab63fa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"3","orientation":"v","showlegend":true,"x":["2024-06-10T00:00:00","2024-06-11T00:00:00","2024-06-12T00:00:00","2024-06-13T00:00:00","2024-06-14T00:00:00","2024-06-15T00:00:00","2024-06-16T00:00:00","2024-06-17T00:00:00","2024-06-18T00:00:00","2024-06-19T00:00:00","2024-06-20T00:00:00","2024-06-21T00:00:00","2024-06-22T00:00:00","2024-06-23T00:00:00","2024-06-24T00:00:00","2024-06-25T00:00:00","2024-06-26T00:00:00","2024-06-27T00:00:00","2024-06-28T00:00:00","2024-06-29T00:00:00","2024-06-30T00:00:00","2024-07-01T00:00:00","2024-07-02T00:00:00","2024-07-03T00:00:00","2024-07-04T00:00:00","2024-07-05T00:00:00","2024-07-06T00:00:00","2024-07-07T00:00:00","2024-07-08T00:00:00","2024-07-09T00:00:00","2024-07-10T00:00:00","2024-07-11T00:00:00","2024-07-12T00:00:00","2024-07-13T00:00:00","2024-07-14T00:00:00","2024-07-15T00:00:00","2024-07-16T00:00:00","2024-07-17T00:00:00","2024-07-18T00:00:00","2024-07-19T00:00:00","2024-07-20T00:00:00","2024-07-21T00:00:00","2024-07-22T00:00:00","2024-07-23T00:00:00","2024-07-24T00:00:00","2024-07-25T00:00:00","2024-07-26T00:00:00","2024-07-27T00:00:00","2024-07-28T00:00:00","2024-07-29T00:00:00","2024-07-30T00:00:00","2024-07-31T00:00:00","2024-08-01T00:00:00","2024-08-02T00:00:00","2024-08-03T00:00:00","2024-08-04T00:00:00","2024-08-05T00:00:00","2024-08-06T00:00:00","2024-08-07T00:00:00","2024-08-08T00:00:00","2024-08-09T00:00:00"],"xaxis":"x","y":[10529,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,10534,3688,3688,3688,3688,3683,3683,3683,3649,3649,3649,3649,3649,3649,3649,2182,2182,2182,2182,2182,2182,2046,2046,2046,2046,2046,2046,2046,2046,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=4\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"4","line":{"color":"#FFA15A","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"4","orientation":"v","showlegend":true,"x":["2024-06-10T00:00:00","2024-06-11T00:00:00","2024-06-12T00:00:00","2024-06-13T00:00:00","2024-06-14T00:00:00","2024-06-15T00:00:00","2024-06-16T00:00:00","2024-06-17T00:00:00","2024-06-18T00:00:00","2024-06-19T00:00:00","2024-06-20T00:00:00","2024-06-21T00:00:00","2024-06-22T00:00:00","2024-06-23T00:00:00","2024-06-24T00:00:00","2024-06-25T00:00:00","2024-06-26T00:00:00","2024-06-27T00:00:00","2024-06-28T00:00:00","2024-06-29T00:00:00","2024-06-30T00:00:00","2024-07-01T00:00:00","2024-07-02T00:00:00","2024-07-03T00:00:00","2024-07-04T00:00:00","2024-07-05T00:00:00","2024-07-06T00:00:00","2024-07-07T00:00:00","2024-07-08T00:00:00","2024-07-09T00:00:00","2024-07-10T00:00:00","2024-07-11T00:00:00","2024-07-12T00:00:00","2024-07-13T00:00:00","2024-07-14T00:00:00","2024-07-15T00:00:00","2024-07-16T00:00:00","2024-07-17T00:00:00","2024-07-18T00:00:00","2024-07-19T00:00:00","2024-07-20T00:00:00","2024-07-21T00:00:00","2024-07-22T00:00:00","2024-07-23T00:00:00","2024-07-24T00:00:00","2024-07-25T00:00:00","2024-07-26T00:00:00","2024-07-27T00:00:00","2024-07-28T00:00:00","2024-07-29T00:00:00","2024-07-30T00:00:00","2024-07-31T00:00:00","2024-08-01T00:00:00","2024-08-02T00:00:00","2024-08-03T00:00:00","2024-08-04T00:00:00","2024-08-05T00:00:00","2024-08-06T00:00:00","2024-08-07T00:00:00","2024-08-08T00:00:00","2024-08-09T00:00:00"],"xaxis":"x","y":[231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"date"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"trip_count"},"rangemode":"tozero","tickformat":",.0f"},"legend":{"title":{"text":"route_type"},"tracegroupgap":0},"title":{"text":"Trip Counts by Route Type and Date Across All Input GTFS Feeds","font":{"family":"Arial"}},"font":{"family":"Arial"}},                        {"responsive": true}                    ).then(function(){
+<div>                            <div id="6da3e3a0-7ee3-47b7-b0da-38014cb4b1de" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("6da3e3a0-7ee3-47b7-b0da-38014cb4b1de")) {                    Plotly.newPlot(                        "6da3e3a0-7ee3-47b7-b0da-38014cb4b1de",                        [{"hovertemplate":"route_type=0\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"0","line":{"color":"#636efa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"0","orientation":"v","showlegend":true,"x":["2024-06-12T00:00:00","2024-06-13T00:00:00","2024-06-14T00:00:00","2024-06-15T00:00:00","2024-06-16T00:00:00","2024-06-17T00:00:00","2024-06-18T00:00:00","2024-06-19T00:00:00","2024-06-20T00:00:00","2024-06-21T00:00:00","2024-06-22T00:00:00","2024-06-23T00:00:00","2024-06-24T00:00:00","2024-06-25T00:00:00","2024-06-26T00:00:00","2024-06-27T00:00:00","2024-06-28T00:00:00","2024-06-29T00:00:00","2024-06-30T00:00:00","2024-07-01T00:00:00","2024-07-02T00:00:00","2024-07-03T00:00:00","2024-07-04T00:00:00","2024-07-05T00:00:00","2024-07-06T00:00:00","2024-07-07T00:00:00","2024-07-08T00:00:00","2024-07-09T00:00:00","2024-07-10T00:00:00","2024-07-11T00:00:00","2024-07-12T00:00:00"],"xaxis":"x","y":[986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986,986],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=1\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"1","line":{"color":"#EF553B","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"1","orientation":"v","showlegend":true,"x":["2024-06-12T00:00:00","2024-06-13T00:00:00"],"xaxis":"x","y":[816,816],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=2\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"2","line":{"color":"#00cc96","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"2","orientation":"v","showlegend":true,"x":["2024-06-13T00:00:00"],"xaxis":"x","y":[12],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=3\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"3","line":{"color":"#ab63fa","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"3","orientation":"v","showlegend":true,"x":["2024-06-12T00:00:00","2024-06-13T00:00:00","2024-06-14T00:00:00","2024-06-15T00:00:00","2024-06-16T00:00:00","2024-06-17T00:00:00","2024-06-18T00:00:00","2024-06-19T00:00:00","2024-06-20T00:00:00","2024-06-21T00:00:00","2024-06-22T00:00:00","2024-06-23T00:00:00","2024-06-24T00:00:00","2024-06-25T00:00:00","2024-06-26T00:00:00","2024-06-27T00:00:00","2024-06-28T00:00:00","2024-06-29T00:00:00","2024-06-30T00:00:00","2024-07-01T00:00:00","2024-07-02T00:00:00","2024-07-03T00:00:00","2024-07-04T00:00:00","2024-07-05T00:00:00","2024-07-06T00:00:00","2024-07-07T00:00:00","2024-07-08T00:00:00","2024-07-09T00:00:00","2024-07-10T00:00:00","2024-07-11T00:00:00","2024-07-12T00:00:00","2024-07-13T00:00:00","2024-07-14T00:00:00","2024-07-15T00:00:00","2024-07-16T00:00:00","2024-07-17T00:00:00","2024-07-18T00:00:00","2024-07-19T00:00:00","2024-07-20T00:00:00","2024-07-21T00:00:00","2024-07-22T00:00:00","2024-07-23T00:00:00","2024-07-24T00:00:00","2024-07-25T00:00:00","2024-07-26T00:00:00","2024-07-27T00:00:00","2024-07-28T00:00:00","2024-07-29T00:00:00","2024-07-30T00:00:00","2024-07-31T00:00:00","2024-08-01T00:00:00","2024-08-02T00:00:00","2024-08-03T00:00:00","2024-08-04T00:00:00","2024-08-05T00:00:00","2024-08-06T00:00:00","2024-08-07T00:00:00","2024-08-08T00:00:00","2024-08-09T00:00:00","2024-08-10T00:00:00"],"xaxis":"x","y":[9380,10533,10533,10533,10533,10533,10533,10533,10533,10533,10533,10533,10533,10533,10533,10533,10533,3687,3687,3687,3687,3687,3687,3683,3649,3649,3649,3649,3649,3649,3649,2182,2182,2182,2182,2182,2182,2046,2046,2046,2046,2046,2046,2046,2046,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,1563,946],"yaxis":"y","type":"scatter"},{"hovertemplate":"route_type=4\u003cbr\u003edate=%{x}\u003cbr\u003etrip_count=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"4","line":{"color":"#FFA15A","dash":"solid"},"marker":{"symbol":"circle"},"mode":"lines","name":"4","orientation":"v","showlegend":true,"x":["2024-06-12T00:00:00","2024-06-13T00:00:00","2024-06-14T00:00:00","2024-06-15T00:00:00","2024-06-16T00:00:00","2024-06-17T00:00:00","2024-06-18T00:00:00","2024-06-19T00:00:00","2024-06-20T00:00:00","2024-06-21T00:00:00","2024-06-22T00:00:00","2024-06-23T00:00:00","2024-06-24T00:00:00","2024-06-25T00:00:00","2024-06-26T00:00:00","2024-06-27T00:00:00","2024-06-28T00:00:00","2024-06-29T00:00:00","2024-06-30T00:00:00","2024-07-01T00:00:00","2024-07-02T00:00:00","2024-07-03T00:00:00","2024-07-04T00:00:00","2024-07-05T00:00:00","2024-07-06T00:00:00","2024-07-07T00:00:00","2024-07-08T00:00:00","2024-07-09T00:00:00","2024-07-10T00:00:00","2024-07-11T00:00:00","2024-07-12T00:00:00","2024-07-13T00:00:00","2024-07-14T00:00:00","2024-07-15T00:00:00","2024-07-16T00:00:00","2024-07-17T00:00:00","2024-07-18T00:00:00","2024-07-19T00:00:00","2024-07-20T00:00:00","2024-07-21T00:00:00","2024-07-22T00:00:00","2024-07-23T00:00:00","2024-07-24T00:00:00","2024-07-25T00:00:00","2024-07-26T00:00:00","2024-07-27T00:00:00","2024-07-28T00:00:00","2024-07-29T00:00:00","2024-07-30T00:00:00","2024-07-31T00:00:00","2024-08-01T00:00:00","2024-08-02T00:00:00","2024-08-03T00:00:00","2024-08-04T00:00:00","2024-08-05T00:00:00","2024-08-06T00:00:00","2024-08-07T00:00:00","2024-08-08T00:00:00","2024-08-09T00:00:00","2024-08-10T00:00:00","2024-08-11T00:00:00"],"xaxis":"x","y":[231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,231,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156,156],"yaxis":"y","type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"date"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"trip_count"},"rangemode":"tozero","tickformat":",.0f"},"legend":{"title":{"text":"route_type"},"tracegroupgap":0},"title":{"text":"Trip Counts by Route Type and Date Across All Input GTFS Feeds","font":{"family":"Arial"}},"font":{"family":"Arial"}},                        {"responsive": true}                    ).then(function(){
                             
-var gd = document.getElementById('922a3025-b925-4b54-98f7-589cd92e109c');
+var gd = document.getElementById('6da3e3a0-7ee3-47b7-b0da-38014cb4b1de');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -2112,12 +2067,12 @@ if (outputEl) {{
 <h2 class="anchored" data-anchor-id="clean-feed">Clean Feed</h2>
 <p>We can attempt to remove common issues with GTFS feeds by running the <code>clean_feeds()</code> method. This may remove problems associated with trips, routes or where the specification is violated.</p>
 <div class="scrolling">
-<div id="156c0bf0" class="cell" data-execution_count="28">
+<div id="7d414379" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>feed.clean_feeds()</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>feed.is_valid(validation_kwargs<span class="op">=</span>{<span class="st">"far_stops"</span>: <span class="va">False</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Cleaning GTFS from path /tmp/tmp8erp864p/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Cleaning GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Cleaning GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.54it/s]Cleaning GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.54it/s]
-  0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmp8erp864p/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Validating GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.38it/s]Validating GTFS from path /tmp/tmp8erp864p/rtm_gtfs.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.38it/s]</code></pre>
+<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Cleaning GTFS from path /tmp/tmphr4_iv0c/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Cleaning GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Cleaning GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.54it/s]Cleaning GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:00&lt;00:00,  2.54it/s]
+  0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmphr4_iv0c/intercity_rail_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Validating GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Validating GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.39it/s]Validating GTFS from path /tmp/tmphr4_iv0c/rtm_gtfs.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.39it/s]</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>KeyError. Feed was not cleaned.</code></pre>
@@ -2144,7 +2099,7 @@ if (outputEl) {{
 <td>Unrecognized column feed_id</td>
 <td>feed_info</td>
 <td>[]</td>
-<td>/tmp/tmp8erp864p/intercity_rail_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/intercity_rail_gtfs.zip</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">1</td>
@@ -2152,7 +2107,7 @@ if (outputEl) {{
 <td>Unrecognized column conv_rev</td>
 <td>feed_info</td>
 <td>[]</td>
-<td>/tmp/tmp8erp864p/intercity_rail_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/intercity_rail_gtfs.zip</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2</td>
@@ -2160,7 +2115,7 @@ if (outputEl) {{
 <td>Unrecognized column plan_rev</td>
 <td>feed_info</td>
 <td>[]</td>
-<td>/tmp/tmp8erp864p/intercity_rail_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/intercity_rail_gtfs.zip</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">3</td>
@@ -2168,7 +2123,7 @@ if (outputEl) {{
 <td>Repeated pair (trip_id, departure_time)</td>
 <td>stop_times</td>
 <td>[236, 239, 241, 243, 245, 248, 251, 253, 254, ...</td>
-<td>/tmp/tmp8erp864p/rtm_gtfs.zip</td>
+<td>/tmp/tmphr4_iv0c/rtm_gtfs.zip</td>
 </tr>
 </tbody>
 </table>
@@ -2194,7 +2149,7 @@ if (outputEl) {{
 </ol>
 </div>
 <div id="tabset-11-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-11-3-tab">
-<div id="6b95d82d" class="cell" data-execution_count="29">
+<div id="e558e096" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>filtered_pth <span class="op">=</span> os.path.join(tmp_path.name, <span class="st">"filtered_feed"</span>)</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    os.mkdir(filtered_pth)</span>
@@ -2202,17 +2157,17 @@ if (outputEl) {{
 <span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
 <span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>feed.save_feeds(filtered_pth, overwrite<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Saving at /tmp/tmp8erp864p/filtered_feed/intercity_rail_gtfs_new.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Saving at /tmp/tmp8erp864p/filtered_feed/rtm_gtfs_new.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Saving at /tmp/tmp8erp864p/filtered_feed/rtm_gtfs_new.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.87it/s]Saving at /tmp/tmp8erp864p/filtered_feed/rtm_gtfs_new.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.87it/s]</code></pre>
+<pre><code>  0%|          | 0/2 [00:00&lt;?, ?it/s]Saving at /tmp/tmphr4_iv0c/filtered_feed/intercity_rail_gtfs_new.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]Saving at /tmp/tmphr4_iv0c/filtered_feed/rtm_gtfs_new.zip:   0%|          | 0/2 [00:00&lt;?, ?it/s]           Saving at /tmp/tmphr4_iv0c/filtered_feed/rtm_gtfs_new.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.83it/s]Saving at /tmp/tmphr4_iv0c/filtered_feed/rtm_gtfs_new.zip: 100%|██████████| 2/2 [00:01&lt;00:00,  1.83it/s]</code></pre>
 </div>
 </div>
 <p>Check filtered file size</p>
-<div id="8599c03b" class="cell" data-execution_count="30">
+<div id="75d2698b" class="cell" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> subprocess.run(</span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"du"</span>, <span class="st">"-sh"</span>, filtered_pth], capture_output<span class="op">=</span><span class="va">True</span>, text<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>filtered_size <span class="op">=</span> out.stdout.strip().split(<span class="st">"</span><span class="ch">\t</span><span class="st">"</span>)[<span class="dv">0</span>]</span>
 <span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"After filtering, feed size reduced from </span><span class="sc">{</span>size_out<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span>filtered_size<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>After filtering, feed size reduced from 4.7M to 1.6M</code></pre>
+<pre><code>After filtering, feed size reduced from 4.6M to 1.6M</code></pre>
 </div>
 </div>
 </div>
