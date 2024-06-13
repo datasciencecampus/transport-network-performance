@@ -52,27 +52,27 @@ These docs are structured in accordance with the [Diátaxis][diataxis] framework
 <div class="grid-item item1 jumbotron">
 <p class="jumbotron-icon">🏁</p>
 <p>Want to get up and running with `transport_performance` quickly?</p>
-<a class="btn btn-primary btn-lg" href="./docs/getting_started/" role="button">Getting Started</a>
+<a class="btn btn-primary btn-lg" href="./docs/getting_started/index.html" role="button">Getting Started</a>
 </div>
 <div class="grid-item item2 jumbotron">
 <p class="jumbotron-icon">🔎</p>
 <p>Need more details on the methods/tools used within `transport_performance`?</p>
-<a class="btn btn-primary btn-lg" href="./docs/explanation" role="button">Explanation</a>
+<a class="btn btn-primary btn-lg" href="./docs/explanation/index.html" role="button">Explanation</a>
 </div>
 <div class="grid-item item3 jumbotron">
 <p class="jumbotron-icon">🧭</p>
 <p>Looking for guidance on how to get something done (e.g. find input data)?</p>
-<a class="btn btn-primary btn-lg" href="./docs/how_to" role="button">How-To</a>
+<a class="btn btn-primary btn-lg" href="./docs/how_to/index.html" role="button">How-To</a>
 </div>
 <div class="grid-item item4 jumbotron">
 <p class="jumbotron-icon">📝</p>
 <p>Interested in learning how to use `transport_performance` by examples?</p>
-<a class="btn btn-primary btn-lg" href="./docs/tutorials" role="button">Tutorials</a>
+<a class="btn btn-primary btn-lg" href="./docs/tutorials/index.html" role="button">Tutorials</a>
 </div>
 <div class="grid-item item5 jumbotron">
 <p class="jumbotron-icon">📖</p>
 <p>Requiring a technical reference covering the `transport_performance` API?</p>
-<a class="btn btn-primary btn-lg" href="./docs/reference" role="button">API reference</a>
+<a class="btn btn-primary btn-lg" href="./docs/reference/index.html" role="button">API reference</a>
 </div>
 <div class="grid-item item6 jumbotron">
 <p class="jumbotron-icon">🛠️</p>
