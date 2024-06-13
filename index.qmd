@@ -26,9 +26,8 @@ which can make it difficult to understand these differences. This is typically
 because of computational complexity, transparency (closed-source and paid
 services), and data consistency (format and availability).
 
-To start resolving these issues, the `transport_performance` Python package
-bringing togethers a range of open source tools and research to allow everyone
-to:
+The `transport_performance` Python package helps to reduce barriers to
+transport analysis. It allows developers to:
 
 - Define an [urban centre] boundary based on population density;
 - Inspect, clean, and process [public transit timetable data][gtfs] and
@@ -37,11 +36,9 @@ to:
 [transport metrics][eurostat-paper].
 
 ::: {.callout-tip}
-
-Check out the corresponding [Docker image][tp-docker] 🐳!
-This aims to simplify both the dependency installation and end-to-end use of
+Check out the [transport performance Docker image][tp-docker] 🐳!
+This aims to simplify the dependency installation and end-to-end use of
 `transport_performance`.
-
 :::
 
 ## Where do I go now?
@@ -85,11 +82,11 @@ These docs are structured in accordance with the [Diátaxis][diataxis] framework
 
 ## Notes on contributing...
 
-We hope that the public, other public sector organisations, and other National
-Statistical Institutes can collaborate and build on this package. This will
-help improve both the national and international comparability of transport
-statistics whilst enabling higher frequency and more timely comparisons. You can
-find the `transport_performance` source code on [GitHub](https://github.com/datasciencecampus/transport-network-performance).
+We hope that the open source and public sector communities will collaborate and
+build on this package. This will help improve both the national and
+international comparability of transport statistics while enabling higher
+frequency and more timely comparisons. You can find the `transport_performance`
+source code on [GitHub](https://github.com/datasciencecampus/transport-network-performance).
 
 :::
 
