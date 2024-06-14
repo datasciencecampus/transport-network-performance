@@ -148,7 +148,7 @@ that you have `osmosis` installed for this task.
 
 Define a `filtered_osm_path` object to save the filtered pbf file to.
 
-Use the [`filter_osm()`](../../reference/osm_utils.qmd#transport_performance.osm.osm_utils.filter_osm)
+Use the [`filter_osm()`](/docs/reference/osm_utils.qmd#transport_performance.osm.osm_utils.filter_osm)
 function to restrict the PBF file to the extent of `BBOX_LIST`. Inspect the API
 reference or use `help(filter_osm)` for information on all available parameters.
 
@@ -218,7 +218,7 @@ tag IDs that are available.
 
 ### Task
 
-Use the [`validate_osm.FindIds`](../../reference/validate_osm.qmd#transport_performance.osm.validate_osm.FindIds)
+Use the [`validate_osm.FindIds`](/docs/reference/validate_osm.qmd#transport_performance.osm.validate_osm.FindIds)
 class to discover the full list of IDs within the pbf file saved at
 `filtered_osm_path`. Assign the class instance to `id_finder`.
 
@@ -294,7 +294,7 @@ forward to visualise the points on a map.
 
 ### Task
 
-Assign [`validate_osm.FindLocation`](../../reference/validate_osm.qmd#transport_performance.osm.validate_osm.FindLocations)
+Assign [`validate_osm.FindLocations`](/docs/reference/validate_osm.qmd#transport_performance.osm.validate_osm.FindLocations)
 to an instance called `loc_finder`. You will need to point this class to the
 same filtered PBF file as you used previously.
 
