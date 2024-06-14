@@ -49,7 +49,7 @@ urban centre public transit networks using `transport_performance`.
 The process starts with urban centre detection. This definition was created by
 Eurostat, and represents high density population clusters (see the [Eurostat
 level 1 degree of urbanisation methodology document][eurostat-uc] for more
-details). In short, it is a cluster of contiguous 1Km<sup>2</sup> grid cells
+details). In short, it is a cluster of contiguous 1 Km<sup>2</sup> grid cells
 with a density of at least 1,500 inhabitants/Km<sup>2</sup> and a total
 population of at least 50,000. This definition is advantageous since it can be
 applied consistently internationally.
