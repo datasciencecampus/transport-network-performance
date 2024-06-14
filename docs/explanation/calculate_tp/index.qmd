@@ -38,7 +38,18 @@ performance by following the overall approach shown in @fig-tp-methods.
 
 ::: {#fig-tp-methods layout-nrow=1}
 
-![](tp_process_overview.PNG)
+```{mermaid}
+flowchart LR
+    A[Urban centre\ndetection] --> B[Population\npreprocessing]
+    A --> C[Public transit schedule\npreprocessing]
+    A --> D[OpenStreetMap\npreprocessing]
+    B --> E
+    C --> E
+    D --> E
+    E[Transport network\nrouting] --> F[Calculate transport\nperformance]
+
+```
+
 
 An overview of a methodology for calculating the transport performance of
 urban centre public transit networks using `transport_performance`.
