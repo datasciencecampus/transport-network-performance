@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="An overview of how we used transport_performance to calculate the transport performance of urban centre public transit networks.">
+<meta name="description" content="An overview of using the transport_performance package to calculate the transport performance of urban centre public transit networks.">
 
-<title>Transport Performance - 2. Transport Performance: An Example</title>
+<title>Transport Performance - 2. Transport Performance: An Overview</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -68,6 +68,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="../../../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../../../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../../../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="../../../docs/_static/styles.css">
@@ -148,7 +151,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../docs/explanation/index.html">Explanation</a></li><li class="breadcrumb-item"><a href="../../../docs/explanation/calculate_tp/index.html">2. Transport Performance: An Example</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../docs/explanation/index.html">Explanation</a></li><li class="breadcrumb-item"><a href="../../../docs/explanation/calculate_tp/index.html">2. Transport Performance: An Overview</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -192,7 +195,7 @@ ul.task-list li input[type="checkbox"] {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../docs/explanation/calculate_tp/index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">2. Transport Performance: An Example</span></a>
+ <span class="menu-text">2. Transport Performance: An Overview</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -397,9 +400,9 @@ ul.task-list li input[type="checkbox"] {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../docs/explanation/index.html">Explanation</a></li><li class="breadcrumb-item"><a href="../../../docs/explanation/calculate_tp/index.html">2. Transport Performance: An Example</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../docs/explanation/index.html">Explanation</a></li><li class="breadcrumb-item"><a href="../../../docs/explanation/calculate_tp/index.html">2. Transport Performance: An Overview</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">2. Transport Performance: An Example</h1>
+<h1 class="title">2. Transport Performance: An Overview</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Explanation</div>
   </div>
@@ -407,7 +410,7 @@ ul.task-list li input[type="checkbox"] {
 
 <div>
   <div class="description">
-    An overview of how we used <code>transport_performance</code> to calculate the transport performance of urban centre public transit networks.
+    <p>An overview of using the <code>transport_performance</code> package to calculate the transport performance of urban centre public transit networks.</p>
   </div>
 </div>
 
@@ -419,7 +422,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">2024-05-16</p>
+      <p class="date-modified">2024-06-12</p>
     </div>
   </div>
     
@@ -430,7 +433,78 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>🚧 Page under construction 🚧</p>
+<p>This page discusses the main methods and tools used within the package and provides links to additional resources for further reading. In particular, this page presents a methodology for assessing the performance of urban centre public transit networks using <code>transport_performance</code>. Although, it is possible to modify and extend the approach presented to suit the requirements of most transport analyses including:</p>
+<ul>
+<li>Analysis area (no strict requirement on using <a href="https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Urban_centre">Eurostat’s urban centre definition</a>)</li>
+<li>Date of analysis</li>
+<li>Time of day</li>
+<li>Transport modes such as walking, cycling, public transit, private car or a combination of these modes</li>
+<li>Maximum journey duration</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This page does not cover retrieving input data or <code>transport_performance</code> API usage. See the <a href="../../../docs/how_to/index.html">how-to</a>, <a href="../../../docs/tutorials/index.html">tutorials</a>, and <a href="../../../docs/reference/index.html">API reference</a> pages for more information on these aspects. It should be noted that <code>transport_performance</code> will work with any custom boundary provided, in which case urban centre detection will not be required. Also that public transit schedule preprocessing is not required for modalities other than public transit.</p>
+</div>
+</div>
+<p><code>transport_performance</code> can be used to assess urban centre public transit performance by following the overall approach shown in <a href="#fig-tp-methods" class="quarto-xref">Figure&nbsp;1</a>.</p>
+<div id="fig-tp-methods" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-tp-methods-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="cell quarto-layout-cell" style="flex-basis: 100.0%;justify-content: flex-start;">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    A[Urban centre\ndetection] --&gt; B[Population\npreprocessing]
+    A --&gt; C[Public transit schedule\npreprocessing]
+    A --&gt; D[OpenStreetMap\npreprocessing]
+    B --&gt; E
+    C --&gt; E
+    D --&gt; E
+    E[Transport network\nrouting] --&gt; F[Calculate transport\nperformance]
+
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tp-methods-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: An overview of a methodology for calculating the transport performance of urban centre public transit networks using <code>transport_performance</code>.
+</figcaption>
+</figure>
+</div>
+<p>The process starts with urban centre detection. This definition was created by Eurostat, and represents high density population clusters (see the <a href="https://ec.europa.eu/eurostat/documents/3859598/15348338/KS-02-20-499-EN-N.pdf/0d412b58-046f-750b-0f48-7134f1a3a4c2?t=1669111363941#page=35">Eurostat level 1 degree of urbanisation methodology document</a> for more details). In short, it is a cluster of contiguous 1 Km<sup>2</sup> grid cells with a density of at least 1,500 inhabitants/Km<sup>2</sup> and a total population of at least 50,000. This definition is advantageous since it can be applied consistently internationally.</p>
+<p><code>transport_performance</code> currently works with gridded population estimates. Such a data source is the <a href="https://human-settlement.emergency.copernicus.eu/dataToolsOverview.php">Global Human Settlement Layer</a> (GHSL). The <a href="https://human-settlement.emergency.copernicus.eu/download.php?ds=pop">GHSL-POP</a> layer provides high resolution estimates with worldwide coverage. It uses combined satellite imagery and national census data to produce population estimates down to 100 metre grids (see <a href="https://human-settlement.emergency.copernicus.eu/documents/GHSL_Data_Package_2023.pdf?t=1698413418">section 2.5 of the GHSL technical paper</a> for more details). Using <code>transport_performance</code>, it is also possible to reaggregate gridded population estimates (e.g.&nbsp;from 100m to 200m grids) as a balance between achieving granular results and performance at the transport network routing stage.</p>
+<p>When considering public transit performance, schedule data is a core input (for other modalities this step is not required). The widely adopted <a href="https://gtfs.org/schedule/">General Transit Feed Specification (GTFS)</a> data are required for defining the public transit network within <code>transport_performance</code>. This is scheduled data, therefore the effects of delays (such as traffic) are not accounted for in the final transport performance results. <code>transport_performance</code> provides a range of GTFS validation, cleaning, and filtering methods to pre-process the inputs for use during the transport network routing stage.</p>
+<p>The underlying route network is built using <a href="https://www.openstreetmap.org/about">OpenStreetMap</a> (OSM) data. OSM is an open, community-maintained source of map data worldwide. OSM data provides the spatial information about the street network, such as road and pathway locations, speed limits, transport rules and junction locations. With <code>transport_performance</code> it is possible to optimise these data by spatially filtering OSM files to an area of interest (using <a href="https://wiki.openstreetmap.org/wiki/Osmosis">Osmosis</a>). This filtering also removes OSM features that are not required for transport routing (such as buildings and waterways).</p>
+<p>The transport network routing stage calculates the feasible journey travel times over multiple departure times. <code>transport_performance</code> uses <a href="https://r5py.readthedocs.io/en/stable/">R<sup>5</sup>py</a>, to undertake performant transit routing with the <a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2012/01/raptor_alenex.pdf">Round-Based Public Transit Routing engine (RAPTOR)</a>. It is also is highly configurable and caters for a range of transport modalities, including public transit, private car, cycling, and walking. This improves upon the ONS Data Science Campus’ <a href="https://datasciencecampus.ons.gov.uk/using-open-data-to-understand-hyperlocal-differences-in-uk-public-transport-availability/">previous transport modelling work</a> by calculating robust median travel times over many journeys. Calculated travel duration at a single journey departure time can vary significantly, depending on the public transport service availability within the locality of the journey. Travel time statistics are calculated across multiple consecutive journies within a given time window. These statistics are a fairer representation of average journey travel times within a given area. For more details, see <a href="https://zenodo.org/records/7060438">Fink, Klumpenhouwer, Saraiva, Pereira, and Tenkanen (2022)</a> and <a href="https://core.ac.uk/reader/223242270">Conway, Byrd, and van der Linden (2017)</a>.</p>
+<p>The final stage uses the network routing results (travel times) to calculate the transport performance. See the <a href="../../../docs/explanation/what_is_tp/index.html">Transport Performance: A Definition</a> page for more details on this step.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For more information on the known <code>transport_performance</code> package limitations, see the <a href="../../../docs/explanation/limitations/index.html">limitations and caveats</a> page.</p>
+</div>
+</div>
 
 
 
