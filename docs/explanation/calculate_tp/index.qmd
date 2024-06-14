@@ -29,7 +29,10 @@ This page does not cover retrieving input data or `transport_performance` API
 usage. See the [how-to](../../how_to/index.qmd),
 [tutorials](../../tutorials/index.qmd), and
 [API reference](../../reference/index.qmd) pages for more information on these
-aspects.
+aspects. It should be noted that `transport_performance` will work with any
+custom boundary provided, in which case urban centre detection will not be
+required. Also that public transit schedule preprocessing is not required for
+modalities other than public transit.
 
 :::
 
