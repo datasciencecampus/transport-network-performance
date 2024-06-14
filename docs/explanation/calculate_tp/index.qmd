@@ -1,7 +1,7 @@
 ---
 title: "2. Transport Performance: An Overview"
 description: |
-    An overview of how we used `transport_performance` to calculate the
+    An overview of using the `transport_performance` package to calculate the
     transport performance of urban centre public transit networks.
 date-modified: 06/12/2024  # must be in MM/DD/YYYY format
 categories: ["Explanation"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
@@ -9,19 +9,18 @@ toc: true
 date-format: iso
 ---
 
-This page provides an overview of `transport_performance` and how it can be
-used to analyse transport networks. It discusses the main methods and tools
+This page discusses the main methods and tools
 used within the package and provides links to additional resources for further
 reading. In particular, this page presents a methodology for assessing the
 performance of urban centre public transit networks using
 `transport_performance`. Although, it is possible to modify and extend the
-approach presented on this page to suit the requirements of most transport
-analyses including:
+approach presented to suit the requirements of most transport analyses
+including:
 
-- Analysis area (no strict requirement on using urban centres).
+- Analysis area (no strict requirement on using [Eurostat's urban centre definition][urban centre])
 - Date of analysis
 - Time of day
-- Transport modes such as walking, cycling, public transit, private car (can even be multi-modal)
+- Transport modes such as walking, cycling, public transit, private car or a combination of these modes
 - Maximum journey duration
 
 ::: {.callout-note}
@@ -35,7 +34,7 @@ aspects.
 :::
 
 `transport_performance` can be used to assess urban centre public transit
-performance by following main calculation stages as shown in @fig-tp-methods.
+performance by following the overall approach shown in @fig-tp-methods.
 
 ::: {#fig-tp-methods layout-nrow=1}
 
@@ -60,7 +59,7 @@ a data source is the [Global Human Settlement Layer][ghsl] (GHSL). The
 coverage. It uses combined satellite imagery and national census data to
 produce population estimates down to 100 metre grids (see [section 2.5 of the
 GHSL technical paper][ghsl-pop-methods] for more details). Using
-`transport_performance` it is also possible to reaggregate gridded population
+`transport_performance`, it is also possible to reaggregate gridded population
 estimates (e.g. from 100m to 200m grids) as a balance between achieving
 granular results and performance at the transport network routing stage.
 
@@ -74,27 +73,27 @@ accounted for in the final transport performance results.
 filtering methods to pre-process the inputs for use during the transport
 network routing stage.
 
-The underlying road/path network is built using [OpenStreetMap][osm]
+The underlying route network is built using [OpenStreetMap][osm]
 (OSM) data. OSM is an open, community-maintained source of map data worldwide.
 OSM data provides the spatial information about the street network, such as
 road and pathway locations, speed limits, transport rules and junction
 locations. With `transport_performance` it is possible to optimise these data
-by  spatially filtering these the area of interest (using [Osmosis]) and
-removing OSM features
-that are not required for transport routing (such as buildings and waterways).
+by spatially filtering OSM files to an area of interest (using [Osmosis]). This
+filtering also removes OSM features that are not required for transport routing
+(such as buildings and waterways).
 
 The transport network routing stage calculates the feasible journey travel
-times over multiple departure times. This package uses [R<sup>5</sup>py][r5py],
-which is a wrapper of [Conveyal's R<sup>5</sup>][r5] - a highly performant
-transport routing engine based on [RAPTOR (Round-Based Public Transit Routing)][raptor].
+times over multiple departure times. `transport_performance` uses [R<sup>5</sup>py][r5py],
+to undertake performant transit routing with the [Round-Based Public Transit Routing engine (RAPTOR)][raptor].
 It is also is highly configurable and caters for a range of transport modalities,
 including public transit, private car, cycling, and walking. This improves upon
 the ONS Data Science Campus' [previous transport modelling work][dsc-otp] by
-calculating robust median travel times over many journeys. Indicative travel
-times at a single journey departure time can vary significantly, depending on
+calculating robust median travel times over many journeys. Calculated travel
+duration at a single journey departure time can vary significantly, depending on
 the public transport service availability within the locality of the journey.
-Running the model across multiple consecutive journeys produces statistics that
-fairly represent journey travel times within a given area. For more details see
+Travel time statistics are calculated across multiple consecutive journies
+within a given time window. These statistics are a fairer representation of
+average journey travel times within a given area. For more details, see
 [Fink, Klumpenhouwer, Saraiva, Pereira, and Tenkanen (2022)][r5py-paper]
 and [Conway, Byrd, and van der Linden (2017)][r5-paper].
 
@@ -117,9 +116,9 @@ see the [limitations and caveats](../limitations/index.qmd) page.
 [gtfs-overview]: https://gtfs.org/schedule/
 [osm]: https://www.openstreetmap.org/about
 [r5py]: https://r5py.readthedocs.io/en/stable/
-[r5]: https://github.com/conveyal/r5
 [raptor]: https://www.microsoft.com/en-us/research/wp-content/uploads/2012/01/raptor_alenex.pdf
 [r5py-paper]: https://zenodo.org/records/7060438
 [r5-paper]: https://core.ac.uk/reader/223242270
 [dsc-otp]: https://datasciencecampus.ons.gov.uk/using-open-data-to-understand-hyperlocal-differences-in-uk-public-transport-availability/
 [Osmosis]: https://wiki.openstreetmap.org/wiki/Osmosis
+[urban centre]: https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Urban_centre
