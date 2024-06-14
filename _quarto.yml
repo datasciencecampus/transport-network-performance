@@ -159,3 +159,5 @@ quartodoc:
         - defence
         - io
         - raster
+
+jupyter: python3
