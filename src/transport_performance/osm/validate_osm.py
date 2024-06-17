@@ -37,6 +37,44 @@ from transport_performance.utils.defence import (
 # ---------utilities-----------
 
 
+def _merge_dicts_retain_dupe_keys(
+    dict1: dict, dict2: dict, prepend_pattern: str = "parent_"
+) -> dict:
+    """Squish 2 dictionaries while retaining any duplicated keys.
+
+    Update dict1 with key:value pairs from dict2. If duplicated keys are
+    found in dict2, prepend the key with prepend_pattern.
+
+    Parameters
+    ----------
+    dict1 : dict
+        Dictionary of (child or node) tags.
+    dict2 : dict
+        Dictionary of (parent) tags.
+    prepend_pattern : str
+        A string to prepend any duplicated keys in dict_2 with.
+
+    Returns
+    -------
+    dict
+        A merged dictionary, retaining key:value pairs from both.
+
+    """
+    tags_out = {}
+    for d in [dict1, dict2]:
+        if not isinstance(d, dict):
+            raise TypeError(f"Expected dict but found {type(d)}: {d}")
+    for id_, tags in dict1.items():  # child_tags is nested
+        parent_tags = dict2.copy()  # !!!!CHECK THIS IS NEEDED!!!!!!!!!!!!!!!!
+        # find duplicated keys and prepend parent keys
+        if dupes := set(tags.keys()).intersection(parent_tags.keys()):
+            for key in dupes:
+                parent_tags[f"{prepend_pattern}{key}"] = parent_tags.pop(key)
+        # merge parent and child tag collections
+        tags_out[id_] = tags | parent_tags
+    return tags_out
+
+
 def _compile_tags(osmium_feature):
     """Return tag name value pairs.
 
@@ -626,6 +664,9 @@ class FindLocations:
         Locations of nodes.
     __way_node_locs : dict
         Locations of nodes that belong to a way.
+    _osm_pth : Union[Path, str]
+        Path to osm file on disk. Used for method plot_ids() when include_tags
+        is True.
 
     Methods
     -------
@@ -653,6 +694,7 @@ class FindLocations:
         self.__node_locs = locs.node_locs
         self.__way_node_locs = locs.way_node_locs
         self.found_locs = dict()
+        self._osm_pth = osm_pth
 
     def _check_is_implemented(self, user_feature: str, param_nm: str) -> None:
         """If the requested feature is not node or way, raise."""
@@ -701,11 +743,94 @@ class FindLocations:
         )
         return self.found_locs
 
+    def _add_tag_context_to_coord_gdf(
+        self, ids: list, feature_type: str, tooltip_nm: str
+    ) -> gpd.GeoDataFrame:
+        """Add a column of tooltips to the coord_gdf attribute.
+
+        Handles node and way features separately.
+
+        Parameters
+        ----------
+        ids : list
+            A list of IDs.
+        feature_type : str
+            "way" or "node".
+        tooltip_nm : str
+            Name of the column to use for the tooltips.
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            The coordinate GeoDataFrame attribute with a column of tag
+            metadata.
+
+        Raises
+        ------
+        NotImplementedError
+            `feature_type` node is not implemented.
+
+        """
+        if feature_type == "way":
+            parent_tags = self.tagfinder.check_tags_for_ids(ids, feature_type)
+            parent_child_mapping = self.coord_gdf.index
+            # Now we have child IDs, we need to run them through FindTags
+            child_tags = self.tagfinder.check_tags_for_ids(
+                [i[-1] for i in parent_child_mapping], feature_type="node"
+            )
+            # add in the parent tag ID to all child tags
+            for k, v in child_tags.items():
+                for t in parent_child_mapping.to_flat_index():
+                    if k == t[-1]:
+                        v["parent_id"] = t[0]
+            # merge the parent way metadata dictionary with the child
+            # metadata dict
+            all_tags = parent_child_mapping.to_series().to_dict()
+            for k, v in parent_tags.items():
+                # k is child ID, v are tags
+                # iterate over only the children for each parent node
+                for id_ in [i for i in parent_child_mapping if i[0] == k]:
+                    all_tags[id_] = _merge_dicts_retain_dupe_keys(
+                        {id_[-1]: child_tags[id_[-1]]}, v
+                    )
+            # add combined tags as custom tooltips to coord_gdf. Use map
+            # method to avoid lexsort performance warning
+            self.coord_gdf[tooltip_nm] = self.coord_gdf.index.to_list()
+            mapping = {}
+            for _, v in all_tags.items():
+                for k, val in v.items():
+                    tooltips = [
+                        f"<b>{tag}:</b> {val_}<br>"
+                        for tag, val_ in val.items()
+                    ]
+                    mapping[(val["parent_id"], k)] = "".join(tooltips)
+
+            self.coord_gdf[tooltip_nm] = self.coord_gdf[tooltip_nm].map(
+                mapping
+            )
+        else:
+            # adding tag context to nodes not implemented
+            raise NotImplementedError(
+                "Plotting of nodes when `add_tags=True` not implemented"
+            )
+        return None
+
     def plot_ids(
         self,
         ids: list,
         feature_type: str,
         crs: Union[str, int] = "epsg:4326",
+        include_tags: bool = False,
+        tooltip_nm: str = "custom_tooltip",
+        tooltip_kwds: dict = {"labels": False},
+        tiles: str = "CartoDB positron",
+        style_kwds: dict = {
+            "color": "#3f5277",
+            "fill": True,
+            "fillOpacity": 0.3,
+            "fillColor": "#3f5277",
+            "weight": 4,
+        },
     ) -> folium.Map:
         """Plot coordinates for nodes or node members of a way.
 
@@ -721,6 +846,26 @@ class FindLocations:
             Whether the type of OSM feature to plot is node or way.
         crs : Union[str, int], optional
             The projection of the spatial features, by default "epsg:4326"
+        include_tags : bool
+            Should tag metadata be included in the map tooltips, by default
+            False
+        tooltip_nm : str
+            Name to use for tooltip column in coord_gdf attribute, by default
+            "custom_tooltip"
+        tooltip_kwds : dict
+            Additional tooltip styling arguments to pass to gpd explore(), by
+            default {"labels": False}
+        tiles : str
+            Basemap provider tiles to use, by default "CartoDB positron"
+        style_kwds : dict
+            Additional map styling arguments to pass to gpd explore(), by
+            default {
+                "color": "#3f5277",
+                "fill": True,
+                "fillOpacity": 0.3,
+                "fillColor": "#3f5277",
+                "weight": 4,
+                }
 
         Returns
         -------
@@ -742,6 +887,7 @@ class FindLocations:
         _type_defence(ids, "ids", list)
         _type_defence(feature_type, "feature_type", str)
         _type_defence(crs, "crs", (str, int))
+        _type_defence(include_tags, "include_tags", bool)
         self._check_is_implemented(
             user_feature=feature_type, param_nm="feature_type"
         )
@@ -751,4 +897,19 @@ class FindLocations:
             feature_type=feature_type,
             crs=crs,
         )
-        return self.coord_gdf.explore()
+        if not include_tags:
+            imap = self.coord_gdf.explore(tiles=tiles, style_kwds=style_kwds)
+        else:
+            # retrieve tags for IDs and add them to self.coord_gdf
+            self.tagfinder = FindTags(self._osm_pth)
+            self._add_tag_context_to_coord_gdf(
+                ids, feature_type, tooltip_nm=tooltip_nm
+            )
+            imap = self.coord_gdf.explore(
+                tooltip=tooltip_nm,
+                tooltip_kwds=tooltip_kwds,
+                tiles=tiles,
+                style_kwds=style_kwds,
+            )
+
+        return imap
