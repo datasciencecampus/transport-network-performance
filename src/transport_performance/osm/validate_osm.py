@@ -743,7 +743,7 @@ class FindLocations:
         )
         return self.found_locs
 
-    def _add_tag_context_to_coord_gdf(
+    def _add_tag_context_to_coord_gdf(  # noqa: C901
         self, ids: list, feature_type: str, tooltip_nm: str
     ) -> gpd.GeoDataFrame:
         """Add a column of tooltips to the coord_gdf attribute.
@@ -761,18 +761,14 @@ class FindLocations:
 
         Returns
         -------
-        gpd.GeoDataFrame
-            The coordinate GeoDataFrame attribute with a column of tag
-            metadata.
-
-        Raises
-        ------
-        NotImplementedError
-            `feature_type` node is not implemented.
+        None
+            Updates `coord_gdf` attribute.
 
         """
+        mapping = {}
+        parent_tags = self.tagfinder.check_tags_for_ids(ids, feature_type)
+        self.coord_gdf[tooltip_nm] = self.coord_gdf.index.to_list()
         if feature_type == "way":
-            parent_tags = self.tagfinder.check_tags_for_ids(ids, feature_type)
             parent_child_mapping = self.coord_gdf.index
             # Now we have child IDs, we need to run them through FindTags
             child_tags = self.tagfinder.check_tags_for_ids(
@@ -787,7 +783,6 @@ class FindLocations:
             # metadata dict
             all_tags = parent_child_mapping.to_series().to_dict()
             for k, v in parent_tags.items():
-                # k is child ID, v are tags
                 # iterate over only the children for each parent node
                 for id_ in [i for i in parent_child_mapping if i[0] == k]:
                     all_tags[id_] = _merge_dicts_retain_dupe_keys(
@@ -795,8 +790,6 @@ class FindLocations:
                     )
             # add combined tags as custom tooltips to coord_gdf. Use map
             # method to avoid lexsort performance warning
-            self.coord_gdf[tooltip_nm] = self.coord_gdf.index.to_list()
-            mapping = {}
             for _, v in all_tags.items():
                 for k, val in v.items():
                     tooltips = [
@@ -805,14 +798,14 @@ class FindLocations:
                     ]
                     mapping[(val["parent_id"], k)] = "".join(tooltips)
 
-            self.coord_gdf[tooltip_nm] = self.coord_gdf[tooltip_nm].map(
-                mapping
-            )
-        else:
-            # adding tag context to nodes not implemented
-            raise NotImplementedError(
-                "Plotting of nodes when `add_tags=True` not implemented"
-            )
+        elif feature_type == "node":
+            for k, val in self.tagfinder.found_tags.items():
+                tooltips = [
+                    f"<b>{tag}:</b> {val_}<br>" for tag, val_ in val.items()
+                ]
+                mapping[k] = "".join(tooltips)
+
+        self.coord_gdf[tooltip_nm] = self.coord_gdf[tooltip_nm].map(mapping)
         return None
 
     def plot_ids(
