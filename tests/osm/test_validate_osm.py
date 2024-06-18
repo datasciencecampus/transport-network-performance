@@ -368,8 +368,19 @@ class TestFindLocations(object):
             ids=ids._FindIds__node_ids[0:1], feature_type="node"
         )
         assert isinstance(plt, folium.Map)
+        plt = locs.plot_ids(
+            ids=ids._FindIds__node_ids[0:1],
+            feature_type="node",
+            include_tags=True,
+        )
+        assert isinstance(plt, folium.Map)
         plt = locs.plot_ids(ids=ids._FindIds__way_ids[0:1], feature_type="way")
         assert isinstance(plt, folium.Map)
+        plt = locs.plot_ids(
+            ids=ids._FindIds__way_ids[0:1],
+            feature_type="way",
+            include_tags=True,
+        )
 
     def test_plot_ids_not_implemented(self, _tiny_osm_locs):
         """Assert asking for relation or area riases not implemented error."""
