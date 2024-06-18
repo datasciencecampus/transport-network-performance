@@ -733,17 +733,12 @@ class FindLocations:
             if not isinstance(d, dict):
                 raise TypeError(f"Expected dict but found {type(d)}: {d}")
         for id_, tags in dict1.items():  # child_tags is nested
-            parent_tags = (
-                dict2.copy()
-            )  # !!!!CHECK THIS IS NEEDED!!!!!!!!!!!!!!!!
             # find duplicated keys and prepend parent keys
-            if dupes := set(tags.keys()).intersection(parent_tags.keys()):
+            if dupes := set(tags.keys()).intersection(dict2.keys()):
                 for key in dupes:
-                    parent_tags[f"{prepend_pattern}{key}"] = parent_tags.pop(
-                        key
-                    )
+                    dict2[f"{prepend_pattern}{key}"] = dict2.pop(key)
             # merge parent and child tag collections
-            tags_out[id_] = tags | parent_tags
+            tags_out[id_] = tags | dict2
         return tags_out
 
     def _add_tag_context_to_coord_gdf(  # noqa: C901
