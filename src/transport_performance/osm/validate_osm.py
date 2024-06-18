@@ -37,44 +37,6 @@ from transport_performance.utils.defence import (
 # ---------utilities-----------
 
 
-def _merge_dicts_retain_dupe_keys(
-    dict1: dict, dict2: dict, prepend_pattern: str = "parent_"
-) -> dict:
-    """Squish 2 dictionaries while retaining any duplicated keys.
-
-    Update dict1 with key:value pairs from dict2. If duplicated keys are
-    found in dict2, prepend the key with prepend_pattern.
-
-    Parameters
-    ----------
-    dict1 : dict
-        Dictionary of (child or node) tags.
-    dict2 : dict
-        Dictionary of (parent) tags.
-    prepend_pattern : str
-        A string to prepend any duplicated keys in dict_2 with.
-
-    Returns
-    -------
-    dict
-        A merged dictionary, retaining key:value pairs from both.
-
-    """
-    tags_out = {}
-    for d in [dict1, dict2]:
-        if not isinstance(d, dict):
-            raise TypeError(f"Expected dict but found {type(d)}: {d}")
-    for id_, tags in dict1.items():  # child_tags is nested
-        parent_tags = dict2.copy()  # !!!!CHECK THIS IS NEEDED!!!!!!!!!!!!!!!!
-        # find duplicated keys and prepend parent keys
-        if dupes := set(tags.keys()).intersection(parent_tags.keys()):
-            for key in dupes:
-                parent_tags[f"{prepend_pattern}{key}"] = parent_tags.pop(key)
-        # merge parent and child tag collections
-        tags_out[id_] = tags | parent_tags
-    return tags_out
-
-
 def _compile_tags(osmium_feature):
     """Return tag name value pairs.
 
@@ -743,6 +705,47 @@ class FindLocations:
         )
         return self.found_locs
 
+    def _merge_dicts_retain_dupe_keys(
+        self, dict1: dict, dict2: dict, prepend_pattern: str = "parent_"
+    ) -> dict:
+        """Squish 2 dictionaries while retaining any duplicated keys.
+
+        Update dict1 with key:value pairs from dict2. If duplicated keys are
+        found in dict2, prepend the key with prepend_pattern.
+
+        Parameters
+        ----------
+        dict1 : dict
+            Dictionary of (child or node) tags.
+        dict2 : dict
+            Dictionary of (parent) tags.
+        prepend_pattern : str
+            A string to prepend any duplicated keys in dict_2 with.
+
+        Returns
+        -------
+        dict
+            A merged dictionary, retaining key:value pairs from both.
+
+        """
+        tags_out = {}
+        for d in [dict1, dict2]:
+            if not isinstance(d, dict):
+                raise TypeError(f"Expected dict but found {type(d)}: {d}")
+        for id_, tags in dict1.items():  # child_tags is nested
+            parent_tags = (
+                dict2.copy()
+            )  # !!!!CHECK THIS IS NEEDED!!!!!!!!!!!!!!!!
+            # find duplicated keys and prepend parent keys
+            if dupes := set(tags.keys()).intersection(parent_tags.keys()):
+                for key in dupes:
+                    parent_tags[f"{prepend_pattern}{key}"] = parent_tags.pop(
+                        key
+                    )
+            # merge parent and child tag collections
+            tags_out[id_] = tags | parent_tags
+        return tags_out
+
     def _add_tag_context_to_coord_gdf(  # noqa: C901
         self, ids: list, feature_type: str, tooltip_nm: str
     ) -> gpd.GeoDataFrame:
@@ -785,7 +788,7 @@ class FindLocations:
             for k, v in parent_tags.items():
                 # iterate over only the children for each parent node
                 for id_ in [i for i in parent_child_mapping if i[0] == k]:
-                    all_tags[id_] = _merge_dicts_retain_dupe_keys(
+                    all_tags[id_] = self._merge_dicts_retain_dupe_keys(
                         {id_[-1]: child_tags[id_[-1]]}, v
                     )
             # add combined tags as custom tooltips to coord_gdf. Use map
