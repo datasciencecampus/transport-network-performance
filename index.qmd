@@ -1,6 +1,14 @@
 ---
 title: "`transport_performance` documentation"
-toc: false
+title-block-banner: true
+date-format: iso
+description: |
+
+  A Python package bringing together open-source data, tools, and research to
+  make transport network analyses more simple, reproducible, and consistent for
+  everyone.
+toc: true
+toc-title: "On this homepage"
 sidebar: false
 about:
     template: marquee
@@ -10,31 +18,83 @@ about:
           text: GitHub
 ---
 
-![](docs/_static/tp_logo_white_background.png){width="15em" fig-align="center"}
+## What is `transport_performance`?
 
-## What is this and why does it exist?
+The performance of transport networks are highly variable throughout and
+between countries. There is often a lack of consistent and comparable data
+which can make it difficult to understand these differences. This is typically
+because of computational complexity, transparency (closed-source and paid
+services), and data consistency (format and availability).
 
-Description
+The `transport_performance` Python package helps to reduce barriers to
+transport analysis. It allows developers to:
+
+- Define an [urban centre] boundary based on population density;
+- Inspect, clean, and process [public transit timetable data][gtfs] and
+[OpenStreetMap data][osm]; and
+- Conduct [multimodal routing][r5py] and calculate a range of
+[transport metrics][eurostat-paper].
+
+::: {.callout-tip}
+Check out the [transport performance Docker image][tp-docker] 🐳!
+This aims to simplify the dependency installation and end-to-end use of
+`transport_performance`.
+:::
 
 ## Where do I go now?
 
 These docs are structured in accordance with the [Diátaxis][diataxis] framework:
 
-- If you're looking to get started with the package quickly, head over to the [Getting Started](docs/getting_started/index.qmd) page.
-- For more information on the `transport_performance` package, refer to the [Explanation section](docs/explanation/index.qmd).
-- The [How-To](docs/how_to/index.qmd) pages provide you with instructions on things like retrieving input data.
-- If you're interested in learning how to use the package, head over to the [Tutorials](docs/tutorials/index.qmd).
-- The `transport_performance` technical reference can be found here: [API reference](docs/reference/index.qmd).
+<div class="grid-container">
+<div class="grid-item item1 jumbotron">
+<p class="jumbotron-icon">🏁</p>
+<p>Want to get up and running with `transport_performance` quickly?</p>
+<a class="btn btn-primary btn-lg" href="./docs/getting_started/index.html" role="button">Getting Started</a>
+</div>
+<div class="grid-item item2 jumbotron">
+<p class="jumbotron-icon">🔎</p>
+<p>Need more details on the methods/tools used within `transport_performance`?</p>
+<a class="btn btn-primary btn-lg" href="./docs/explanation/index.html" role="button">Explanation</a>
+</div>
+<div class="grid-item item3 jumbotron">
+<p class="jumbotron-icon">🧭</p>
+<p>Looking for guidance on how to get something done (e.g. find input data)?</p>
+<a class="btn btn-primary btn-lg" href="./docs/how_to/index.html" role="button">How-To</a>
+</div>
+<div class="grid-item item4 jumbotron">
+<p class="jumbotron-icon">📝</p>
+<p>Interested in learning how to use `transport_performance` by examples?</p>
+<a class="btn btn-primary btn-lg" href="./docs/tutorials/index.html" role="button">Tutorials</a>
+</div>
+<div class="grid-item item5 jumbotron">
+<p class="jumbotron-icon">📖</p>
+<p>Requiring a technical reference covering the `transport_performance` API?</p>
+<a class="btn btn-primary btn-lg" href="./docs/reference/index.html" role="button">API reference</a>
+</div>
+<div class="grid-item item6 jumbotron">
+<p class="jumbotron-icon">🛠️</p>
+<p>Want to contribute to the development of `transport_performance`?</p>
+<a class="btn btn-primary btn-lg" href="https://github.com/datasciencecampus/transport-network-performance" role="button">GitHub</a>
+</div>
+</div>
 
-::: {.callout-tip}
+::: {.callout-note}
 
-Please refer to our [Docker image][tp-docker] 🐳 to see how we reproduce
-analysis with the `transport_performance` package.
+## Notes on contributing...
+
+We hope that the open source and public sector communities will collaborate and
+build on this package. This will help improve both the national and
+international comparability of transport statistics while enabling higher
+frequency and more timely comparisons. You can find the `transport_performance`
+source code on [GitHub](https://github.com/datasciencecampus/transport-network-performance).
+
 :::
+
 
 [diataxis]: https://diataxis.fr/
 [tp-docker]: https://github.com/datasciencecampus/transport-performance-docker
-
-## Looking to Contribute?
-
-Find the `transport_performance` code on the [GitHub repo](https://github.com/datasciencecampus/transport-network-performance).
+[urban centre]: https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Urban_centre
+[gtfs]: https://gtfs.org/schedule/
+[osm]: https://wiki.openstreetmap.org/wiki/Main_Page
+[r5py]: https://r5py.readthedocs.io/en/stable/index.html
+[eurostat-paper]: https://ec.europa.eu/regional_policy/information-sources/publications/working-papers/2020/low-carbon-urban-accessibility_en
