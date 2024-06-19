@@ -18,6 +18,8 @@ The API classes expose logic that enables users to:
 * Find coordinates for node or way features
 * Plot the coordinates of a given list of node or way IDs
 """
+import os
+import warnings
 from pathlib import Path
 from typing import Union
 
@@ -35,6 +37,12 @@ from transport_performance.utils.defence import (
 )
 
 # ---------utilities-----------
+
+
+class PerformanceWarning(UserWarning):
+    """Operation may be slow."""
+
+    pass
 
 
 def _compile_tags(osmium_feature):
@@ -553,6 +561,16 @@ class FindTags:
         _is_expected_filetype(
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
+        self.large_file_thresh = 50000  # 50 KB
+        # implement performance warning on large OSM files.
+        osm_size = os.path.getsize(osm_pth)
+        if osm_size > self.large_file_thresh:
+            warnings.warn(
+                f"PBF file is {osm_size} bytes. Tag operations are expensive."
+                " Consider filtering the pbf file smaller than"
+                f" {self.large_file_thresh} bytes",
+                PerformanceWarning,
+            )
         tags = tag_collator()
         classnm = tags.__class__.__name__
         if classnm != "_TagHandler":
