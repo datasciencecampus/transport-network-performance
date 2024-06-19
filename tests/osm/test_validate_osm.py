@@ -321,6 +321,19 @@ class TestFindLocations(object):
             way_len == 2
         ), f"Expected way with length 2, instead found {way_len}"
 
+    def test__merge_dicts_retain_dupe_keys_raises(self, _tiny_osm_locs):
+        """Test internal raises TypeError."""
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "Expected dict but found <class 'list'>: ['not a key', 2]"
+            ),
+        ):
+            _tiny_osm_locs._merge_dicts_retain_dupe_keys(
+                dict1={"some_key": 1},
+                dict2=["not a key", 2],
+            )
+
     def test_check_locs_for_ids(self, _tiny_osm_locs, _tiny_osm_ids):
         """Assert check_locs_for_ids."""
         ids = _tiny_osm_ids
