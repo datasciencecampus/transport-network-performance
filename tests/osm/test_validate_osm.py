@@ -11,6 +11,7 @@ from transport_performance.osm.validate_osm import (
     FindIds,
     FindLocations,
     FindTags,
+    PerformanceWarning,
     _convert_osm_dict_to_gdf,
     _filter_target_dict_with_list,
 )
@@ -465,6 +466,18 @@ class TestFindTags(object):
             "check_tags_for_ids",
         ]
         _class_atttribute_assertions(tags, expected_attrs, expected_methods)
+
+    @pytest.mark.runexpensive
+    def test_find_tags_init_warning(self):
+        """Test that large OSM files trigger a performance warning.
+
+        execution duration c.80 seconds.
+        """
+        with pytest.warns(
+            PerformanceWarning,
+            match=".*Consider filtering the pbf file smaller than 50000 bytes",
+        ):
+            FindTags(here("tests/data/newport-2023-06-13.osm.pbf"))
 
     def test_find_tags_check_tags_for_ids(self, _tiny_osm_tags, _tiny_osm_ids):
         """Test FindTags.check_tags_for_ids()."""
