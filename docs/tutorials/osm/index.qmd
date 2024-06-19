@@ -128,7 +128,7 @@ xmin, ymin, xmax, ymax format. Call the list `BBOX_LIST`.
 BBOX_LIST = [<INSERT_VALUES_HERE>]
 ```
 
-### Exercise
+### Solution
 
 ```{python}
 BBOX_LIST = [-3.002175, 51.587035, -2.994271, 51.59095]
@@ -329,6 +329,7 @@ poly_gdf = gpd.GeoDataFrame({"geometry": poly}, crs=4326, index=[0])
 poly_gdf.explore(color="purple", m=imap)
 ```
 
+
 The `filter_osm` function has reduced the file size but has also retained
 features outside of the crop that we specified. This is because removing a
 feature outside of the crop, that is referenced by a feature within the crop
@@ -340,6 +341,14 @@ the safest approach to avoiding these issues.
 To read more on `osmosis` filtering strategies, refer to the `completeWays` and
 `completeRelations` flag descriptions in the
 [Osmosis detailed usage documentation](https://wiki.openstreetmap.org/wiki/Osmosis/Detailed_Usage_0.48).
+
+
+Note that additional metadata can be added to the map by setting `include_tags=True`. Adding this rich contextual data to the map can be useful but is also expensive. This operation should be avoided for large osm files, for example anything over 500 KB.
+
+```{python}
+loc_finder.plot_ids(id_finder.id_dict["way_ids"], feature_type="way", include_tags=True)
+
+```
 
 ## Conclusion
 
