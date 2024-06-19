@@ -374,12 +374,35 @@ class TestFindLocations(object):
             include_tags=True,
         )
         assert isinstance(plt, folium.Map)
+        # check the tag column is as expected - for nodes, this example should
+        # be empty, nodes often contain no tags, but not always
+        pd.testing.assert_series_equal(
+            locs.coord_gdf["custom_tooltip"],
+            pd.Series([""], index=[7727955], name="custom_tooltip"),
+        )
+        assert locs.coord_gdf["custom_tooltip"].values == [""]
         plt = locs.plot_ids(ids=ids._FindIds__way_ids[0:1], feature_type="way")
         assert isinstance(plt, folium.Map)
         plt = locs.plot_ids(
             ids=ids._FindIds__way_ids[0:1],
             feature_type="way",
             include_tags=True,
+        )
+        # check the tag column is as expected - for ways, these should always
+        # include at least the parent_id tag.
+        pd.testing.assert_series_equal(
+            locs.coord_gdf["custom_tooltip"],
+            pd.Series(
+                [
+                    "<b>crossing:</b> marked<br><b>highway:</b> crossing<br><b>tactile_paving:</b> yes<br><b>parent_id:</b> 4811009<br><b>lanes:</b> 2<br><b>name:</b> Kingsway<br><b>oneway:</b> yes<br><b>postal_code:</b> NP20<br><b>ref:</b> A4042<br><b>parent_highway:</b> primary<br>",  # noqa E501
+                    "<b>parent_id:</b> 4811009<br><b>lanes:</b> 2<br><b>name:</b> Kingsway<br><b>oneway:</b> yes<br><b>postal_code:</b> NP20<br><b>ref:</b> A4042<br><b>parent_highway:</b> primary<br>",  # noqa E501
+                ],
+                index=pd.MultiIndex.from_tuples(
+                    [(4811009, 7447008812), (4811009, 443158788)],
+                    names=["parent_id", "member_id"],
+                ),
+                name="custom_tooltip",
+            ),
         )
 
     def test_plot_ids_not_implemented(self, _tiny_osm_locs):
