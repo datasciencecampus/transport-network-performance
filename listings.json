@@ -8,6 +8,14 @@
     ]
   },
   {
+    "listing": "/docs/explanation/index.html",
+    "items": [
+      "/docs/explanation/what_is_tp/index.html",
+      "/docs/explanation/calculate_tp/index.html",
+      "/docs/explanation/limitations/index.html"
+    ]
+  },
+  {
     "listing": "/docs/tutorials/index.html",
     "items": [
       "/docs/tutorials/urban_centre/index.html",
@@ -16,14 +24,6 @@
       "/docs/tutorials/osm/index.html",
       "/docs/tutorials/analyse_network/index.html",
       "/docs/tutorials/metrics/index.html"
-    ]
-  },
-  {
-    "listing": "/docs/explanation/index.html",
-    "items": [
-      "/docs/explanation/what_is_tp/index.html",
-      "/docs/explanation/calculate_tp/index.html",
-      "/docs/explanation/limitations/index.html"
     ]
   }
 ]

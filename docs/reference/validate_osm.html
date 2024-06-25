@@ -426,6 +426,10 @@ ul.task-list li input[type="checkbox"] {
 <td><a href="#transport_performance.osm.validate_osm.FindTags">FindTags</a></td>
 <td>Applies tag collation to OSM file.</td>
 </tr>
+<tr class="even">
+<td><a href="#transport_performance.osm.validate_osm.PerformanceWarning">PerformanceWarning</a></td>
+<td>Operation may be slow.</td>
+</tr>
 </tbody>
 </table>
 <section id="transport_performance.osm.validate_osm.FindIds" class="level3">
@@ -684,9 +688,9 @@ ul.task-list li input[type="checkbox"] {
 <h4 class="anchored" data-anchor-id="attributes-1">Attributes</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 24%">
-<col style="width: 11%">
-<col style="width: 63%">
+<col style="width: 14%">
+<col style="width: 16%">
+<col style="width: 68%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -710,6 +714,11 @@ ul.task-list li input[type="checkbox"] {
 <td>__way_node_locs</td>
 <td>dict</td>
 <td>Locations of nodes that belong to a way.</td>
+</tr>
+<tr class="even">
+<td>_osm_pth</td>
+<td>Union[Path, str]</td>
+<td>Path to osm file on disk. Used for method plot_ids() when include_tags is True.</td>
 </tr>
 </tbody>
 </table>
@@ -812,17 +821,17 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="transport_performance.osm.validate_osm.FindLocations.plot_ids" class="level5">
 <h5 class="anchored" data-anchor-id="transport_performance.osm.validate_osm.FindLocations.plot_ids">plot_ids</h5>
-<p><code>osm.validate_osm.FindLocations.plot_ids(ids, feature_type, crs='epsg:4326')</code></p>
+<p><code>osm.validate_osm.FindLocations.plot_ids(ids, feature_type, crs='epsg:4326', include_tags=False, tooltip_nm='custom_tooltip', tooltip_kwds={'labels': False}, tiles='CartoDB positron', style_kwds={'color': '#3f5277', 'fill': True, 'fillOpacity': 0.3, 'fillColor': '#3f5277', 'weight': 4})</code></p>
 <p>Plot coordinates for nodes or node members of a way.</p>
 <p>Provided with a list of node or way IDs, converts the coordinate data from dictionary to GeoDataFrame and uses the basic gdf.explore() method to visualise the features on a basemap.</p>
 <section id="parameters-3" class="level6">
 <h6 class="anchored" data-anchor-id="parameters-3">Parameters</h6>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 14%">
-<col style="width: 16%">
-<col style="width: 56%">
-<col style="width: 13%">
+<col style="width: 4%">
+<col style="width: 11%">
+<col style="width: 55%">
+<col style="width: 27%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -850,6 +859,36 @@ ul.task-list li input[type="checkbox"] {
 <td>Union[str, int]</td>
 <td>The projection of the spatial features, by default “epsg:4326”</td>
 <td><code>'epsg:4326'</code></td>
+</tr>
+<tr class="even">
+<td><code>include_tags</code></td>
+<td>bool</td>
+<td>Should tag metadata be included in the map tooltips, by default False</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td><code>tooltip_nm</code></td>
+<td>str</td>
+<td>Name to use for tooltip column in coord_gdf attribute, by default “custom_tooltip”</td>
+<td><code>'custom_tooltip'</code></td>
+</tr>
+<tr class="even">
+<td><code>tooltip_kwds</code></td>
+<td>dict</td>
+<td>Additional tooltip styling arguments to pass to gpd explore(), by default {“labels”: False}</td>
+<td><code>{'labels': False}</code></td>
+</tr>
+<tr class="odd">
+<td><code>tiles</code></td>
+<td>Union[str, xyzservices.TileProvider]</td>
+<td>Basemap provider tiles to use, by default “CartoDB positron”</td>
+<td><code>'CartoDB positron'</code></td>
+</tr>
+<tr class="even">
+<td><code>style_kwds</code></td>
+<td>dict</td>
+<td>Additional map styling arguments to pass to gpd explore(), by default { “color”: “#3f5277”, “fill”: True, “fillOpacity”: 0.3, “fillColor”: “#3f5277”, “weight”: 4, }</td>
+<td><code>{'color': '#3f5277', 'fill': True, 'fillOpacity': 0.3, 'fillColor': '#3f5277', 'weight': 4}</code></td>
 </tr>
 </tbody>
 </table>
@@ -980,6 +1019,11 @@ ul.task-list li input[type="checkbox"] {
 <section id="attributes-2" class="level4">
 <h4 class="anchored" data-anchor-id="attributes-2">Attributes</h4>
 <table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 6%">
+<col style="width: 76%">
+</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -1012,6 +1056,11 @@ ul.task-list li input[type="checkbox"] {
 <td>__area_tags</td>
 <td>dict</td>
 <td>Tags found for OSM area features.</td>
+</tr>
+<tr class="even">
+<td>__LARGE_FILE_THRESH</td>
+<td>int</td>
+<td>Size threshold in bytes on which to raise a PerformanceWarning when osm file on disk exceeds.</td>
 </tr>
 </tbody>
 </table>
@@ -1089,11 +1138,16 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
+</section>
+</section>
+</section>
+</section>
+<section id="transport_performance.osm.validate_osm.PerformanceWarning" class="level3">
+<h3 class="anchored" data-anchor-id="transport_performance.osm.validate_osm.PerformanceWarning">PerformanceWarning</h3>
+<p><code>osm.validate_osm.PerformanceWarning()</code></p>
+<p>Operation may be slow.</p>
 
 
-</section>
-</section>
-</section>
 </section>
 </section>
 </section>
