@@ -39,7 +39,7 @@ from transport_performance.utils.defence import (
 # ---------utilities-----------
 
 
-class PerformanceWarning(UserWarning):
+class PerformanceWarning(Warning):
     """Operation may be slow."""
 
     pass
