@@ -354,7 +354,7 @@ To read more on `osmosis` filtering strategies, refer to the `completeWays` and
 [Osmosis detailed usage documentation](https://wiki.openstreetmap.org/wiki/Osmosis/Detailed_Usage_0.48).
 
 
-Note that additional metadata can be added to the map by setting `include_tags=True`. Adding this rich contextual data to the map can be useful but is also expensive. This operation should be avoided for large osm files, for example anything over 500 KB.
+Note that additional metadata can be added to the map by setting `include_tags=True`. Adding this rich contextual data to the map can be useful but is also  computationally expensive. This operation should be avoided for large osm files, for example anything over 500 KB.
 
 ```{python}
 loc_finder.plot_ids(id_finder.id_dict["way_ids"], feature_type="way", include_tags=True)
