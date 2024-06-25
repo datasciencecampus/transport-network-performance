@@ -28,6 +28,7 @@ import geopandas as gpd
 import osmium
 import pandas as pd
 from shapely import Point
+from xyzservices import TileProvider
 
 from transport_performance.utils.defence import (
     _check_item_in_iter,
@@ -844,7 +845,7 @@ class FindLocations:
         tooltip_kwds : dict
             Additional tooltip styling arguments to pass to gpd explore(), by
             default {"labels": False}
-        tiles : str
+        tiles : Union[str, xyzservices.TileProvider]
             Basemap provider tiles to use, by default "CartoDB positron"
         style_kwds : dict
             Additional map styling arguments to pass to gpd explore(), by
@@ -877,6 +878,10 @@ class FindLocations:
         _type_defence(feature_type, "feature_type", str)
         _type_defence(crs, "crs", (str, int))
         _type_defence(include_tags, "include_tags", bool)
+        _type_defence(tooltip_nm, "tooltip_nm", str)
+        _type_defence(tooltip_kwds, "tooltip_kwds", dict)
+        _type_defence(tiles, "tiles", (str, TileProvider))
+        _type_defence(style_kwds, "style_kwds", dict)
         self._check_is_implemented(
             user_feature=feature_type, param_nm="feature_type"
         )

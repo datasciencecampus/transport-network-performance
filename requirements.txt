@@ -35,4 +35,5 @@ osmium # has dependencies on `cmake` and `boost` which require brew install
 tqdm
 quartodoc
 jupyterlab
+xyzservices
 -e .
