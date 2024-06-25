@@ -540,6 +540,9 @@ class FindTags:
         Tags found for OSM relation features.
     __area_tags : dict
         Tags found for OSM area features.
+    __LARGE_FILE_THRESH : int
+        Size threshold in bytes on which to raise a PerformanceWarning when
+        osm file on disk exceeds.
 
     """
 
@@ -549,14 +552,14 @@ class FindTags:
         _is_expected_filetype(
             osm_pth, "osm_pth", check_existing=True, exp_ext=".pbf"
         )
-        self.large_file_thresh = 50000  # 50 KB
+        self.__LARGE_FILE_THRESH = 50000  # 50 KB
         # implement performance warning on large OSM files.
         osm_size = os.path.getsize(osm_pth)
-        if osm_size > self.large_file_thresh:
+        if osm_size > self.__LARGE_FILE_THRESH:
             warnings.warn(
                 f"PBF file is {osm_size} bytes. Tag operations are expensive."
                 " Consider filtering the pbf file smaller than"
-                f" {self.large_file_thresh} bytes",
+                f" {self.__LARGE_FILE_THRESH} bytes",
                 PerformanceWarning,
             )
         tags = tag_collator()
