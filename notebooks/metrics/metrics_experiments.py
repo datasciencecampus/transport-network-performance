@@ -9,23 +9,21 @@ transport performance metrics.
 Call in script wide imports and the configuration information.
 """
 
+import os
+import pathlib
+import pickle
+from typing import Union
+
 # %%
 import folium
 import geopandas as gpd
-import os
 import pandas as pd
-import pathlib
-import pickle
-
 from folium.map import Icon
 from haversine import haversine_vector
 from pyprojroot import here
 from tqdm import tqdm
-from typing import Union
 
-from transport_performance.utils.defence import (
-    _check_parent_dir_exists,
-)
+from transport_performance.utils.defence import _check_parent_dir_exists
 
 # %%
 # name of area and source of metrics inputs

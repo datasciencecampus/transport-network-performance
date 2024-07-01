@@ -1,0 +1,375 @@
+---
+title: "4. OSM"
+description: Learn how to use the `transport_performance.osm` module through examples.
+date-modified: 06/06/2024  # must be in MM/DD/YYYY format
+categories: ["Tutorial"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
+toc: true
+date-format: iso
+---
+
+## Introduction
+
+### Outcomes
+
+[OpenStreetMap](https://welcome.openstreetmap.org/what-is-openstreetmap/#:~:text=OpenStreetMap%20is%20a%20free%2C%20editable,that%20was%20free%20to%20use.)
+(OSM) is a free, community-maintained source of spatial data. It contains
+information about the properties of street networks and has international
+coverage. We use these data in combination with General Transit Feed
+Specification data to build public transit networks for routing operations.
+
+In this tutorial we will learn how to prepare OSM data for routing.
+Specifically, we will:
+
+* Download OSM data.
+* Filter the osm files to an area of interest with a bounding box.
+* Examine features of the transit network.
+
+### Requirements
+
+To complete this tutorial, you will need:
+
+* python 3.9
+* Stable internet connection
+* Installed the `transport_performance` package (see the
+[getting started explanation](/docs/getting_started/index.qmd) for help)
+* Install the following requirements to a virtual environment:
+```{.abc filename="requirements.txt"}
+geopandas
+pyprojroot
+shapely
+
+```
+
+:::{.callout-important}
+
+### Compatibility
+
+`transport_performance.osm` is built on
+[`osmosis`](https://wiki.openstreetmap.org/wiki/Osmosis/Installation) and is
+tested on macos and linux only. Please follow the `osmosis` guidance for
+installation on your operating system.
+:::
+
+## Downloading OSM
+
+Let's import the necessary dependencies:
+
+```{python}
+import os
+import subprocess
+import tempfile
+
+import geopandas as gpd
+from pyprojroot import here
+from shapely.geometry import Polygon
+
+from transport_performance.osm.osm_utils import filter_osm
+from transport_performance.osm import validate_osm
+
+```
+
+We require a source of OSM data in
+[Protocolbuffer Binary Format (PBF)](https://wiki.openstreetmap.org/wiki/PBF_Format).
+We recommend using exerpts of this data hosted on
+[Geofabrik's Download Server](https://www.geofabrik.de/data/download.html).
+This server is provided free of charge by Geofabrik and can come under
+considerable demand at certain times of the day. Please use this service
+considerately.
+
+:::{.panel-tabset}
+
+### Task
+
+Navigate the Geofabrik Download Server and download OSM data for an area of
+interest. Save the data and instantiate a path to the file called
+`original_osm_path`.
+
+### Hint
+
+```{python}
+#| eval: false
+original_osm_path = <INSERT_PATH_HERE>
+
+```
+
+### Solution
+
+```{python}
+original_osm_path = here("tests/data/newport-2023-06-13.osm.pbf")
+```
+
+:::
+
+## Define the Area of Interest
+
+To crop the OSM file, we need to get a bounding box. This could be:
+
+- The boundary of an urban centre calculated with the
+`transport_performance.urban_centres` module.
+- Any boundary from an open service such as
+[klokantech](https://boundingbox.klokantech.com/) in csv format.
+
+The bounding box  should be in EPSG:4326 projection (longitude & latitude).
+
+:::{.panel-tabset}
+
+### Task
+
+Using klokantech, define a small bounding box within the territory of the OSM
+file that you downloaded.
+
+Extract the bounding box in comma separated value format. Assign to a list in
+xmin, ymin, xmax, ymax format. Call the list `BBOX_LIST`.
+
+### Hint
+
+```{python}
+#| eval: false
+BBOX_LIST = [<INSERT_VALUES_HERE>]
+```
+
+### Solution
+
+```{python}
+BBOX_LIST = [-3.002175, 51.587035, -2.994271, 51.59095]
+```
+
+:::
+
+## Filtering PBF
+
+As PBF files can be very large and contain lots of data that are irrelevant for
+our routing purposes, we can filter the data to the road network only. Ensure
+that you have `osmosis` installed for this task.
+
+:::{.panel-tabset}
+
+### Task
+
+Define a `filtered_osm_path` object to save the filtered pbf file to.
+
+Use the [`filter_osm()`](/docs/reference/osm_utils.qmd#transport_performance.osm.osm_utils.filter_osm)
+function to restrict the PBF file to the extent of `BBOX_LIST`. Inspect the API
+reference or use `help(filter_osm)` for information on all available parameters.
+
+### Hint
+
+```{python}
+#| eval: false
+filtered_osm_path = <INSERT_A_PATH>
+filter_osm(
+    pbf_pth=original_osm_path, out_pth=filtered_osm_path, bbox=BBOX_LIST)
+
+```
+
+### Solution
+
+```{python}
+tmp_path = tempfile.TemporaryDirectory()
+filtered_osm_path = os.path.join(tmp_path.name, "filtered_feed.pbf")
+filter_osm(
+    pbf_pth=original_osm_path, out_pth=filtered_osm_path, bbox=BBOX_LIST)
+
+```
+
+:::
+
+::: {.callout-note}
+
+When using `filter_osm()`, the default behaviour is to remove elements tagged
+as buildings, waterways, landuse, and natural since they are not required for
+transport routing and removing them significantly reduces file size.
+If this is not desired, set `tag_filter=False`.
+
+:::
+
+Notice that `osmosis` is quite chatty and will print various exceptions
+originating from the Java code. If the filter operation was performed
+successfully, you should see `INFO: Pipeline complete.` and an execution time
+printed to the console.
+
+Now that we have performed the filter, we should notice a significant change in
+the size of the file on disk.
+
+```{python}
+orig_du = subprocess.run(
+    ["du", "-sh", original_osm_path], text=True, capture_output=True
+    ).stdout.split("\t")[0]
+filtered_du = subprocess.run(
+    ["du", "-sh", filtered_osm_path], text=True, capture_output=True
+    ).stdout.split("\t")[0]
+print(f"After filtering, PBF size reduced from {orig_du} to {filtered_du}")
+
+```
+
+## Count OSM Features
+
+From this point on in the tutorial, it is suggested to work with a small,
+filtered PBF file as the computations can be slow.
+
+PBF data contain spatial data organised with
+[tagged (labelled) elements](https://wiki.openstreetmap.org/wiki/Elements). We
+can access these elements to explore the features stored within the file.
+
+The first step in understanding the contents of your PBF file is to explore the
+tag IDs that are available.
+
+:::{.panel-tabset}
+
+### Task
+
+Use the [`validate_osm.FindIds`](/docs/reference/validate_osm.qmd#transport_performance.osm.validate_osm.FindIds)
+class to discover the full list of IDs within the pbf file saved at
+`filtered_osm_path`. Assign the class instance to `id_finder`.
+
+Use an appropriately named method to count the available IDs within the file.
+
+### Hint
+
+```{python}
+#| eval: false
+id_finder = validate_osm.<INSERT_CLASS_NAME>(osm_pth=filtered_osm_path)
+id_finder.<INSERT_METHOD_NAME>()
+
+```
+
+### Solution
+
+```{python}
+id_finder = validate_osm.FindIds(osm_pth=filtered_osm_path)
+id_finder.count_features()
+
+```
+
+:::
+
+You should find that there are four classes of IDs within the returned
+dictionary:
+
+* Nodes
+* Ways
+* Relations
+* Areas
+
+For our purposes we can focus on nodes and ways. Nodes will be point locations
+on the travel network such as junctions or bends in the road whereas ways are
+collections of nodes forming a road or section of road.
+
+If we have IDs for nodes or ways, we can visualise their locations on a map. To
+do this, we first need a list of IDs.
+
+## Return IDs for a Way
+
+:::{.panel-tabset}
+
+### Task
+
+Using the `id_finder` instance we instantiated earlier, find all of the IDs
+labelled as ways in the PBF file. Assign these IDs to a list called `way_ids`.
+Print the first 5 IDs.
+
+### Hint
+
+```{python}
+#| eval: false
+way_ids = id_finder.<INSERT_METHOD>()["<INSERT_CORRECT_KEY>"]
+way_ids[<START>:<END>]
+```
+
+### Solution
+
+```{python}
+way_ids = id_finder.get_feature_ids()["way_ids"]
+way_ids[0:5]
+```
+
+:::
+
+## Visualising OSM Features
+
+Now that we have returned the coordinate data for the way, it is straight
+forward to visualise the points on a map.
+
+:::{.panel-tabset}
+
+### Task
+
+Assign [`validate_osm.FindLocations`](/docs/reference/validate_osm.qmd#transport_performance.osm.validate_osm.FindLocations)
+to an instance called `loc_finder`. You will need to point this class to the
+same filtered PBF file as you used previously.
+
+Using the `way_ids` list from a previous task, pass the first 5 IDs to
+`loc_finder.plot_ids()` in a list. Ensure that you specify that the
+`feature_type` is `"way"`.
+
+### Hint
+
+```{python}
+#| eval: false
+loc_finder = validate_osm.<INSERT_CLASS>(osm_pth=filtered_osm_path)
+loc_finder.<INSERT_METHOD>(
+    ids=way_ids[<START>:<END>], feature_type="<INSERT_FEATURE_TYPE>")
+```
+
+### Solution
+
+```{python}
+loc_finder = validate_osm.FindLocations(osm_pth=filtered_osm_path)
+loc_finder.plot_ids(ids=way_ids[0:5], feature_type="way")
+```
+
+:::
+
+Visualising these features of the PBF file can help to validate features of the
+local transit network, particularly in areas where changes to infrastructure
+are ongoing. Examining the features present in relation to our bounding box, we
+can see that the geometries may not be neatly cropped to the extent of the
+bounding box. This is because `filter_osm()` ensures all ways and relations
+are complete when cropping to a bounding box. This means roads and paths that
+traverse the edge of the bounding box remain whole.
+
+Below we display every way (and their member nodes) in the PBF relative to the
+bounding box crop we applied (purple).
+
+```{python}
+# map all available nodes
+imap = loc_finder.plot_ids(id_finder.id_dict["way_ids"], feature_type="way")
+# add polygon of bounding box to map
+xmin, ymin, xmax, ymax = BBOX_LIST
+poly = Polygon(((xmin,ymin), (xmin,ymax), (xmax,ymax), (xmax,ymin)))
+poly_gdf = gpd.GeoDataFrame({"geometry": poly}, crs=4326, index=[0])
+poly_gdf.explore(color="purple", m=imap)
+```
+
+The `filter_osm` function has reduced the file size but has also retained
+features outside of the crop that we specified. This is because removing a
+feature outside of the crop, that is referenced by a feature within the crop
+zone, can cause runtime errors when routing. The likelihood is that a junction
+within the crop zone you specified references a road (or some other feature ID)
+outside of your crop zone. The filter strategy we have adopted for routing is
+the safest approach to avoiding these issues.
+
+To read more on `osmosis` filtering strategies, refer to the `completeWays` and
+`completeRelations` flag descriptions in the
+[Osmosis detailed usage documentation](https://wiki.openstreetmap.org/wiki/Osmosis/Detailed_Usage_0.48).
+
+
+Note that additional metadata can be added to the map by setting `include_tags=True`. Adding this rich contextual data to the map can be useful but is also  computationally expensive. This operation should be avoided for large osm files, for example anything over 500 KB.
+
+```{python}
+loc_finder.plot_ids(id_finder.id_dict["way_ids"], feature_type="way", include_tags=True)
+
+```
+
+## Conclusion
+
+Congratulations, you have successfully completed this tutorial on OpenStreetMap
+data.
+
+To continue learning how to work with the `transport_performance` package, it
+is suggested that you continue with the
+[Analyse Network Tutorial](/docs/tutorials/analyse_network/index.qmd)
+
+For any problems encountered with this tutorial or the `transport_performance`
+package, please open an issue on our
+[GitHub repository](https://github.com/datasciencecampus/transport-network-performance/issues).

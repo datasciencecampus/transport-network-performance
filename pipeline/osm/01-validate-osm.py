@@ -6,14 +6,16 @@
 4. Inspect tags by feature type.
 """
 
+import time
+
 import toml
 from pyprojroot import here
+
 from transport_performance.osm.validate_osm import (
     FindIds,
-    FindTags,
     FindLocations,
+    FindTags,
 )
-import time
 
 CONFIG = toml.load(here("pipeline/osm/config/01-validate-osm.toml"))
 OSM_PTH = CONFIG["OSM"]["PATH"]

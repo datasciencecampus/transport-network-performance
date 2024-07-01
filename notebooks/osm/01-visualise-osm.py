@@ -1,6 +1,7 @@
 """Visualise OMS spatial features."""
 # %%
 from pyprojroot import here
+
 from transport_performance.osm import validate_osm as osmval
 
 # %%

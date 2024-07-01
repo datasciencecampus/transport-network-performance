@@ -3,9 +3,9 @@
 # %%
 # imports
 import gtfs_kit as gk
-from pyprojroot import here
-import pandas as pd
 import numpy as np
+import pandas as pd
+from pyprojroot import here
 
 # %%
 # initialise my feed from GTFS test data

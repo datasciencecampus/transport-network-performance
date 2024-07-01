@@ -1,18 +1,18 @@
 """Tests for the transport_performance.gtfs.cleaners.py module."""
 import os
 import re
-import pytest
 
 import numpy as np
 import pandas as pd
+import pytest
 
-from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.gtfs.cleaners import (
-    drop_trips,
     clean_consecutive_stop_fast_travel_warnings,
     clean_multiple_stop_fast_travel_warnings,
     core_cleaners,
+    drop_trips,
 )
+from transport_performance.gtfs.validation import GtfsInstance
 
 
 @pytest.fixture(scope="function")

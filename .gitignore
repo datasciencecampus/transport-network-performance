@@ -1,3 +1,6 @@
+docs/tutorials/*_files/
+docs/tutorials/outputs/
+
 # transport modelling data formats
 **/*.pbf
 **/*.mapdb
@@ -192,6 +195,10 @@ docs/build/
 !docs/gtfs
 !docs/source/_static/dsc.png
 !docs/source/_templates/footer.html
+docs/_sidebar.yml
+docs/reference/
+!docs/_static/tp_logo_white_background.png
+!docs/explanation/**/*.PNG
 
 # PyBuilder
 .pybuilder/
@@ -370,3 +377,11 @@ $RECYCLE.BIN/
 .vscode/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,r,python
+
+# venv
+.venv/
+
+# Quarto
+/.quarto/
+_site/
+objects.json

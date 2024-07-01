@@ -13,21 +13,20 @@ larger codebase that is more difficult to maintain.
 """
 
 import os
+import pathlib
 from contextlib import nullcontext as does_not_raise
 from pathlib import Path
+from typing import Type, Union
 
 import affine
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pathlib
 import pytest
 import rasterio as rio
-
+from _pytest.python_api import RaisesContext
 from pytest_lazyfixture import lazy_fixture
 from shapely.geometry import Polygon
-from typing import Union, Type
-from _pytest.python_api import RaisesContext
 
 import transport_performance.urban_centres.raster_uc as ucc
 

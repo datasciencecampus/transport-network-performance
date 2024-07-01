@@ -1,18 +1,19 @@
 """Helpers for working with routes.txt."""
-import pandas as pd
-from bs4 import BeautifulSoup
-import requests
+import os
+import pathlib
 import warnings
 from typing import Union
-import pathlib
-import os
 
-from transport_performance.utils.defence import (
-    _url_defence,
-    _type_defence,
-    _is_expected_filetype,
-)
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
 from transport_performance.utils.constants import PKG_PATH
+from transport_performance.utils.defence import (
+    _is_expected_filetype,
+    _type_defence,
+    _url_defence,
+)
 
 warnings.filterwarnings(
     action="ignore", category=DeprecationWarning, module=".*pkg_resources"
@@ -158,7 +159,7 @@ def get_saved_route_type_lookup(
         os.path.join(PKG_PATH, "data", "gtfs", "route_lookup.pkl")
     )
 ) -> pd.DataFrame:
-    """Get the lcoally saved route type lookup as a dataframe.
+    """Get the locally saved route type lookup as a dataframe.
 
     Parameters
     ----------

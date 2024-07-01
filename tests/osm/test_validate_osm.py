@@ -1,18 +1,19 @@
 """Test validate_osm."""
-import pytest
 import re
 
-from pyprojroot import here
-import geopandas as gpd
 import folium
+import geopandas as gpd
 import pandas as pd
+import pytest
+from pyprojroot import here
 
 from transport_performance.osm.validate_osm import (
-    _filter_target_dict_with_list,
     FindIds,
     FindLocations,
     FindTags,
+    PerformanceWarning,
     _convert_osm_dict_to_gdf,
+    _filter_target_dict_with_list,
 )
 
 osm_pth = here("tests/data/small-osm.pbf")
@@ -321,6 +322,19 @@ class TestFindLocations(object):
             way_len == 2
         ), f"Expected way with length 2, instead found {way_len}"
 
+    def test__merge_dicts_retain_dupe_keys_raises(self, _tiny_osm_locs):
+        """Test internal raises TypeError."""
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "Expected dict but found <class 'list'>: ['not a key', 2]"
+            ),
+        ):
+            _tiny_osm_locs._merge_dicts_retain_dupe_keys(
+                dict1={"some_key": 1},
+                dict2=["not a key", 2],
+            )
+
     def test_check_locs_for_ids(self, _tiny_osm_locs, _tiny_osm_ids):
         """Assert check_locs_for_ids."""
         ids = _tiny_osm_ids
@@ -368,8 +382,42 @@ class TestFindLocations(object):
             ids=ids._FindIds__node_ids[0:1], feature_type="node"
         )
         assert isinstance(plt, folium.Map)
+        plt = locs.plot_ids(
+            ids=ids._FindIds__node_ids[0:1],
+            feature_type="node",
+            include_tags=True,
+        )
+        assert isinstance(plt, folium.Map)
+        # check the tag column is as expected - for nodes, this example should
+        # be empty, nodes often contain no tags, but not always
+        pd.testing.assert_series_equal(
+            locs.coord_gdf["custom_tooltip"],
+            pd.Series([""], index=[7727955], name="custom_tooltip"),
+        )
+        assert locs.coord_gdf["custom_tooltip"].values == [""]
         plt = locs.plot_ids(ids=ids._FindIds__way_ids[0:1], feature_type="way")
         assert isinstance(plt, folium.Map)
+        plt = locs.plot_ids(
+            ids=ids._FindIds__way_ids[0:1],
+            feature_type="way",
+            include_tags=True,
+        )
+        # check the tag column is as expected - for ways, these should always
+        # include at least the parent_id tag.
+        pd.testing.assert_series_equal(
+            locs.coord_gdf["custom_tooltip"],
+            pd.Series(
+                [
+                    "<b>crossing:</b> marked<br><b>highway:</b> crossing<br><b>tactile_paving:</b> yes<br><b>parent_id:</b> 4811009<br><b>lanes:</b> 2<br><b>name:</b> Kingsway<br><b>oneway:</b> yes<br><b>postal_code:</b> NP20<br><b>ref:</b> A4042<br><b>parent_highway:</b> primary<br>",  # noqa E501
+                    "<b>parent_id:</b> 4811009<br><b>lanes:</b> 2<br><b>name:</b> Kingsway<br><b>oneway:</b> yes<br><b>postal_code:</b> NP20<br><b>ref:</b> A4042<br><b>parent_highway:</b> primary<br>",  # noqa E501
+                ],
+                index=pd.MultiIndex.from_tuples(
+                    [(4811009, 7447008812), (4811009, 443158788)],
+                    names=["parent_id", "member_id"],
+                ),
+                name="custom_tooltip",
+            ),
+        )
 
     def test_plot_ids_not_implemented(self, _tiny_osm_locs):
         """Assert asking for relation or area riases not implemented error."""
@@ -418,6 +466,18 @@ class TestFindTags(object):
             "check_tags_for_ids",
         ]
         _class_atttribute_assertions(tags, expected_attrs, expected_methods)
+
+    @pytest.mark.runexpensive
+    def test_find_tags_init_warning(self):
+        """Test that large OSM files trigger a performance warning.
+
+        execution duration c.80 seconds.
+        """
+        with pytest.warns(
+            PerformanceWarning,
+            match=".*Consider filtering the pbf file smaller than 50000 bytes",
+        ):
+            FindTags(here("tests/data/newport-2023-06-13.osm.pbf"))
 
     def test_find_tags_check_tags_for_ids(self, _tiny_osm_tags, _tiny_osm_ids):
         """Test FindTags.check_tags_for_ids()."""

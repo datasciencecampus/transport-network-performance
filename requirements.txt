@@ -28,11 +28,12 @@ seaborn
 haversine
 pretty_html_table
 kaleido
-numpy>=1.25.0 # test suite will fail if user installed lower than this
-sphinx
-sphinx-rtd-theme
+numpy==1.26.4 # ERROR  - ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject
 dask[dataframe]
-pyarrow >= 14.0.1 # 14.0.0 has security vulnerability
+pyarrow>=14.0.1 # 14.0.0 has security vulnerability
 osmium # has dependencies on `cmake` and `boost` which require brew install
 tqdm
+quartodoc
+jupyterlab
+xyzservices
 -e .

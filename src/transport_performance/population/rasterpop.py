@@ -1,33 +1,34 @@
 """Class to handle raster population data."""
 
-import geopandas as gpd
 import os
+from datetime import datetime
+from typing import Tuple, Type, Union
+
+import cartopy.crs as ccrs
+import cartopy.io.img_tiles as cimgt
+import folium
+import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 import rasterio as rio
 import rioxarray
-import folium
-import cartopy.crs as ccrs
-import cartopy.io.img_tiles as cimgt
-import matplotlib.pyplot as plt
-
-from datetime import datetime
-from geocube.vector import vectorize
-from typing import Union, Type, Tuple
-from shapely.geometry.polygon import Polygon
-from matplotlib import colormaps
 from cartopy.mpl.geoaxes import GeoAxes
+from geocube.vector import vectorize
+from matplotlib import colormaps
+from shapely.geometry.polygon import Polygon
+
 from transport_performance.utils.defence import (
-    _is_expected_filetype,
-    _type_defence,
-    _handle_path_like,
+    _check_iter_length,
     _check_parent_dir_exists,
     _enforce_file_extension,
-    _check_iter_length,
+    _handle_path_like,
+    _is_expected_filetype,
+    _type_defence,
 )
 
 
 class RasterPop:
-    """Prepare raster population inputs for trasport analysis.
+    """Prepare raster population inputs for transport analysis.
 
     This class is suited to working with rastered population data (e.g.
     gridded population estimates).
@@ -45,14 +46,6 @@ class RasterPop:
     centroid_gdf : gpd.GeoDataFrame
         A geopandas dataframe of grid centroids, converted to EPSG:4326 for
         transport analysis.
-
-    Methods
-    -------
-    get_pop
-        Read and preprocess population estimates into a geopandas dataframe.
-    plot
-        Build static and interactive visualisations of population data. Can
-        only use this method once `get_pop` has been called.
 
     Raises
     ------
@@ -108,7 +101,7 @@ class RasterPop:
         var_name : str, optional
             The variable name, by default "population"
         urban_centre_bounds : Type[Polygon], optional
-            Polygon defining an urban centre bounday, by default None meaning
+            Polygon defining an urban centre boundary, by default None meaning
             information concerning whether the grid resides within the urban
             centre will not be added.
         urban_centre_crs : str, optional
@@ -353,7 +346,7 @@ class RasterPop:
         Parameters
         ----------
         urban_centre_bounds : Type[Polygon]
-            Polygon defining urban centre bounday
+            Polygon defining urban centre boundary
         urban_centre_crs : str, optional
             The urban centre polygon CRS, by default None meaning this is the
             same CRS as the input raster data.

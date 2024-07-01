@@ -1,7 +1,6 @@
 """Tests for transport_performance/metrics.py."""
 
 import pytest
-
 from pandas.testing import assert_frame_equal
 from pyprojroot import here
 from pytest_lazyfixture import lazy_fixture

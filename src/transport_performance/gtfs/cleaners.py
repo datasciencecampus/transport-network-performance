@@ -1,24 +1,24 @@
 """A set of functions that clean the gtfs data."""
-from typing import Union
 import warnings
+from typing import Union
 
 import numpy as np
+from gtfs_kit.cleaners import clean_ids as clean_ids_gk
 from gtfs_kit.cleaners import (
-    clean_ids as clean_ids_gk,
     clean_route_short_names as clean_route_short_names_gk,
-    clean_times as clean_times_gk,
-    drop_zombies as drop_zombies_gk,
 )
+from gtfs_kit.cleaners import clean_times as clean_times_gk
+from gtfs_kit.cleaners import drop_zombies as drop_zombies_gk
 
 from transport_performance.utils.defence import (
-    _gtfs_defence,
     _check_iterable,
+    _gtfs_defence,
     _type_defence,
 )
 
 
 def drop_trips(gtfs, trip_id: Union[str, list, np.ndarray]) -> None:
-    """Drop trip{s} from a GtfsInstance object.
+    """Drop trip(s) from a GtfsInstance object.
 
     Parameters
     ----------

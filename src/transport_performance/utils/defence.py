@@ -1,13 +1,13 @@
 """Defensive check utility funcs. Internals only."""
-from typing import Union
-from collections.abc import Iterable
-
-import pathlib
-import numpy as np
 import os
-import pandas as pd
+import pathlib
 import warnings
+from collections.abc import Iterable
 from datetime import datetime
+from typing import Union
+
+import numpy as np
+import pandas as pd
 
 
 def _handle_path_like(

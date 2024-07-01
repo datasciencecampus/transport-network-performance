@@ -25,7 +25,6 @@ tests that use them.
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-
 from pyprojroot import here
 from shapely.geometry import Polygon
 

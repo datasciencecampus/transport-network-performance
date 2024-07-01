@@ -1,15 +1,16 @@
 """Utility functions for OSM files."""
-import subprocess
-from pyprojroot import here
-from typing import Union
 import pathlib
+import subprocess
+from typing import Union
+
+from pyprojroot import here
 
 from transport_performance.utils.defence import (
-    _type_defence,
     _check_iterable,
     _check_parent_dir_exists,
-    _is_expected_filetype,
     _enforce_file_extension,
+    _is_expected_filetype,
+    _type_defence,
 )
 
 

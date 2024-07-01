@@ -6,21 +6,22 @@ to 200x200m grids). The original design intention is for these to form part of
 gridded population data pre-processing.
 """
 
-import os
 import glob
-import re
-import rioxarray
+import os
 import pathlib
-
+import re
 from typing import Union
-from rioxarray.merge import merge_arrays
+
+import rioxarray
 from rasterio.warp import Resampling
+from rioxarray.merge import merge_arrays
+
 from transport_performance.utils.defence import (
-    _handle_path_like,
     _check_parent_dir_exists,
+    _enforce_file_extension,
+    _handle_path_like,
     _is_expected_filetype,
     _type_defence,
-    _enforce_file_extension,
 )
 
 
@@ -53,7 +54,7 @@ def merge_raster_files(
         A dictionary summarising the boundaries of all input rasters and the
         merged output. The "inputs" key is a list of the respective input
         boundaries. The "output" key is a list containing the bounds of the
-        merged result. Useful to checking consistency of merged output.
+        merged result. Useful for checking consistency of merged output.
 
     Raises
     ------
@@ -73,12 +74,7 @@ def merge_raster_files(
 
     2. The default rioxarry behaviours are assumed when merging inputs, i.e.,
     the `CRS`, resolution and `nodata` values will be taken from the first
-    input DataArray. See [1]_ for more details.
-
-    References
-    ----------
-    .. [1] https://corteva.github.io/rioxarray/html/rioxarray.html#rioxarray.m
-    erge.merge_arrays
+    input DataArray.
 
     """
     # defend against case where the provided input dir does not exist

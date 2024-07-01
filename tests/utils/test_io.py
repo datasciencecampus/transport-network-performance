@@ -1,17 +1,17 @@
 """Tests for utils/io.py."""
 
-import geopandas as gpd
 import os
-import pytest
 import re
-
-from geopandas.testing import assert_geodataframe_equal
-from pyprojroot import here
-from _pytest.python_api import RaisesContext
-from shapely.geometry import Point
 from typing import Type
 
-from transport_performance.utils.io import to_pickle, from_pickle
+import geopandas as gpd
+import pytest
+from _pytest.python_api import RaisesContext
+from geopandas.testing import assert_geodataframe_equal
+from pyprojroot import here
+from shapely.geometry import Point
+
+from transport_performance.utils.io import from_pickle, to_pickle
 
 
 @pytest.fixture
