@@ -26,7 +26,6 @@ dependencies = [
     'folium',
     'geocube',
     'geopandas',
-    'gtfs_kit==5.2.7',
     'haversine',
     'osmium',
     'pandas<2.1.0',
