@@ -19,6 +19,58 @@ classifiers = [
 requires-python = ">=3.9, <3.10"
 version = "0.0.1"
 
+dependencies = [
+    'beautifulsoup4',
+    'cartopy',
+    'dask[dataframe]',
+    'folium',
+    'geocube',
+    'geopandas',
+    'gtfs_kit==5.2.7',
+    'haversine',
+    'kaleido',
+    'osmium',
+    'pandas<2.1.0',
+    'plotly',
+    'pretty_html_table',
+    'pyarrow>=14.0.1', # 14.0.0 has security vulnerability
+    'pyproj>=3.6.0',
+    'pyprojroot',
+    'rioxarray',
+    'mapclassify',
+    'matplotlib>=3.7.0',
+    'r5py==0.1.0',
+    'rasterio',
+    'requests',
+    'seaborn',
+    'scikit-image',
+    'scipy',
+    'toml',
+    'numpy==1.26.4',
+    'tqdm',
+    'xyzservices',
+]
+
+[project.optional-dependencies]
+test = [
+    'pytest<8.0.0',
+    'pytest-mock',
+    'pytest-lazy-fixture',
+]
+
+dev = [
+    'build',
+    'coverage',
+    'pre-commit',
+]
+
+docs = [
+    'ipykernel==6.23.1',
+    'jupyterlab',
+    'nbformat>=4.2.0',
+    'quartodoc',
+]
+
 [tool.setuptools]
 # This is true by default so this can be removed.
 # Currently retaining this line before discussing with others whether or not
