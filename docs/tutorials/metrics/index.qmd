@@ -1,5 +1,5 @@
 ---
-title: "6. Metrics"
+title: "5. Metrics"
 description: Learn how to use the `transport_performance.metrics` module through examples.
 date-modified: 05/17/2024  # must be in MM/DD/YYYY format
 categories: ["Tutorial"]  # see https://diataxis.fr/tutorials-how-to/#tutorials-how-to, delete as appropriate
