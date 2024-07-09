@@ -7,7 +7,6 @@ project:
     - "!docs/source/"
     - "!docs/build/"
     - "!*.ipynb"
-    - "!docs/gtfs/*"
   preview:
     port: 1111
     browser: true
@@ -56,14 +55,12 @@ website:
         href: docs/how_to/index.qmd
         contents:
           - "docs/how_to/uc_pop/index.qmd"
-          - "docs/how_to/gtfs/index.qmd"
           - "docs/how_to/osm/index.qmd"
       - section: Tutorials
         href: docs/tutorials/index.qmd
         contents:
           - "docs/tutorials/urban_centre/index.qmd"
           - "docs/tutorials/population/index.qmd"
-          - "docs/tutorials/gtfs/index.qmd"
           - "docs/tutorials/osm/index.qmd"
           - "docs/tutorials/analyse_network/index.qmd"
           - "docs/tutorials/metrics/index.qmd"
@@ -120,18 +117,6 @@ quartodoc:
       package: transport_performance.population.rasterpop
       contents:
         - RasterPop
-    - title: "`gtfs`"
-      desc: >
-        Modules for working with GTFS public transit schedule files.
-      package: transport_performance.gtfs
-      contents:
-        - calendar
-        - cleaners
-        - gtfs_utils
-        - multi_validation
-        - routes
-        - validation
-        - validators
     - title: "`osm`"
       desc: >
         Modules for OpenStreetMap utilities, such are cropping .pbf files to a bounding box.
