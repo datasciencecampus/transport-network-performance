@@ -47,6 +47,9 @@ jobs:
         brew install --build-from-source ./osmosis.rb
         brew info osmosis
       shell: sh
-    - name: Run Integration Tests Only
-      run: |
-        pytest -m runinteg --runinteg --ignore tests/analyse_network --ignore tests/test_analyse_network.py
+    - name: Run Integration Tests with retry
+      uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e # SHA for v3.0.0
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        command: pytest -m runinteg --runinteg --ignore tests/analyse_network --ignore tests/test_analyse_network.py

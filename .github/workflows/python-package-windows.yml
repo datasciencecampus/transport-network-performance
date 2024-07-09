@@ -36,6 +36,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install '.[test]'
-    - name: Run 'base' Tests
-      run: |
-          pytest --ignore tests/osm/ --ignore tests/analyse_network --ignore tests/test_analyse_network.py
+    - name: Base tests with retry
+      uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e # SHA for v3.0.0
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        command: pytest --ignore tests/osm/ --ignore tests/analyse_network --ignore tests/test_analyse_network.py

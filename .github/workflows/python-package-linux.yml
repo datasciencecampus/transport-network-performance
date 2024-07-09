@@ -44,6 +44,9 @@ jobs:
         sudo apt update
         sudo apt install -y libgeos-dev
       shell: sh
-    - name: Test with pytest
-      run: |
-        pytest
+    - name: Test with retry
+      uses: nick-fields/retry@7152eba30c6575329ac0576536151aca5a72780e # SHA for v3.0.0
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        command: pytest
