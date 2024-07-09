@@ -21,7 +21,6 @@ version = "0.0.1"
 
 dependencies = [
     'assess-gtfs',
-    'beautifulsoup4',
     'cartopy',
     'dask[dataframe]',
     'folium',
@@ -29,24 +28,16 @@ dependencies = [
     'geopandas',
     'gtfs_kit==5.2.7',
     'haversine',
-    'kaleido',
     'osmium',
     'pandas<2.1.0',
-    'plotly',
-    'pretty_html_table',
     'pyarrow>=14.0.1', # 14.0.0 has security vulnerability
     'pyproj>=3.6.0',
     'pyprojroot',
     'rioxarray',
-    'mapclassify',
     'matplotlib>=3.7.0',
     'r5py==0.1.0',
     'rasterio',
-    'requests',
-    'seaborn',
-    'scikit-image',
     'scipy',
-    'toml',
     'numpy==1.26.4',
     'tqdm',
     'xyzservices',
@@ -70,6 +61,9 @@ docs = [
     'jupyterlab',
     'nbformat>=4.2.0',
     'quartodoc',
+    'requests',
+    'seaborn',
+    'toml',
 ]
 
 [tool.setuptools]
