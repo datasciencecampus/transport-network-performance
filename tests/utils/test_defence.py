@@ -2,7 +2,6 @@
 import os
 import pathlib
 import re
-from contextlib import nullcontext as does_not_raise
 from typing import Type, Union
 
 import pandas as pd
@@ -10,7 +9,6 @@ import pytest
 from _pytest.python_api import RaisesContext
 from pyprojroot import here
 
-from transport_performance.gtfs.validation import GtfsInstance
 from transport_performance.utils.defence import (
     _check_attribute,
     _check_column_in_df,
@@ -18,7 +16,6 @@ from transport_performance.utils.defence import (
     _check_iterable,
     _check_parent_dir_exists,
     _enforce_file_extension,
-    _gtfs_defence,
     _handle_path_like,
     _is_expected_filetype,
     _type_defence,
@@ -247,21 +244,6 @@ class Test_CheckParentDirExists(object):
             "_check_parent_dir_exists did not make parent dir"
             " when 'create=True' (multiple levels)"
         )
-
-
-def test__gtfs_defence():
-    """Tests for _gtfs_defence()."""
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "'test' expected a GtfsInstance object. " "Got <class 'str'>"
-        ),
-    ):
-        _gtfs_defence("tester", "test")
-    # passing test
-    with does_not_raise():
-        gtfs = GtfsInstance(here("tests/data/chester-20230816-small_gtfs.zip"))
-        _gtfs_defence(gtfs=gtfs, param_nm="gtfs")
 
 
 class Test_TypeDefence(object):
