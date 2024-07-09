@@ -23,9 +23,9 @@ jobs:
         python-version: ["3.9"]
         os: ["macos-12"]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # SHA for v4.1.7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@9a7ac94420f42ee15fc60ab88d0dca4be1fd5757 # SHA for v5.1.0
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install '.[test]'
     - name: Install java
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # SHA for v4.2.1
       with:
         distribution: 'temurin'
         java-version: '11.0.21'
