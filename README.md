@@ -34,9 +34,9 @@ We welcome contributions from others. Please check out our
 ## Installation
 *Describe technical set-up. Such as the required dependencies.*
 
-This package is designed to work with python 3.9.13. Full functionality is
-tested on macos only. Other operating systems may be incompatible with
-`transport_performance.osm` specifically.
+This package is designed to work with python 3.9, 3.10 & 3.11. Full
+functionality is tested on macos only. Other operating systems may be
+incompatible with `transport_performance.osm` specifically.
 
 The transport modelling features in `transport_performance.analyse_network`
 depends upon a compatible Java Development Kit (JDK). Please consult the
@@ -63,15 +63,15 @@ or [venv](https://docs.python.org/3/library/venv.html).
 
 With conda:
 ```
-conda create -n transport-performance python=3.9.13 -y
+conda create -n transport-performance python=3.11 -y
 ```
 Once completed, activate the environment:
 ```
 conda activate transport-performance
 ```
-Install the python requirements:
+Install the python package:
 ```
-pip install -r requirements.txt
+pip install .
 ```
 Additional Java dependencies are required for full functionality. See the
 [contributing guidance](./CONTRIBUTING.md) for assistance.

@@ -30,19 +30,19 @@ Install Dependencies:
 
 Package set-up and installation:
 
-1. Setup a new conda env: `conda create -n r5py python=3.9.13`
+1. Setup a new conda env: `conda create -n r5py python=3.11`
 2. Activate the environment: `conda activate r5py`
 3. Launch terminal and change directory to wherever you keep your GitHub repos: `cd ~/Documents`
 4. Clone this repo, eg with https: `git clone https://github.com/datasciencecampus/transport-network-performance.git`
 5. Change directory to the repo: `cd transport-network-performance`
 6. Install pre-commit hooks: `pre-commit install`
 7. Update pip: `pip install --upgrade pip`
-8. Install r5py & other reqs: `pip install -r requirements.txt`
+8. Install package & dependencies: `pip install -e '.[dev,test,docs]'`
 
 Set-up check:
 
-10. Run set-up pytests: `pytest --runsetup`.
-11. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for the message: `r5py has created the expected database files.`
+10. Run `pytest --runinteg --runexpensive` to check test suite passes.
+11. If everything is working as expected, you should see some Java flavoured warnings about `--illegal-access` that you can ignore. But importantly look out for any fails or errors in the pytest report.
 12. If you've made it this far, you've earned yourself a coffee.
 
 #### Dependencies
