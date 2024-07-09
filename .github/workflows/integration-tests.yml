@@ -31,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install '.[test]'
     - name: Install java
       uses: actions/setup-java@v3
       with:
@@ -49,4 +49,4 @@ jobs:
       shell: sh
     - name: Run Integration Tests Only
       run: |
-        pytest -m runinteg --runinteg --ignore tests/analyse_network --ignore tests/test_analyse_network.py --deselect tests/gtfs/test_gtfs_utils.py::TestBboxFilterGtfs::test_bbox_filter_gtfs_to_date_builds_network
+        pytest -m runinteg --runinteg --ignore tests/analyse_network --ignore tests/test_analyse_network.py
